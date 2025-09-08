@@ -15,6 +15,8 @@ main.content {
 }
 .layout.is-collapsed aside.sb {
     width: 80px;
+    justify-content: center;
+    align-items: center;
 }
 .layout.is-collapsed .sb-link span,
 .layout.is-collapsed summary span,
