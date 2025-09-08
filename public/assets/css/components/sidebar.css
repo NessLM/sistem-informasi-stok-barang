@@ -9,7 +9,7 @@
         "Noto Color Emoji";
 }
 main.content {
-    margin-left: 270px; /* default ketika sidebar normal */
+    margin-left: 300px; /* default ketika sidebar normal */
     transition: margin-left 0.3s ease;
 }
 .layout.is-collapsed aside.sb {
@@ -56,7 +56,7 @@ main.content {
 
 /* Konten ikut geser */
 .layout.is-collapsed main.content {
-    margin-left: 80px;
+    margin-left: 100px;
 }
 
 header.page {
@@ -197,7 +197,7 @@ aside.sb {
 
 /* Footer */
 .sb-footer {
-    padding: 12px;
+    padding: 20px;
     border-top: 1px solid rgba(255, 255, 255, 0.15);
 }
 .sb-user {
@@ -213,16 +213,14 @@ aside.sb {
 .sb-logout {
     width: 100%;
     border: 0;
-    background: #e65c5c;
+    background: #c83535;
     color: #fff;
     border-radius: 10px;
     height: 40px;
     font-weight: 50;
     cursor: pointer;
 }
-.sb-logout .bi-box-arrow-right {
-    margin-right: 10px;
-}
+
 .sb-logout:hover {
     filter: brightness(1.05);
 }
