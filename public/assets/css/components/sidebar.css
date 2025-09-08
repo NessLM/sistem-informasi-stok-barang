@@ -15,7 +15,32 @@ main.content {
 }
 .layout.is-collapsed aside.sb {
     width: 80px;
+    justify-content: center;
+    align-items: center;
 }
+.layout.is-collapsed .sb-link span,
+.layout.is-collapsed summary span,
+.layout.is-collapsed .sb-user .meta,
+.layout.is-collapsed .sb-children {
+    display: none;
+}
+
+.layout.is-collapsed .sb-logout {
+    font-size: 10px;
+}
+.layout.is-collapsed .sb-user {
+    margin-left: 15px;
+}
+
+.layout.is-collapsed .sb-brand .brand-img {
+    display: none;
+}
+
+/* Konten ikut geser */
+.layout.is-collapsed main.content {
+    margin-left: 80px;
+}
+
 header.page {
     display: flex;
     align-items: center;
@@ -40,10 +65,10 @@ aside.sb {
 }
 
 /* ── Brand: fixed height & compact logo ─────────────────────────── */
-.sb-brand{
-    position: relative;            /* biar tombol absolute nempel rapi */
-    height: 64px;                  /* tinggi area brand */
-    padding: 0 20px;               /* rapihin padding */
+.sb-brand {
+    position: relative; /* biar tombol absolute nempel rapi */
+    height: 64px; /* tinggi area brand */
+    padding: 0 20px; /* rapihin padding */
     display: flex;
     align-items: center;
     padding: 16px 22px 10px;
@@ -53,29 +78,43 @@ aside.sb {
     width: min(130px, 50%);
     height: auto;
     object-fit: contain;
-  }
-  
-  /* posisikan ikon menu di kanan, selalu center secara vertikal */
-  .sb-brand .brand-action{
+}
+
+/* posisikan ikon menu di kanan, selalu center secara vertikal */
+.sb-brand .brand-action {
     position: absolute;
     top: 50%;
     right: 12px;
     transform: translateY(-50%);
-    width: 36px; height: 36px;
-    display: grid; place-items: center;
-    background: transparent; border: 0; border-radius: 10px;
-    color: #fff; cursor: pointer; transition: background .2s;
-  }
-  .sb-brand .brand-action:hover{ background: rgba(255,255,255,.12); }
-  .sb-brand .brand-action .bi{ font-size: 22px; line-height: 1; }
-  
-  /* (opsional) lebih kompak di layar kecil */
-  @media (max-width: 1366px){
-    .sb-brand{ height: 56px; }
-    .sb-brand .brand-img{ height: 24px; max-width: 140px; }
-  }
-  
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    background: transparent;
+    border: 0;
+    border-radius: 10px;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.sb-brand .brand-action:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+.sb-brand .brand-action .bi {
+    font-size: 22px;
+    line-height: 1;
+}
 
+/* (opsional) lebih kompak di layar kecil */
+@media (max-width: 1366px) {
+    .sb-brand {
+        height: 56px;
+    }
+    .sb-brand .brand-img {
+        height: 24px;
+        max-width: 140px;
+    }
+}
 
 /* Nav */
 .sb-nav {

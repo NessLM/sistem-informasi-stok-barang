@@ -42,6 +42,17 @@
     <main class="content">
       {{ $slot }}
     </main>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const toggleBtn = document.querySelector("[data-toggle='sidebar']");
+      if (toggleBtn) {
+        toggleBtn.addEventListener("click", () => {
+          document.querySelector(".layout").classList.toggle("is-collapsed");
+        });
+      }
+    });
+  </script>
   </div>
 </body>
 </html>
