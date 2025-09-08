@@ -4,7 +4,6 @@
     min-height: 100svh;
     background: #f5f7fb;
     color: #1d2433;
-
     font-family: "Poppins", ui-sans-serif, system-ui, sans-serif,
         "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
         "Noto Color Emoji";
@@ -15,9 +14,12 @@ main.content {
 }
 .layout.is-collapsed aside.sb {
     width: 80px;
-    justify-content: center;
-    align-items: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* center vertical */
+    align-items: center; /* center horizontal */
 }
+
 .layout.is-collapsed .sb-link span,
 .layout.is-collapsed summary span,
 .layout.is-collapsed .sb-user .meta,
@@ -89,6 +91,7 @@ aside.sb {
     align-items: center;
     padding: 16px 22px 10px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    justify-content: space-between;
 }
 .sb-brand .brand-img {
     width: min(130px, 50%);
@@ -98,16 +101,17 @@ aside.sb {
 
 /* posisikan ikon menu di kanan, selalu center secara vertikal */
 .sb-brand .brand-action {
-    position: absolute;
+    position: static;
     top: 50%;
     right: 12px;
-    transform: translateY(-50%);
+    transform: none;
     width: 36px;
     height: 36px;
     display: grid;
     place-items: center;
     background: transparent;
     border: 0;
+    margin-left: auto;
     border-radius: 10px;
     color: #fff;
     cursor: pointer;
