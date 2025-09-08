@@ -23,6 +23,13 @@ main.content {
     display: none;
 }
 
+.layout.is-collapsed .sb-logout {
+    font-size: 10px;
+}
+.layout.is-collapsed .sb-user {
+    margin-left: 15px;
+}
+
 .layout.is-collapsed .sb-brand .brand-img {
     display: none;
 }
