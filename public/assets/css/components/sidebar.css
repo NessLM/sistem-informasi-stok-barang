@@ -25,11 +25,27 @@ main.content {
     display: none;
 }
 
+/* Default (sidebar normal) → semua tampil */
+.sb-nav .sb-item summary span,
+.sb-nav .sb-item summary .caret,
+.sb-nav .sb-link span,
+.sb-nav .sb-children {
+    display: inline-block;
+}
+
+/* Collapse → sembunyikan teks & dropdown */
+.layout.is-collapsed .sb-nav .sb-item summary span,
+.layout.is-collapsed .sb-nav .sb-item summary .caret,
+.layout.is-collapsed .sb-link span,
+.layout.is-collapsed .sb-children {
+    display: none !important;
+}
+
 .layout.is-collapsed .sb-logout {
     font-size: 10px;
 }
 .layout.is-collapsed .sb-user {
-    margin-left: 15px;
+    margin-left: 10px;
 }
 
 .layout.is-collapsed .sb-brand .brand-img {
