@@ -9,8 +9,8 @@
         "Noto Color Emoji";
 }
 main.content {
-    flex: 1;
-    padding: 28px;
+    margin-left: 270px; /* default ketika sidebar normal */
+    transition: margin-left 0.3s ease;
 }
 .layout.is-collapsed aside.sb {
     width: 80px;
