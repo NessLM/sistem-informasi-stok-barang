@@ -21,7 +21,7 @@ class DashboardController extends Controller
                 ['label' => 'Gudang B Komputer',  'icon' => 'bi-grid', 'route' => 'staff.admin.dashboard'],
             ]],
 
-            ['label' => 'Riwayat',        'icon' => 'fa-clock-rotate-left', 'route' => 'staff.admin.dashboard'],
+            ['label' => 'Riwayat',        'icon' => 'bi-clock-history', 'route' => 'staff.admin.dashboard'],
             ['label' => 'Laporan',        'icon' => 'bi-file-earmark-bar-graph-fill', 'route' => 'staff.admin.dashboard'],
             ['label' => 'Data Pengguna',  'icon' => 'bi-people', 'route' => 'staff.admin.dashboard'],
         ];
