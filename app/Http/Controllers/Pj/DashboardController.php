@@ -16,7 +16,7 @@ class DashboardController extends Controller
                 ['label' => 'Gudang ATK',         'icon' => 'bi-grid', 'route' => 'staff.admin.dashboard'],
                 ['label' => 'Gudang B Komputer',  'icon' => 'bi-grid', 'route' => 'staff.admin.dashboard'],
             ]],
-            ['label' => 'Riwayat',        'icon' => 'bi-arrow-counterclockwise', 'route' => 'staff.admin.dashboard'],
+            ['label' => 'Riwayat',        'icon' => 'fa-light fa-clock-rotate-left', 'route' => 'staff.admin.dashboard'],
         ];
 
         return view('staff.pj.dashboard', compact('menu'));
