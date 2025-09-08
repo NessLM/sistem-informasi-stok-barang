@@ -1,7 +1,8 @@
-<x-layouts.app title="'Dashboard • Pembantu Bendahara'" :menu="$menu">
-    <header class="page"><h1>Dashboard</h1></header>
-    <section class="card">
-      <p>Selamat datang, {{ auth()->user()->nama }} — Anda masuk sebagai Pembantu Bendahara.</p>
-    </section>
-  </x-layouts.app>
-  
+<x-layouts.app title="'Dashboard • Pengelola Barang'" :menu="$menu">
+
+  <h1>Dashboard</h1>
+  <div class="card">
+    <p>Selamat datang, {{ auth()->user()->nama }} — Anda masuk sebagai Pengelola Barang.</p>
+  </div>
+
+</x-layouts.app>
