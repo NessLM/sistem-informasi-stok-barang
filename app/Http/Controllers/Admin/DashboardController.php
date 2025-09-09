@@ -35,3 +35,6 @@ class DashboardController extends Controller
         return view('staff.admin.dashboard', compact('menu', 'summary'));
     }
 }
+
+
+

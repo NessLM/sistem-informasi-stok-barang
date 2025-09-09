@@ -61,27 +61,27 @@
     <div class="sb-footer">
         {{-- === Identitas institusi di footer === --}}
         <div class="sb-org">
-          {{-- [OPSIONAL / TIDAK DIPAKAI SEKARANG] Ikon institusi --}}
-          {{-- <div class="org-logo">
-            <img src="{{ asset('assets/banner/sidebar/icon_polmanbabel.png') }}" alt="Polman Babel">
-          </div> --}}
-      
-          {{-- Teks institusi --}}
-          <div class="org-name">Polman Babel</div>
-          <hr>
+            {{-- Logo institusi (hanya tampil saat collapsed) --}}
+            <div class="org-logo">
+                <img src="{{ asset('assets/banner/sidebar/icon_polmanbabel.png') }}" alt="Polman Babel">
+            </div>
+
+            {{-- Teks institusi (hanya tampil saat expanded) --}}
+            <div class="org-name">Polman Babel</div>
+            <hr>
         </div>
-      
+
         {{-- Logout: expanded = teks saja, collapsed = ikon-only --}}
         <form method="POST" action="{{ route('logout') }}">
-          @csrf
-          <button class="sb-logout" type="submit">
-            <i class="bi bi-box-arrow-right"></i>
-            <span>Logout</span>
-          </button>
+            @csrf
+            <button class="sb-logout" type="submit">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Logout</span>
+            </button>
         </form>
-      </div>
-      
-    
-    
-    
+    </div>
+
+
+
+
 </aside>
