@@ -159,7 +159,12 @@ aside.sb {
     background: rgba(255, 255, 255, 0.12);
 }
 
-.sb-item .sb-link.is-active {
+/* ========================================================= */
+/* ===============  Tambahan kecil yang penting  =========== */
+/* ========================================================= */
+
+/* Anak submenu: pakai efek kartu yg sama dgn navbar active (tanpa ubah warna) */
+.sb-children .sb-link{
     color: #ffffff;
     font-weight: 100;
     margin: 1%;
@@ -170,7 +175,7 @@ aside.sb {
     transition: all 0.3s ease; /* biar smooth */
 }
 
-.sb-item .sb-link.is-active:hover {
+.sb-children .sb-link:hover{
     background: #ffffff;
     color: #0d5ba3;
 }
@@ -186,6 +191,7 @@ aside.sb {
 .sb-item details[open] .caret {
     transform: rotate(90deg);
 }
+
 .sb-children {
     display: grid;
     margin: 6px 0 6px 8px;
@@ -220,7 +226,6 @@ aside.sb {
     font-weight: 50;
     cursor: pointer;
 }
-
 .sb-logout:hover {
     filter: brightness(1.05);
 }
