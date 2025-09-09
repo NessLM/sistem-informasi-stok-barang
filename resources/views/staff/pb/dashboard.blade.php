@@ -2,7 +2,7 @@
 
   <h1>Dashboard</h1>
   <div class="card">
-    <p>Selamat datang, {{ auth()->user()->nama }} — Anda masuk sebagai Pengelola Barang.</p>
+    Selamat datang, <b>{{ auth()->user()->nama }}</b> — Anda masuk sebagai <b>Pengelola Barang.</b>
   </div>
 
 </x-layouts.app>
