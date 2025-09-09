@@ -242,7 +242,6 @@ aside.sb {
 
 /* Teks institusi (expanded & collapsed) */
 .sb-footer .org-name {
-    font-weight: 600;
     font-size: 12px;
     /* sedikit lebih kecil */
     letter-spacing: .2px;
