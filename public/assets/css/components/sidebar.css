@@ -201,31 +201,102 @@ aside.sb {
     border-radius: 8px;
 }
 
-/* Footer */
-.sb-footer {
-    padding: 20px;
-    border-top: 1px solid rgba(255, 255, 255, 0.15);
-}
-.sb-user {
+/* ===== Footer refined (expanded & collapsed) ===== */
+.sb-footer{
+    padding: 16px;
+    border-top: 1px solid rgba(255,255,255,.15);
     display: flex;
-    align-items: center;
-    gap: 20px;
-    font-weight: 300;
-    margin-bottom: 10px;
-}
-.sb-user .bi {
-    font-size: 20px;
-}
-.sb-logout {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  /* --- Identitas institusi --- */
+  .sb-footer .sb-org{ text-align: center; }
+  
+  /* Teks institusi (expanded & collapsed) */
+  .sb-footer .org-name{
+    font-weight: 600;
+    font-size: 12px;              /* sedikit lebih kecil */
+    letter-spacing: .2px;
+    color: #eaf2ff;
+  }
+  
+  /* ====================== MEN NEK DIPAKEK LOGO E, CUKUP BUET AD BAI BAGIAN BAWAH INI ===================== */
+  /* .sb-footer .org-logo img{
+    width: 22px; height: 22px; display: block; margin: 0 auto; opacity: .95;
+  }
+
+  .layout.is-collapsed .sb-footer .org-name{ display:none; }
+  .layout.is-collapsed .sb-footer .org-logo{ display:block; } */
+
+  /* ====================== MEN NEK DIPAKEK LOGO E, CUKUP BUET AD BAI BAGIAN ATAS INI ===================== */
+  
+  .sb-footer .sb-org hr{
+    border: 0; height: 1px; background: rgba(255,255,255,.35);
+    margin: 6px auto 0; width: 90%;
+  }
+  
+  /* --- Tombol Logout (expanded): putih, ikon + teks --- */
+  .sb-footer .sb-logout{
     width: 100%;
+    height: 44px;
     border: 0;
-    background: #c83535;
-    color: #fff;
-    border-radius: 10px;
-    height: 40px;
-    font-weight: 50;
+    border-radius: 14px;
+    background: #ffffff !important;   /* override tombol merah lama */
+    color: #1c4a66;
+    font-weight: 600;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
     cursor: pointer;
-}
-.sb-logout:hover {
-    filter: brightness(1.05);
-}
+    box-shadow: 0 6px 16px rgba(0,0,0,.12);
+    transition: transform .15s ease, filter .15s ease;
+    margin-inline: 0;
+  }
+  .sb-footer .sb-logout i{
+    font-size: 18px;                 /* "dikususkan"/lebih ramping */
+    transform: scale(.92);
+    line-height: 1;
+    color: #1c4a66;
+  }
+  .sb-footer .sb-logout:hover{
+    filter: brightness(.98);
+    transform: translateY(-1px);
+  }
+  
+  /* ===== Collapsed state ===== */
+  .layout.is-collapsed .sb-footer{
+    padding: 10px 8px;              /* rapat */
+    align-items: center;
+  }
+  
+  /* Collapsed: TETAP teks, bukan ikon (ikon tetap disembunyikan) */
+  .layout.is-collapsed .sb-footer .org-name{
+    display: block !important;      /* pastikan tampil */
+    font-size: 10px;                /* versi kecil */
+    opacity: .9;
+  }
+  
+  .layout.is-collapsed .sb-footer .sb-org hr{
+    width: 64%;
+    opacity: .55;
+    margin-top: 6px;
+  }
+  
+  /* Collapsed: logout ikon-only KECIL (tidak kebesaran) */
+  .layout.is-collapsed .sb-footer .sb-logout{
+    width: 44px;                    /* lebih kecil dari 64 → 44 */
+    height: 44px;                   /* kotak compact */
+    border-radius: 12px;
+    padding: 0;
+    gap: 0;
+    margin-inline: auto;            /* center */
+    box-shadow: 0 4px 12px rgba(0,0,0,.10); /* lebih ringan */
+  }
+  .layout.is-collapsed .sb-footer .sb-logout span{
+    display: none;                  /* sembunyikan label "Logout" */
+  }
+  .layout.is-collapsed .sb-footer .sb-logout i{
+    font-size: 17px;                /* ikon kecil & ramping */
+    transform: scale(.92);
+    line-height: 1;
+  }
+  
