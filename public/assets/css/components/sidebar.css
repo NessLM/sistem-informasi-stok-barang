@@ -221,22 +221,25 @@ aside.sb {
     color: #eaf2ff;
   }
   
-  /* ====================== MEN NEK DIPAKEK LOGO E, CUKUP BUET AD BAI BAGIAN BAWAH INI ===================== */
-  /* .sb-footer .org-logo img{
+  /* ======================
+     MEN NEK PAKAI LOGO, BUKA KOMENTAR DI BAWAH INI
+     (sekarang TIDAK dipakai → biarkan tetap dikomentari)
+     ====================== */
+  /*
+  .sb-footer .org-logo{ display:block; }
+  .sb-footer .org-logo img{
     width: 22px; height: 22px; display: block; margin: 0 auto; opacity: .95;
   }
-
   .layout.is-collapsed .sb-footer .org-name{ display:none; }
-  .layout.is-collapsed .sb-footer .org-logo{ display:block; } */
-
-  /* ====================== MEN NEK DIPAKEK LOGO E, CUKUP BUET AD BAI BAGIAN ATAS INI ===================== */
+  .layout.is-collapsed .sb-footer .org-logo{ display:block; }
+  */
   
   .sb-footer .sb-org hr{
     border: 0; height: 1px; background: rgba(255,255,255,.35);
     margin: 6px auto 0; width: 90%;
   }
   
-  /* --- Tombol Logout (expanded): putih, ikon + teks --- */
+  /* --- Tombol Logout (expanded): putih, HANYA TEKS --- */
   .sb-footer .sb-logout{
     width: 100%;
     height: 44px;
@@ -251,12 +254,13 @@ aside.sb {
     transition: transform .15s ease, filter .15s ease;
     margin-inline: 0;
   }
+  
+  /* EXPANDED: sembunyikan ikon → yang tampil hanya teks "Logout" */
   .sb-footer .sb-logout i{
-    font-size: 18px;                 /* "dikususkan"/lebih ramping */
-    transform: scale(.92);
-    line-height: 1;
-    color: #1c4a66;
+    display: none;                  /* <- kunci: hide icon di versi besar */
+    /* (styling ikon dipindah ke rule collapsed di bawah) */
   }
+  
   .sb-footer .sb-logout:hover{
     filter: brightness(.98);
     transform: translateY(-1px);
@@ -268,35 +272,38 @@ aside.sb {
     align-items: center;
   }
   
-  /* Collapsed: TETAP teks, bukan ikon (ikon tetap disembunyikan) */
+  /* Collapsed: tetap pakai TEKS "Polman Babel" (bukan ikon) */
   .layout.is-collapsed .sb-footer .org-name{
     display: block !important;      /* pastikan tampil */
     font-size: 10px;                /* versi kecil */
     opacity: .9;
   }
-  
   .layout.is-collapsed .sb-footer .sb-org hr{
     width: 64%;
     opacity: .55;
     margin-top: 6px;
   }
   
-  /* Collapsed: logout ikon-only KECIL (tidak kebesaran) */
+  /* Collapsed: logout ikon-only KECIL */
   .layout.is-collapsed .sb-footer .sb-logout{
-    width: 44px;                    /* lebih kecil dari 64 → 44 */
-    height: 44px;                   /* kotak compact */
+    width: 44px;                    /* compact */
+    height: 44px;                   /* compact */
     border-radius: 12px;
     padding: 0;
     gap: 0;
     margin-inline: auto;            /* center */
-    box-shadow: 0 4px 12px rgba(0,0,0,.10); /* lebih ringan */
+    box-shadow: 0 4px 12px rgba(0,0,0,.10);
   }
+  
+  /* Collapsed: sembunyikan TEKS, tampilkan IKON */
   .layout.is-collapsed .sb-footer .sb-logout span{
-    display: none;                  /* sembunyikan label "Logout" */
+    display: none;
   }
   .layout.is-collapsed .sb-footer .sb-logout i{
+    display: inline-block;          /* <- show icon khusus collapsed */
     font-size: 17px;                /* ikon kecil & ramping */
     transform: scale(.92);
     line-height: 1;
+    color: #1c4a66;
   }
   

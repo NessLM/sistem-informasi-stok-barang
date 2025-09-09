@@ -59,31 +59,28 @@
     </nav>
 
     <div class="sb-footer">
-      {{-- === Identitas institusi di footer === --}}
-      <div class="sb-org">
-        {{-- [OPSIONAL / TIDAK DIPAKAI SEKARANG]
-             Simpan ikon di sini kalau suatu saat ingin pakai ikon saat collapsed.
-             Untuk saat ini, ikon disembunyikan oleh CSS. --}}
-        {{-- <div class="org-logo">
-          <img src="{{ asset('assets/banner/sidebar/icon_polmanbabel.png') }}" alt="Polman Babel">
+        {{-- === Identitas institusi di footer === --}}
+        <div class="sb-org">
+          {{-- [OPSIONAL / TIDAK DIPAKAI SEKARANG] Ikon institusi --}}
+          {{-- <div class="org-logo">
+            <img src="{{ asset('assets/banner/sidebar/icon_polmanbabel.png') }}" alt="Polman Babel">
+          </div> --}}
+      
+          {{-- Teks institusi --}}
+          <div class="org-name">Polman Babel</div>
+          <hr>
         </div>
-     --}}
-
-     
-        {{-- Teks yang ditampilkan baik expanded maupun collapsed --}}
-        <div class="org-name">Polman Babel</div>
-        <hr>
+      
+        {{-- Logout: expanded = teks saja, collapsed = ikon-only --}}
+        <form method="POST" action="{{ route('logout') }}">
+          @csrf
+          <button class="sb-logout" type="submit">
+            <i class="bi bi-box-arrow-right"></i>
+            <span>Logout</span>
+          </button>
+        </form>
       </div>
-    
-      {{-- Tombol logout: expanded = ikon+teks, collapsed = ikon-only kecil --}}
-      <form method="POST" action="{{ route('logout') }}">
-        @csrf
-        <button class="sb-logout" type="submit">
-          <i class="bi bi-box-arrow-right"></i>
-          <span>Logout</span>
-        </button>
-      </form>
-    </div>
+      
     
     
     
