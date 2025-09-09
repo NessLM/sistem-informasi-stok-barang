@@ -67,7 +67,7 @@
             </div>
 
             {{-- Teks institusi (hanya tampil saat expanded) --}}
-            <div class="org-name">Polman Babel</div>
+            <div class="org-name">POLMAN BABEL</div>
             <hr>
         </div>
 
