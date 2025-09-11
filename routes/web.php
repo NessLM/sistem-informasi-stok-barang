@@ -63,8 +63,6 @@ Route::prefix('admin')->group(function () {
         ->name('staff.admin.datakeseluruhan');  // ✅ samakan dengan yang dipanggil di menu
 });
 
-use App\Http\Controllers\Admin\BarangController;
-
 Route::prefix('admin')->group(function () {
     Route::resource('barang', BarangController::class);
 });
