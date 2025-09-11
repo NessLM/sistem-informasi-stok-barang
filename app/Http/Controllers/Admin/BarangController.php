@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Barang;
 use App\Models\Kategori;
 use Illuminate\Http\Request;
+use App\Helpers\MenuHelper;
 
 class BarangController extends Controller
 {
@@ -22,12 +23,7 @@ class BarangController extends Controller
         }])->get();
 
         // NAMA RUTE konsisten pakai 'admin.*'
-        $menu = [
-            ['label' => 'Dashboard',        'icon' => 'bi-grid',      'route' => 'admin.dashboard'],
-            ['label' => 'Data Keseluruhan', 'icon' => 'bi-card-list', 'route' => 'admin.barang.index'], // halaman ini sendiri
-            ['label' => 'Riwayat',          'icon' => 'bi-clock-history', 'route' => 'admin.riwayat.index'],
-            ['label' => 'Data Pengguna',    'icon' => 'bi-people',    'route' => 'admin.users.index'],
-        ];
+        $menu = MenuHelper::adminMenu();
 
         return view('staff.admin.datakeseluruhan', compact('kategori', 'menu', 'search'));
     }

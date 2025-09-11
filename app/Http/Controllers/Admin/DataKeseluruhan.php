@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Kategori;
 use App\Models\Barang;
 use Illuminate\Http\Request;
+use App\Helpers\MenuHelper;
 
 class DataKeseluruhan extends Controller
 {
@@ -13,18 +14,7 @@ class DataKeseluruhan extends Controller
     {
         $kategori = Kategori::with('barang')->get();
 
-        $menu = [
-            ['label' => 'Dashboard', 'icon' => 'bi-grid', 'route' => 'admin.dashboard'],
-            ['label' => 'Data Keseluruhan', 'icon' => 'bi-card-list', 'children' => [
-                ['label' => 'Gudang ATK',        'icon' => 'bi-grid', 'route' => 'admin.datakeseluruhan.atk'],
-                ['label' => 'Gudang Listrik',    'icon' => 'bi-grid', 'route' => 'admin.datakeseluruhan.listrik'],
-                ['label' => 'Gudang Kebersihan', 'icon' => 'bi-grid', 'route' => 'admin.datakeseluruhan.kebersihan'],
-                ['label' => 'Gudang B Komputer', 'icon' => 'bi-grid', 'route' => 'admin.datakeseluruhan.komputer'],
-            ]],
-            ['label' => 'Riwayat',       'icon' => 'bi-clock-history', 'route' => 'admin.riwayat.index'],
-            ['label' => 'Laporan',       'icon' => 'bi-file-earmark-bar-graph-fill', 'route' => 'admin.dashboard'],
-            ['label' => 'Data Pengguna', 'icon' => 'bi-people', 'route' => 'admin.users.index'],
-        ];
+        $menu = MenuHelper::adminMenu();
 
         return view('staff.admin.datakeseluruhan', compact('kategori', 'menu'));
     }
