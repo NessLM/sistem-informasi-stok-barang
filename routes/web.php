@@ -60,5 +60,87 @@ Route::get('/barang/create', [BarangController::class, 'create'])->name('barang.
 Route::post('/barang/store', [BarangController::class, 'store'])->name('barang.store');
 
 
+Route::prefix('admin')->middleware(['auth', 'role:Admin'])->group(function () {
+    Route::get('/datakeseluruhan', [DataKeseluruhan::class, 'index'])->name('staff.admin.datakeseluruhan');
+    Route::post('/datakeseluruhan/kategori', [DataKeseluruhan::class, 'store'])->name('staff.admin.kategori.store');
+});
+
+use App\Http\Controllers\Admin\JenisBarangController;
+
+Route::prefix('admin')->middleware(['auth', 'role:Admin'])->group(function () {
+    Route::post('/datakeseluruhan/jenisbarang', [JenisBarangController::class, 'store'])
+        ->name('staff.admin.jenisbarang.store');
+});
 
 
+Route::prefix('admin')->middleware(['auth', 'role:Admin'])->group(function () {
+    Route::get('/datakeseluruhan', [DataKeseluruhan::class, 'index'])->name('staff.admin.datakeseluruhan');
+
+    // Tambah kategori
+    Route::post('/datakeseluruhan/kategori', [DataKeseluruhan::class, 'store'])->name('staff.admin.kategori.store');
+
+    // Tambah jenis barang
+    Route::post('/datakeseluruhan/jenis', [DataKeseluruhan::class, 'storeJenis'])
+        ->name('staff.admin.jenis.store');
+    // Atau jika pakai JenisBarangController terpisah:
+    // Route::post('/datakeseluruhan/jenis', [JenisBarangController::class, 'store'])->name('staff.admin.jenis.store');
+});
+
+
+Route::prefix('admin')->middleware(['auth', 'role:Admin'])->group(function () {
+    Route::get('/datakeseluruhan', [DataKeseluruhan::class, 'index'])
+        ->name('staff.admin.datakeseluruhan');
+
+    Route::post('/datakeseluruhan/kategori', [DataKeseluruhan::class, 'store'])
+        ->name('staff.admin.kategori.store');
+
+    Route::post('/datakeseluruhan/jenis', [DataKeseluruhan::class, 'storeJenis'])
+        ->name('staff.admin.jenis.store');
+});
+
+
+Route::prefix('admin')->middleware(['auth', 'role:Admin'])->group(function () {
+    Route::get('/datakeseluruhan', [DataKeseluruhan::class, 'index'])
+        ->name('staff.admin.datakeseluruhan');
+
+    Route::post('/datakeseluruhan/kategori', [DataKeseluruhan::class, 'store'])
+        ->name('staff.admin.kategori.store');
+
+    Route::post('/datakeseluruhan/jenis', [DataKeseluruhan::class, 'storeJenis'])
+        ->name('staff.admin.jenis.store');
+});
+
+Route::prefix('admin')->middleware(['auth', 'role:Admin'])->group(function () {
+    Route::post('/barang', [BarangController::class, 'store'])->name('staff.admin.barang.store');
+});
+
+Route::prefix('admin')->middleware(['auth', 'role:Admin'])->group(function () {
+    Route::get('/datakeseluruhan', [DataKeseluruhan::class, 'index'])->name('staff.admin.datakeseluruhan');
+
+    Route::post('/datakeseluruhan/kategori', [DataKeseluruhan::class, 'storeKategori'])->name('staff.admin.kategori.store');
+    Route::post('/datakeseluruhan/barang', [DataKeseluruhan::class, 'storeBarang'])->name('staff.admin.barang.store');
+});
+
+Route::prefix('admin')->middleware(['auth', 'role:Admin'])->group(function () {
+    Route::get('/datakeseluruhan', [DataKeseluruhan::class, 'index'])->name('staff.admin.datakeseluruhan');
+    Route::post('/datakeseluruhan/kategori', [DataKeseluruhan::class, 'storeKategori'])->name('staff.admin.kategori.store');
+    Route::post('/datakeseluruhan/barang', [DataKeseluruhan::class, 'storeBarang'])->name('staff.admin.barang.store');
+});
+
+Route::prefix('staff/admin')->name('staff.admin.')->group(function () {
+    Route::resource('barang', BarangController::class);
+});
+
+
+Route::prefix('admin')->group(function () {
+    Route::resource('barang', \App\Http\Controllers\Admin\BarangController::class);
+});
+Route::get('/admin/datakeseluruhan', [\App\Http\Controllers\Admin\BarangController::class, 'index'])
+    ->name('barang.index');
+
+
+Route::prefix('admin')->group(function () {
+    Route::get('/datakeseluruhan', [BarangController::class, 'index'])->name('barang.index');
+    Route::post('/barang', [BarangController::class, 'store'])->name('barang.store');
+    Route::delete('/barang/{kode}', [BarangController::class, 'destroy'])->name('barang.destroy');
+});
