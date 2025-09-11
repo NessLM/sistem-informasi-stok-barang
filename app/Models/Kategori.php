@@ -9,9 +9,8 @@ class Kategori extends Model
     protected $table = 'kategoris';
     protected $fillable = ['nama'];
 
-    // Relasi: 1 kategori punya banyak jenis barang
-    public function jenisBarang()
+    public function barang()
     {
-        return $this->hasMany(JenisBarang::class, 'kategori_id', 'id');
+        return $this->hasMany(Barang::class, 'kategori_id', 'id');
     }
 }

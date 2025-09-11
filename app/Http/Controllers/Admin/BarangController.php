@@ -4,61 +4,58 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Barang;
-use App\Models\Kategori;   // 🔹 ubah: pakai Kategori
+use App\Models\Kategori;
 use Illuminate\Http\Request;
 
 class BarangController extends Controller
 {
-    // helper untuk menu sidebar (supaya tidak duplikasi)
-    protected function sidebarMenu()
+    public function index(Request $request)
     {
-        return [
-            ['label' => 'Dashboard', 'icon' => 'bi-grid', 'route' => 'staff.admin.dashboard'],
-            ['label' => 'Data Keseluruhan', 'icon' => 'bi-card-list', 'children' => [
-                ['label' => 'Gudang ATK',        'icon' => 'bi-grid', 'route' => 'admin.datakeseluruhan'],
-                ['label' => 'Gudang Listrik',    'icon' => 'bi-grid', 'route' => 'admin.datakeseluruhan'],
-                ['label' => 'Gudang Kebersihan', 'icon' => 'bi-grid', 'route' => 'admin.datakeseluruhan'],
-                ['label' => 'Gudang B Komputer', 'icon' => 'bi-grid', 'route' => 'admin.datakeseluruhan'],
-            ]],
-            ['label' => 'Riwayat', 'icon' => 'bi-clock-history', 'route' => 'staff.admin.dashboard'],
-            ['label' => 'Laporan', 'icon' => 'bi-file-earmark-bar-graph-fill', 'route' => 'staff.admin.dashboard'],
-            ['label' => 'Data Pengguna', 'icon' => 'bi-people', 'route' => 'staff.admin.dashboard'],
+        $search = $request->input('search');
+
+        $kategori = Kategori::with(['barang' => function($q) use ($search) {
+            if ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('kode', 'like', "%{$search}%");
+            }
+        }])->get();
+
+        $menu = [
+            ['label' => 'Dashboard', 'icon' => 'bi-grid', 'route' => 'admin.dashboard'],
+            ['label' => 'Data Keseluruhan', 'icon' => 'bi-card-list', 'route' => 'barang.index'],
         ];
+
+        return view('staff.admin.datakeseluruhan', compact('kategori', 'menu', 'search'));
     }
 
-    // form tambah barang
-    public function create()
-    {
-        $menu = $this->sidebarMenu();
-        $kategori = Kategori::all(); // 🔹 ubah: ambil kategori, bukan jenis barang
-        return view('staff.admin.create', compact('kategori', 'menu'));
-    }
-
-    // simpan barang
     public function store(Request $request)
     {
         $request->validate([
+            'kode'        => 'required|string|max:100|unique:barangs,kode',
             'nama'        => 'required|string|max:255',
-            'kode'        => 'required|string|max:50',
-            'harga'       => 'required|numeric',
-            'stok'        => 'required|integer',
-            'satuan'      => 'required|string|max:50',
-            'kategori_id' => 'required|exists:kategori,id', // 🔹 ubah: validasi kategori_id
+            'harga'       => 'nullable|numeric|min:0',
+            'stok'        => 'nullable|integer|min:0',
+            'satuan'      => 'nullable|string|max:50',
+            'kategori_id' => 'required|exists:kategoris,id',
         ]);
 
-        Barang::create($request->only(['nama','kode','harga','stok','satuan','kategori_id'])); // 🔹 simpan kategori_id
+        Barang::create([
+            'kode'        => $request->kode,
+            'nama'        => $request->nama,
+            'harga'       => $request->harga ?? 0,
+            'stok'        => $request->stok ?? 0,
+            'satuan'      => $request->satuan,
+            'kategori_id' => $request->kategori_id,
+        ]);
 
-        // redirect kembali ke form create
-        return redirect()->route('barang.create')->with('success', 'Barang berhasil ditambahkan!');
+        return redirect()->route('barang.index')->with('success', 'Barang berhasil ditambahkan!');
     }
 
-    // contoh index juga kirim menu
-    public function index()
+    public function destroy($kode)
     {
-        $menu = $this->sidebarMenu();
-        $barang = Barang::with('kategori')->get(); // 🔹 ubah: relasi kategori, bukan jenisBarang
-        return view('staff.admin.index', compact('barang', 'menu'));
-    }
+        $barang = Barang::findOrFail($kode);
+        $barang->delete();
 
-    // edit/update/destroy => kalau render view, jangan lupa kirim $menu juga
+        return redirect()->route('barang.index')->with('success', 'Barang berhasil dihapus!');
+    }
 }

@@ -6,11 +6,22 @@ use Illuminate\Database\Eloquent\Model;
 
 class Barang extends Model
 {
-    protected $table = 'barang';
-    protected $fillable = ['nama', 'kode', 'harga', 'stok', 'satuan', 'jenis_barang_id'];
+    protected $table = 'barangs';
+    protected $primaryKey = 'kode';   // kode sebagai PK
+    public $incrementing = false;     // bukan auto increment
+    protected $keyType = 'string';
 
-    public function jenisBarang()
+    protected $fillable = [
+        'kode',
+        'nama',
+        'harga',
+        'stok',
+        'satuan',
+        'kategori_id',
+    ];
+
+    public function kategori()
     {
-        return $this->belongsTo(JenisBarang::class, 'jenis_barang_id');
+        return $this->belongsTo(Kategori::class, 'kategori_id');
     }
 }
