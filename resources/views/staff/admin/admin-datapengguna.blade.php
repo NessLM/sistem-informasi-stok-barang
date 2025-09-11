@@ -1,5 +1,5 @@
 <x-layouts.app title="Data Pengguna" :menu="$menu">
-  <div class="page-body"> {{-- 🔑 kasih padding 15px --}}
+  <div class="page-body"> 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <a href="{{ route('admin.users.create') }}" class="btn btn-add-user">+ Tambah Pengguna</a>
     </div>
