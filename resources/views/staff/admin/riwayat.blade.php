@@ -30,7 +30,7 @@
                                 </select>
                                 
                                 <!-- Reset Button -->
-                                <a href="{{ route('riwayat.index') }}" class="btn btn-outline-secondary">Reset</a>
+                                <a href="{{ route('admin.riwayat.index') }}" class="btn btn-outline-secondary">Reset</a>
                             </div>
                         </form>
                     </div>

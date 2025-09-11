@@ -51,6 +51,6 @@ class RiwayatController extends Controller
             ['label' => 'Data Pengguna',  'icon' => 'bi-people', 'route' => 'admin.users.index'],
         ];
 
-        return view('staff.pj.riwayat', compact('riwayat', 'menu'));
+        return view('staff.admin.riwayat', compact('riwayat', 'menu'));
     }
 }
