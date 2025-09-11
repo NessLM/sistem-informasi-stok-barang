@@ -1,6 +1,6 @@
 /* ==== CONTENT AREA ==== */
 .content {
-    margin-left: 260px; /* biar ga ketutup sidebar */
+    margin-left: 240px; /* biar ga ketutup sidebar */
     padding: 30px;
     background: #f5f7fb;
     min-height: 100vh;
@@ -21,6 +21,7 @@
     padding: 20px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     border: 1px solid #e5e9f2;
+    margin-top: 20px;
 }
 
 /* ==== TABLE STYLE ==== */
@@ -89,12 +90,16 @@
 .btn-add-user {
     background: #2072b7; /* biru */
     border: none;
-    color: #fff; /* tulisan putih */
+    color: #fff; /* teks putih */
     font-weight: 600;
     border-radius: 8px;
     padding: 8px 18px;
+    margin-top: 5px; /* kasih spasi kecil dari atas */
     transition: background 0.2s;
+    text-decoration: none; /* 🔑 Hapus underline */
+    display: inline-block; /* biar properti tombol rapi */
 }
+
 .btn-add-user:hover {
     background: #185b91; /* biru lebih gelap saat hover */
     color: #fff;
