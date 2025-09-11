@@ -13,7 +13,7 @@ class RiwayatSeeder extends Seeder
     {
         $data = [
             [
-                'tanggal' => '2025-08-10',
+                'tanggal' => '2025-09-10',
                 'waktu' => '10:20:00',
                 'nama_barang' => 'Boldliner',
                 'jumlah' => 20,
@@ -41,7 +41,7 @@ class RiwayatSeeder extends Seeder
                 'jumlah' => 10,
                 'bagian' => 'Bagian Umum',
                 'bukti' => true,
-                'alur_barang' => 'Keluar',
+                'alur_barang' => 'Masuk',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

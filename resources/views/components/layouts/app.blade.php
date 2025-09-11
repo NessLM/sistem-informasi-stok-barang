@@ -20,6 +20,7 @@
   <link rel="stylesheet" href="{{ asset('assets/css/components/sidebar.css') }}">
   
   <link rel="stylesheet" href="{{ asset('assets/css/staff/admin/datapengguna-admin.css') }}">
+ <link rel="stylesheet" href="{{ asset('assets/css/staff/admin/riwayat.css') }}">
   {{-- halaman tertentu boleh push CSS sendiri dari slot --}}
 
   <style>

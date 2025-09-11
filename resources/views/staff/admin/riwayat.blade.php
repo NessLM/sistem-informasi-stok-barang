@@ -1,48 +1,50 @@
 {{-- resources/views/staff/pj/riwayat.blade.php --}}
 
 <x-layouts.app title="Riwayat" :menu="$menu">
-    <div class="container-fluid">
-        <h1 class="mb-4">Filter Data</h1>
+    @push('styles')
+        <link rel="stylesheet" href="{{ asset('css/riwayat.css') }}">
+    @endpush
+
+    <div class="container-fluid riwayat-container">
         
         <!-- Filter Section -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <div class="row align-items-center">
-                    <div class="col-md-6">
-                        <h5 class="card-title mb-0">Keluaran</h5>
+        <div class="card riwayat-filter-card mb-4">
+            <div class="riwayat-filter-header">
+                <h5 class="riwayat-filter-title mb-0">Filter Data</h5>
+            </div>
+            <div class="card-body riwayat-filter-body">
+                <form id="filterForm" class="riwayat-filter-form">
+                    <div class="riwayat-filter-group">
+                        <label class="riwayat-filter-label">Alur Barang</label>
+                        <select name="alur_barang" class="form-select riwayat-filter-select" onchange="this.form.submit()">
+                            <option value="Semua" {{ request('alur_barang') == 'Semua' ? 'selected' : '' }}>Semua</option>
+                            <option value="Keluar" {{ request('alur_barang') == 'Keluar' ? 'selected' : '' }}>Keluar</option>
+                            <option value="Masuk" {{ request('alur_barang') == 'Masuk' ? 'selected' : '' }}>Masuk</option>
+                        </select>
                     </div>
-                    <div class="col-md-6 text-end">
-                        <form id="filterForm" class="d-inline-block">
-                            <div class="btn-group">
-                                <!-- Alur Barang Filter -->
-                                <select name="alur_barang" class="form-select me-2" onchange="this.form.submit()">
-                                    <option value="Semua" {{ request('alur_barang') == 'Semua' ? 'selected' : '' }}>Semua</option>
-                                    <option value="Keluar" {{ request('alur_barang') == 'Keluar' ? 'selected' : '' }}>Keluar</option>
-                                    <option value="Masuk" {{ request('alur_barang') == 'Masuk' ? 'selected' : '' }}>Masuk</option>
-                                </select>
-                                
-                                <!-- Periode Filter -->
-                                <select name="periode" class="form-select me-2" onchange="this.form.submit()">
-                                    <option value="">Pilih Periode</option>
-                                    <option value="1_minggu_terakhir" {{ request('periode') == '1_minggu_terakhir' ? 'selected' : '' }}>1 Minggu Terakhir</option>
-                                    <option value="1_bulan_terakhir" {{ request('periode') == '1_bulan_terakhir' ? 'selected' : '' }}>1 Bulan Terakhir</option>
-                                    <option value="1_tahun_terakhir" {{ request('periode') == '1_tahun_terakhir' ? 'selected' : '' }}>1 Tahun Terakhir</option>
-                                </select>
-                                
-                                <!-- Reset Button -->
-                                <a href="{{ route('admin.riwayat.index') }}" class="btn btn-outline-secondary">Reset</a>
-                            </div>
-                        </form>
+                    
+                    <div class="riwayat-filter-group">
+                        <label class="riwayat-filter-label">Periode Waktu</label>
+                        <select name="periode" class="form-select riwayat-filter-select" onchange="this.form.submit()">
+                            <option value="">Pilih Periode</option>
+                            <option value="1_minggu_terakhir" {{ request('periode') == '1_minggu_terakhir' ? 'selected' : '' }}>1 Minggu Terakhir</option>
+                            <option value="1_bulan_terakhir" {{ request('periode') == '1_bulan_terakhir' ? 'selected' : '' }}>1 Bulan Terakhir</option>
+                            <option value="1_tahun_terakhir" {{ request('periode') == '1_tahun_terakhir' ? 'selected' : '' }}>1 Tahun Terakhir</option>
+                        </select>
                     </div>
-                </div>
+                    
+                    <a href="{{ route('admin.riwayat.index') }}" class="btn riwayat-btn-reset">
+                        <i class="bi bi-arrow-clockwise me-2"></i>Reset
+                    </a>
+                </form>
             </div>
         </div>
 
         <!-- Table Section -->
-        <div class="card">
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
+        <div class="card riwayat-table-card">
+            <div class="card-body p-0">
+                <div class="riwayat-table-container">
+                    <table class="table table-striped table-hover riwayat-table mb-0">
                         <thead>
                             <tr>
                                 <th>No</th>
@@ -58,28 +60,31 @@
                         <tbody>
                             @forelse($riwayat as $index => $item)
                                 <tr>
-                                    <td>{{ $index + 1 }}</td>
+                                    <td class="fw-semibold">{{ $index + 1 }}</td>
                                     <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
                                     <td>{{ \Carbon\Carbon::parse($item->waktu)->format('H.i') }} WIB</td>
-                                    <td>{{ $item->nama_barang }}</td>
-                                    <td>{{ $item->jumlah }}</td>
+                                    <td class="fw-medium">{{ $item->nama_barang }}</td>
+                                    <td><span class="badge bg-secondary">{{ $item->jumlah }}</span></td>
                                     <td>{{ $item->bagian }}</td>
                                     <td>
                                         @if($item->bukti)
-                                            <span class="text-success">✅</span>
+                                            <span class="text-success riwayat-status-icon">✅</span>
                                         @else
-                                            <span class="text-danger">❌</span>
+                                            <span class="text-danger riwayat-status-icon">❌</span>
                                         @endif
                                     </td>
                                     <td>
-                                        <span class="badge {{ $item->alur_barang == 'Keluar' ? 'bg-danger' : 'bg-success' }}">
+                                        <span class="riwayat-badge {{ $item->alur_barang == 'Keluar' ? 'riwayat-badge-keluar' : 'riwayat-badge-masuk' }}">
                                             {{ $item->alur_barang }}
                                         </span>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8" class="text-center">Tidak ada data ditemukan</td>
+                                    <td colspan="8" class="riwayat-empty-state">
+                                        <i class="bi bi-inbox"></i>
+                                        <p>Tidak ada data ditemukan</p>
+                                    </td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -88,43 +93,30 @@
             </div>
         </div>
     </div>
-    
-    @push('styles')
-        <style>
-            .card {
-                border: none;
-                border-radius: 10px;
-                box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-            }
-            
-            .card-title {
-                font-weight: 600;
-                color: #333;
-            }
-            
-            .table th {
-                background-color: #f8f9fa;
-                font-weight: 600;
-                border-top: none;
-            }
-            
-            .badge {
-                font-size: 0.85em;
-                padding: 0.5em 0.75em;
-            }
-            
-            .bg-danger {
-                background-color: #dc3545 !important;
-            }
-            
-            .bg-success {
-                background-color: #198754 !important;
-            }
-            
-            .form-select {
-                width: auto;
-                display: inline-block;
-            }
-        </style>
+
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const filterForm = document.getElementById('filterForm');
+                const selects = filterForm.querySelectorAll('select');
+                
+                selects.forEach(select => {
+                    select.addEventListener('change', function() {
+                        const table = document.querySelector('.riwayat-table');
+                        table.classList.add('riwayat-loading');
+                        
+                        setTimeout(() => {
+                            filterForm.submit();
+                        }, 300);
+                    });
+                });
+                
+                // Highlight active filters
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('alur_barang') || urlParams.get('periode')) {
+                    document.querySelector('.riwayat-btn-filter').classList.add('active');
+                }
+            });
+        </script>
     @endpush
 </x-layouts.app>
