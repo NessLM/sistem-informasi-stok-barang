@@ -21,7 +21,7 @@ class UserController extends Controller
                 ['label' => 'Gudang Kebersihan',  'icon' => 'bi-grid', 'route' => 'admin.datakeseluruhan'],
                 ['label' => 'Gudang B Komputer',  'icon' => 'bi-grid', 'route' => 'admin.datakeseluruhan'],
             ]],
-            ['label' => 'Riwayat',        'icon' => 'bi-clock-history', 'route' => 'admin.dashboard'],
+            ['label' => 'Riwayat',        'icon' => 'bi-clock-history', 'route' => 'admin.riwayat.index'],
             ['label' => 'Laporan',        'icon' => 'bi-file-earmark-bar-graph-fill', 'route' => 'admin.dashboard'],
             ['label' => 'Data Pengguna',  'icon' => 'bi-people', 'route' => 'admin.users.index'],
         ];
