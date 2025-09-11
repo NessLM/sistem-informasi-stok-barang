@@ -18,10 +18,10 @@ class DashboardController extends Controller
                 'label' => 'Data Keseluruhan',
                 'icon' => 'bi-card-list',
                 'children' => [
-                    ['label' => 'Gudang ATK', 'icon' => 'bi-grid', 'route' => 'staff.admin.dashboard'],
-                    ['label' => 'Gudang Listrik', 'icon' => 'bi-grid', 'route' => 'staff.admin.dashboard'],
-                    ['label' => 'Gudang Kebersihan', 'icon' => 'bi-grid', 'route' => 'staff.admin.dashboard'],
-                    ['label' => 'Gudang B Komputer', 'icon' => 'bi-grid', 'route' => 'staff.admin.dashboard'],
+                    ['label' => 'Gudang ATK', 'icon' => 'bi-grid', 'route' => 'staff.admin.datakeseluruhan'],
+                    ['label' => 'Gudang Listrik', 'icon' => 'bi-grid', 'route' => 'staff.admin.datakeseluruhan'],
+                    ['label' => 'Gudang Kebersihan', 'icon' => 'bi-grid', 'route' => 'staff.admin.datakeseluruhan'],
+                    ['label' => 'Gudang B Komputer', 'icon' => 'bi-grid', 'route' => 'staff.admin.datakeseluruhan'],
                 ]
             ],
 
