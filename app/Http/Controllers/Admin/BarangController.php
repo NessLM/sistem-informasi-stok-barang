@@ -13,16 +13,20 @@ class BarangController extends Controller
     {
         $search = $request->input('search');
 
-        $kategori = Kategori::with(['barang' => function($q) use ($search) {
+        // Eager load barang per kategori + filter jika ada pencarian
+        $kategori = Kategori::with(['barang' => function ($q) use ($search) {
             if ($search) {
                 $q->where('nama', 'like', "%{$search}%")
                   ->orWhere('kode', 'like', "%{$search}%");
             }
         }])->get();
 
+        // NAMA RUTE konsisten pakai 'admin.*'
         $menu = [
-            ['label' => 'Dashboard', 'icon' => 'bi-grid', 'route' => 'admin.dashboard'],
-            ['label' => 'Data Keseluruhan', 'icon' => 'bi-card-list', 'route' => 'barang.index'],
+            ['label' => 'Dashboard',        'icon' => 'bi-grid',      'route' => 'admin.dashboard'],
+            ['label' => 'Data Keseluruhan', 'icon' => 'bi-card-list', 'route' => 'admin.barang.index'], // halaman ini sendiri
+            ['label' => 'Riwayat',          'icon' => 'bi-clock-history', 'route' => 'admin.riwayat.index'],
+            ['label' => 'Data Pengguna',    'icon' => 'bi-people',    'route' => 'admin.users.index'],
         ];
 
         return view('staff.admin.datakeseluruhan', compact('kategori', 'menu', 'search'));
@@ -30,13 +34,14 @@ class BarangController extends Controller
 
     public function store(Request $request)
     {
+        // Perhatikan nama tabel di rule: model Barang -> $table = 'barang'
         $request->validate([
-            'kode'        => 'required|string|max:100|unique:barangs,kode',
+            'kode'        => 'required|string|max:100|unique:barang,kode',
             'nama'        => 'required|string|max:255',
             'harga'       => 'nullable|numeric|min:0',
             'stok'        => 'nullable|integer|min:0',
             'satuan'      => 'nullable|string|max:50',
-            'kategori_id' => 'required|exists:kategoris,id',
+            'kategori_id' => 'required|exists:kategori,id',
         ]);
 
         Barang::create([
@@ -48,7 +53,8 @@ class BarangController extends Controller
             'kategori_id' => $request->kategori_id,
         ]);
 
-        return redirect()->route('barang.index')->with('success', 'Barang berhasil ditambahkan!');
+        return redirect()->route('admin.barang.index')
+                         ->with('success', 'Barang berhasil ditambahkan!');
     }
 
     public function destroy($kode)
@@ -56,6 +62,7 @@ class BarangController extends Controller
         $barang = Barang::findOrFail($kode);
         $barang->delete();
 
-        return redirect()->route('barang.index')->with('success', 'Barang berhasil dihapus!');
+        return redirect()->route('admin.barang.index')
+                         ->with('success', 'Barang berhasil dihapus!');
     }
 }

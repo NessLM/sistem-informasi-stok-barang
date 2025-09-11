@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Barang extends Model
 {
-    protected $table = 'barangs';
+    protected $table = 'barang';
     protected $primaryKey = 'kode';   // kode sebagai PK
     public $incrementing = false;     // bukan auto increment
     protected $keyType = 'string';

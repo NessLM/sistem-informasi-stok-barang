@@ -64,7 +64,7 @@ class UserSeeder extends Seeder
             [
                 'nama'    => $pjName1,
                 'password'=> $pjPass1,             // atau Hash::make($pjPass)
-                'role'    => 'Penanggung Jawab1',
+                'role'    => 'Penanggung Jawab',
                 'bagian'  => 'Operasional',
             ]
         );
@@ -75,7 +75,7 @@ class UserSeeder extends Seeder
             [
                 'nama'    => $pjName2,
                 'password'=> $pjPass2,             // atau Hash::make($pjPass)
-                'role'    => 'Penanggung Jawab2',
+                'role'    => 'Penanggung Jawab',
                 'bagian'  => 'Operasional',
             ]
         );
@@ -86,7 +86,7 @@ class UserSeeder extends Seeder
             [
                 'nama'    => $pjName3,
                 'password'=> $pjPass3,             // atau Hash::make($pjPass)
-                'role'    => 'Penanggung Jawab3',
+                'role'    => 'Penanggung Jawab',
                 'bagian'  => 'Operasional',
             ]
         );
@@ -97,7 +97,7 @@ class UserSeeder extends Seeder
             [
                 'nama'    => $pjName4,
                 'password'=> $pjPass4,             // atau Hash::make($pjPass)
-                'role'    => 'Penanggung Jawab4',
+                'role'    => 'Penanggung Jawab',
                 'bagian'  => 'Operasional',
             ]
         );

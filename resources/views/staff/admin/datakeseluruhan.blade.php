@@ -41,7 +41,7 @@
         </div>
 
         {{-- Search box --}}
-        <form action="{{ route('barang.index') }}" method="GET" class="input-group mt-3 mb-3">
+        <form action="{{ route('admin.barang.index') }}" method="GET" class="input-group mt-3 mb-3">
             <span class="input-group-text"><i class="bi bi-search"></i></span>
             <input type="text" name="search" class="form-control" placeholder="Telusuri barang"
                    value="{{ request('search') }}">
@@ -177,7 +177,7 @@
 <!-- Modal Tambah Kategori -->
 <div class="modal fade" id="modalTambahKategori" tabindex="-1">
   <div class="modal-dialog">
-    <form action="{{ route('staff.admin.kategori.store') }}" method="POST" class="modal-content">
+    <form action="{{ route('admin.kategori.store') }}" method="POST" class="modal-content">
       @csrf
       <div class="modal-header">
         <h5 class="modal-title">Form Tambah Kategori</h5>
@@ -197,7 +197,7 @@
 <!-- Modal Tambah Barang -->
 <div class="modal fade" id="modalTambahBarang" tabindex="-1">
   <div class="modal-dialog modal-lg">
-    <form action="{{ route('barang.store') }}" method="POST" class="modal-content">
+    <form action="{{ route('admin.barang.store') }}" method="POST" class="modal-content">
       @csrf
       <div class="modal-header">
         <h5 class="modal-title">Form Tambah Barang</h5>

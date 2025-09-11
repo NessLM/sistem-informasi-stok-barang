@@ -33,7 +33,7 @@
                         </select>
                     </div>
                     
-                    <a href="{{ route('admin.riwayat.index') }}" class="btn riwayat-btn-reset">
+                    <a href="{{ route('staff.admin.riwayat.index') }}" class="btn riwayat-btn-reset">
                         <i class="bi bi-arrow-clockwise me-2"></i>Reset
                     </a>
                 </form>

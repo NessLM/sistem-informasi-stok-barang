@@ -13,7 +13,7 @@ return new class extends Migration {
             // foreign key ke tabel kategoris
             $table->foreign('kategori_id')
                   ->references('id')
-                  ->on('kategoris')
+                  ->on('kategori')
                   ->onDelete('cascade');
         });
     }
