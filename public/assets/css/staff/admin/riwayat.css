@@ -1,0 +1,262 @@
+/* public/css/riwayat.css */
+
+.riwayat-container {
+    padding: 20px;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+.riwayat-header {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.riwayat-filter-card {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+.riwayat-filter-header {
+    background: linear-gradient(135deg, #4e73df 0%, #2a3f9d 100%);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px 8px 0 0;
+}
+
+.riwayat-filter-title {
+    font-weight: 600;
+    font-size: 1.2rem;
+    margin-bottom: 0;
+    color: white;
+}
+
+.riwayat-filter-body {
+    padding: 20px;
+}
+
+.riwayat-filter-form {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.riwayat-filter-group {
+    display: flex;
+    flex-direction: column;
+    min-width: 180px;
+}
+
+.riwayat-filter-label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #2c3e50;
+    margin-bottom: 6px;
+}
+
+.riwayat-filter-select {
+    border: 2px solid #e9ecef;
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    background-color: white;
+}
+
+.riwayat-filter-select:focus {
+    border-color: #4e73df;
+    box-shadow: 0 0 0 3px rgba(78, 115, 223, 0.15);
+    outline: none;
+}
+
+.riwayat-btn-reset {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    border: none;
+    border-radius: 6px;
+    padding: 10px 20px;
+    color: white;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    margin-top: 24px;
+    align-self: flex-end;
+}
+
+.riwayat-btn-reset:hover {
+    background: linear-gradient(135deg, #495057 0%, #6c757d 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.riwayat-table-card {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    background: white;
+}
+
+.riwayat-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 0;
+}
+
+.riwayat-table th {
+    background: linear-gradient(135deg, #4e73df 0%, #2a3f9d 100%);
+    color: white;
+    font-weight: 600;
+    padding: 15px 12px;
+    text-align: left;
+    border: none;
+    position: sticky;
+    top: 0;
+}
+
+.riwayat-table td {
+    padding: 12px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+}
+
+.riwayat-table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.riwayat-table tbody tr:hover {
+    background-color: #f8f9fa;
+    transform: translateX(4px);
+}
+
+.riwayat-badge {
+    font-size: 0.8em;
+    padding: 0.5em 0.8em;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.riwayat-badge-keluar {
+    background: linear-gradient(135deg, #e74a3b 0%, #be2617 100%);
+    color: white;
+}
+
+.riwayat-badge-masuk {
+    background: linear-gradient(135deg, #1cc88a 0%, #13855c 100%);
+    color: white;
+}
+
+.riwayat-status-icon {
+    font-size: 1.3rem;
+    display: inline-block;
+    text-align: center;
+    width: 24px;
+}
+
+.riwayat-empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+}
+
+.riwayat-empty-state i {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    display: block;
+    opacity: 0.5;
+}
+
+.riwayat-empty-state p {
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+/* Responsive styles */
+@media (max-width: 992px) {
+    .riwayat-filter-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .riwayat-filter-group {
+        min-width: 100%;
+    }
+    
+    .riwayat-btn-reset {
+        align-self: stretch;
+        margin-top: 15px;
+    }
+}
+
+@media (max-width: 768px) {
+    .riwayat-container {
+        padding: 15px;
+    }
+    
+    .riwayat-header {
+        font-size: 1.5rem;
+    }
+    
+    .riwayat-table {
+        font-size: 0.9rem;
+    }
+    
+    .riwayat-table th,
+    .riwayat-table td {
+        padding: 10px 8px;
+    }
+    
+    .riwayat-filter-select {
+        padding: 8px 10px;
+    }
+}
+
+/* Animation for filter changes */
+.riwayat-loading {
+    opacity: 0.7;
+    pointer-events: none;
+    position: relative;
+}
+
+.riwayat-loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+/* Custom scrollbar for table */
+.riwayat-table-container {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.riwayat-table-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.riwayat-table-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.riwayat-table-container::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #4e73df 0%, #2a3f9d 100%);
+    border-radius: 4px;
+}
+
+.riwayat-table-container::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #2a3f9d 0%, #4e73df 100%);
+}

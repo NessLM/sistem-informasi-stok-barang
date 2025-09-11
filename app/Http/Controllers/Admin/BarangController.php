@@ -11,18 +11,17 @@ class BarangController extends Controller
 {
     public function index(Request $request)
     {
-        $search = $request->input('search');
-
-        $kategori = Kategori::with(['barang' => function($q) use ($search) {
-            if ($search) {
-                $q->where('nama', 'like', "%{$search}%")
-                  ->orWhere('kode', 'like', "%{$search}%");
-            }
-        }])->get();
-
-        $menu = [
-            ['label' => 'Dashboard', 'icon' => 'bi-grid', 'route' => 'admin.dashboard'],
-            ['label' => 'Data Keseluruhan', 'icon' => 'bi-card-list', 'route' => 'barang.index'],
+        return [
+            ['label' => 'Dashboard', 'icon' => 'bi-grid', 'route' => 'staff.admin.dashboard'],
+            ['label' => 'Data Keseluruhan', 'icon' => 'bi-card-list', 'children' => [
+                ['label' => 'Gudang ATK',        'icon' => 'bi-grid', 'route' => 'staff.admin.datakeseluruhan'],
+                ['label' => 'Gudang Listrik',    'icon' => 'bi-grid', 'route' => 'staff.admin.datakeseluruhan'],
+                ['label' => 'Gudang Kebersihan', 'icon' => 'bi-grid', 'route' => 'staff.admin.datakeseluruhan'],
+                ['label' => 'Gudang B Komputer', 'icon' => 'bi-grid', 'route' => 'staff.admin.datakeseluruhan'],
+            ]],
+            ['label' => 'Riwayat', 'icon' => 'bi-clock-history', 'route' => 'staff.admin.dashboard'],
+            ['label' => 'Laporan', 'icon' => 'bi-file-earmark-bar-graph-fill', 'route' => 'staff.admin.dashboard'],
+            ['label' => 'Data Pengguna', 'icon' => 'bi-people', 'route' => 'staff.admin.dashboard'],
         ];
 
         return view('staff.admin.datakeseluruhan', compact('kategori', 'menu', 'search'));

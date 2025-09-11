@@ -18,14 +18,14 @@ class DashboardController extends Controller
                 'label' => 'Data Keseluruhan',
                 'icon' => 'bi-card-list',
                 'children' => [
-                    ['label' => 'Gudang ATK', 'icon' => 'bi-grid', 'route' => 'staff.admin.datakeseluruhan'],
-                    ['label' => 'Gudang Listrik', 'icon' => 'bi-grid', 'route' => 'staff.admin.datakeseluruhan'],
-                    ['label' => 'Gudang Kebersihan', 'icon' => 'bi-grid', 'route' => 'staff.admin.datakeseluruhan'],
-                    ['label' => 'Gudang B Komputer', 'icon' => 'bi-grid', 'route' => 'staff.admin.datakeseluruhan'],
+                    ['label' => 'Gudang ATK', 'icon' => 'bi-grid', 'route' => 'admin.datakeseluruhan'],
+                    ['label' => 'Gudang Listrik', 'icon' => 'bi-grid', 'route' => 'admin.datakeseluruhan'],
+                    ['label' => 'Gudang Kebersihan', 'icon' => 'bi-grid', 'route' => 'admin.datakeseluruhan'],
+                    ['label' => 'Gudang B Komputer', 'icon' => 'bi-grid', 'route' => 'admin.datakeseluruhan'],
                 ]
             ],
 
-            ['label' => 'Riwayat', 'icon' => 'bi-clock-history', 'route' => 'staff.admin.dashboard'],
+            ['label' => 'Riwayat', 'icon' => 'bi-clock-history', 'route' => 'admin.riwayat.index'],
             ['label' => 'Laporan', 'icon' => 'bi-file-earmark-bar-graph-fill', 'route' => 'staff.admin.dashboard'],
             ['label' => 'Data Pengguna', 'icon' => 'bi-people', 'route' => 'admin.users.index'],
         ];
