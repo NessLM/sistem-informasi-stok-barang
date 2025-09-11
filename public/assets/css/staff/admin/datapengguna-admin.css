@@ -1,7 +1,6 @@
 /* ==== CONTENT AREA ==== */
 .content {
-    margin-left: 240px; /* biar ga ketutup sidebar */
-    padding: 30px;
+    margin-left: 20px; /* biar ga ketutup sidebar */
     background: #f5f7fb;
     min-height: 100vh;
 }
@@ -22,6 +21,23 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     border: 1px solid #e5e9f2;
     margin-top: 20px;
+}
+
+/* ==== Page body khusus Data Pengguna ==== */
+.page-body {
+    padding: 15px 5px 15px 15px; /* top right bottom left - margin kanan cuma 10px */
+    width: calc(
+        101% - 25px
+    ); /* full width minus padding kiri (15px) + margin kanan (10px) */
+    margin: 0;
+    box-sizing: border-box; /* pastikan width calculation benar */
+}
+
+.page-body h2 {
+    margin-bottom: 20px;
+    font-weight: 600;
+    font-size: 22px;
+    color: #1d2433;
 }
 
 /* ==== TABLE STYLE ==== */
@@ -78,6 +94,7 @@
     font-size: 13px;
     padding: 6px 12px;
 }
+
 /* ==== TITLE DALAM CARD (Data Pengguna) ==== */
 .card h4 {
     font-size: 18px;
@@ -87,6 +104,7 @@
     border-bottom: 2px solid #e5e9f2;
     padding-bottom: 6px;
 }
+
 .btn-add-user {
     background: #2072b7; /* biru */
     border: none;
@@ -104,6 +122,7 @@
     background: #185b91; /* biru lebih gelap saat hover */
     color: #fff;
 }
+
 .table .btn-action {
     display: inline-flex;
     align-items: center;
@@ -113,6 +132,7 @@
     font-size: 13px;
     border-radius: 6px;
 }
+
 .btn-warning.btn-action {
     background: #ffc107;
     border: none;
@@ -121,6 +141,7 @@
     padding: 6px 12px;
     border-radius: 6px;
 }
+
 .btn-danger.btn-action {
     background: #dc3545;
     border: none;
@@ -129,6 +150,7 @@
     padding: 6px 12px;
     border-radius: 6px;
 }
+
 .table .action-buttons {
     display: flex; /* biar sejajar horizontal */
     gap: 8px; /* jarak antar tombol */
