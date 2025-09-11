@@ -23,36 +23,41 @@
   {{-- halaman tertentu boleh push CSS sendiri dari slot --}}
 
   <style>
-    /* ===== Reset ringan & background ===== */
-    body { margin: 0; background: #EFF0EE; }
-
-    /* --- Kartu fallback kecil --- */
-    .card{background:#fff;border-radius:14px;padding:18px;box-shadow:0 10px 24px rgba(0,0,0,.06)}
-
-    /* ====== OVERRIDE TANPA UBAH sidebar.css ======
-       - Samakan offset konten dengan lebar sidebar
-       - Hilangkan padding main agar header bisa full-bleed
-       (sidebar.css: sidebar 270px, collapsed 80px) */
-    main.content{ margin-left:270px !important; padding:0 !important; width:100%; }
-    .layout.is-collapsed main.content{ margin-left:80px !important; }
-
+    body { margin:0; background:#EFF0EE; }
+  
+    /* ====== Sidebar width variable (sinkron dengan state collapsed) ====== */
+    .layout{ --sb-w: 270px; }           /* normal: sidebar 270px */
+    .layout.is-collapsed{ --sb-w: 80px; } /* collapsed: sidebar 80px */
+  
+    /* ====== Konten: offset & lebar mengikuti sidebar (tanpa overflow) ====== */
+    main.content{
+      margin-left: var(--sb-w) !important;
+      width: calc(100% - var(--sb-w)) !important;  /* <- inilah kuncinya */
+      padding: 0 !important;
+      transition: margin-left .3s ease, width .3s ease;
+    }
+  
+    /* Kartu fallback */
+    .card{
+      background:#fff;border-radius:14px;padding:18px;
+      box-shadow:0 10px 24px rgba(0,0,0,.06)
+    }
+  
     /* ===== Header Global (flat, nempel kiri/kanan/atas) ===== */
     .page-header{
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
-      background:#fff; padding:14px 18px;
-      margin:0;                        /* tidak ada jarak atas/samping */
-      border:0; border-radius:0;
-      border-bottom:1px solid #e5e7eb; /* garis tipis bawah */
-      box-shadow:0 12px 16px -12px #CBCCCB; /* bayangan hanya di bawah */
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      background:#fff;padding:14px 18px;margin:0;border:0;border-radius:0;
+      border-bottom:1px solid #e5e7eb;
+      box-shadow:0 12px 16px -12px #CBCCCB;  /* bayangan hanya bawah */
     }
-    .ph-left{display:flex; align-items:center; gap:10px}
+    .ph-left{display:flex;align-items:center;gap:10px}
     .ph-title{
-      margin:0; font-weight:600; letter-spacing:-.01em; line-height:1.2;
-      font-size:clamp(18px,2.2vw,26px); color:#111827;
+      margin:0;font-weight:600;letter-spacing:-.01em;line-height:1.2;
+      font-size:clamp(18px,2.2vw,26px);color:#111827;
     }
-    .ph-badge{ width:40px; height:auto; object-fit:contain }
-    @media (max-width:640px){ .ph-badge{ width:34px } }
-  </style>
+    .ph-badge{width:40px;height:auto;object-fit:contain}
+    @media (max-width:640px){ .ph-badge{width:34px} }
+  </style>  
 </head>
 <body>
   {{-- Loader global --}}
