@@ -1,0 +1,158 @@
+/* ==== CONTENT AREA ==== */
+.content {
+    margin-left: 20px; /* biar ga ketutup sidebar */
+    background: #f5f7fb;
+    min-height: 100vh;
+}
+
+/* ==== HEADER TITLE ==== */
+.content h2 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #1d2433;
+}
+
+/* ==== CARD STYLE ==== */
+.card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e5e9f2;
+    margin-top: 20px;
+}
+
+/* ==== Page body khusus Data Pengguna ==== */
+.page-body {
+    padding: 15px 5px 15px 15px; /* top right bottom left - margin kanan cuma 10px */
+    width: calc(
+        101% - 25px
+    ); /* full width minus padding kiri (15px) + margin kanan (10px) */
+    margin: 0;
+    box-sizing: border-box; /* pastikan width calculation benar */
+}
+
+.page-body h2 {
+    margin-bottom: 20px;
+    font-weight: 600;
+    font-size: 22px;
+    color: #1d2433;
+}
+
+/* ==== TABLE STYLE ==== */
+.table {
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table thead th {
+    background: #343a40;
+    color: #fff;
+    text-align: center;
+    font-weight: 600;
+    padding: 12px;
+    font-size: 14px;
+}
+
+.table tbody td {
+    text-align: center;
+    vertical-align: middle;
+    padding: 10px;
+    font-size: 14px;
+    color: #333;
+}
+
+/* ==== BUTTON STYLE ==== */
+.btn-primary {
+    background: #2072b7; /* biru sesuai tombol Tambah Pengguna */
+    border: none;
+    font-weight: 500;
+    border-radius: 8px;
+    padding: 8px 16px;
+    transition: background 0.2s;
+}
+
+.btn-primary:hover {
+    background: #185b91;
+}
+
+.btn-warning {
+    background: #ffc107;
+    border: none;
+    color: #000;
+    border-radius: 6px;
+    font-size: 13px;
+    padding: 6px 12px;
+}
+
+.btn-danger {
+    background: #dc3545;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    padding: 6px 12px;
+}
+
+/* ==== TITLE DALAM CARD (Data Pengguna) ==== */
+.card h4 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1d2433;
+    margin-bottom: 16px;
+    border-bottom: 2px solid #e5e9f2;
+    padding-bottom: 6px;
+}
+
+.btn-add-user {
+    background: #2072b7; /* biru */
+    border: none;
+    color: #fff; /* teks putih */
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 8px 18px;
+    margin-top: 5px; /* kasih spasi kecil dari atas */
+    transition: background 0.2s;
+    text-decoration: none; /* 🔑 Hapus underline */
+    display: inline-block; /* biar properti tombol rapi */
+}
+
+.btn-add-user:hover {
+    background: #185b91; /* biru lebih gelap saat hover */
+    color: #fff;
+}
+
+.table .btn-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0 2px;
+    padding: 6px 12px;
+    font-size: 13px;
+    border-radius: 6px;
+}
+
+.btn-warning.btn-action {
+    background: #ffc107;
+    border: none;
+    color: #000;
+    font-size: 13px;
+    padding: 6px 12px;
+    border-radius: 6px;
+}
+
+.btn-danger.btn-action {
+    background: #dc3545;
+    border: none;
+    color: #fff;
+    font-size: 13px;
+    padding: 6px 12px;
+    border-radius: 6px;
+}
+
+.table .action-buttons {
+    display: flex; /* biar sejajar horizontal */
+    gap: 8px; /* jarak antar tombol */
+    justify-content: center;
+}
