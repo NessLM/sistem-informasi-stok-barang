@@ -6,17 +6,6 @@
   font-family: 'Poppins', sans-serif;
 }
 
-.dashboard-header {
-  margin-bottom: 30px;
-}
-
-.dashboard-header h1 {
-  color: #1f2937;
-  font-size: 2rem;
-  font-weight: 600;
-  margin: 0;
-}
-
 /* Dashboard Row Layout */
 .dashboard-row {
   display: flex;

@@ -4,9 +4,6 @@
   <link rel="stylesheet" href="{{ asset('assets/css/staff/admin/dashboard.css') }}">
   
   <div class="dashboard-container">
-    <div class="dashboard-header">
-      <h1>Dashboard Admin</h1>
-    </div>
 
     {{-- Row pertama: Ringkasan dan Grafik Per Bagian --}}
     <div class="dashboard-row">
