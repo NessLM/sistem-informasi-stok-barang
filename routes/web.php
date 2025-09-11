@@ -17,6 +17,15 @@ Route::redirect('/', '/login');
 Route::middleware(['auth', 'role:Admin'])->group(function () {
     Route::get('/admin', AdminDashboard::class)->name('staff.admin.dashboard');
 });
+use App\Http\Controllers\Admin\UserController;
+
+Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
+    Route::get('/dashboard', \App\Http\Controllers\Admin\DashboardController::class)->name('dashboard');
+
+    // Data Pengguna
+    Route::resource('users', UserController::class);
+});
+
 
 // ==== Pembantu Bendahara (PB) ====
 Route::middleware(['auth', 'role:Pengelola Barang'])->group(function () {
