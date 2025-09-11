@@ -1,4 +1,4 @@
-<x-layouts.app title="Dashboard • Admin" :menu="$menu" >
+<x-layouts.app title="Dashboard Admin" :menu="$menu">
   
   <h1>Dashboard</h1>
   <div class="card">
