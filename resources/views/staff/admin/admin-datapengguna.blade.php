@@ -1,4 +1,4 @@
-<x-layouts.app title="Data Pengguna" :menu="$menu">
+<x-layouts.app title="Manajemen Pengguna" :menu="$menu">
     <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>Manajemen Pengguna</h2>
     <a href="{{ route('admin.users.create') }}" class="btn btn-add-user">+ Tambah Pengguna</a>
