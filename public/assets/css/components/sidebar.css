@@ -8,16 +8,23 @@
         "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
         "Noto Color Emoji";
 }
+
 main.content {
-    margin-left: 300px; /* default ketika sidebar normal */
+    margin-left: 300px;
+    /* default ketika sidebar normal */
     transition: margin-left 0.3s ease;
+    padding: 20px;
+    width: 100%;
 }
+
 .layout.is-collapsed aside.sb {
     width: 80px;
     display: flex;
     flex-direction: column;
-    justify-content: center; /* center vertical */
-    align-items: center; /* center horizontal */
+    justify-content: center;
+    /* center vertical */
+    align-items: center;
+    /* center horizontal */
 }
 
 .layout.is-collapsed .sb-link span,
@@ -46,6 +53,7 @@ main.content {
 .layout.is-collapsed .sb-logout {
     font-size: 10px;
 }
+
 .layout.is-collapsed .sb-user {
     margin-left: 10px;
 }
@@ -84,15 +92,19 @@ aside.sb {
 
 /* ── Brand: fixed height & compact logo ─────────────────────────── */
 .sb-brand {
-    position: relative; /* biar tombol absolute nempel rapi */
-    height: 64px; /* tinggi area brand */
-    padding: 0 20px; /* rapihin padding */
+    position: relative;
+    /* biar tombol absolute nempel rapi */
+    height: 64px;
+    /* tinggi area brand */
+    padding: 0 20px;
+    /* rapihin padding */
     display: flex;
     align-items: center;
     padding: 16px 22px 10px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.15);
     justify-content: space-between;
 }
+
 .sb-brand .brand-img {
     width: min(130px, 50%);
     height: auto;
@@ -117,9 +129,11 @@ aside.sb {
     cursor: pointer;
     transition: background 0.2s;
 }
+
 .sb-brand .brand-action:hover {
     background: rgba(255, 255, 255, 0.12);
 }
+
 .sb-brand .brand-action .bi {
     font-size: 22px;
     line-height: 1;
@@ -130,6 +144,7 @@ aside.sb {
     .sb-brand {
         height: 56px;
     }
+
     .sb-brand .brand-img {
         height: 24px;
         max-width: 140px;
@@ -142,6 +157,7 @@ aside.sb {
     flex: 1;
     overflow: auto;
 }
+
 .sb-item .sb-link,
 .sb-item summary {
     display: flex;
@@ -154,6 +170,7 @@ aside.sb {
     cursor: pointer;
     position: relative;
 }
+
 .sb-item .sb-link:hover,
 .sb-item summary:hover {
     background: rgba(255, 255, 255, 0.12);
@@ -164,18 +181,23 @@ aside.sb {
 /* ========================================================= */
 
 /* Anak submenu: pakai efek kartu yg sama dgn navbar active (tanpa ubah warna) */
-.sb-children .sb-link{
+.sb-children .sb-link {
     color: #ffffff;
     font-weight: 100;
     margin: 1%;
     box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.1),
-        /* atas */ inset 0 -2px 6px rgba(0, 0, 0, 0.1),
-        /* bawah */ inset 2px 0 6px rgba(0, 0, 0, 0.1),
-        /* kanan */ inset -2px 0 6px rgba(0, 0, 0, 0.1); /* kiri */
-    transition: all 0.3s ease; /* biar smooth */
+        /* atas */
+        inset 0 -2px 6px rgba(0, 0, 0, 0.1),
+        /* bawah */
+        inset 2px 0 6px rgba(0, 0, 0, 0.1),
+        /* kanan */
+        inset -2px 0 6px rgba(0, 0, 0, 0.1);
+    /* kiri */
+    transition: all 0.3s ease;
+    /* biar smooth */
 }
 
-.sb-children .sb-link:hover{
+.sb-children .sb-link:hover {
     background: #ffffff;
     color: #0d5ba3;
 }
@@ -183,11 +205,13 @@ aside.sb {
 .sb-item summary::-webkit-details-marker {
     display: none;
 }
+
 .sb-item .caret {
     margin-left: auto;
     opacity: 0.75;
     transition: transform 0.2s;
 }
+
 .sb-item details[open] .caret {
     transform: rotate(90deg);
 }
@@ -196,114 +220,139 @@ aside.sb {
     display: grid;
     margin: 6px 0 6px 8px;
 }
+
 .sb-children .sb-link {
     padding: 8px 12px;
     border-radius: 8px;
 }
 
 /* ===== Footer refined (expanded & collapsed) ===== */
-.sb-footer{
+.sb-footer {
     padding: 16px;
-    border-top: 1px solid rgba(255,255,255,.15);
+    /* border-top: 1px solid rgba(255,255,255,.15); */
     display: flex;
     flex-direction: column;
     gap: 12px;
-  }
-  
-  /* --- Identitas institusi --- */
-  .sb-footer .sb-org{ text-align: center; }
-  
-  /* Teks institusi (expanded & collapsed) */
-  .sb-footer .org-name{
-    font-weight: 600;
-    font-size: 12px;              /* sedikit lebih kecil */
+}
+
+/* --- Identitas institusi --- */
+.sb-footer .sb-org {
+    text-align: center;
+}
+
+/* Teks institusi (expanded & collapsed) */
+.sb-footer .org-name {
+    font-size: 12px;
+    /* sedikit lebih kecil */
     letter-spacing: .2px;
     color: #eaf2ff;
-  }
-  
-  /* ======================
-     MEN NEK PAKAI LOGO, BUKA KOMENTAR DI BAWAH INI
-     (sekarang TIDAK dipakai → biarkan tetap dikomentari)
-     ====================== */
-  /*
-  .sb-footer .org-logo{ display:block; }
-  .sb-footer .org-logo img{
-    width: 22px; height: 22px; display: block; margin: 0 auto; opacity: .95;
-  }
-  .layout.is-collapsed .sb-footer .org-name{ display:none; }
-  .layout.is-collapsed .sb-footer .org-logo{ display:block; }
-  */
-  
-  .sb-footer .sb-org hr{
-    border: 0; height: 1px; background: rgba(255,255,255,.35);
-    margin: 6px auto 0; width: 90%;
-  }
-  
-  /* --- Tombol Logout (expanded): putih, HANYA TEKS --- */
-  .sb-footer .sb-logout{
+}
+
+/* ===== Perubahan untuk logo dan teks Polman Babel ===== */
+
+/* Default (sidebar normal): teks tampil, logo sembunyi */
+.sb-footer .org-logo {
+    display: none;
+}
+
+.sb-footer .org-name {
+    display: block;
+}
+
+/* Collapsed: logo tampil, teks sembunyi */
+.layout.is-collapsed .sb-footer .org-logo {
+    display: block;
+}
+
+.layout.is-collapsed .sb-footer .org-name {
+    display: none;
+}
+
+.sb-footer .org-logo img {
+    width: 40px;
+    height: 40px;
+    display: block;
+    margin: 0 auto;
+    opacity: .95;
+}
+
+.sb-footer .sb-org hr {
+    border: 0;
+    height: 1px;
+    background: rgba(255, 255, 255, .35);
+    margin: 6px auto 0;
+    width: 90%;
+}
+
+/* --- Tombol Logout (expanded): putih, HANYA TEKS --- */
+.sb-footer .sb-logout {
     width: 100%;
     height: 44px;
     border: 0;
     border-radius: 14px;
-    background: #ffffff !important;   /* override tombol merah lama */
+    background: #ffffff !important;
+    /* override tombol merah lama */
     color: #1c4a66;
     font-weight: 600;
-    display: flex; align-items: center; justify-content: center; gap: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
     cursor: pointer;
-    box-shadow: 0 6px 16px rgba(0,0,0,.12);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, .12);
     transition: transform .15s ease, filter .15s ease;
     margin-inline: 0;
-  }
-  
-  /* EXPANDED: sembunyikan ikon → yang tampil hanya teks "Logout" */
-  .sb-footer .sb-logout i{
-    display: none;                  /* <- kunci: hide icon di versi besar */
+}
+
+.sb-footer .sb-logout:hover {
+    color: #ffffff;
+    background: #eb3434 !important;
+}
+
+/* EXPANDED: sembunyikan ikon → yang tampil hanya teks "Logout" */
+.sb-footer .sb-logout i {
+    display: none;
+    /* <- kunci: hide icon di versi besar */
     /* (styling ikon dipindah ke rule collapsed di bawah) */
-  }
-  
-  .sb-footer .sb-logout:hover{
+}
+
+.sb-footer .sb-logout:hover {
     filter: brightness(.98);
     transform: translateY(-1px);
-  }
-  
-  /* ===== Collapsed state ===== */
-  .layout.is-collapsed .sb-footer{
-    padding: 10px 8px;              /* rapat */
+}
+
+/* ===== Collapsed state ===== */
+.layout.is-collapsed .sb-footer {
+    padding: 10px 8px;
+    /* rapat */
     align-items: center;
-  }
-  
-  /* Collapsed: tetap pakai TEKS "Polman Babel" (bukan ikon) */
-  .layout.is-collapsed .sb-footer .org-name{
-    display: block !important;      /* pastikan tampil */
-    font-size: 10px;                /* versi kecil */
-    opacity: .9;
-  }
-  .layout.is-collapsed .sb-footer .sb-org hr{
-    width: 64%;
-    opacity: .55;
-    margin-top: 6px;
-  }
-  
-  /* Collapsed: logout ikon-only KECIL */
-  .layout.is-collapsed .sb-footer .sb-logout{
-    width: 44px;                    /* compact */
-    height: 44px;                   /* compact */
+}
+
+/* Collapsed: logout ikon-only KECIL */
+.layout.is-collapsed .sb-footer .sb-logout {
+    width: 44px;
+    /* compact */
+    height: 44px;
+    /* compact */
     border-radius: 12px;
     padding: 0;
     gap: 0;
-    margin-inline: auto;            /* center */
-    box-shadow: 0 4px 12px rgba(0,0,0,.10);
-  }
-  
-  /* Collapsed: sembunyikan TEKS, tampilkan IKON */
-  .layout.is-collapsed .sb-footer .sb-logout span{
+    margin-inline: auto;
+    /* center */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .10);
+}
+
+/* Collapsed: sembunyikan TEKS, tampilkan IKON */
+.layout.is-collapsed .sb-footer .sb-logout span {
     display: none;
-  }
-  .layout.is-collapsed .sb-footer .sb-logout i{
-    display: inline-block;          /* <- show icon khusus collapsed */
-    font-size: 17px;                /* ikon kecil & ramping */
+}
+
+.layout.is-collapsed .sb-footer .sb-logout i {
+    display: inline-block;
+    /* <- show icon khusus collapsed */
+    font-size: 17px;
+    /* ikon kecil & ramping */
     transform: scale(.92);
     line-height: 1;
     color: #1c4a66;
-  }
-  
+}
