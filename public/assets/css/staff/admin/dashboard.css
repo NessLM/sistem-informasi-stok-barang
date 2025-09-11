@@ -1,27 +1,36 @@
-/* Dashboard Admin Styles */
+/* =========================================================
+   Dashboard Admin Styles
+   Catatan:
+   - Kelas-kelas disusun sesuai struktur HTML kamu.
+   - Tweak aman ditandai dengan [TWEAK] biar gampang dicari.
+   ========================================================= */
+
+/* --- Wadah utama halaman dashboard --- */
 .dashboard-container {
-  padding: 20px;
-  background-color: #f8fafc;
-  min-height: 100vh;
+  padding: 20px;                 /* jarak global isi dari tepi */
+  background-color: #f8fafc;     /* abu sangat muda */
+  min-height: 100vh;             /* biar selalu penuh layar */
   font-family: 'Poppins', sans-serif;
 }
 
-/* Dashboard Row Layout */
+/* --- Baris layout 2 kolom (Ringkasan | Grafik Per Bagian) --- */
 .dashboard-row {
   display: flex;
-  gap: 25px;
+  gap: 25px;                     /* jarak antar kolom */
   margin-bottom: 30px;
-  align-items: stretch;
+  align-items: stretch;          /* tinggi antar kolom sama */
 }
 
-.dashboard-row:last-child {
-  margin-bottom: 0;
-}
+/* [TWEAK] penting untuk flex child yang berisi chart/canvas:
+   mencegah overflow horizontal saat label sumbu panjang. */
+.dashboard-row > * { min-width: 0; }
 
-/* Summary Section */
+.dashboard-row:last-child { margin-bottom: 0; }
+
+/* ==================== Summary Section (kolom kiri) ==================== */
 .summary-section {
-  flex: 0 0 300px;
-  background: white;
+  flex: 0 0 300px;               /* lebar tetap 300px */
+  background: #fff;
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -40,6 +49,7 @@
   gap: 15px;
 }
 
+/* Kartu ringkasan */
 .summary-card {
   background: #f8fafc;
   border-radius: 10px;
@@ -49,12 +59,12 @@
   gap: 15px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-
 .summary-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
 }
 
+/* Ikon kotak kecil di kiri */
 .card-icon {
   width: 50px;
   height: 50px;
@@ -67,9 +77,7 @@
   font-size: 1.5rem;
 }
 
-.card-content {
-  flex: 1;
-}
+.card-content { flex: 1; }
 
 .card-number {
   font-size: 2rem;
@@ -84,30 +92,23 @@
   margin-top: 5px;
 }
 
-/* Chart Sections */
-.chart-section {
-  flex: 1;
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
+/* ==================== Chart Sections (kanan & full) ==================== */
+.chart-section,
 .wide-chart-section {
-  flex: 1;
-  background: white;
+  flex: 1;                       /* sisanya ambil ruang tersisa */
+  background: #fff;
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
+/* Header di atas chart (judul + filter/controls) */
 .chart-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
 }
-
 .chart-header h2 {
   color: #374151;
   font-size: 1.25rem;
@@ -122,6 +123,7 @@
   gap: 10px;
 }
 
+/* Tombol corong (filter) */
 .filter-btn {
   background: #f3f4f6;
   border: 1px solid #d1d5db;
@@ -132,12 +134,12 @@
   transition: all 0.2s ease;
   font-size: 0.9rem;
 }
-
 .filter-btn:hover {
   background: #e5e7eb;
   border-color: #9ca3af;
 }
 
+/* Dropdown Sortir */
 .sort-select {
   background: #f8fafc;
   border: 1px solid #d1d5db;
@@ -148,25 +150,28 @@
   font-size: 0.9rem;
   min-width: 120px;
 }
-
 .sort-select:focus {
   outline: none;
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-/* Chart Container */
+/* --- Wadah kanvas Chart.js --- */
 .chart-container {
-  height: 250px;
+  height: 250px;                 /* tinggi default */
   margin-bottom: 15px;
   position: relative;
 }
 
-.wide-chart-section .chart-container {
-  height: 300px;
+/* [TWEAK] pastikan kanvas mengikuti ukuran container (tanpa overflow) */
+.chart-container canvas{
+  width: 100% !important;
+  height: 100% !important;
 }
 
-/* Chart Legends */
+.wide-chart-section .chart-container { height: 300px; }
+
+/* Legend (keterangan warna) */
 .chart-legend {
   display: flex;
   justify-content: center;
@@ -174,10 +179,7 @@
   padding-top: 10px;
   border-top: 1px solid #f3f4f6;
 }
-
-.chart-legend.yearly {
-  gap: 30px;
-}
+.chart-legend.yearly { gap: 30px; }
 
 .legend-item {
   display: flex;
@@ -186,100 +188,51 @@
   font-size: 0.9rem;
   color: #6b7280;
 }
-
 .legend-color {
   width: 12px;
   height: 12px;
   border-radius: 2px;
 }
 
-/* Legend Colors */
-.legend-color.keluar {
-  background-color: #22C55E;
-}
+/* Warna legend */
+.legend-color.keluar { background-color: #22C55E; }
+.legend-color.masuk  { background-color: #EF4444; }
+.legend-color.year-2020 { background-color: #8B5CF6; }
+.legend-color.year-2021 { background-color: #F87171; }
+.legend-color.year-2022 { background-color: #06B6D4; }
 
-.legend-color.masuk {
-  background-color: #EF4444;
-}
-
-.legend-color.year-2020 {
-  background-color: #8B5CF6;
-}
-
-.legend-color.year-2021 {
-  background-color: #F87171;
-}
-
-.legend-color.year-2022 {
-  background-color: #06B6D4;
-}
-
-/* Responsive Design */
+/* ==================== Responsiveness ==================== */
 @media (max-width: 1200px) {
-  .dashboard-row {
-    flex-direction: column;
-  }
-  
-  .summary-section {
-    flex: none;
-  }
-  
+  .dashboard-row { flex-direction: column; }
+  .summary-section { flex: none; }     /* biar ikut lebar parent */
   .summary-cards {
     flex-direction: row;
     gap: 20px;
   }
-  
-  .summary-card {
-    flex: 1;
-  }
+  .summary-card { flex: 1; }           /* dua kartu sejajar, sama lebar */
 }
 
 @media (max-width: 768px) {
-  .dashboard-container {
-    padding: 15px;
-  }
-  
-  .dashboard-header h1 {
-    font-size: 1.5rem;
-  }
-  
-  .summary-cards {
-    flex-direction: column;
-    gap: 15px;
-  }
-  
+  .dashboard-container { padding: 15px; }
+
+  .dashboard-header h1 { font-size: 1.5rem; }
+
+  .summary-cards { flex-direction: column; gap: 15px; }
+
   .chart-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
   }
-  
-  .chart-container {
-    height: 200px;
-  }
-  
-  .wide-chart-section .chart-container {
-    height: 250px;
-  }
-  
-  .chart-legend {
-    flex-wrap: wrap;
-    gap: 15px;
-  }
-  
-  .chart-legend.yearly {
-    gap: 15px;
-  }
+
+  .chart-container { height: 200px; }
+  .wide-chart-section .chart-container { height: 250px; }
+
+  .chart-legend { flex-wrap: wrap; gap: 15px; }
+  .chart-legend.yearly { gap: 15px; }
 }
 
 @media (max-width: 480px) {
-  .card-number {
-    font-size: 1.5rem;
-  }
-  
-  .card-icon {
-    width: 40px;
-    height: 40px;
-    font-size: 1.2rem;
-  }
+  .card-number { font-size: 1.5rem; }
+  .card-icon { width: 40px; height: 40px; font-size: 1.2rem; }
 }
