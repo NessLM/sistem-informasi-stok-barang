@@ -9,13 +9,10 @@
         
         <!-- Filter Section -->
         <div class="card riwayat-filter-card mb-4">
-            <div class="riwayat-filter-header">
-                <h5 class="riwayat-filter-title mb-0">Filter Data</h5>
-            </div>
             <div class="card-body riwayat-filter-body">
+                <h3>Filter Data</h3>
                 <form id="filterForm" class="riwayat-filter-form">
                     <div class="riwayat-filter-group">
-                        <label class="riwayat-filter-label">Alur Barang</label>
                         <select name="alur_barang" class="form-select riwayat-filter-select" onchange="this.form.submit()">
                             <option value="Semua" {{ request('alur_barang') == 'Semua' ? 'selected' : '' }}>Semua</option>
                             <option value="Keluar" {{ request('alur_barang') == 'Keluar' ? 'selected' : '' }}>Keluar</option>
@@ -24,7 +21,6 @@
                     </div>
                     
                     <div class="riwayat-filter-group">
-                        <label class="riwayat-filter-label">Periode Waktu</label>
                         <select name="periode" class="form-select riwayat-filter-select" onchange="this.form.submit()">
                             <option value="">Pilih Periode</option>
                             <option value="1_minggu_terakhir" {{ request('periode') == '1_minggu_terakhir' ? 'selected' : '' }}>1 Minggu Terakhir</option>
@@ -33,7 +29,7 @@
                         </select>
                     </div>
                     
-                    <a href="{{ route('staff.admin.riwayat.index') }}" class="btn riwayat-btn-reset">
+                    <a href="{{ route('admin.riwayat.index') }}" class="btn riwayat-btn-reset">
                         <i class="bi bi-arrow-clockwise me-2"></i>Reset
                     </a>
                 </form>

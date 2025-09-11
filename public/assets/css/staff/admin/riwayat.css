@@ -38,7 +38,7 @@
 }
 
 .riwayat-filter-body {
-    padding: 20px;
+    padding: 10px;
 }
 
 .riwayat-filter-form {
@@ -84,7 +84,6 @@
     color: white;
     font-weight: 600;
     transition: all 0.3s ease;
-    margin-top: 24px;
     align-self: flex-end;
 }
 
