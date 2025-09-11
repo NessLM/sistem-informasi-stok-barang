@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
 use App\Http\Controllers\Pb\DashboardController as PbDashboard;
 use App\Http\Controllers\Pj\DashboardController as PjDashboard;
+use App\Http\Controllers\Admin\DataKeseluruhan;
 
 // ==== Auth ====
 Route::get('/login',  [AuthController::class, 'showLogin'])->name('login');
@@ -36,3 +37,28 @@ Route::middleware(['auth', 'role:Pengelola Barang'])->group(function () {
 Route::middleware(['auth', 'role:Penanggung Jawab'])->group(function () {
     Route::get('/pj', PjDashboard::class)->name('staff.pj.dashboard');
 });
+
+Route::middleware(['auth', 'role:Admin'])->group(function () {
+    Route::get('/admin', AdminDashboard::class)->name('staff.admin.dashboard');
+    Route::get('/admin/datakeseluruhan', [\App\Http\Controllers\Admin\DataKeseluruhan::class, 'index'])
+        ->name('staff.admin.datakeseluruhan');
+});
+
+Route::prefix('admin')->group(function () {
+    Route::get('/datakeseluruhan', [DataKeseluruhan::class, 'index'])
+        ->name('staff.admin.datakeseluruhan');  // ✅ samakan dengan yang dipanggil di menu
+});
+
+use App\Http\Controllers\Admin\BarangController;
+
+Route::prefix('admin')->group(function () {
+    Route::resource('barang', BarangController::class);
+});
+
+
+Route::get('/barang/create', [BarangController::class, 'create'])->name('barang.create');
+Route::post('/barang/store', [BarangController::class, 'store'])->name('barang.store');
+
+
+
+
