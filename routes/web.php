@@ -66,3 +66,4 @@ Route::middleware(['auth','role:Pengelola Barang'])->get('/pb', PbDashboard::cla
 Route::middleware(['auth','role:Penanggung Jawab'])->get('/pj', PjDashboard::class)->name('staff.pj.dashboard');
 
 Route::resource('barang', BarangController::class);
+Route::get('/admin/datakeseluruhan', [DataKeseluruhanController::class, 'index'])->name('admin.datakeseluruhan.index');
