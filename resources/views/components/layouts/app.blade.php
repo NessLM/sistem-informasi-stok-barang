@@ -15,6 +15,8 @@
   {{-- Font & ikon --}}
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
 
   {{-- CSS sidebar milikmu --}}
   <link rel="stylesheet" href="{{ asset('assets/css/components/sidebar.css') }}">
@@ -29,7 +31,9 @@
     /* ====== Sidebar width variable (sinkron dengan state collapsed) ====== */
     .layout{ --sb-w: 270px; }           /* normal: sidebar 270px */
     .layout.is-collapsed{ --sb-w: 80px; } /* collapsed: sidebar 80px */
-  
+    .modal-footer .btn {
+    min-height: 42px; /* samain tinggi */
+  }
     /* ====== Konten: offset & lebar mengikuti sidebar (tanpa overflow) ====== */
     main.content{
       margin-left: var(--sb-w) !important;
@@ -101,5 +105,15 @@
       });
     </script>
   </div>
+  {{-- tempat untuk modal html di-append --}}
+@stack('modals')
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+{{-- tempat untuk script js --}}
+@stack('scripts')
+</body>
+</html>
+
 </body>
 </html>
