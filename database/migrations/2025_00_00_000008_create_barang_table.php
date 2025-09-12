@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -7,9 +8,16 @@ return new class extends Migration {
     public function up(): void {
         Schema::create('barang', function (Blueprint $table) {
             $table->id(); // Primary key
+
+            // Relasi ke kategori
             $table->foreignId('kategori_id')
                   ->constrained('kategori')
-                  ->onDelete('cascade'); // Relasi ke kategori
+                  ->onDelete('cascade');
+
+            // Relasi ke jenis_barang
+            $table->foreignId('jenis_barang_id')
+                  ->constrained('jenis_barang')
+                  ->onDelete('cascade');
 
             $table->string('nama');
             $table->integer('jumlah')->nullable();
@@ -26,6 +34,3 @@ return new class extends Migration {
         Schema::dropIfExists('barang');
     }
 };
-
-
-;
