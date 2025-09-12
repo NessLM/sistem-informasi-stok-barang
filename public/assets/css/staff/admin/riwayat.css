@@ -77,7 +77,7 @@
 }
 
 .riwayat-btn-reset {
-    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    background: linear-gradient(135deg, #e74a3b 0%, #be2617 100%);
     border: none;
     border-radius: 6px;
     padding: 10px 20px;
@@ -88,31 +88,68 @@
 }
 
 .riwayat-btn-reset:hover {
-    background: linear-gradient(135deg, #495057 0%, #6c757d 100%);
+    background: linear-gradient(135deg, #be2617 0%, #e74a3b 100%);
     transform: translateY(-2px);
+    color: white;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 
+/* Gaya untuk icon mata bukti */
+.riwayat-bukti-icon {
+    color: #000000;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-block;
+    padding: 4px;
+}
+
+.riwayat-bukti-icon:hover {
+    color: #2a3f9d;
+    transform: scale(1.1);
+}
+
+/* Pastikan ikon terpusat di sel */
+.riwayat-table-container td {
+    vertical-align: middle;
+    text-align: center;
+}
+
+/* Gaya untuk modal */
+#buktiModal .modal-content {
+    margin-top: 100px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#buktiModal .modal-header {
+    background: linear-gradient(135deg, #3498db 0%, #2c3e50 80%, #0f2027 100%);
+    color: white;
+}
+
+#buktiModal .btn-close {
+    filter: invert(1);
+}
+
 
 .btn-keluar {
-    background: linear-gradient(135deg, #e74a3b 0%, #be2617 100%);
     border: none;
-    color: #ffffff;
+    color: #be2617;
+    font-weight: bold;
     border-radius: 6px;
-    font-size: 13px;
+    font-size: 14px;
     padding: 6px 12px;
 }
 
 .btn-masuk {
-    background: linear-gradient(135deg, #1cc88a 0%, #13855c 100%);
     border: none;
-    color: #ffffff;
+    color: #13855c;
+    font-weight: bold;
     border-radius: 6px;
-    font-size: 13px;
+    font-size: 14px;
     padding: 6px 12px;
 }
-
 
 .riwayat-status-icon {
     font-size: 1.3rem;
@@ -145,11 +182,11 @@
         flex-direction: column;
         align-items: stretch;
     }
-    
+
     .riwayat-filter-group {
         min-width: 100%;
     }
-    
+
     .riwayat-btn-reset {
         align-self: stretch;
         margin-top: 15px;
@@ -160,20 +197,20 @@
     .riwayat-container {
         padding: 15px;
     }
-    
+
     .riwayat-header {
         font-size: 1.5rem;
     }
-    
+
     .riwayat-table {
         font-size: 0.9rem;
     }
-    
+
     .riwayat-table th,
     .riwayat-table td {
         padding: 10px 8px;
     }
-    
+
     .riwayat-filter-select {
         padding: 8px 10px;
     }

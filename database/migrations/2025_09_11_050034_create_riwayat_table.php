@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('nama_barang');
             $table->integer('jumlah');
             $table->string('bagian');
-            $table->boolean('bukti')->default(false);
+            $table->string('bukti')->nullable(); // Diubah dari boolean menjadi string nullable
             $table->enum('alur_barang', ['Masuk', 'Keluar']);
             $table->timestamps();
         });

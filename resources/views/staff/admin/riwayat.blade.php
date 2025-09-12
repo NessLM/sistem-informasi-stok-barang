@@ -61,13 +61,17 @@
                                     <td>{{ $item->bagian }}</td>
                                     <td>
                                         @if($item->bukti)
-                                            <span class="text-success riwayat-status-icon">✅</span>
+                                            <span class="riwayat-bukti-icon" 
+                                                data-bs-toggle="modal" data-bs-target="#buktiModal" 
+                                                data-image="{{ asset('images/bukti/' . $item->bukti) }}">
+                                                <i class="bi bi-eye-fill"></i>
+                                            </span>
                                         @else
-                                            <span class="text-danger riwayat-status-icon">❌</span>
+                                            <span class="text-muted">-</span>
                                         @endif
                                     </td>
                                     <td>
-                                        <span class=" {{ $item->alur_barang == 'Keluar' ? 'btn btn-keluar btn-sm btn-action' : 'btn btn-masuk btn-sm btn-action masuk' }}">
+                                        <span class=" {{ $item->alur_barang == 'Keluar' ? 'btn-keluar btn-sm btn-action' : 'btn-masuk btn-sm btn-action' }}">
                                             {{ $item->alur_barang }}
                                         </span>
                                     </td>
@@ -82,6 +86,21 @@
                             @endforelse
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal untuk menampilkan bukti -->
+    <div class="modal fade" id="buktiModal" tabindex="-1" aria-labelledby="buktiModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="buktiModalLabel">Bukti Foto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="buktiImage" src="" alt="Bukti" class="img-fluid" style="max-height: 70vh;">
                 </div>
             </div>
         </div>
@@ -103,6 +122,17 @@
                         }, 300);
                     });
                 });
+                
+                // Inisialisasi modal bukti
+                const buktiModal = document.getElementById('buktiModal');
+                if (buktiModal) {
+                    buktiModal.addEventListener('show.bs.modal', function (event) {
+                        const button = event.relatedTarget;
+                        const imageUrl = button.getAttribute('data-image');
+                        const modalImage = buktiModal.querySelector('#buktiImage');
+                        modalImage.src = imageUrl;
+                    });
+                }
                 
                 // Highlight active filters
                 const urlParams = new URLSearchParams(window.location.search);

@@ -18,12 +18,11 @@ class Riwayat extends Model
         'nama_barang',
         'jumlah',
         'bagian',
-        'bukti',
+        'bukti', // Tetap di fillable
         'alur_barang'
     ];
     
     protected $casts = [
         'tanggal' => 'date',
-        'bukti' => 'boolean'
     ];
 }
