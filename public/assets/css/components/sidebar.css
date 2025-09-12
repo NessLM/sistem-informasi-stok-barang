@@ -27,6 +27,16 @@ main.content {
     /* center horizontal */
 }
 
+/* Cegah teks menu turun ke baris baru */
+.sb-link span {
+    white-space: nowrap;       /* jangan pindah baris */
+    overflow: hidden;          /* sembunyikan teks yang kepanjangan */
+    text-overflow: ellipsis;   /* kasih "..." kalau terlalu panjang */
+    display: block;            /* biar aturan overflow berfungsi */
+    max-width: 200px;          /* sesuaikan dengan lebar sidebar */
+}
+
+
 .layout.is-collapsed .sb-link span,
 .layout.is-collapsed summary span,
 .layout.is-collapsed .sb-user .meta,
@@ -184,7 +194,7 @@ aside.sb {
 .sb-children .sb-link {
     color: #ffffff;
     font-weight: 100;
-    margin: 1%;
+    margin-top: 1%;
     box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.1),
         /* atas */
         inset 0 -2px 6px rgba(0, 0, 0, 0.1),
