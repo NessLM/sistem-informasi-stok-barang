@@ -64,6 +64,15 @@
     color: #333;
 }
 
+.table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.table tbody tr:hover {
+    background-color: #f8f9fa;
+    transform: translateX(4px);
+}
+
 /* ==== BUTTON STYLE ==== */
 .btn-primary {
     background: #2072b7; /* biru sesuai tombol Tambah Pengguna */

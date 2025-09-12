@@ -1,4 +1,4 @@
-<x-layouts.app title="Dashboard • Admin" :menu="$menu">
+<x-layouts.app title="Data Keseluruhan" :menu="$menu">
 
 <head>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">

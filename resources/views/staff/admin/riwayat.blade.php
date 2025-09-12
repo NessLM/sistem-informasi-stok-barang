@@ -1,9 +1,6 @@
 {{-- resources/views/staff/pj/riwayat.blade.php --}}
 
 <x-layouts.app title="Riwayat" :menu="$menu">
-    @push('styles')
-        <link rel="stylesheet" href="{{ asset('css/riwayat.css') }}">
-    @endpush
 
     <div class="container-fluid riwayat-container">
         
@@ -40,7 +37,7 @@
         <div class="card riwayat-table-card">
             <div class="card-body p-0">
                 <div class="riwayat-table-container">
-                    <table class="table table-striped table-hover riwayat-table mb-0">
+                    <table class="table table-bordered">
                         <thead>
                             <tr>
                                 <th>No</th>
@@ -60,7 +57,7 @@
                                     <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
                                     <td>{{ \Carbon\Carbon::parse($item->waktu)->format('H.i') }} WIB</td>
                                     <td class="fw-medium">{{ $item->nama_barang }}</td>
-                                    <td><span class="badge bg-secondary">{{ $item->jumlah }}</span></td>
+                                    <td><span>{{ $item->jumlah }}</span></td>
                                     <td>{{ $item->bagian }}</td>
                                     <td>
                                         @if($item->bukti)
@@ -70,7 +67,7 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <span class="riwayat-badge {{ $item->alur_barang == 'Keluar' ? 'riwayat-badge-keluar' : 'riwayat-badge-masuk' }}">
+                                        <span class=" {{ $item->alur_barang == 'Keluar' ? 'btn btn-keluar btn-sm btn-action' : 'btn btn-masuk btn-sm btn-action masuk' }}">
                                             {{ $item->alur_barang }}
                                         </span>
                                     </td>

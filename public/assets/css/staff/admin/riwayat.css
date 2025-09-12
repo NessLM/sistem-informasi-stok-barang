@@ -93,62 +93,26 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-.riwayat-table-card {
-    border: none;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    background: white;
-}
 
-.riwayat-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    margin: 0;
-}
 
-.riwayat-table th {
-    background: linear-gradient(135deg, #4e73df 0%, #2a3f9d 100%);
-    color: white;
-    font-weight: 600;
-    padding: 15px 12px;
-    text-align: left;
-    border: none;
-    position: sticky;
-    top: 0;
-}
-
-.riwayat-table td {
-    padding: 12px;
-    border-bottom: 1px solid #e9ecef;
-    vertical-align: middle;
-}
-
-.riwayat-table tbody tr {
-    transition: all 0.2s ease;
-}
-
-.riwayat-table tbody tr:hover {
-    background-color: #f8f9fa;
-    transform: translateX(4px);
-}
-
-.riwayat-badge {
-    font-size: 0.8em;
-    padding: 0.5em 0.8em;
-    border-radius: 20px;
-    font-weight: 600;
-}
-
-.riwayat-badge-keluar {
+.btn-keluar {
     background: linear-gradient(135deg, #e74a3b 0%, #be2617 100%);
-    color: white;
+    border: none;
+    color: #ffffff;
+    border-radius: 6px;
+    font-size: 13px;
+    padding: 6px 12px;
 }
 
-.riwayat-badge-masuk {
+.btn-masuk {
     background: linear-gradient(135deg, #1cc88a 0%, #13855c 100%);
-    color: white;
+    border: none;
+    color: #ffffff;
+    border-radius: 6px;
+    font-size: 13px;
+    padding: 6px 12px;
 }
+
 
 .riwayat-status-icon {
     font-size: 1.3rem;
