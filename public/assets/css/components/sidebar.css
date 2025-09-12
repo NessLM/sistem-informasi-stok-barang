@@ -36,7 +36,6 @@ main.content {
     max-width: 200px;          /* sesuaikan dengan lebar sidebar */
 }
 
-
 .layout.is-collapsed .sb-link span,
 .layout.is-collapsed summary span,
 .layout.is-collapsed .sb-user .meta,
@@ -365,4 +364,41 @@ aside.sb {
     transform: scale(.92);
     line-height: 1;
     color: #1c4a66;
+}
+
+/* =========================================================
+   [ADD] Active states untuk sidebar (PILL PUTIH)
+   - Parent aktif (link biasa)   : .sb-item .sb-link.is-active
+   - Parent aktif (summary)      : .sb-item.is-active summary
+   - Child aktif                 : .sb-children .sb-link.is-active
+   - Parent auto-open            : handled by <details open> (HTML)
+   ========================================================= */
+
+.sb-item .sb-link.is-active {
+    background: #ffffff;
+    color: #0d5ba3;                     /* teks/ikon biru gelap */
+    box-shadow: 0 6px 14px rgba(0,0,0,.12);
+}
+
+.sb-item.is-active summary {
+    background: #ffffff;
+    color: #0d5ba3;
+    box-shadow: 0 6px 14px rgba(0,0,0,.12);
+    border-radius: 10px;
+}
+
+.sb-children .sb-link.is-active {
+    background: #ffffff;
+    color: #0d5ba3;
+    box-shadow: 0 6px 14px rgba(0,0,0,.12);
+}
+
+/* Saat open, caret sudah rotate 90deg (rule di atas).
+   Biar lebih jelas, naikkan opasitas */
+.sb-item details[open] .caret { opacity: 1; }
+
+/* Hover tidak mengganggu state aktif */
+.sb-item .sb-link.is-active:hover,
+.sb-item.is-active summary:hover {
+    filter: brightness(0.98);
 }

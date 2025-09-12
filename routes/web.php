@@ -9,7 +9,7 @@ use App\Http\Controllers\Admin\DataKeseluruhan;
 use App\Http\Controllers\Admin\RiwayatController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\BarangController;
-
+use App\Http\Controllers\Admin\LaporanController;
 // PB & PJ
 use App\Http\Controllers\Pb\DashboardController as PbDashboard;
 use App\Http\Controllers\Pj\DashboardController as PjDashboard;
@@ -57,6 +57,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth','role:Admin'])->group
 
     // Barang (CRUD standar) → admin.barang.index|create|store|show|edit|update|destroy
     Route::resource('barang', BarangController::class);
+
+    Route::get('/laporan', LaporanController::class)->name('laporan');
 });
 
 /* ========== PB & PJ (tetap) ========== */

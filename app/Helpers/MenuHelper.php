@@ -19,7 +19,7 @@ class MenuHelper
                 ]
             ],
             ['label' => 'Riwayat',       'icon' => 'bi-clock-history', 'route' => 'admin.riwayat.index'],
-            ['label' => 'Laporan',       'icon' => 'bi-file-earmark-bar-graph-fill', 'route' => 'admin.dashboard'],
+            ['label' => 'Laporan',       'icon' => 'bi-file-earmark-bar-graph-fill', 'route' => 'admin.laporan'],
             ['label' => 'Data Pengguna', 'icon' => 'bi-people', 'route' => 'admin.users.index'],
         ];
     }

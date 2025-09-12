@@ -5,8 +5,6 @@
     'items' => [], // [label, route?, icon?, children?]
 ])
 
-
-
 <aside class="sb">
     <div class="sb-brand">
         <img class="brand-img" src="{{ $brandLogo }}" alt="{{ $brand }}" />
@@ -20,12 +18,33 @@
     <nav class="sb-nav" role="navigation" aria-label="Menu Samping">
         @foreach ($items as $it)
             @php
-                $active = isset($it['route']) && request()->routeIs($it['route']);
+                /* =========================================================
+                   [ADD] Logic aktif:
+                   - $selfActive: route cocok persis ATAU prefix route.* cocok
+                   - $childActive: salah satu anak aktif (kalau ada children)
+                   - $active: parent dianggap aktif jika self OR child aktif
+                   ========================================================= */
+                $selfActive = !empty($it['route']) &&
+                    (request()->routeIs($it['route']) || request()->routeIs($it['route'] . '.*'));
+
                 $hasChildren = !empty($it['children'] ?? []);
+                $childActive = false;
+                if ($hasChildren) {
+                    foreach ($it['children'] as $ch) {
+                        if (!empty($ch['route']) &&
+                            (request()->routeIs($ch['route']) || request()->routeIs($ch['route'] . '.*'))) {
+                            $childActive = true;
+                            break;
+                        }
+                    }
+                }
+
+                $active = $selfActive || $childActive;
             @endphp
 
             <div class="sb-item {{ $active ? 'is-active' : '' }}">
                 @if ($hasChildren)
+                    {{-- [ADD] Parent otomatis terbuka jika aktif/ada child aktif --}}
                     <details {{ $active ? 'open' : '' }}>
                         <summary>
                             @if (!empty($it['icon']))
@@ -34,10 +53,15 @@
                             <span>{{ $it['label'] }}</span>
                             <i class="bi bi-chevron-right caret" aria-hidden="true"></i>
                         </summary>
+
                         <div class="sb-children">
                             @foreach ($it['children'] as $ch)
+                                @php
+                                    $isChildActive = !empty($ch['route']) &&
+                                        (request()->routeIs($ch['route']) || request()->routeIs($ch['route'] . '.*'));
+                                @endphp
                                 <a href="{{ isset($ch['route']) ? route($ch['route']) : '#' }}"
-                                    class="sb-link {{ request()->routeIs($ch['route'] ?? '') ? 'is-active' : '' }}">
+                                   class="sb-link {{ $isChildActive ? 'is-active' : '' }}">
                                     @if (!empty($ch['icon']))
                                         <i class="bi {{ $ch['icon'] }}"></i>
                                     @endif
@@ -47,7 +71,9 @@
                         </div>
                     </details>
                 @else
-                    <a href="{{ isset($it['route']) ? route($it['route']) : '#' }}" class="sb-link">
+                    {{-- Link biasa: beri class is-active bila route cocok --}}
+                    <a href="{{ isset($it['route']) ? route($it['route']) : '#' }}"
+                       class="sb-link {{ $selfActive ? 'is-active' : '' }}">
                         @if (!empty($it['icon']))
                             <i class="bi {{ $it['icon'] }}"></i>
                         @endif
@@ -80,8 +106,4 @@
             </button>
         </form>
     </div>
-
-
-
-
 </aside>
