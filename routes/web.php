@@ -62,3 +62,5 @@ Route::prefix('admin')->name('admin.')->middleware(['auth','role:Admin'])->group
 /* ========== PB & PJ (tetap) ========== */
 Route::middleware(['auth','role:Pengelola Barang'])->get('/pb', PbDashboard::class)->name('staff.pb.dashboard');
 Route::middleware(['auth','role:Penanggung Jawab'])->get('/pj', PjDashboard::class)->name('staff.pj.dashboard');
+
+Route::resource('barang', BarangController::class);
