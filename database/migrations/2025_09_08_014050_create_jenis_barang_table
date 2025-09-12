@@ -7,17 +7,15 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create('barang', function (Blueprint $table) {
+        Schema::create('jenis_barang', function (Blueprint $table) {
             $table->id();
-            $table->string('nama_barang');
-            $table->integer('jumlah')->default(0);
-            $table->foreignId('jenis_barang_id')->constrained('jenis_barang')->onDelete('cascade');
+            $table->string('nama_jenis');
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('barang');
+        Schema::dropIfExists('jenis_barang');
     }
 };

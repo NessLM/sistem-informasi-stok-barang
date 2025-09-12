@@ -3,25 +3,17 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Barang extends Model
 {
-    protected $table = 'barang';
-    protected $primaryKey = 'kode';   // kode sebagai PK
-    public $incrementing = false;     // bukan auto increment
-    protected $keyType = 'string';
+    use HasFactory;
 
-    protected $fillable = [
-        'kode',
-        'nama',
-        'harga',
-        'stok',
-        'satuan',
-        'kategori_id',
-    ];
+    protected $table = 'barang';
+    protected $fillable = ['nama', 'kategori_id', 'jumlah', 'kode', 'harga', 'stok', 'satuan'];
 
     public function kategori()
     {
-        return $this->belongsTo(Kategori::class, 'kategori_id');
+        return $this->belongsTo(Kategori::class);
     }
 }
