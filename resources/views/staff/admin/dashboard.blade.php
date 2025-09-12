@@ -104,13 +104,13 @@
           {
             label: 'Keluar',
             data: [95, 200, 75, 85, 90, 50, 85],
-            backgroundColor: '#22C55E',
+            backgroundColor: '#EF4444',
             borderRadius: 4
           },
           {
             label: 'Masuk',
             data: [80, 110, 95, 100, 85, 95, 75],
-            backgroundColor: '#EF4444',
+            backgroundColor: '#22C55E',
             borderRadius: 4
           }
         ]
