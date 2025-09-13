@@ -87,6 +87,7 @@
             /* supaya tidak ketiban sidebar */
             width: calc(100% - var(--sb-w));
             z-index: 1000;
+            transition: left .3s ease, width .3s ease;
         }
 
         .ph-left {

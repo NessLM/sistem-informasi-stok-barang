@@ -54,27 +54,28 @@
     min-width: 180px;
 }
 
-.riwayat-filter-label {
-    font-weight: 600;
-    font-size: 0.9rem;
-    color: #2c3e50;
-    margin-bottom: 6px;
-}
-
 .riwayat-filter-select {
     border: 2px solid #e9ecef;
     border-radius: 6px;
     padding: 10px 12px;
     font-size: 0.95rem;
     transition: all 0.3s ease;
-    background-color: white;
+    background-color: #2072b7;
+    color: white;
+}
+
+.riwayat-filter-select:hover {
+    background-color: #ffffff;
+    border-color: #000000;
+    color: #000000;
 }
 
 .riwayat-filter-select:focus {
-    border-color: #4e73df;
+    border-color: #ffffff;
     box-shadow: 0 0 0 3px rgba(78, 115, 223, 0.15);
     outline: none;
 }
+
 
 .riwayat-btn-reset {
     background: linear-gradient(135deg, #e74a3b 0%, #be2617 100%);
