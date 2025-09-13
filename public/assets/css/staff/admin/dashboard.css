@@ -195,8 +195,8 @@
 }
 
 /* Warna legend */
-.legend-color.keluar { background-color: #EF4444; }
-.legend-color.masuk  { background-color: #22C55E; }
+.legend-color.masuk { background-color: #22C55E; }
+.legend-color.keluar  { background-color: #EF4444; }
 .legend-color.year-2020 { background-color: #8B5CF6; }
 .legend-color.year-2021 { background-color: #F87171; }
 .legend-color.year-2022 { background-color: #06B6D4; }
