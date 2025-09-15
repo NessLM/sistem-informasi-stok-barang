@@ -34,13 +34,13 @@
                             <label for="username">Username</label>
                             <div class="field">
                                 <input id="username" name="username" type="text"
-                                    placeholder="Masukkan Username . . ." autocomplete="username" required />
+                                    placeholder="Masukkan Username Anda" autocomplete="username" required />
                             </div>
 
                             <label for="password">Password</label>
                             <div class="field field-pass">
                                 <input id="password" name="password" type="password"
-                                    placeholder="Masukkan Password . . ." autocomplete="current-password" required />
+                                    placeholder="Masukkan Password Anda" autocomplete="current-password" required />
                                 <button class="toggle-pass" type="button" aria-label="Tampilkan password"
                                     aria-pressed="false">
                                     <i class="bi bi-eye-slash" aria-hidden="true"></i>
