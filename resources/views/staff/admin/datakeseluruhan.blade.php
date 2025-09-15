@@ -4,14 +4,18 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         .title { font-weight: 700; margin-bottom: 20px; }
-        .panel-header { display: flex; justify-content: space-between; align-items: center; }
-        .table-wrapper { margin-top: 20px; }
         .toast-container { position: fixed; top: 20px; right: 20px; z-index: 2000; }
     </style>
 </head>
 
 <main class="page-wrap container py-4">
     <h1 class="title">Data Keseluruhan</h1>
+
+    {{-- Fallback --}}
+    @php
+        if (!isset($barang) || $barang === null) $barang = collect();
+        if (!isset($kategori) || $kategori === null) $kategori = collect();
+    @endphp
 
     {{-- Toast sukses --}}
     @if(session('success'))
@@ -27,221 +31,223 @@
         </div>
     @endif
 
-    <section class="panel card shadow-sm p-3">
-        <div class="panel-header">
+    <section class="card shadow-sm p-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
             <h4 class="fw-bold">Data Gudang ATK</h4>
             <div class="btn-group">
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambahKategori">
-                    + Tambah Kategori
-                </button>
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambahBarang">
-                    + Tambah Barang
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambahKategori">+ Tambah Kategori</button>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambahBarang">+ Tambah Barang</button>
+                <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalFilterBarang">
+                    <i class="bi bi-funnel"></i> Filter
                 </button>
             </div>
         </div>
 
-        {{-- Search box --}}
-        <form action="{{ route('admin.barang.index') }}" method="GET" class="input-group mt-3 mb-3">
+        {{-- Search --}}
+        <form action="{{ route('admin.datakeseluruhan') }}" method="GET" class="input-group mb-3">
             <span class="input-group-text"><i class="bi bi-search"></i></span>
-            <input type="text" name="search" class="form-control" placeholder="Telusuri barang"
-                   value="{{ request('search') }}">
+            <input type="text" name="search" class="form-control" placeholder="Telusuri barang" value="{{ request('search') }}">
             <button class="btn btn-outline-secondary" type="submit">Cari</button>
         </form>
 
-        {{-- Hasil pencarian --}}
-        @if(request('search'))
-            <h5 class="mt-4">Hasil pencarian untuk: <b>{{ request('search') }}</b></h5>
-            @if($kategori->pluck('barang')->flatten()->count() > 0)
-                <table class="table table-bordered mt-3">
+        {{-- Jika ada filter/search --}}
+        @if(request()->filled('search') || request()->filled('kode') || request()->filled('stok_min') || request()->filled('stok_max') || request()->filled('kategori_id') || request()->filled('satuan') || request()->filled('nomor_awal') || request()->filled('nomor_akhir'))
+            <h5 class="mt-3">Hasil</h5>
+            @if($barang->count() > 0)
+                <table class="table table-bordered mt-2">
                     <thead class="table-secondary">
                         <tr>
-                            <th>No</th>
-                            <th>Nama Barang</th>
-                            <th>Kode Barang</th>
-                            <th>Harga</th>
-                            <th>Stok</th>
-                            <th>Satuan</th>
-                            <th>Kategori</th>
-                            <th>Aksi</th>
+                            <th>No</th><th>Nama</th><th>Kode</th><th>Harga</th><th>Stok</th><th>Satuan</th><th>Kategori</th><th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($kategori as $k)
-                            @foreach($k->barang as $i => $b)
-                                <tr @if($b->stok == 0) class="table-danger" @endif>
-                                    <td>{{ $loop->parent->iteration }}.{{ $i+1 }}</td>
-                                    <td>{{ $b->nama }}</td>
-                                    <td>{{ $b->kode }}</td>
-                                    <td>Rp {{ number_format($b->harga,0,',','.') }}</td>
-                                    <td>{{ $b->stok }}</td>
-                                    <td>{{ $b->satuan }}</td>
-                                    <td>{{ $k->nama }}</td>
-                                    <td>
-                                        <form action="{{ route('barang.destroy', $b->kode) }}"
-                                              method="POST" class="d-inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-danger"
-                                                    onclick="return confirm('Hapus barang ini?')">
-                                                Hapus
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            @endforeach
+                        @foreach($barang as $i => $b)
+                            <tr @if($b->stok == 0) class="table-danger" @endif>
+                                <td>{{ $i+1 }}</td>
+                                <td>{{ $b->nama }}</td>
+                                <td>{{ $b->kode }}</td>
+                                <td>Rp {{ number_format($b->harga ?? 0,0,',','.') }}</td>
+                                <td>{{ $b->stok }}</td>
+                                <td>{{ $b->satuan }}</td>
+                                <td>{{ $b->kategori->nama ?? '-' }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalEditBarang-{{ $b->kode }}">Edit</button>
+
+                                    <form action="{{ route('admin.barang.destroy', $b->kode) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="btn btn-sm btn-danger" onclick="return confirm('Hapus barang ini?')">Hapus</button>
+                                    </form>
+                                </td>
+                            </tr>
                         @endforeach
                     </tbody>
                 </table>
             @else
-                <div class="alert alert-warning mt-3">
-                    Tidak ada barang ditemukan untuk pencarian: <b>{{ request('search') }}</b>
-                </div>
+                <div class="alert alert-warning">Tidak ada data ditemukan</div>
             @endif
         @endif
 
-        {{-- Tabel Kategori & Barang (default tampilan) --}}
-        @if(!request('search'))
-        <div class="table-wrapper">
-            <table class="table table-bordered">
-                <thead class="table-dark">
-                    <tr>
-                        <th>KATEGORI</th>
-                        <th style="width:150px;">AKSI</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($kategori as $k)
-                        {{-- Baris kategori --}}
-                        <tr>
-                            <td class="fw-bold">{{ $k->nama }}</td>
-                            <td>
-                                <button class="btn btn-sm btn-success" onclick="toggleDetail({{ $k->id }})">
-                                    Detail
-                                </button>
-                            </td>
-                        </tr>
+        {{-- Jika tidak ada search --}}
+        @if(!request()->filled('search') && !request()->filled('kode') && !request()->filled('stok_min') && !request()->filled('stok_max') && !request()->filled('kategori_id') && !request()->filled('satuan') && !request()->filled('nomor_awal') && !request()->filled('nomor_akhir'))
+            <div class="table-wrapper mt-3">
+                <table class="table table-bordered">
+                    <thead class="table-dark">
+                        <tr><th>KATEGORI</th><th style="width:150px">AKSI</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach($kategori as $k)
+                            <tr>
+                                <td class="fw-bold">{{ $k->nama }}</td>
+                                <td><button class="btn btn-sm btn-success" onclick="toggleDetail({{ $k->id }})">Detail</button></td>
+                            </tr>
 
-                        {{-- Detail barang --}}
-                        <tr id="detail-{{ $k->id }}" style="display:none;">
-                            <td colspan="2">
-                                @if($k->barang->count() > 0)
-                                    <table class="table table-striped table-bordered">
-                                        <thead class="table-secondary">
-                                            <tr>
-                                                <th>No</th>
-                                                <th>Nama Barang</th>
-                                                <th>Kode Barang</th>
-                                                <th>Harga</th>
-                                                <th>Stok</th>
-                                                <th>Satuan</th>
-                                                <th>Aksi</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach($k->barang as $i => $b)
-                                                <tr @if($b->stok == 0) class="table-danger" @endif>
-                                                    <td>{{ $i+1 }}</td>
-                                                    <td>{{ $b->nama }}</td>
-                                                    <td>{{ $b->kode }}</td>
-                                                    <td>Rp {{ number_format($b->harga,0,',','.') }}</td>
-                                                    <td>{{ $b->stok }}</td>
-                                                    <td>{{ $b->satuan }}</td>
-                                                    <td>
-                                                        <form action="{{ route('barang.destroy', $b->kode) }}"
-                                                              method="POST" class="d-inline">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit" class="btn btn-sm btn-danger"
-                                                                    onclick="return confirm('Hapus barang ini?')">
-                                                                Hapus
-                                                            </button>
-                                                        </form>
-                                                    </td>
+                            <tr id="detail-{{ $k->id }}" style="display:none;">
+                                <td colspan="2">
+                                    @if($k->barang->count())
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>No</th><th>Nama</th><th>Kode</th><th>Harga</th><th>Stok</th><th>Satuan</th><th>Aksi</th>
                                                 </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                @else
-                                    <p class="text-muted">Belum ada barang di kategori ini.</p>
-                                @endif
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($k->barang as $i => $b)
+                                                    <tr @if($b->stok == 0) class="table-danger" @endif>
+                                                        <td>{{ $i+1 }}</td>
+                                                        <td>{{ $b->nama }}</td>
+                                                        <td>{{ $b->kode }}</td>
+                                                        <td>Rp {{ number_format($b->harga ?? 0,0,',','.') }}</td>
+                                                        <td>{{ $b->stok }}</td>
+                                                        <td>{{ $b->satuan }}</td>
+                                                        <td>
+                                                            <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalEditBarang-{{ $b->kode }}">Edit</button>
+                                                            <form action="{{ route('admin.barang.destroy', $b->kode) }}" method="POST" class="d-inline">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button class="btn btn-sm btn-danger" onclick="return confirm('Hapus barang ini?')">Hapus</button>
+                                                            </form>
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    @else
+                                        <p class="text-muted">Belum ada barang pada kategori ini.</p>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         @endif
     </section>
 </main>
 
-<!-- Modal Tambah Kategori -->
+{{-- Modal Tambah Kategori --}}
 <div class="modal fade" id="modalTambahKategori" tabindex="-1">
   <div class="modal-dialog">
     <form action="{{ route('admin.kategori.store') }}" method="POST" class="modal-content">
       @csrf
-      <div class="modal-header">
-        <h5 class="modal-title">Form Tambah Kategori</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <input type="text" name="nama" class="form-control" placeholder="Masukkan nama kategori..." required>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Batal</button>
-        <button type="submit" class="btn btn-primary">Simpan</button>
-      </div>
+      <div class="modal-header"><h5 class="modal-title">Tambah Kategori</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body"><input type="text" name="nama" class="form-control" placeholder="Nama kategori" required></div>
+      <div class="modal-footer"><button type="button" class="btn btn-danger" data-bs-dismiss="modal">Batal</button><button class="btn btn-primary" type="submit">Simpan</button></div>
     </form>
   </div>
 </div>
 
-<!-- Modal Tambah Barang -->
+{{-- Modal Tambah Barang --}}
 <div class="modal fade" id="modalTambahBarang" tabindex="-1">
   <div class="modal-dialog modal-lg">
     <form action="{{ route('admin.barang.store') }}" method="POST" class="modal-content">
       @csrf
-      <div class="modal-header">
-        <h5 class="modal-title">Form Tambah Barang</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
+      <div class="modal-header"><h5 class="modal-title">Tambah Barang</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
       <div class="modal-body">
         <div class="row g-3">
-          <div class="col-md-6">
-            <label class="form-label">Nama Barang</label>
-            <input type="text" name="nama" class="form-control" required>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">Kode Barang</label>
-            <input type="text" name="kode" class="form-control" required>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">Kategori</label>
-            <select name="kategori_id" class="form-select" required>
-              <option value="">-- Pilih Kategori --</option>
-              @foreach($kategori as $k)
-                <option value="{{ $k->id }}">{{ $k->nama }}</option>
-              @endforeach
-            </select>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">Harga / Satuan</label>
-            <div class="input-group">
-              <input type="number" name="harga" class="form-control" required>
-              <select name="satuan" class="form-select" required>
-                <option value="Pcs">Pcs</option>
-                <option value="Box">Box</option>
-                <option value="Pack">Pack</option>
-                <option value="Rim">Rim</option>
-                <option value="Unit">Unit</option>
-              </select>
+            <div class="col-md-6"><label>Nama</label><input type="text" name="nama" class="form-control" required></div>
+            <div class="col-md-6"><label>Kode</label><input type="text" name="kode" class="form-control" required></div>
+            <div class="col-md-6">
+                <label>Kategori</label>
+                <select name="kategori_id" class="form-select" required>
+                    <option value="">-- Pilih Kategori --</option>
+                    @foreach($kategori as $k) <option value="{{ $k->id }}">{{ $k->nama }}</option> @endforeach
+                </select>
             </div>
-          </div>
+            <div class="col-md-6">
+                <label>Harga / Satuan</label>
+                <div class="input-group">
+                    <input type="number" name="harga" class="form-control" required>
+                    <select name="satuan" class="form-select" required>
+                        <option value="Pcs">Pcs</option><option value="Box">Box</option><option value="Pack">Pack</option><option value="Rim">Rim</option><option value="Unit">Unit</option>
+                    </select>
+                </div>
+            </div>
         </div>
         <input type="hidden" name="stok" value="0">
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Batal</button>
-        <button type="submit" class="btn btn-primary">Simpan</button>
+      <div class="modal-footer"><button type="button" class="btn btn-danger" data-bs-dismiss="modal">Batal</button><button class="btn btn-primary" type="submit">Simpan</button></div>
+    </form>
+  </div>
+</div>
+
+{{-- Modal Edit Barang --}}
+@if($barang->count())
+    @foreach($barang as $b)
+    <div class="modal fade" id="modalEditBarang-{{ $b->kode }}" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <form action="{{ route('admin.barang.update', $b->kode) }}" method="POST" class="modal-content">
+          @csrf
+          @method('PUT')
+          <div class="modal-header"><h5 class="modal-title">Edit Barang: {{ $b->nama }}</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+          <div class="modal-body">
+            <div class="row g-3">
+                <div class="col-md-6"><label>Nama</label><input type="text" name="nama" class="form-control" value="{{ $b->nama }}" required></div>
+                <div class="col-md-6"><label>Kode</label><input type="text" class="form-control" value="{{ $b->kode }}" disabled></div>
+                <div class="col-md-6">
+                    <label>Kategori</label>
+                    <select name="kategori_id" class="form-select" required>
+                        @foreach($kategori as $k) <option value="{{ $k->id }}" @if($b->kategori_id == $k->id) selected @endif>{{ $k->nama }}</option> @endforeach
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label>Harga / Satuan</label>
+                    <div class="input-group">
+                        <input type="number" name="harga" class="form-control" value="{{ $b->harga }}">
+                        <select name="satuan" class="form-select">
+                            <option value="Pcs" @if($b->satuan=='Pcs') selected @endif>Pcs</option>
+                            <option value="Box" @if($b->satuan=='Box') selected @endif>Box</option>
+                            <option value="Pack" @if($b->satuan=='Pack') selected @endif>Pack</option>
+                            <option value="Rim" @if($b->satuan=='Rim') selected @endif>Rim</option>
+                            <option value="Unit" @if($b->satuan=='Unit') selected @endif>Unit</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6"><label>Stok</label><input type="number" name="stok" class="form-control" value="{{ $b->stok }}"></div>
+            </div>
+          </div>
+          <div class="modal-footer"><button type="button" class="btn btn-danger" data-bs-dismiss="modal">Batal</button><button class="btn btn-primary" type="submit">Simpan Perubahan</button></div>
+        </form>
       </div>
+    </div>
+    @endforeach
+@endif
+
+{{-- Modal Filter --}}
+<div class="modal fade" id="modalFilterBarang" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <form action="{{ route('admin.datakeseluruhan') }}" method="GET" class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Filter Barang</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <div class="row g-3">
+            <div class="col-md-6"><label>Kode</label><input type="text" name="kode" class="form-control" value="{{ request('kode') }}"></div>
+            <div class="col-md-6"><label>Jumlah (stok min / max)</label><div class="d-flex gap-2"><input type="number" name="stok_min" class="form-control" value="{{ request('stok_min') }}"><input type="number" name="stok_max" class="form-control" value="{{ request('stok_max') }}"></div></div>
+            <div class="col-md-6"><label>Kategori</label><select name="kategori_id" class="form-select"><option value="">-- Semua --</option>@foreach($kategori as $k)<option value="{{ $k->id }}" @if(request('kategori_id')==$k->id) selected @endif>{{ $k->nama }}</option>@endforeach</select></div>
+            <div class="col-md-6"><label>Satuan</label><select name="satuan" class="form-select"><option value="">-- Semua --</option><option value="Pcs" @if(request('satuan')=='Pcs') selected @endif>Pcs</option><option value="Box" @if(request('satuan')=='Box') selected @endif>Box</option><option value="Pack" @if(request('satuan')=='Pack') selected @endif>Pack</option><option value="Rim" @if(request('satuan')=='Rim') selected @endif>Rim</option><option value="Unit" @if(request('satuan')=='Unit') selected @endif>Unit</option></select></div>
+            <div class="col-md-6"><label>Nomor (id)</label><div class="d-flex gap-2"><input type="number" name="nomor_awal" class="form-control" value="{{ request('nomor_awal') }}"><input type="number" name="nomor_akhir" class="form-control" value="{{ request('nomor_akhir') }}"></div></div>
+        </div>
+      </div>
+      <div class="modal-footer"><a href="{{ route('admin.datakeseluruhan') }}" class="btn btn-danger">Reset</a><button type="submit" class="btn btn-primary">Simpan</button></div>
     </form>
   </div>
 </div>
@@ -252,8 +258,6 @@ function toggleDetail(id) {
     let row = document.getElementById('detail-' + id);
     row.style.display = (row.style.display === 'none') ? '' : 'none';
 }
-
-// Auto-hide toast setelah 3 detik
 document.addEventListener("DOMContentLoaded", function(){
     let toastEl = document.getElementById('successToast');
     if (toastEl) {

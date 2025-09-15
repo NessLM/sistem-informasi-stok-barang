@@ -70,3 +70,32 @@ Route::middleware(['auth','role:Penanggung Jawab'])->get('/pj', PjDashboard::cla
 
 Route::resource('barang', BarangController::class);
 Route::get('/admin/datakeseluruhan', [DataKeseluruhan::class, 'index'])->name('admin.datakeseluruhan.index');
+
+Route::prefix('admin')->group(function () {
+    Route::get('/datakeseluruhan', [DataKeseluruhan::class, 'index'])->name('admin.datakeseluruhan');
+    Route::post('/kategori/store', [DataKeseluruhan::class, 'storeKategori'])->name('admin.kategori.store');
+    Route::post('/barang/store', [DataKeseluruhan::class, 'storeBarang'])->name('admin.barang.store');
+    Route::delete('/barang/{kode}', [DataKeseluruhan::class, 'destroyBarang'])->name('barang.destroy');
+});
+
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::resource('barang', BarangController::class)->names('admin.barang');
+
+});
+
+Route::prefix('admin')->name('admin.')->group(function () {
+    // Barang
+    Route::resource('barang', BarangController::class);
+
+    // Data keseluruhan
+    Route::get('/datakeseluruhan', [DataKeseluruhan::class, 'index'])->name('datakeseluruhan');
+    Route::post('/kategori/store', [DataKeseluruhan::class, 'storeKategori'])->name('kategori.store');
+});
+
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/datakeseluruhan', [DataKeseluruhan::class, 'index'])->name('datakeseluruhan');
+    Route::post('/kategori/store', [DataKeseluruhan::class, 'storeKategori'])->name('kategori.store');
+    Route::post('/barang/store', [DataKeseluruhan::class, 'storeBarang'])->name('barang.store');
+    Route::put('/barang/update/{kode}', [DataKeseluruhan::class, 'updateBarang'])->name('barang.update');
+    Route::delete('/barang/destroy/{kode}', [DataKeseluruhan::class, 'destroyBarang'])->name('barang.destroy');
+});
