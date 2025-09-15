@@ -173,7 +173,6 @@
         document.getElementById('user_role').value = this.dataset.roleId || '';
         document.getElementById('user_bagian').value = this.dataset.bagian || '';
 
-        // 🔥 tampilkan password lama apa adanya (hash dari DB)
         document.getElementById('user_old_password').value = this.dataset.password || '';
 
         // Kalau admin sendiri, disable username & role
