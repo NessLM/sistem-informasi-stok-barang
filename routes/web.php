@@ -10,8 +10,11 @@ use App\Http\Controllers\Admin\RiwayatController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\BarangController;
 use App\Http\Controllers\Admin\LaporanController;
-// PB & PJ
+
+// Pengelola Barang
 use App\Http\Controllers\Pb\DashboardController as PbDashboard;
+
+// Penanggung Jawab
 use App\Http\Controllers\Pj\DashboardController as PjDashboard;
 
 /* ============== AUTH ============== */
