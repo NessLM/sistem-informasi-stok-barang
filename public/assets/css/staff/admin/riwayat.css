@@ -77,7 +77,6 @@
     outline: none;
 }
 
-
 .riwayat-btn-reset {
     background: linear-gradient(135deg, #e74a3b 0%, #be2617 100%);
     border: none;
@@ -95,7 +94,6 @@
     color: white;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
-
 
 /* Gaya untuk icon mata bukti */
 .riwayat-bukti-icon {
@@ -134,22 +132,21 @@
     filter: invert(1);
 }
 
-
 .btn-keluar {
     border: none;
     color: #be2617;
-    font-weight: bold;
+    font-weight: 600;
     border-radius: 6px;
-    font-size: 14px;
+    font-size: 20px;
     padding: 6px 12px;
 }
 
 .btn-masuk {
     border: none;
     color: #13855c;
-    font-weight: bold;
+    font-weight: 600;
     border-radius: 6px;
-    font-size: 14px;
+    font-size: 20px;
     padding: 6px 12px;
 }
 
@@ -226,7 +223,7 @@
 }
 
 .riwayat-loading::after {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;

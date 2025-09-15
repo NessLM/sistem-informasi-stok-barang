@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->date('tanggal');
             $table->time('waktu');
+            $table->string('gudang');
             $table->string('nama_barang');
             $table->integer('jumlah');
             $table->string('bagian');

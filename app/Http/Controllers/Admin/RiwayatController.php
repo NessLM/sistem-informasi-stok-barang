@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Riwayat;
 use Illuminate\Http\Request;
 use App\Helpers\MenuHelper;
+use Carbon\Carbon;
 
 class RiwayatController extends Controller
 {
@@ -19,16 +20,33 @@ class RiwayatController extends Controller
             $query->where('alur_barang', $request->alur_barang);
         }
 
+        if ($request->filled('gudang') && $request->gudang !== 'Semua') {
+            $query->where('gudang', $request->gudang);
+        }
+
         if ($request->filled('periode')) {
             switch ($request->periode) {
-                case '1_minggu_terakhir': $query->where('tanggal', '>=', now()->subWeek());  break;
-                case '1_bulan_terakhir':  $query->where('tanggal', '>=', now()->subMonth()); break;
-                case '1_tahun_terakhir':  $query->where('tanggal', '>=', now()->subYear());  break;
+                case '1_minggu_terakhir': 
+                    $query->where('tanggal', '>=', Carbon::now()->subWeek()->format('Y-m-d'));  
+                    break;
+                case '1_bulan_terakhir':  
+                    $query->where('tanggal', '>=', Carbon::now()->subMonth()->format('Y-m-d')); 
+                    break;
+                case '1_tahun_terakhir':  
+                    $query->where('tanggal', '>=', Carbon::now()->subYear()->format('Y-m-d'));  
+                    break;
             }
         }
 
-        $riwayat = $query->orderBy('tanggal', 'desc')->orderBy('waktu', 'desc')->get();
+        // Mengurutkan berdasarkan tanggal dan waktu secara descending
+        // Pastikan menggunakan format yang benar
+        $riwayat = $query->orderBy('tanggal', 'desc')
+                         ->orderBy('waktu', 'desc')
+                         ->get();
 
-        return view('staff.admin.riwayat', compact('riwayat', 'menu'));
+        // Mendapatkan daftar gudang unik untuk filter
+        $gudangList = Riwayat::select('gudang')->distinct()->orderBy('gudang')->get();
+
+        return view('staff.admin.riwayat', compact('riwayat', 'menu', 'gudangList'));
     }
 }
