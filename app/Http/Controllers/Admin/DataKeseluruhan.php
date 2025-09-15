@@ -5,44 +5,87 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Kategori;
 use App\Models\Barang;
+use App\Models\Gudang;
 use Illuminate\Http\Request;
 use App\Helpers\MenuHelper;
 
 class DataKeseluruhan extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $kategori = Kategori::with('barang')->get();
+        $menu   = MenuHelper::adminMenu();
+        $search = $request->input('search');
 
-        $menu = MenuHelper::adminMenu();
+        // Ambil kategori + relasi barang
+        $kategori = Kategori::with(['barang' => function ($q) use ($search) {
+            if ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('kode', 'like', "%{$search}%");
+            }
+        }])->get();
 
-        return view('staff.admin.datakeseluruhan', compact('kategori', 'menu'));
+        // Ambil semua gudang (untuk form tambah kategori)
+        $gudang = Gudang::all();
+
+        // Query flat barang untuk pencarian/filter/modal edit
+        $query = Barang::with('kategori');
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('kode', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter tambahan
+        if ($request->filled('kode')) {
+            $query->where('kode', 'like', "%{$request->kode}%");
+        }
+        if ($request->filled('stok_min')) {
+            $query->where('stok', '>=', intval($request->stok_min));
+        }
+        if ($request->filled('stok_max')) {
+            $query->where('stok', '<=', intval($request->stok_max));
+        }
+        if ($request->filled('kategori_id')) {
+            $query->where('kategori_id', $request->kategori_id);
+        }
+        if ($request->filled('satuan')) {
+            $query->where('satuan', $request->satuan);
+        }
+        if ($request->filled('nomor_awal')) {
+            $query->where('id', '>=', intval($request->nomor_awal));
+        }
+        if ($request->filled('nomor_akhir')) {
+            $query->where('id', '<=', intval($request->nomor_akhir));
+        }
+
+        $barang = $query->get();
+
+        return view('staff.admin.datakeseluruhan', compact('kategori', 'barang', 'menu', 'gudang'));
     }
 
     public function storeKategori(Request $request)
     {
-        // Tabel: kategori (bukan kategoris)
         $request->validate([
-            'nama' => 'required|string|max:255|unique:kategori,nama',
+            'nama'      => 'required|string|max:255|unique:kategori,nama',
+            'gudang_id' => 'required|exists:gudang,id',
         ]);
 
-        Kategori::create(['nama' => $request->nama]);
+        Kategori::create([
+            'nama'      => $request->nama,
+            'gudang_id' => $request->gudang_id,
+        ]);
 
         return redirect()->route('admin.datakeseluruhan')
-            ->with('success', 'Kategori berhasil ditambahkan!');
-    }
-
-    public function storeJenis(Request $request)
-    {
-        // Jika nanti ada kolom jenis, tambahkan rule & create di sini.
-        return back()->with('info', 'Endpoint storeJenis belum diimplementasi.');
+                         ->with('success', 'Kategori berhasil ditambahkan!');
     }
 
     public function storeBarang(Request $request)
     {
         $request->validate([
-            'kode'        => 'required|string|max:255',
-            'nama'        => 'required|string|max:100|unique:barang,kode', // tabel barang
+            'kode'        => 'required|string|max:255|unique:barang,kode',
+            'nama'        => 'required|string|max:255',
             'harga'       => 'nullable|numeric|min:0',
             'stok'        => 'nullable|integer|min:0',
             'satuan'      => 'nullable|string|max:50',
@@ -52,13 +95,61 @@ class DataKeseluruhan extends Controller
         Barang::create([
             'kode'        => $request->kode,
             'nama'        => $request->nama,
-            'harga'       => $request->harga,
+            'harga'       => $request->harga ?? 0,
+            'stok'        => $request->stok ?? 0,
+            'satuan'      => $request->satuan,
+            'kategori_id' => $request->kategori_id,
+            'jenis_barang_id' => 1, // default
+        ]);
+
+        return redirect()->route('admin.datakeseluruhan')
+                         ->with('success', 'Barang berhasil ditambahkan!');
+    }
+
+    public function updateBarang(Request $request, $kode)
+    {
+        $barang = Barang::where('kode', $kode)->firstOrFail();
+
+        $request->validate([
+            'nama'        => 'required|string|max:255',
+            'harga'       => 'nullable|numeric|min:0',
+            'stok'        => 'nullable|integer|min:0',
+            'satuan'      => 'nullable|string|max:50',
+            'kategori_id' => 'required|exists:kategori,id',
+        ]);
+
+        $barang->update([
+            'nama'        => $request->nama,
+            'harga'       => $request->harga ?? 0,
             'stok'        => $request->stok ?? 0,
             'satuan'      => $request->satuan,
             'kategori_id' => $request->kategori_id,
         ]);
 
         return redirect()->route('admin.datakeseluruhan')
-            ->with('success', 'Barang berhasil ditambahkan!');
+                         ->with('success', 'Barang berhasil diperbarui!');
     }
+
+    public function destroyBarang($kode)
+    {
+        $barang = Barang::where('kode', $kode)->firstOrFail();
+        $barang->delete();
+
+        return redirect()->route('admin.datakeseluruhan')
+                         ->with('success', 'Barang berhasil dihapus!');
+    }
+
+    public function destroyKategori($id)
+{
+    $kategori = Kategori::findOrFail($id);
+
+    // Jika ada barang di kategori ini, ikut dihapus juga
+    $kategori->barang()->delete();
+
+    $kategori->delete();
+
+    return redirect()->route('admin.datakeseluruhan')
+                     ->with('success', 'Kategori berhasil dihapus!');
+}
+
 }

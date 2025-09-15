@@ -14,7 +14,7 @@ class BarangController extends Controller
     {
         $search = $request->input('search');
 
-        // Eager load barang per kategori + filter jika ada pencarian
+        // Ambil kategori + barang (filter kalau ada search)
         $kategori = Kategori::with(['barang' => function ($q) use ($search) {
             if ($search) {
                 $q->where('nama', 'like', "%{$search}%")
@@ -22,7 +22,6 @@ class BarangController extends Controller
             }
         }])->get();
 
-        // NAMA RUTE konsisten pakai 'admin.*'
         $menu = MenuHelper::adminMenu();
 
         return view('staff.admin.datakeseluruhan', compact('kategori', 'menu', 'search'));
@@ -30,7 +29,6 @@ class BarangController extends Controller
 
     public function store(Request $request)
     {
-        // Perhatikan nama tabel di rule: model Barang -> $table = 'barang'
         $request->validate([
             'kode'        => 'required|string|max:100|unique:barang,kode',
             'nama'        => 'required|string|max:255',
@@ -53,9 +51,44 @@ class BarangController extends Controller
                          ->with('success', 'Barang berhasil ditambahkan!');
     }
 
-    public function destroy($kode)
+    public function edit($id)
     {
-        $barang = Barang::findOrFail($kode);
+        $barang = Barang::findOrFail($id);
+        $kategori = Kategori::all();
+        $menu = MenuHelper::adminMenu();
+
+        return view('staff.admin.edit-barang', compact('barang', 'kategori', 'menu'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $barang = Barang::findOrFail($id);
+
+        $request->validate([
+            'kode'        => 'required|string|max:100|unique:barang,kode,' . $barang->id,
+            'nama'        => 'required|string|max:255',
+            'harga'       => 'nullable|numeric|min:0',
+            'stok'        => 'nullable|integer|min:0',
+            'satuan'      => 'nullable|string|max:50',
+            'kategori_id' => 'required|exists:kategori,id',
+        ]);
+
+        $barang->update([
+            'kode'        => $request->kode,
+            'nama'        => $request->nama,
+            'harga'       => $request->harga ?? 0,
+            'stok'        => $request->stok ?? 0,
+            'satuan'      => $request->satuan,
+            'kategori_id' => $request->kategori_id,
+        ]);
+
+        return redirect()->route('admin.barang.index')
+                         ->with('success', 'Barang berhasil diperbarui!');
+    }
+
+    public function destroy($id)
+    {
+        $barang = Barang::findOrFail($id);
         $barang->delete();
 
         return redirect()->route('admin.barang.index')
