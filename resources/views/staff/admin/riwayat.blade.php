@@ -8,61 +8,102 @@
         <div class="card riwayat-filter-card mb-4">
             <div class="card-body riwayat-filter-body">
                 <h3>Filter Data</h3>
-                <form id="filterForm" class="riwayat-filter-form">
-                    <div class="riwayat-filter-group custom-select-wrapper">
-                        <select name="alur_barang" class="form-select riwayat-filter-select custom-select"
-                            onchange="this.form.submit()">
-                            <option value="Semua" {{ request('alur_barang') == 'Semua' ? 'selected' : '' }}>Pilih Alur
-                                Barang</option>
-                            <option value="Keluar" {{ request('alur_barang') == 'Keluar' ? 'selected' : '' }}>Keluar
-                            </option>
-                            <option value="Masuk" {{ request('alur_barang') == 'Masuk' ? 'selected' : '' }}>Masuk
-                            </option>
-                        </select>
-                        <span class="custom-arrow">
-                            <i class="bi bi-chevron-right"></i>
-                        </span>
+                <form id="filterForm" class="riwayat-filter-form" method="GET">
+                    <!-- Filter Alur Barang -->
+                    <div class="riwayat-filter-group riwayat-filter-dropdown">
+                        <button class="btn riwayat-btn-filter dropdown-toggle" type="button" id="alurDropdown"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <span>{{ request('alur_barang', 'Semua') == 'Semua' ? 'Pilih Alur Barang' : request('alur_barang') }}</span>
+                            <i class="bi bi-chevron-right dropdown-arrow"></i>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="alurDropdown">
+                            <li><a class="dropdown-item {{ request('alur_barang', 'Semua') == 'Semua' ? 'active' : '' }}"
+                                    href="#" data-value="Semua">Semua</a></li>
+                            <li><a class="dropdown-item {{ request('alur_barang') == 'Keluar' ? 'active' : '' }}"
+                                    href="#" data-value="Keluar">Keluar</a></li>
+                            <li><a class="dropdown-item {{ request('alur_barang') == 'Masuk' ? 'active' : '' }}"
+                                    href="#" data-value="Masuk">Masuk</a></li>
+                        </ul>
+                        <input type="hidden" name="alur_barang" value="{{ request('alur_barang', 'Semua') }}">
                     </div>
 
-                    <div class="riwayat-filter-group custom-select-wrapper">
-                        <select name="gudang" class="form-select riwayat-filter-select custom-select"
-                            onchange="this.form.submit()">
-                            <option value="Semua" {{ request('gudang') == 'Semua' ? 'selected' : '' }}>Pilih Gudang
-                            </option>
+                    <!-- Filter Gudang -->
+                    <div class="riwayat-filter-group riwayat-filter-dropdown">
+                        <button class="btn riwayat-btn-filter dropdown-toggle" type="button" id="gudangDropdown"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <span>{{ request('gudang', 'Semua') == 'Semua' ? 'Pilih Gudang' : request('gudang') }}</span>
+                            <i class="bi bi-chevron-right dropdown-arrow"></i>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="gudangDropdown">
+                            <li><a class="dropdown-item {{ request('gudang', 'Semua') == 'Semua' ? 'active' : '' }}"
+                                    href="#" data-value="Semua">Semua</a></li>
                             @foreach ($gudangList as $gudang)
-                                <option value="{{ $gudang->gudang }}"
-                                    {{ request('gudang') == $gudang->gudang ? 'selected' : '' }}>
-                                    {{ $gudang->gudang }}
-                                </option>
+                                <li><a class="dropdown-item {{ request('gudang') == $gudang->gudang ? 'active' : '' }}"
+                                        href="#" data-value="{{ $gudang->gudang }}">{{ $gudang->gudang }}</a></li>
                             @endforeach
-                        </select>
-                        <span class="custom-arrow">
-                            <i class="bi bi-chevron-right"></i>
-                        </span>
+                        </ul>
+                        <input type="hidden" name="gudang" value="{{ request('gudang', 'Semua') }}">
                     </div>
 
-                    <div class="riwayat-filter-group custom-select-wrapper">
-                        <select name="periode" class="form-select riwayat-filter-select custom-select"
-                            onchange="this.form.submit()">
-                            <option value="">Pilih Periode</option>
-                            <option value="1_minggu_terakhir"
-                                {{ request('periode') == '1_minggu_terakhir' ? 'selected' : '' }}>1 Minggu Terakhir
-                            </option>
-                            <option value="1_bulan_terakhir"
-                                {{ request('periode') == '1_bulan_terakhir' ? 'selected' : '' }}>1 Bulan Terakhir
-                            </option>
-                            <option value="1_tahun_terakhir"
-                                {{ request('periode') == '1_tahun_terakhir' ? 'selected' : '' }}>1 Tahun Terakhir
-                            </option>
-                        </select>
-                        <span class="custom-arrow">
-                            <i class="bi bi-chevron-right"></i>
-                        </span>
+                    <!-- Filter Periode -->
+                    <div class="riwayat-filter-group riwayat-filter-dropdown">
+                        <button class="btn riwayat-btn-filter dropdown-toggle" type="button" id="periodeDropdown"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <span>
+                                @if (request('periode') == '1_minggu_terakhir')
+                                    1 Minggu Terakhir
+                                @elseif(request('periode') == '1_bulan_terakhir')
+                                    1 Bulan Terakhir
+                                @elseif(request('periode') == '1_tahun_terakhir')
+                                    1 Tahun Terakhir
+                                @else
+                                    Pilih Periode
+                                @endif
+                            </span>
+                            <i class="bi bi-chevron-right dropdown-arrow"></i>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="periodeDropdown">
+                            <li><a class="dropdown-item {{ !request('periode') ? 'active' : '' }}" href="#"
+                                    data-value="">Pilih Periode</a></li>
+                            <li><a class="dropdown-item {{ request('periode') == '1_minggu_terakhir' ? 'active' : '' }}"
+                                    href="#" data-value="1_minggu_terakhir">1 Minggu Terakhir</a></li>
+                            <li><a class="dropdown-item {{ request('periode') == '1_bulan_terakhir' ? 'active' : '' }}"
+                                    href="#" data-value="1_bulan_terakhir">1 Bulan Terakhir</a></li>
+                            <li><a class="dropdown-item {{ request('periode') == '1_tahun_terakhir' ? 'active' : '' }}"
+                                    href="#" data-value="1_tahun_terakhir">1 Tahun Terakhir</a></li>
+                        </ul>
+                        <input type="hidden" name="periode" value="{{ request('periode') }}">
                     </div>
 
-                    <a href="{{ route('admin.riwayat.index') }}" class="btn riwayat-btn-reset">
-                        <i class="bi bi-arrow-clockwise me-2"></i>Reset
-                    </a>
+                    <!-- Tombol Reset -->
+                    <div class="riwayat-filter-group">
+                        <a href="{{ route('admin.riwayat.index') }}" class="btn riwayat-btn-reset">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Reset
+                        </a>
+                    </div>
+
+                    <!-- Tombol Unduh -->
+                    <div class="riwayat-action-buttons">
+                        <div class="dropdown riwayat-download-dropdown">
+                            <button class="btn riwayat-btn-download dropdown-toggle" type="button"
+                                id="downloadDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-download me-2"></i>Unduh
+                                <i class="bi bi-chevron-right dropdown-arrow ms-2"></i>
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="downloadDropdown">
+                                <li>
+                                    <a class="dropdown-item" href="#" onclick="downloadReport('excel')">
+                                        <i class="bi bi-file-earmark-excel me-2"></i>Excel
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="#" onclick="downloadReport('pdf')">
+                                        <i class="bi bi-file-earmark-pdf me-2"></i>PDF
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
                 </form>
             </div>
         </div>
@@ -143,36 +184,39 @@
         </div>
     </div>
 
-
     @push('scripts')
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-                const filterForm = document.getElementById('filterForm');
-                const selects = filterForm.querySelectorAll('select');
+                // Tangani pemilihan filter dropdown
+                document.querySelectorAll('.riwayat-filter-dropdown .dropdown-item').forEach(item => {
+                    item.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const value = this.getAttribute('data-value');
+                        const dropdown = this.closest('.riwayat-filter-dropdown');
+                        const button = dropdown.querySelector('.riwayat-btn-filter');
+                        const hiddenInput = dropdown.querySelector('input[type="hidden"]');
 
-                selects.forEach(select => {
-                    select.addEventListener('change', function() {
+                        // Perbarui teks tombol
+                        button.querySelector('span').textContent = this.textContent;
+
+                        // Perbarui nilai input tersembunyi
+                        hiddenInput.value = value;
+
+                        // Hapus kelas active dari semua item
+                        dropdown.querySelectorAll('.dropdown-item').forEach(i => {
+                            i.classList.remove('active');
+                        });
+
+                        // Tambahkan kelas active ke item yang dipilih
+                        this.classList.add('active');
+
+                        // Submit form
                         const tableContainer = document.querySelector('.riwayat-table-container');
                         tableContainer.classList.add('riwayat-loading');
 
                         setTimeout(() => {
-                            filterForm.submit();
+                            document.getElementById('filterForm').submit();
                         }, 300);
-                    });
-
-                    // Tambahkan kelas 'open' saat dropdown difokus atau dibuka
-                    select.addEventListener('focus', function() {
-                        this.classList.add('open');
-                    });
-
-                    // Hapus kelas 'open' saat dropdown kehilangan fokus
-                    select.addEventListener('blur', function() {
-                        this.classList.remove('open');
-                    });
-
-                    // Untuk browser yang mendukung event 'toggle' pada details (jika menggunakan)
-                    select.addEventListener('toggle', function() {
-                        this.classList.toggle('open');
                     });
                 });
 
@@ -187,6 +231,17 @@
                     });
                 }
             });
+
+            function downloadReport(format) {
+                const form = document.getElementById('filterForm');
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'download';
+                input.value = format;
+                form.appendChild(input);
+                form.submit();
+                form.removeChild(input);
+            }
         </script>
     @endpush
 </x-layouts.app>

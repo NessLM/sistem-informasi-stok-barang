@@ -7,6 +7,9 @@ use App\Models\Riwayat;
 use Illuminate\Http\Request;
 use App\Helpers\MenuHelper;
 use Carbon\Carbon;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\RiwayatExport;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class RiwayatController extends Controller
 {
@@ -47,9 +50,24 @@ class RiwayatController extends Controller
         // Mendapatkan daftar gudang unik untuk filter
         $gudangList = Riwayat::select('gudang')->distinct()->orderBy('gudang')->get();
 
+        // Jika request untuk download
+        if ($request->has('download')) {
+            $filter = [
+                'alur_barang' => $request->alur_barang,
+                'gudang' => $request->gudang,
+                'periode' => $request->periode
+            ];
+            
+            if ($request->download == 'excel') {
+                return Excel::download(new RiwayatExport($riwayat, $filter), 'riwayat-barang-'.date('Y-m-d').'.xlsx');
+            } elseif ($request->download == 'pdf') {
+                $pdf = PDF::loadView('staff.admin.riwayat-pdf', compact('riwayat', 'filter'));
+                return $pdf->download('riwayat-barang-'.date('Y-m-d').'.pdf');
+            }
+        }
+
         return view('staff.admin.riwayat', compact('riwayat', 'menu', 'gudangList'));
     }
-
 
     public function store(Request $request)
     {

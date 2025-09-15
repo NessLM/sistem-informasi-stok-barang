@@ -1,5 +1,6 @@
 /* public/css/riwayat.css */
 
+/* ===== VARIABLES & BASE STYLES ===== */
 .riwayat-container {
     padding: 20px;
     background-color: #f8f9fa;
@@ -15,6 +16,7 @@
     border-bottom: 2px solid #e9ecef;
 }
 
+/* ===== FILTER CARD COMPONENT ===== */
 .riwayat-filter-card {
     border: none;
     border-radius: 8px;
@@ -38,13 +40,19 @@
 }
 
 .riwayat-filter-body {
-    padding: 10px;
+    padding: 20px;
+}
+
+.riwayat-filter-body h3 {
+    margin-bottom: 20px;
+    color: #2c3e50;
+    font-weight: 600;
 }
 
 .riwayat-filter-form {
     display: flex;
-    gap: 12px;
-    align-items: center;
+    gap: 15px;
+    align-items: flex-end;
     flex-wrap: wrap;
 }
 
@@ -54,39 +62,46 @@
     min-width: 180px;
 }
 
-.riwayat-filter-select {
-    border: 2px solid #e9ecef;
-    border-radius: 6px;
-    padding: 10px 12px;
-    font-size: 0.95rem;
-    transition: all 0.3s ease;
-    background-color: #2072b7;
-    color: white;
-    font-weight: 600;
-    background-image: none; /* Hapus gambar panah default */
-}
-
-.riwayat-filter-select:hover {
-    background-color: #ffffff;
-    border-color: #000000;
-    color: #000000;
-}
-
-.riwayat-filter-select:focus {
-    border-color: #ffffff;
-    box-shadow: 0 0 0 3px rgba(78, 115, 223, 0.15);
-    outline: none;
-}
-
+/* ===== BUTTON STYLES ===== */
+/* Base button styles */
+.riwayat-btn-filter,
+.riwayat-btn-download,
 .riwayat-btn-reset {
-    background: linear-gradient(135deg, #e74a3b 0%, #be2617 100%);
     border: none;
     border-radius: 6px;
     padding: 10px 20px;
     color: white;
     font-weight: 600;
     transition: all 0.3s ease;
-    align-self: flex-end;
+    display: flex;
+    align-items: center;
+}
+
+/* Filter button */
+.riwayat-btn-filter {
+    background: linear-gradient(135deg, #3498db 25%, #2c3e50 100%);
+    justify-content: space-between;
+    min-width: 180px;
+    position: relative;
+    text-align: left;
+}
+
+.riwayat-btn-filter:hover {
+    background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+    transform: translateY(-2px);
+    color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.riwayat-btn-filter:focus {
+    box-shadow: 0 0 0 3px rgba(78, 115, 223, 0.25);
+    color: white;
+}
+
+/* Reset button */
+.riwayat-btn-reset {
+    background: linear-gradient(135deg, #e74a3b 0%, #be2617 100%);
+    height: fit-content;
 }
 
 .riwayat-btn-reset:hover {
@@ -96,7 +111,122 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-/* Gaya untuk icon mata bukti */
+/* Download button */
+.riwayat-btn-download {
+    background: linear-gradient(135deg, #1cc88a 0%, #13855c 100%);
+    justify-content: flex-start;
+}
+
+.riwayat-btn-download:hover {
+    background: linear-gradient(135deg, #13855c 0%, #1cc88a 100%);
+    transform: translateY(-2px);
+    color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.riwayat-btn-download:focus {
+    color: white;
+    box-shadow: 0 0 0 3px rgba(28, 200, 138, 0.25);
+}
+
+
+/* ===== DROPDOWN STYLES ===== */
+/* Hide default dropdown arrows */
+.riwayat-btn-filter::after,
+.riwayat-btn-download::after {
+    display: none !important;
+}
+
+/* Custom dropdown arrow */
+.dropdown-arrow {
+    transition: transform 0.3s ease;
+    font-size: 0.9rem;
+    margin-left: 8px;
+}
+
+/* Rotated state for dropdown arrow */
+.dropdown-arrow.rotated,
+.riwayat-btn-filter[aria-expanded="true"] .dropdown-arrow,
+.riwayat-btn-download[aria-expanded="true"] .dropdown-arrow {
+    transform: rotate(90deg);
+}
+
+/* Dropdown menus */
+.riwayat-filter-dropdown .dropdown-menu,
+.riwayat-download-dropdown .dropdown-menu {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 8px 0;
+    min-width: 180px;
+}
+
+.riwayat-filter-dropdown .dropdown-item,
+.riwayat-download-dropdown .dropdown-item {
+    padding: 8px 16px;
+    transition: all 0.2s ease;
+    color: #2c3e50;
+}
+
+.riwayat-filter-dropdown .dropdown-item:hover,
+.riwayat-filter-dropdown .dropdown-item:focus {
+    background-color: #f8f9fa;
+    color: #3498db;
+}
+
+.riwayat-download-dropdown .dropdown-item:hover {
+    background-color: #f8f9fa;
+    color: #1cc88a;
+}
+
+.riwayat-filter-dropdown .dropdown-item.active {
+    background-color: #3498db;
+    color: white;
+}
+
+.riwayat-download-dropdown .dropdown-item {
+    display: flex;
+    align-items: center;
+}
+
+/* ===== TABLE & DATA STYLES ===== */
+.riwayat-table-container {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.riwayat-table-container td {
+    vertical-align: middle;
+    text-align: center;
+}
+
+/* Custom scrollbar for table */
+.riwayat-table-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.riwayat-table-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.riwayat-table-container::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #4e73df 0%, #2a3f9d 100%);
+    border-radius: 4px;
+}
+
+.riwayat-table-container::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #2a3f9d 0%, #4e73df 100%);
+}
+
+/* Status icons */
+.riwayat-status-icon {
+    font-size: 1.3rem;
+    display: inline-block;
+    text-align: center;
+    width: 24px;
+}
+
 .riwayat-bukti-icon {
     color: #000000;
     font-size: 1.2rem;
@@ -111,35 +241,7 @@
     transform: scale(1.1);
 }
 
-/* Pastikan ikon terpusat di sel */
-.riwayat-table-container td {
-    vertical-align: middle;
-    text-align: center;
-}
-
-/* Gaya untuk modal */
-#buktiModal .modal-content {
-    margin-top: 100px;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-#buktiModal .modal-header {
-    background: linear-gradient(135deg, #3498db 0%, #2c3e50 80%, #0f2027 100%);
-    color: white;
-}
-
-#buktiModal .btn-close {
-    filter: invert(1); /* bikin ikon jadi putih */
-    opacity: 1; /* biar putihnya full */
-}
-
-#buktiModal .btn-close:hover {
-    filter: invert(23%) sepia(96%) saturate(7492%) hue-rotate(356deg) brightness(95%) contrast(108%);
-    transform: scale(1.1); /* efek zoom kecil */
-}
-
-
+/* Status badges */
 .btn-keluar {
     border: none;
     color: #be2617;
@@ -158,13 +260,7 @@
     padding: 6px 12px;
 }
 
-.riwayat-status-icon {
-    font-size: 1.3rem;
-    display: inline-block;
-    text-align: center;
-    width: 24px;
-}
-
+/* Empty state */
 .riwayat-empty-state {
     text-align: center;
     padding: 60px 20px;
@@ -183,7 +279,62 @@
     margin: 0;
 }
 
-/* Responsive styles */
+/* ===== MODAL STYLES ===== */
+#buktiModal .modal-content {
+    margin-top: 100px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#buktiModal .modal-header {
+    background: linear-gradient(135deg, #3498db 0%, #2c3e50 80%, #0f2027 100%);
+    color: white;
+}
+
+#buktiModal .btn-close {
+    filter: invert(1);
+    opacity: 1;
+}
+
+#buktiModal .btn-close:hover {
+    filter: invert(23%) sepia(96%) saturate(7492%) hue-rotate(356deg) brightness(95%) contrast(108%);
+    transform: scale(1.1);
+}
+
+/* ===== ACTION BUTTONS CONTAINER ===== */
+.riwayat-action-buttons {
+    display: flex;
+    gap: 12px;
+    margin-left: auto;
+    align-items: center;
+}
+
+.riwayat-download-dropdown {
+    position: relative;
+}
+
+/* ===== ANIMATIONS & STATES ===== */
+.riwayat-loading {
+    opacity: 0.7;
+    pointer-events: none;
+    position: relative;
+}
+
+.riwayat-loading::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+/* ===== RESPONSIVE STYLES ===== */
 @media (max-width: 992px) {
     .riwayat-filter-form {
         flex-direction: column;
@@ -197,6 +348,22 @@
     .riwayat-btn-reset {
         align-self: stretch;
         margin-top: 15px;
+    }
+
+    .riwayat-action-buttons {
+        flex-direction: column;
+        width: 100%;
+        margin-top: 15px;
+    }
+
+    .riwayat-btn-reset,
+    .riwayat-download-dropdown {
+        width: 100%;
+    }
+
+    .riwayat-btn-download {
+        width: 100%;
+        justify-content: center;
     }
 }
 
@@ -218,92 +385,10 @@
         padding: 10px 8px;
     }
 
-    .riwayat-filter-select {
-        padding: 8px 10px;
+    .riwayat-btn-filter,
+    .riwayat-btn-reset,
+    .riwayat-btn-download {
+        width: 100%;
+        justify-content: center;
     }
-}
-
-/* Animation for filter changes */
-.riwayat-loading {
-    opacity: 0.7;
-    pointer-events: none;
-    position: relative;
-}
-
-.riwayat-loading::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-}
-
-/* Custom scrollbar for table */
-.riwayat-table-container {
-    max-height: 600px;
-    overflow-y: auto;
-}
-
-.riwayat-table-container::-webkit-scrollbar {
-    width: 8px;
-}
-
-.riwayat-table-container::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 4px;
-}
-
-.riwayat-table-container::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #4e73df 0%, #2a3f9d 100%);
-    border-radius: 4px;
-}
-
-.riwayat-table-container::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #2a3f9d 0%, #4e73df 100%);
-}
-
-
-
-.custom-select-wrapper {
-    position: relative;
-    display: inline-block;
-    min-width: 180px;
-}
-
-.custom-select {
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    padding-right: 30px; /* Ruang untuk ikon */
-}
-
-.custom-arrow {
-    position: absolute;
-    top: 50%;
-    right: 12px;
-    transform: translateY(-50%);
-    pointer-events: none;
-    transition: transform 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.custom-arrow i {
-    font-size: 16px;
-    color: white;
-    transition: transform 0.3s ease;
-}
-
-
-.custom-select:focus + .custom-arrow i,
-.custom-select.open + .custom-arrow i {
-    color: #000000;
-    transform: rotate(90deg); /* dari kanan (→) jadi bawah (↓) */
 }
