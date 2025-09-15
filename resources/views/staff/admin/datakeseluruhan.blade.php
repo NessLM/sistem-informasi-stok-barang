@@ -12,12 +12,6 @@
 <main class="page-wrap container py-4">
     <h1 class="title">Data Keseluruhan</h1>
 
-    @php
-        if (!isset($barang) || $barang === null) $barang = collect();
-        if (!isset($kategori) || $kategori === null) $kategori = collect();
-        if (!isset($gudang) || $gudang === null) $gudang = collect();
-    @endphp
-
     {{-- Toast sukses --}}
     @if(session('success'))
         <div class="toast-container">
@@ -29,6 +23,17 @@
                     <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
                 </div>
             </div>
+        </div>
+    @endif
+
+    {{-- Pesan error global --}}
+    @if($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach($errors->all() as $err)
+                    <li>{{ $err }}</li>
+                @endforeach
+            </ul>
         </div>
     @endif
 
@@ -78,10 +83,10 @@
                                 <td>{{ $b->satuan }}</td>
                                 <td>{{ $b->kategori->nama ?? '-' }}</td>
                                 <td>
-                                    <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalEditBarang-{{ $b->kode }}">
+                                    <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalEditBarang-{{ $b->id }}">
                                         <i class="bi bi-pencil"></i>
                                     </button>
-                                    <form action="{{ route('admin.barang.destroy', $b->kode) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus barang ini?')">
+                                    <form action="{{ route('admin.barang.destroy', $b->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus barang ini?')">
                                         @csrf
                                         @method('DELETE')
                                         <button class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button>
@@ -147,10 +152,10 @@
                                                         <td>{{ $b->stok }}</td>
                                                         <td>{{ $b->satuan }}</td>
                                                         <td>
-                                                            <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalEditBarang-{{ $b->kode }}">
+                                                            <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalEditBarang-{{ $b->id }}">
                                                                 <i class="bi bi-pencil"></i>
                                                             </button>
-                                                            <form action="{{ route('admin.barang.destroy', $b->kode) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus barang ini?')">
+                                                            <form action="{{ route('admin.barang.destroy', $b->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus barang ini?')">
                                                                 @csrf
                                                                 @method('DELETE')
                                                                 <button type="submit" class="btn btn-sm btn-danger">
@@ -175,29 +180,50 @@
     </section>
 </main>
 
-{{-- Modal Tambah Kategori --}}
-<div class="modal fade" id="modalTambahKategori" tabindex="-1">
-  <div class="modal-dialog">
-    <form action="{{ route('admin.kategori.store') }}" method="POST" class="modal-content">
+{{-- Modal Tambah Barang --}}
+<div class="modal fade @if($errors->any()) show @endif" id="modalTambahBarang" tabindex="-1" @if($errors->any()) style="display:block;" @endif>
+  <div class="modal-dialog modal-lg">
+    <form action="{{ route('admin.barang.store') }}" method="POST" class="modal-content">
       @csrf
-      <div class="modal-header">
-        <h5 class="modal-title">Tambah Kategori</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
+      <div class="modal-header"><h5 class="modal-title">Tambah Barang</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
       <div class="modal-body">
-        <div class="mb-3">
-            <label>Nama Kategori</label>
-            <input type="text" name="nama" class="form-control" placeholder="Nama kategori" required>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label>Nama</label>
+                <input type="text" name="nama" class="form-control @error('nama') is-invalid @enderror" value="{{ old('nama') }}" required>
+                @error('nama')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
+            <div class="col-md-6">
+                <label>Kode</label>
+                <input type="text" name="kode" class="form-control @error('kode') is-invalid @enderror" value="{{ old('kode') }}" required>
+                @error('kode')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
+            <div class="col-md-6">
+                <label>Kategori</label>
+                <select name="kategori_id" class="form-select @error('kategori_id') is-invalid @enderror" required>
+                    <option value="">-- Pilih Kategori --</option>
+                    @foreach($kategori as $k) 
+                        <option value="{{ $k->id }}" @if(old('kategori_id')==$k->id) selected @endif>{{ $k->nama }}</option>
+                    @endforeach
+                </select>
+                @error('kategori_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
+            <div class="col-md-6">
+                <label>Harga / Satuan</label>
+                <div class="input-group">
+                    <input type="number" step="0.01" name="harga" class="form-control @error('harga') is-invalid @enderror" value="{{ old('harga') }}">
+                    <select name="satuan" class="form-select">
+                        <option value="Pcs" @if(old('satuan')=='Pcs') selected @endif>Pcs</option>
+                        <option value="Box" @if(old('satuan')=='Box') selected @endif>Box</option>
+                        <option value="Pack" @if(old('satuan')=='Pack') selected @endif>Pack</option>
+                        <option value="Rim" @if(old('satuan')=='Rim') selected @endif>Rim</option>
+                        <option value="Unit" @if(old('satuan')=='Unit') selected @endif>Unit</option>
+                    </select>
+                </div>
+                @error('harga')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+            </div>
         </div>
-        <div class="mb-3">
-            <label>Pilih Gudang</label>
-            <select name="gudang_id" class="form-select" required>
-                <option value="">-- Pilih Gudang --</option>
-                @foreach($gudang as $g)
-                    <option value="{{ $g->id }}">{{ $g->nama }}</option>
-                @endforeach
-            </select>
-        </div>
+        <input type="hidden" name="stok" value="0">
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Batal</button>
@@ -207,57 +233,25 @@
   </div>
 </div>
 
-{{-- Modal Tambah Barang --}}
-<div class="modal fade" id="modalTambahBarang" tabindex="-1">
-  <div class="modal-dialog modal-lg">
-    <form action="{{ route('admin.barang.store') }}" method="POST" class="modal-content">
-      @csrf
-      <div class="modal-header"><h5 class="modal-title">Tambah Barang</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-      <div class="modal-body">
-        <div class="row g-3">
-            <div class="col-md-6"><label>Nama</label><input type="text" name="nama" class="form-control" required></div>
-            <div class="col-md-6"><label>Kode</label><input type="text" name="kode" class="form-control" required></div>
-            <div class="col-md-6">
-                <label>Kategori</label>
-                <select name="kategori_id" class="form-select" required>
-                    <option value="">-- Pilih Kategori --</option>
-                    @foreach($kategori as $k) <option value="{{ $k->id }}">{{ $k->nama }}</option> @endforeach
-                </select>
-            </div>
-            <div class="col-md-6">
-                <label>Harga / Satuan</label>
-                <div class="input-group">
-                    <input type="number" step="0.01" name="harga" class="form-control" required>
-                    <select name="satuan" class="form-select" required>
-                        <option value="Pcs">Pcs</option><option value="Box">Box</option><option value="Pack">Pack</option><option value="Rim">Rim</option><option value="Unit">Unit</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-        <input type="hidden" name="stok" value="0">
-      </div>
-      <div class="modal-footer"><button type="button" class="btn btn-danger" data-bs-dismiss="modal">Batal</button><button class="btn btn-primary" type="submit">Simpan</button></div>
-    </form>
-  </div>
-</div>
-
 {{-- Modal Edit Barang --}}
 @if($barang->count())
     @foreach($barang as $b)
-    <div class="modal fade" id="modalEditBarang-{{ $b->kode }}" tabindex="-1">
+    <div class="modal fade" id="modalEditBarang-{{ $b->id }}" tabindex="-1">
       <div class="modal-dialog modal-lg">
-        <form action="{{ route('admin.barang.update', $b->kode) }}" method="POST" class="modal-content">
+        <form action="{{ route('admin.barang.update', $b->id) }}" method="POST" class="modal-content">
           @csrf
           @method('PUT')
           <div class="modal-header"><h5 class="modal-title">Edit Barang: {{ $b->nama }}</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
           <div class="modal-body">
             <div class="row g-3">
                 <div class="col-md-6"><label>Nama</label><input type="text" name="nama" class="form-control" value="{{ $b->nama }}" required></div>
-                <div class="col-md-6"><label>Kode</label><input type="text" class="form-control" value="{{ $b->kode }}" disabled></div>
+                <div class="col-md-6"><label>Kode</label><input type="text" name="kode" class="form-control" value="{{ $b->kode }}" required></div>
                 <div class="col-md-6">
                     <label>Kategori</label>
                     <select name="kategori_id" class="form-select" required>
-                        @foreach($kategori as $k) <option value="{{ $k->id }}" @if($b->kategori_id == $k->id) selected @endif>{{ $k->nama }}</option> @endforeach
+                        @foreach($kategori as $k) 
+                            <option value="{{ $k->id }}" @if($b->kategori_id == $k->id) selected @endif>{{ $k->nama }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="col-md-6">

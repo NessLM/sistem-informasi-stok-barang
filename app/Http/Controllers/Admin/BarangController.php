@@ -31,11 +31,14 @@ class BarangController extends Controller
     {
         $request->validate([
             'kode'        => 'required|string|max:100|unique:barang,kode',
-            'nama'        => 'required|string|max:255',
+            'nama'        => 'required|string|max:255|unique:barang,nama',
             'harga'       => 'nullable|numeric|min:0',
             'stok'        => 'nullable|integer|min:0',
             'satuan'      => 'nullable|string|max:50',
             'kategori_id' => 'required|exists:kategori,id',
+        ], [
+            'kode.unique' => 'Kode barang sudah digunakan!',
+            'nama.unique' => 'Nama barang sudah ada, silakan gunakan nama lain!',
         ]);
 
         Barang::create([
@@ -66,11 +69,14 @@ class BarangController extends Controller
 
         $request->validate([
             'kode'        => 'required|string|max:100|unique:barang,kode,' . $barang->id,
-            'nama'        => 'required|string|max:255',
+            'nama'        => 'required|string|max:255|unique:barang,nama,' . $barang->id,
             'harga'       => 'nullable|numeric|min:0',
             'stok'        => 'nullable|integer|min:0',
             'satuan'      => 'nullable|string|max:50',
             'kategori_id' => 'required|exists:kategori,id',
+        ], [
+            'kode.unique' => 'Kode barang sudah digunakan!',
+            'nama.unique' => 'Nama barang sudah ada, silakan gunakan nama lain!',
         ]);
 
         $barang->update([
