@@ -62,6 +62,7 @@
     transition: all 0.3s ease;
     background-color: #2072b7;
     color: white;
+    font-weight: 600;
 }
 
 .riwayat-filter-select:hover {
