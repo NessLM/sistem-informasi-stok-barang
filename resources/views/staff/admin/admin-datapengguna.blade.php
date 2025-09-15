@@ -127,11 +127,33 @@
 
           {{-- Password baru --}}
           <div class="mb-3">
-            <label class="form-label">Password Baru 
-              <small class="text-muted">(kosongkan jika tidak diubah)</small>
+            <label class="form-label">
+              Password Baru <small class="text-muted">(kosongkan jika tidak diubah)</small>
             </label>
-            <input type="password" class="form-control" name="password" id="user_password">
+          
+            <!-- ikon mata overlay di dalam input -->
+            <div class="field-pass position-relative">
+              <input
+                type="password"
+                class="form-control pe-5"
+                name="password"
+                id="user_password"
+                autocomplete="new-password"
+                placeholder="Masukkan password baru (opsional)"
+              >
+              <button
+                type="button"
+                class="pass-toggle"
+                id="toggle_user_password"
+                aria-label="Tampilkan password"
+                aria-pressed="false"
+              >
+                <i class="bi bi-eye-slash" aria-hidden="true"></i>
+              </button>
+            </div>
           </div>
+          
+          
 
           <div class="mb-3">
             <label class="form-label">Role</label>
@@ -196,6 +218,42 @@
       });
     });
   });
+
+   // 🔍 Toggle show/hide Password Baru (eye / eye-slash)
+ // Toggle show/hide untuk "Password Baru" di modal Edit
+ (function () {
+    const passInput = document.getElementById('user_password');
+    const toggleBtn = document.getElementById('toggle_user_password');
+    const modalEl   = document.getElementById('modalEditUser');
+
+    if (!passInput || !toggleBtn || !modalEl) return;
+
+    toggleBtn.addEventListener('click', function () {
+      const hidden = passInput.type === 'password';
+      passInput.type = hidden ? 'text' : 'password';
+      this.setAttribute('aria-pressed', String(hidden));
+
+      const icon = this.querySelector('i');
+      if (icon) {
+        icon.classList.toggle('bi-eye', hidden);
+        icon.classList.toggle('bi-eye-slash', !hidden);
+      }
+
+      passInput.focus({ preventScroll: true });
+    });
+
+    // Reset saat modal ditutup
+    modalEl.addEventListener('hidden.bs.modal', () => {
+      passInput.type = 'password';
+      toggleBtn.setAttribute('aria-pressed', 'false');
+      const icon = toggleBtn.querySelector('i');
+      if (icon) {
+        icon.classList.remove('bi-eye');
+        icon.classList.add('bi-eye-slash');
+      }
+      passInput.value = ''; // tetap kosong agar tak tersubmit tanpa sengaja
+    });
+  })();
   </script>
   @endpush
 </x-layouts.app>

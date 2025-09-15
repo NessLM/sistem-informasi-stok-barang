@@ -165,3 +165,44 @@
     gap: 8px; /* jarak antar tombol */
     justify-content: center;
 }
+
+/* ==== Password Baru: eye toggle di dalam input (modal Edit User) ==== */
+#modalEditUser .field-pass { 
+    position: relative;
+  }
+  
+  #modalEditUser .field-pass input.form-control {
+    padding-right: 2.25rem;          /* ruang buat ikon di kanan */
+  }
+  
+  #modalEditUser .field-pass .pass-toggle {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border: 0;
+    background: transparent;
+    color: #6c757d;                  /* warna ikon default */
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  
+  #modalEditUser .field-pass .pass-toggle i {
+    font-size: 1.05rem;              /* ukuran ikon */
+    line-height: 1;
+  }
+  
+  #modalEditUser .field-pass .pass-toggle:hover {
+    color: #495057;                  /* sedikit lebih gelap saat hover */
+  }
+  
+  #modalEditUser .field-pass .pass-toggle:focus {
+    outline: none;
+    box-shadow: none;
+  }
+  

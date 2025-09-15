@@ -6,6 +6,10 @@ use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\Role;
 
+// === [BARU] Import utk cache plaintext permanen ===
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
+
 class UserSeeder extends Seeder
 {
     public function run(): void
@@ -17,19 +21,26 @@ class UserSeeder extends Seeder
         $elecRole   = Role::where('nama', 'Penanggung Jawab Listrik')->first()->id;
         $compRole   = Role::where('nama', 'Penanggung Jawab Bahan Komputer')->first()->id;
 
+        // Helper [DIUBAH]: simpan plaintext ke cache (terenkripsi) PERMANEN
+        $putPlain = function (User $u, string $plain) {
+            $key = "user:plainpwd:{$u->id}";
+            Cache::forever($key, Crypt::encryptString($plain)); // ⬅️ permanen
+        };
+
         // Admin
-        User::updateOrCreate(
+        $u = User::updateOrCreate(
             ['username' => 'admin'],
             [
                 'nama'     => 'Administrator',
-                'password' => 'admin-1234',
+                'password' => 'admin-1234',   // casts 'hashed' → auto-hash saat save
                 'role_id'  => $adminRole,
                 'bagian'   => 'Umum',
             ]
         );
+        $putPlain($u, 'admin-1234'); // [BARU]
 
         // Pengelola Barang
-        User::updateOrCreate(
+        $u = User::updateOrCreate(
             ['username' => 'pb'],
             [
                 'nama'     => 'Pengelola Barang',
@@ -38,9 +49,10 @@ class UserSeeder extends Seeder
                 'bagian'   => 'Gudang',
             ]
         );
+        $putPlain($u, 'pb-1234'); // [BARU]
 
         // PJ ATK
-        User::updateOrCreate(
+        $u = User::updateOrCreate(
             ['username' => 'PJ-ATK'],
             [
                 'nama'     => 'Penanggung Jawab ATK',
@@ -49,9 +61,10 @@ class UserSeeder extends Seeder
                 'bagian'   => 'Operasional',
             ]
         );
+        $putPlain($u, 'atk-1234'); // [BARU]
 
         // PJ Kebersihan
-        User::updateOrCreate(
+        $u = User::updateOrCreate(
             ['username' => 'PJ-Kebersihan'],
             [
                 'nama'     => 'Penanggung Jawab Kebersihan',
@@ -60,9 +73,10 @@ class UserSeeder extends Seeder
                 'bagian'   => 'Operasional',
             ]
         );
+        $putPlain($u, 'kebersihan-1234'); // [BARU]
 
         // PJ Listrik
-        User::updateOrCreate(
+        $u = User::updateOrCreate(
             ['username' => 'PJ-Listrik'],
             [
                 'nama'     => 'Penanggung Jawab Listrik',
@@ -71,9 +85,10 @@ class UserSeeder extends Seeder
                 'bagian'   => 'Operasional',
             ]
         );
+        $putPlain($u, 'listrik-1234'); // [BARU]
 
         // PJ Bahan Komputer
-        User::updateOrCreate(
+        $u = User::updateOrCreate(
             ['username' => 'PJ-Bahan_Komputer'],
             [
                 'nama'     => 'Penanggung Jawab Bahan Komputer',
@@ -82,5 +97,6 @@ class UserSeeder extends Seeder
                 'bagian'   => 'Operasional',
             ]
         );
+        $putPlain($u, 'komputer-1234'); // [BARU]
     }
 }
