@@ -76,7 +76,7 @@
                     </div>
 
                     <!-- Tombol Reset -->
-                    <div class="riwayat-filter-group">
+                    <div class="riwayat-filter-group-reset">
                         <a href="{{ route('admin.riwayat.index') }}" class="btn riwayat-btn-reset">
                             <i class="bi bi-arrow-clockwise me-2"></i>Reset
                         </a>
