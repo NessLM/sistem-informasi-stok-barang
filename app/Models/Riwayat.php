@@ -15,6 +15,7 @@ class Riwayat extends Model
     protected $fillable = [
         'tanggal',
         'waktu',
+        'gudang',
         'nama_barang',
         'jumlah',
         'bagian',

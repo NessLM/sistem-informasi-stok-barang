@@ -43,6 +43,7 @@
                                 <th>No</th>
                                 <th>Tanggal</th>
                                 <th>Waktu</th>
+                                <th>Gudang</th>
                                 <th>Nama Barang</th>
                                 <th>Jumlah</th>
                                 <th>Bagian</th>
@@ -56,6 +57,7 @@
                                     <td class="fw-semibold">{{ $index + 1 }}</td>
                                     <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
                                     <td>{{ \Carbon\Carbon::parse($item->waktu)->format('H.i') }} WIB</td>
+                                    <td class="fw-medium">{{ $item->gudang }}</td>
                                     <td class="fw-medium">{{ $item->nama_barang }}</td>
                                     <td><span>{{ $item->jumlah }}</span></td>
                                     <td>{{ $item->bagian }}</td>

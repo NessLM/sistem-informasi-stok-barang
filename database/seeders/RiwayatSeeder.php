@@ -15,6 +15,7 @@ class RiwayatSeeder extends Seeder
             [
                 'tanggal' => '2025-09-10',
                 'waktu' => '10:20:00',
+                'gudang' => 'ATK',
                 'nama_barang' => 'Boldliner',
                 'jumlah' => 20,
                 'bagian' => 'Bagian Hukum',
@@ -26,6 +27,7 @@ class RiwayatSeeder extends Seeder
             [
                 'tanggal' => '2025-08-10',
                 'waktu' => '13:01:00',
+                'gudang' => 'ATK',
                 'nama_barang' => 'Buku Folio',
                 'jumlah' => 5,
                 'bagian' => 'Bagian Keuangan',
@@ -37,6 +39,7 @@ class RiwayatSeeder extends Seeder
             [
                 'tanggal' => '2025-08-11',
                 'waktu' => '14:00:00',
+                'gudang' => 'ATK',
                 'nama_barang' => 'Amplop',
                 'jumlah' => 10,
                 'bagian' => 'Bagian Umum',
@@ -48,7 +51,8 @@ class RiwayatSeeder extends Seeder
             [
                 'tanggal' => '2025-08-11',
                 'waktu' => '11:20:00',
-                'nama_barang' => 'Amplop',
+                'gudang' => 'Listrik',
+                'nama_barang' => 'Lampu 20 Watt',
                 'jumlah' => 10,
                 'bagian' => 'Bagian Pengadaan',
                 'bukti' => true,
