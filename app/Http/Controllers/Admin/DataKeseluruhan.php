@@ -15,7 +15,7 @@ class DataKeseluruhan extends Controller
         $menu   = MenuHelper::adminMenu();
         $search = $request->input('search');
 
-        // Ambil kategori untuk tampilan grouped
+        // Ambil kategori + relasi barang
         $kategori = Kategori::with(['barang' => function ($q) use ($search) {
             if ($search) {
                 $q->where('nama', 'like', "%{$search}%")
@@ -23,7 +23,7 @@ class DataKeseluruhan extends Controller
             }
         }])->get();
 
-        // Query flat barang untuk pencarian / filter / modal edit
+        // Query flat barang untuk pencarian/filter/modal edit
         $query = Barang::with('kategori');
 
         if ($search) {
@@ -56,7 +56,6 @@ class DataKeseluruhan extends Controller
             $query->where('id', '<=', intval($request->nomor_akhir));
         }
 
-        // Ambil hasil (selalu kirim $barang supaya blade tidak error)
         $barang = $query->get();
 
         return view('staff.admin.datakeseluruhan', compact('kategori', 'barang', 'menu'));
@@ -68,8 +67,10 @@ class DataKeseluruhan extends Controller
             'nama' => 'required|string|max:255|unique:kategori,nama',
         ]);
 
+        // isi gudang_id default (misalnya 1)
         Kategori::create([
-            'nama' => $request->nama,
+            'nama'      => $request->nama,
+            'gudang_id' => 1, // default gudang_id
         ]);
 
         return redirect()->route('admin.datakeseluruhan')
