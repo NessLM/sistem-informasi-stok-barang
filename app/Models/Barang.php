@@ -2,18 +2,31 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Barang extends Model
 {
     use HasFactory;
 
     protected $table = 'barang';
-    protected $fillable = ['nama', 'kategori_id', 'jumlah', 'kode', 'harga', 'stok', 'satuan'];
+
+    protected $fillable = [
+        'kode',
+        'nama',
+        'stok',
+        'satuan',
+        'kategori_id',
+        'jenis_barang_id', // ✅ tambahkan ini
+    ];
 
     public function kategori()
     {
         return $this->belongsTo(Kategori::class);
+    }
+
+    public function jenisBarang()
+    {
+        return $this->belongsTo(JenisBarang::class);
     }
 }
