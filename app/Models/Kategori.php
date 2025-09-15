@@ -11,7 +11,7 @@ class Kategori extends Model
 
     protected $table = 'kategori';
 
-    // gudang_id tetap masuk fillable
+    // ✅ pastikan 'gudang_id' ada di sini
     protected $fillable = ['nama', 'gudang_id'];
 
     public function gudang()

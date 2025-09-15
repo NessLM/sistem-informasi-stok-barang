@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Kategori;
 use App\Models\Barang;
+use App\Models\Gudang;
 use Illuminate\Http\Request;
 use App\Helpers\MenuHelper;
 
@@ -22,6 +23,9 @@ class DataKeseluruhan extends Controller
                   ->orWhere('kode', 'like', "%{$search}%");
             }
         }])->get();
+
+        // Ambil semua gudang (untuk form tambah kategori)
+        $gudang = Gudang::all();
 
         // Query flat barang untuk pencarian/filter/modal edit
         $query = Barang::with('kategori');
@@ -58,19 +62,19 @@ class DataKeseluruhan extends Controller
 
         $barang = $query->get();
 
-        return view('staff.admin.datakeseluruhan', compact('kategori', 'barang', 'menu'));
+        return view('staff.admin.datakeseluruhan', compact('kategori', 'barang', 'menu', 'gudang'));
     }
 
     public function storeKategori(Request $request)
     {
         $request->validate([
-            'nama' => 'required|string|max:255|unique:kategori,nama',
+            'nama'      => 'required|string|max:255|unique:kategori,nama',
+            'gudang_id' => 'required|exists:gudang,id',
         ]);
 
-        // isi gudang_id default (misalnya 1)
         Kategori::create([
             'nama'      => $request->nama,
-            'gudang_id' => 1, // default gudang_id
+            'gudang_id' => $request->gudang_id,
         ]);
 
         return redirect()->route('admin.datakeseluruhan')
@@ -95,6 +99,7 @@ class DataKeseluruhan extends Controller
             'stok'        => $request->stok ?? 0,
             'satuan'      => $request->satuan,
             'kategori_id' => $request->kategori_id,
+            'jenis_barang_id' => 1, // default
         ]);
 
         return redirect()->route('admin.datakeseluruhan')
@@ -133,4 +138,18 @@ class DataKeseluruhan extends Controller
         return redirect()->route('admin.datakeseluruhan')
                          ->with('success', 'Barang berhasil dihapus!');
     }
+
+    public function destroyKategori($id)
+{
+    $kategori = Kategori::findOrFail($id);
+
+    // Jika ada barang di kategori ini, ikut dihapus juga
+    $kategori->barang()->delete();
+
+    $kategori->delete();
+
+    return redirect()->route('admin.datakeseluruhan')
+                     ->with('success', 'Kategori berhasil dihapus!');
+}
+
 }
