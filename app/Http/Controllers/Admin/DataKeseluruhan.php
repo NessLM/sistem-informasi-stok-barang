@@ -27,6 +27,16 @@ class DataKeseluruhan extends Controller
         // Ambil semua gudang (untuk form tambah kategori)
         $gudang = Gudang::all();
 
+        // Validasi harga min max
+        $request->validate([
+            'harga_min' => 'nullable|numeric|min:0',
+            'harga_max' => 'nullable|numeric|min:0',
+        ]);
+
+        if ($request->filled('harga_min') && $request->filled('harga_max') && $request->harga_min > $request->harga_max) {
+            return back()->with('error', 'Harga minimum tidak boleh lebih besar dari harga maksimum');
+        }
+
         // Query flat barang untuk pencarian/filter/modal edit
         $query = Barang::with('kategori');
 
@@ -59,6 +69,17 @@ class DataKeseluruhan extends Controller
         if ($request->filled('nomor_akhir')) {
             $query->where('id', '<=', intval($request->nomor_akhir));
         }
+        if ($request->filled('harga_min') && $request->filled('harga_max')) {
+    $query->whereBetween('harga', [
+        floatval($request->harga_min),
+        floatval($request->harga_max),
+    ]);
+} elseif ($request->filled('harga_min')) {
+    $query->where('harga', '>=', floatval($request->harga_min));
+} elseif ($request->filled('harga_max')) {
+    $query->where('harga', '<=', floatval($request->harga_max));
+}
+
 
         $barang = $query->get();
 
@@ -93,12 +114,12 @@ class DataKeseluruhan extends Controller
         ]);
 
         Barang::create([
-            'kode'        => $request->kode,
-            'nama'        => $request->nama,
-            'harga'       => $request->harga ?? 0,
-            'stok'        => $request->stok ?? 0,
-            'satuan'      => $request->satuan,
-            'kategori_id' => $request->kategori_id,
+            'kode'            => $request->kode,
+            'nama'            => $request->nama,
+            'harga'           => $request->harga ?? 0,
+            'stok'            => $request->stok ?? 0,
+            'satuan'          => $request->satuan,
+            'kategori_id'     => $request->kategori_id,
             'jenis_barang_id' => 1, // default
         ]);
 
@@ -140,16 +161,14 @@ class DataKeseluruhan extends Controller
     }
 
     public function destroyKategori($id)
-{
-    $kategori = Kategori::findOrFail($id);
+    {
+        $kategori = Kategori::findOrFail($id);
 
-    // Jika ada barang di kategori ini, ikut dihapus juga
-    $kategori->barang()->delete();
+        // Hapus semua barang dalam kategori ini
+        $kategori->barang()->delete();
+        $kategori->delete();
 
-    $kategori->delete();
-
-    return redirect()->route('admin.datakeseluruhan')
-                     ->with('success', 'Kategori berhasil dihapus!');
-}
-
+        return redirect()->route('admin.datakeseluruhan')
+                         ->with('success', 'Kategori berhasil dihapus!');
+    }
 }

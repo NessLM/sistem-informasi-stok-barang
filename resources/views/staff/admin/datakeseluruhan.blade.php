@@ -52,7 +52,13 @@
         </form>
 
         {{-- Jika ada filter/search --}}
-        @if(request()->filled('search') || request()->filled('kode') || request()->filled('stok_min') || request()->filled('stok_max') || request()->filled('kategori_id') || request()->filled('satuan') || request()->filled('nomor_awal') || request()->filled('nomor_akhir'))
+        @if(
+            request()->filled('search') || request()->filled('kode') || 
+            request()->filled('stok_min') || request()->filled('stok_max') || 
+            request()->filled('kategori_id') || request()->filled('satuan') || 
+            request()->filled('nomor_awal') || request()->filled('nomor_akhir') || 
+            request()->filled('harga_min') || request()->filled('harga_max')
+        )
             <h5 class="mt-3">Hasil</h5>
             @if($barang->count() > 0)
                 <table class="table table-bordered mt-2">
@@ -90,8 +96,14 @@
             @endif
         @endif
 
-        {{-- Jika tidak ada search --}}
-        @if(!request()->filled('search') && !request()->filled('kode') && !request()->filled('stok_min') && !request()->filled('stok_max') && !request()->filled('kategori_id') && !request()->filled('satuan') && !request()->filled('nomor_awal') && !request()->filled('nomor_akhir'))
+        {{-- Jika tidak ada filter/search --}}
+        @if(
+            !request()->filled('search') && !request()->filled('kode') && 
+            !request()->filled('stok_min') && !request()->filled('stok_max') && 
+            !request()->filled('kategori_id') && !request()->filled('satuan') && 
+            !request()->filled('nomor_awal') && !request()->filled('nomor_akhir') && 
+            !request()->filled('harga_min') && !request()->filled('harga_max')
+        )
             <div class="table-wrapper mt-3">
                 <table class="table table-bordered">
                     <thead class="table-dark">
@@ -215,7 +227,7 @@
             <div class="col-md-6">
                 <label>Harga / Satuan</label>
                 <div class="input-group">
-                    <input type="number" name="harga" class="form-control" required>
+                    <input type="number" step="0.01" name="harga" class="form-control" required>
                     <select name="satuan" class="form-select" required>
                         <option value="Pcs">Pcs</option><option value="Box">Box</option><option value="Pack">Pack</option><option value="Rim">Rim</option><option value="Unit">Unit</option>
                     </select>
@@ -251,7 +263,7 @@
                 <div class="col-md-6">
                     <label>Harga / Satuan</label>
                     <div class="input-group">
-                        <input type="number" name="harga" class="form-control" value="{{ $b->harga }}">
+                        <input type="number" step="0.01" name="harga" class="form-control" value="{{ $b->harga }}">
                         <select name="satuan" class="form-select">
                             <option value="Pcs" @if($b->satuan=='Pcs') selected @endif>Pcs</option>
                             <option value="Box" @if($b->satuan=='Box') selected @endif>Box</option>
@@ -275,17 +287,70 @@
 <div class="modal fade" id="modalFilterBarang" tabindex="-1">
   <div class="modal-dialog modal-lg">
     <form action="{{ route('admin.datakeseluruhan') }}" method="GET" class="modal-content">
-      <div class="modal-header"><h5 class="modal-title">Filter Barang</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-header">
+        <h5 class="modal-title">Filter Barang</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
       <div class="modal-body">
         <div class="row g-3">
-            <div class="col-md-6"><label>Kode</label><input type="text" name="kode" class="form-control" value="{{ request('kode') }}"></div>
-            <div class="col-md-6"><label>Jumlah (stok min / max)</label><div class="d-flex gap-2"><input type="number" name="stok_min" class="form-control" value="{{ request('stok_min') }}"><input type="number" name="stok_max" class="form-control" value="{{ request('stok_max') }}"></div></div>
-            <div class="col-md-6"><label>Kategori</label><select name="kategori_id" class="form-select"><option value="">-- Semua --</option>@foreach($kategori as $k)<option value="{{ $k->id }}" @if(request('kategori_id')==$k->id) selected @endif>{{ $k->nama }}</option>@endforeach</select></div>
-            <div class="col-md-6"><label>Satuan</label><select name="satuan" class="form-select"><option value="">-- Semua --</option><option value="Pcs" @if(request('satuan')=='Pcs') selected @endif>Pcs</option><option value="Box" @if(request('satuan')=='Box') selected @endif>Box</option><option value="Pack" @if(request('satuan')=='Pack') selected @endif>Pack</option><option value="Rim" @if(request('satuan')=='Rim') selected @endif>Rim</option><option value="Unit" @if(request('satuan')=='Unit') selected @endif>Unit</option></select></div>
-            <div class="col-md-6"><label>Nomor (id)</label><div class="d-flex gap-2"><input type="number" name="nomor_awal" class="form-control" value="{{ request('nomor_awal') }}"><input type="number" name="nomor_akhir" class="form-control" value="{{ request('nomor_akhir') }}"></div></div>
+            <div class="col-md-6">
+                <label>Kode</label>
+                <input type="text" name="kode" class="form-control" value="{{ request('kode') }}">
+            </div>
+
+            <div class="col-md-6">
+                <label>Jumlah (stok min / max)</label>
+                <div class="d-flex gap-2">
+                    <input type="number" name="stok_min" class="form-control" value="{{ request('stok_min') }}">
+                    <input type="number" name="stok_max" class="form-control" value="{{ request('stok_max') }}">
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <label>Harga (min / max)</label>
+                <div class="d-flex gap-2">
+                    <input type="number" step="0.01" name="harga_min" class="form-control" value="{{ request('harga_min') }}">
+                    <input type="number" step="0.01" name="harga_max" class="form-control" value="{{ request('harga_max') }}">
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <label>Kategori</label>
+                <select name="kategori_id" class="form-select">
+                    <option value="">-- Semua --</option>
+                    @foreach($kategori as $k)
+                        <option value="{{ $k->id }}" @if(request('kategori_id')==$k->id) selected @endif>
+                            {{ $k->nama }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="col-md-6">
+                <label>Satuan</label>
+                <select name="satuan" class="form-select">
+                    <option value="">-- Semua --</option>
+                    <option value="Pcs" @if(request('satuan')=='Pcs') selected @endif>Pcs</option>
+                    <option value="Box" @if(request('satuan')=='Box') selected @endif>Box</option>
+                    <option value="Pack" @if(request('satuan')=='Pack') selected @endif>Pack</option>
+                    <option value="Rim" @if(request('satuan')=='Rim') selected @endif>Rim</option>
+                    <option value="Unit" @if(request('satuan')=='Unit') selected @endif>Unit</option>
+                </select>
+            </div>
+
+            <div class="col-md-6">
+                <label>Nomor (id)</label>
+                <div class="d-flex gap-2">
+                    <input type="number" name="nomor_awal" class="form-control" value="{{ request('nomor_awal') }}">
+                    <input type="number" name="nomor_akhir" class="form-control" value="{{ request('nomor_akhir') }}">
+                </div>
+            </div>
         </div>
       </div>
-      <div class="modal-footer"><a href="{{ route('admin.datakeseluruhan') }}" class="btn btn-danger">Reset</a><button type="submit" class="btn btn-primary">Simpan</button></div>
+      <div class="modal-footer">
+        <a href="{{ route('admin.datakeseluruhan') }}" class="btn btn-danger">Reset</a>
+        <button type="submit" class="btn btn-primary">Simpan</button>
+      </div>
     </form>
   </div>
 </div>
