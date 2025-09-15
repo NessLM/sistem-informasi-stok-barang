@@ -40,8 +40,8 @@ class RiwayatController extends Controller
 
         // Mengurutkan berdasarkan tanggal dan waktu secara descending
         // Pastikan menggunakan format yang benar
-        $riwayat = $query->orderBy('tanggal', 'desc')
-                         ->orderBy('waktu', 'desc')
+        $riwayat = $query->orderBy('tanggal', 'asc')
+                         ->orderBy('waktu', 'asc')
                          ->get();
 
         // Mendapatkan daftar gudang unik untuk filter

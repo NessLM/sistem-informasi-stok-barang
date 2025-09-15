@@ -63,6 +63,7 @@
     background-color: #2072b7;
     color: white;
     font-weight: 600;
+    background-image: none; /* Hapus gambar panah default */
 }
 
 .riwayat-filter-select:hover {
@@ -258,4 +259,44 @@
 
 .riwayat-table-container::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(135deg, #2a3f9d 0%, #4e73df 100%);
+}
+
+
+
+.custom-select-wrapper {
+    position: relative;
+    display: inline-block;
+    min-width: 180px;
+}
+
+.custom-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding-right: 30px; /* Ruang untuk ikon */
+}
+
+.custom-arrow {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    transition: transform 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.custom-arrow i {
+    font-size: 16px;
+    color: white;
+    transition: transform 0.3s ease;
+}
+
+
+.custom-select:focus + .custom-arrow i,
+.custom-select.open + .custom-arrow i {
+    color: #000000;
+    transform: rotate(90deg); /* dari kanan (→) jadi bawah (↓) */
 }
