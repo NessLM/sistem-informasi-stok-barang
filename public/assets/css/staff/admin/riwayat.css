@@ -297,6 +297,6 @@
 
 .custom-select:focus + .custom-arrow i,
 .custom-select.open + .custom-arrow i {
-    color: #2072b7;
+    color: #000000;
     transform: rotate(90deg); /* dari kanan (→) jadi bawah (↓) */
 }
