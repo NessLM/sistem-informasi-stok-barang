@@ -9,16 +9,20 @@ use Symfony\Component\HttpFoundation\Response;
 class EnsureUserHasRole
 {
     /**
-     * Pakai: ->middleware('role:Admin') atau ->middleware('role:Admin,Bendahara Pembantu')
+     * Middleware role-based.
+     * Contoh: ->middleware('role:Admin')
+     * Bisa multiple: ->middleware('role:Admin,Penanggung Jawab ATK')
      */
     public function handle(Request $request, Closure $next, string $roles): Response
     {
         $user = $request->user();
         $allowed = array_map('trim', explode(',', $roles));
 
-        if (! $user || ! in_array($user->role, $allowed, true)) {
-            abort(403);
+        // Memastikan user login & punya relasi role yang valid
+        if (! $user || ! $user->role || ! in_array($user->role->nama, $allowed, true)) {
+            abort(403, 'Anda tidak punya akses ke halaman ini.');
         }
+
         return $next($request);
     }
 }

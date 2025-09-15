@@ -130,8 +130,15 @@
 }
 
 #buktiModal .btn-close {
-    filter: invert(1);
+    filter: invert(1); /* bikin ikon jadi putih */
+    opacity: 1; /* biar putihnya full */
 }
+
+#buktiModal .btn-close:hover {
+    filter: invert(23%) sepia(96%) saturate(7492%) hue-rotate(356deg) brightness(95%) contrast(108%);
+    transform: scale(1.1); /* efek zoom kecil */
+}
+
 
 .btn-keluar {
     border: none;
