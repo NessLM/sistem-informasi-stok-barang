@@ -23,7 +23,7 @@
                         <td>{{ $index + 1 }}</td>
                         <td>{{ $u->nama }}</td>
                         <td>{{ $u->username }}</td>
-                        <td>{{ $u->role }}</td>
+                        <td>{{ $u->role?->nama ?? '-' }}</td>
                         <td>{{ $u->bagian }}</td>
                         <td>
                           <div class="action-buttons">
@@ -33,19 +33,23 @@
                                     data-id="{{ $u->id }}"
                                     data-nama="{{ $u->nama }}"
                                     data-username="{{ $u->username }}"
-                                    data-role="{{ $u->role }}"
+                                    data-role-id="{{ $u->role_id }}"
+                                    data-role-name="{{ $u->role?->nama }}"
                                     data-bagian="{{ $u->bagian }}"
+                                    data-password="{{ $u->password }}"
                                     data-bs-toggle="modal"
                                     data-bs-target="#modalEditUser">
                                 <i class="bi bi-pencil"></i> Edit
                             </button>
 
                             <!-- Tombol Delete -->
-                            <button type="button" 
-                                    class="btn btn-danger btn-sm btn-action btnDelete" 
-                                    data-id="{{ $u->id }}">
-                                <i class="bi bi-trash"></i> Hapus
-                            </button>
+                            @if(!($u->id === auth()->id() && $u->role?->nama === 'Admin'))
+                              <button type="button" 
+                                      class="btn btn-danger btn-sm btn-action btnDelete" 
+                                      data-id="{{ $u->id }}">
+                                  <i class="bi bi-trash"></i> Hapus
+                              </button>
+                            @endif
                           </div>
                         </td>
                     </tr>
@@ -93,9 +97,8 @@
   {{-- Modal Edit User --}}
   @push('modals')
   <div class="modal fade" id="modalEditUser" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <form id="formEditUser" method="POST" class="modal-content">
-
+    <div class="modal-dialog modal-dialog-centered">
+      <form id="formEditUser" method="POST" class="modal-content">
         @csrf
         @method('PUT')
         <div class="modal-header">
@@ -116,16 +119,26 @@
             <input type="text" class="form-control" name="username" id="user_username" required>
           </div>
 
+          {{-- Password lama (ditampilkan dari DB) --}}
           <div class="mb-3">
-            <label class="form-label">Password <small class="text-muted">(kosongkan jika tidak diubah)</small></label>
+            <label class="form-label">Password Lama</label>
+            <input type="text" class="form-control" id="user_old_password" readonly>
+          </div>
+
+          {{-- Password baru --}}
+          <div class="mb-3">
+            <label class="form-label">Password Baru 
+              <small class="text-muted">(kosongkan jika tidak diubah)</small>
+            </label>
             <input type="password" class="form-control" name="password" id="user_password">
           </div>
 
           <div class="mb-3">
             <label class="form-label">Role</label>
-            <select class="form-select" name="role" id="user_role" required>
-              <option value="Admin">Admin</option>
-              <option value="User">User</option>
+            <select class="form-select" name="role_id" id="user_role" required>
+              @foreach ($roles as $role)
+                <option value="{{ $role->id }}">{{ $role->nama }}</option>
+              @endforeach
             </select>
           </div>
 
@@ -151,11 +164,21 @@
     document.querySelectorAll('.editUser').forEach(btn => {
       btn.addEventListener('click', function () {
         const id = this.dataset.id;
+        const roleName = this.dataset.roleName;
+        const isAdmin = (roleName === "Admin" && parseInt(id) === {{ auth()->id() }});
+
         document.getElementById('user_id').value = id;
         document.getElementById('user_nama').value = this.dataset.nama || '';
         document.getElementById('user_username').value = this.dataset.username || '';
-        document.getElementById('user_role').value = this.dataset.role || 'User';
+        document.getElementById('user_role').value = this.dataset.roleId || '';
         document.getElementById('user_bagian').value = this.dataset.bagian || '';
+
+        // 🔥 tampilkan password lama apa adanya (hash dari DB)
+        document.getElementById('user_old_password').value = this.dataset.password || '';
+
+        // Kalau admin sendiri, disable username & role
+        document.getElementById('user_username').disabled = isAdmin;
+        document.getElementById('user_role').disabled = isAdmin;
 
         document.getElementById('formEditUser').action =
           "{{ route('admin.users.update', ':id') }}".replace(':id', id);
