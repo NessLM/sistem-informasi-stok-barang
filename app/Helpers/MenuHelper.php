@@ -32,7 +32,7 @@ class MenuHelper
         return [
             ['label' => 'Dashboard', 'icon' => 'bi-grid', 'route' => 'staff.admin.dashboard'],
 
-            ['label' => 'Data Keseluruhan', 'icon' => 'bi-card-list', 'children' => [
+            ['label' => 'Kelola Barang', 'icon' => 'bi-card-list', 'children' => [
                 ['label' => 'Gudang ATK',         'icon' => 'bi-grid', 'route' => 'staff.admin.dashboard'],
                 ['label' => 'Gudang Listrik',     'icon' => 'bi-grid', 'route' => 'staff.admin.dashboard'],
                 ['label' => 'Gudang Kebersihan',  'icon' => 'bi-grid', 'route' => 'staff.admin.dashboard'],
