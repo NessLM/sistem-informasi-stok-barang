@@ -1,4 +1,4 @@
-{{-- resources/views/staff/pj/riwayat.blade.php --}}
+{{-- resources/views/staff/admin/riwayat.blade.php --}}
 
 <x-layouts.app title="Riwayat" :menu="$menu">
 
@@ -11,9 +11,20 @@
                 <form id="filterForm" class="riwayat-filter-form">
                     <div class="riwayat-filter-group">
                         <select name="alur_barang" class="form-select riwayat-filter-select" onchange="this.form.submit()">
-                            <option value="Semua" {{ request('alur_barang') == 'Semua' ? 'selected' : '' }}>Semua</option>
+                            <option value="Semua" {{ request('alur_barang') == 'Semua' ? 'selected' : '' }}>Pilih Alur Barang</option>
                             <option value="Keluar" {{ request('alur_barang') == 'Keluar' ? 'selected' : '' }}>Keluar</option>
                             <option value="Masuk" {{ request('alur_barang') == 'Masuk' ? 'selected' : '' }}>Masuk</option>
+                        </select>
+                    </div>
+                    
+                    <div class="riwayat-filter-group">
+                        <select name="gudang" class="form-select riwayat-filter-select" onchange="this.form.submit()">
+                            <option value="Semua" {{ request('gudang') == 'Semua' ? 'selected' : '' }}>Pilih Gudang</option>
+                            @foreach($gudangList as $gudang)
+                                <option value="{{ $gudang->gudang }}" {{ request('gudang') == $gudang->gudang ? 'selected' : '' }}>
+                                    {{ $gudang->gudang }}
+                                </option>
+                            @endforeach
                         </select>
                     </div>
                     
@@ -56,7 +67,7 @@
                                 <tr>
                                     <td class="fw-semibold">{{ $index + 1 }}</td>
                                     <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
-                                    <td>{{ \Carbon\Carbon::parse($item->waktu)->format('H.i') }} WIB</td>
+                                    <td>{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }} WIB</td>
                                     <td class="fw-medium">{{ $item->gudang }}</td>
                                     <td class="fw-medium">{{ $item->nama_barang }}</td>
                                     <td><span>{{ $item->jumlah }}</span></td>
@@ -80,7 +91,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8" class="riwayat-empty-state">
+                                    <td colspan="9" class="riwayat-empty-state">
                                         <i class="bi bi-inbox"></i>
                                         <p>Tidak ada data ditemukan</p>
                                     </td>
@@ -116,8 +127,8 @@
                 
                 selects.forEach(select => {
                     select.addEventListener('change', function() {
-                        const table = document.querySelector('.riwayat-table');
-                        table.classList.add('riwayat-loading');
+                        const tableContainer = document.querySelector('.riwayat-table-container');
+                        tableContainer.classList.add('riwayat-loading');
                         
                         setTimeout(() => {
                             filterForm.submit();
@@ -134,12 +145,6 @@
                         const modalImage = buktiModal.querySelector('#buktiImage');
                         modalImage.src = imageUrl;
                     });
-                }
-                
-                // Highlight active filters
-                const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.get('alur_barang') || urlParams.get('periode')) {
-                    document.querySelector('.riwayat-btn-filter').classList.add('active');
                 }
             });
         </script>
