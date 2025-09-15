@@ -92,10 +92,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('/kategori/store', [DataKeseluruhan::class, 'storeKategori'])->name('kategori.store');
 });
 
+
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/datakeseluruhan', [DataKeseluruhan::class, 'index'])->name('datakeseluruhan');
+
     Route::post('/kategori/store', [DataKeseluruhan::class, 'storeKategori'])->name('kategori.store');
+    Route::delete('/kategori/{id}', [DataKeseluruhan::class, 'destroyKategori'])->name('kategori.destroy');
+
     Route::post('/barang/store', [DataKeseluruhan::class, 'storeBarang'])->name('barang.store');
-    Route::put('/barang/update/{kode}', [DataKeseluruhan::class, 'updateBarang'])->name('barang.update');
-    Route::delete('/barang/destroy/{kode}', [DataKeseluruhan::class, 'destroyBarang'])->name('barang.destroy');
+    Route::put('/barang/{kode}', [DataKeseluruhan::class, 'updateBarang'])->name('barang.update');
+    Route::delete('/barang/{kode}', [DataKeseluruhan::class, 'destroyBarang'])->name('barang.destroy');
 });
