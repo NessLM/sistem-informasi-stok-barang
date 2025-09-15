@@ -24,14 +24,21 @@ class AuthController extends Controller
         if (Auth::attempt($credentials, $remember)) {
             $request->session()->regenerate();
 
-            // Redirect sesuai role
-            // ...
-            $role = Auth::user()->role;
+            $role = Auth::user()->role->nama; 
+
             return match ($role) {
                 'Admin' => to_route('staff.admin.dashboard'),
                 'Pengelola Barang' => to_route('staff.pb.dashboard'),
-                'Penanggung Jawab' => to_route(route: 'staff.pj.dashboard'),
-                default => to_route('login')->withErrors(['username' => 'Role tidak dikenali.'])
+
+                // Semua Penanggung Jawab diarahkan ke dashboard yang sama
+                'Penanggung Jawab ATK',
+                'Penanggung Jawab Kebersihan',
+                'Penanggung Jawab Listrik',
+                'Penanggung Jawab Bahan Komputer' => to_route('staff.pj.dashboard'),
+
+                default => to_route('login')->withErrors([
+                    'username' => 'Role tidak dikenali.'
+                ]),
             };
         }
 
@@ -41,12 +48,8 @@ class AuthController extends Controller
     }
 
     /**
-     * Logout user and regenerate session token
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
+     * Logout user
      */
-    /*******  4132569d-a512-49db-a9d5-cf3dd868b83b  *******/
     public function destroy(Request $request)
     {
         Auth::logout();
