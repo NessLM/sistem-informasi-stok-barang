@@ -9,6 +9,7 @@ return new class extends Migration {
     {
         Schema::create('kategori', function (Blueprint $table) {
             $table->id();
+            // foreign key ke tabel gudang, wajib ada
             $table->foreignId('gudang_id')->constrained('gudang')->onDelete('cascade');
             $table->string('nama');
             $table->timestamps();
