@@ -57,9 +57,24 @@
         html.no-loader #page-loader { display:none !important; }
     </style>
 </head>
-
 <body>
-    {{-- Loader global --}}
+    {{-- 🔑 Early script: deteksi tipe navigasi.
+         Kalau BUKAN reload → matikan loader untuk page ini. --}}
+    <script>
+      (function(){
+        try{
+          // Modern Navigation Timing
+          var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+          var type = nav ? nav.type : (performance.navigation && performance.navigation.type === 1 ? 'reload' : 'navigate');
+          // Tampilkan loader HANYA untuk reload
+          if (type !== 'reload') {
+            document.documentElement.classList.add('no-loader');
+          }
+        }catch(e){}
+      })();
+    </script>
+
+    {{-- Loader global (akan disembunyikan jika <html> punya class no-loader) --}}
     <x-page-loader variant="a" />
 
     <div class="layout">
