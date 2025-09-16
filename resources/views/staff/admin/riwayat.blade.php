@@ -109,64 +109,144 @@
         </div>
 
         <!-- Table Section -->
-        <div class="card riwayat-table-card">
-            <div class="card-body p-0">
-                <div class="riwayat-table-container">
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>No</th>
-                                <th>Tanggal</th>
-                                <th>Waktu</th>
-                                <th>Gudang</th>
-                                <th>Nama Barang</th>
-                                <th>Jumlah</th>
-                                <th>Bagian</th>
-                                <th>Bukti</th>
-                                <th>Alur Barang</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($riwayat as $index => $item)
+        @php
+            // Pisahkan data berdasarkan alur barang
+            $riwayatMasuk = $riwayat->where('alur_barang', 'Masuk');
+            $riwayatKeluar = $riwayat->where('alur_barang', 'Keluar');
+            $alurFilter = request('alur_barang', 'Semua');
+        @endphp
+
+        @if($alurFilter == 'Semua' || $alurFilter == 'Masuk')
+            <!-- Tabel Barang Masuk -->
+            <div class="card riwayat-table-card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Barang Masuk</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="riwayat-table-container">
+                        <table class="table table-bordered">
+                            <thead>
                                 <tr>
-                                    <td class="fw-semibold">{{ $index + 1 }}</td>
-                                    <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
-                                    <td>{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }} WIB</td>
-                                    <td class="fw-medium">{{ $item->gudang }}</td>
-                                    <td class="fw-medium">{{ $item->nama_barang }}</td>
-                                    <td><span>{{ $item->jumlah }}</span></td>
-                                    <td>{{ $item->bagian }}</td>
-                                    <td>
-                                        @if ($item->bukti)
-                                            <span class="riwayat-bukti-icon" data-bs-toggle="modal"
-                                                data-bs-target="#buktiModal"
-                                                data-image="{{ asset('storage/bukti/' . $item->bukti) }}">
-                                                <i class="bi bi-eye-fill"></i>
+                                    <th>No</th>
+                                    <th>Tanggal</th>
+                                    <th>Waktu</th>
+                                    <th>Gudang</th>
+                                    <th>Nama Barang</th>
+                                    <th>Jumlah</th>
+                                    <th>Bagian</th>
+                                    <th>Bukti</th>
+                                    <th>Alur Barang</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($riwayatMasuk as $item)
+                                    <tr>
+                                        <td class="fw-semibold">{{ $loop->iteration }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }} WIB</td>
+                                        <td class="fw-medium">{{ $item->gudang }}</td>
+                                        <td class="fw-medium">{{ $item->nama_barang }}</td>
+                                        <td><span>{{ $item->jumlah }}</span></td>
+                                        <td>{{ $item->bagian }}</td>
+                                        <td>
+                                            @if ($item->bukti)
+                                                <span class="riwayat-bukti-icon" data-bs-toggle="modal"
+                                                    data-bs-target="#buktiModal"
+                                                    data-image="{{ asset('storage/bukti/' . $item->bukti) }}">
+                                                    <i class="bi bi-eye-fill"></i>
+                                                </span>
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <span class="btn-masuk btn-sm btn-action">
+                                                {{ $item->alur_barang }}
                                             </span>
-                                        @else
-                                            <span class="text-muted">-</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <span
-                                            class=" {{ $item->alur_barang == 'Keluar' ? 'btn-keluar btn-sm btn-action' : 'btn-masuk btn-sm btn-action' }}">
-                                            {{ $item->alur_barang }}
-                                        </span>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="9" class="riwayat-empty-state">
-                                        <i class="bi bi-inbox"></i>
-                                        <p>Tidak ada data ditemukan</p>
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    @if($alurFilter == 'Masuk')
+                                        <tr>
+                                            <td colspan="9" class="riwayat-empty-state">
+                                                <i class="bi bi-inbox"></i>
+                                                <p>Tidak ada data barang masuk ditemukan</p>
+                                            </td>
+                                        </tr>
+                                    @endif
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-        </div>
+        @endif
+
+        @if($alurFilter == 'Semua' || $alurFilter == 'Keluar')
+            <!-- Tabel Barang Keluar -->
+            <div class="card riwayat-table-card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">Barang Keluar</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="riwayat-table-container">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Tanggal</th>
+                                    <th>Waktu</th>
+                                    <th>Gudang</th>
+                                    <th>Nama Barang</th>
+                                    <th>Jumlah</th>
+                                    <th>Bagian</th>
+                                    <th>Bukti</th>
+                                    <th>Alur Barang</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($riwayatKeluar as $item)
+                                    <tr>
+                                        <td class="fw-semibold">{{ $loop->iteration }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }} WIB</td>
+                                        <td class="fw-medium">{{ $item->gudang }}</td>
+                                        <td class="fw-medium">{{ $item->nama_barang }}</td>
+                                        <td><span>{{ $item->jumlah }}</span></td>
+                                        <td>{{ $item->bagian }}</td>
+                                        <td>
+                                            @if ($item->bukti)
+                                                <span class="riwayat-bukti-icon" data-bs-toggle="modal"
+                                                    data-bs-target="#buktiModal"
+                                                    data-image="{{ asset('storage/bukti/' . $item->bukti) }}">
+                                                    <i class="bi bi-eye-fill"></i>
+                                                </span>
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <span class="btn-keluar btn-sm btn-action">
+                                                {{ $item->alur_barang }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    @if($alurFilter == 'Keluar')
+                                        <tr>
+                                            <td colspan="9" class="riwayat-empty-state">
+                                                <i class="bi bi-inbox"></i>
+                                                <p>Tidak ada data barang keluar ditemukan</p>
+                                            </td>
+                                        </tr>
+                                    @endif
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        @endif
     </div>
 
     <!-- Modal untuk menampilkan bukti -->
