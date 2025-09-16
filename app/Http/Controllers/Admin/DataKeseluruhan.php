@@ -16,28 +16,27 @@ class DataKeseluruhan extends Controller
         $menu   = MenuHelper::adminMenu();
         $search = $request->input('search');
 
-        // Ambil kategori + relasi barang
+        // Ambil kategori + barang (filter by search kalau ada)
         $kategori = Kategori::with(['barang' => function ($q) use ($search) {
             if ($search) {
                 $q->where('nama', 'like', "%{$search}%")
                   ->orWhere('kode', 'like', "%{$search}%");
             }
-        }])->get();
+        }, 'gudang'])->get();
 
-        // Ambil semua gudang (untuk form tambah kategori)
         $gudang = Gudang::all();
 
-        // Validasi harga min max
+        // Validasi harga min / max
         $request->validate([
             'harga_min' => 'nullable|numeric|min:0',
             'harga_max' => 'nullable|numeric|min:0',
         ]);
 
         if ($request->filled('harga_min') && $request->filled('harga_max') && $request->harga_min > $request->harga_max) {
-            return back()->with('error', 'Harga minimum tidak boleh lebih besar dari harga maksimum');
+            return back()->withErrors(['harga_min' => 'Harga minimum tidak boleh lebih besar dari harga maksimum']);
         }
 
-        // Query flat barang untuk pencarian/filter/modal edit
+        // Query flat barang untuk pencarian/filter
         $query = Barang::with('kategori');
 
         if ($search) {
@@ -52,10 +51,10 @@ class DataKeseluruhan extends Controller
             $query->where('kode', 'like', "%{$request->kode}%");
         }
         if ($request->filled('stok_min')) {
-            $query->where('stok', '>=', intval($request->stok_min));
+            $query->where('stok', '>=', (int) $request->stok_min);
         }
         if ($request->filled('stok_max')) {
-            $query->where('stok', '<=', intval($request->stok_max));
+            $query->where('stok', '<=', (int) $request->stok_max);
         }
         if ($request->filled('kategori_id')) {
             $query->where('kategori_id', $request->kategori_id);
@@ -64,22 +63,21 @@ class DataKeseluruhan extends Controller
             $query->where('satuan', $request->satuan);
         }
         if ($request->filled('nomor_awal')) {
-            $query->where('id', '>=', intval($request->nomor_awal));
+            $query->where('id', '>=', (int) $request->nomor_awal);
         }
         if ($request->filled('nomor_akhir')) {
-            $query->where('id', '<=', intval($request->nomor_akhir));
+            $query->where('id', '<=', (int) $request->nomor_akhir);
         }
         if ($request->filled('harga_min') && $request->filled('harga_max')) {
-    $query->whereBetween('harga', [
-        floatval($request->harga_min),
-        floatval($request->harga_max),
-    ]);
-} elseif ($request->filled('harga_min')) {
-    $query->where('harga', '>=', floatval($request->harga_min));
-} elseif ($request->filled('harga_max')) {
-    $query->where('harga', '<=', floatval($request->harga_max));
-}
-
+            $query->whereBetween('harga', [
+                (float) $request->harga_min,
+                (float) $request->harga_max,
+            ]);
+        } elseif ($request->filled('harga_min')) {
+            $query->where('harga', '>=', (float) $request->harga_min);
+        } elseif ($request->filled('harga_max')) {
+            $query->where('harga', '<=', (float) $request->harga_max);
+        }
 
         $barang = $query->get();
 
@@ -93,10 +91,7 @@ class DataKeseluruhan extends Controller
             'gudang_id' => 'required|exists:gudang,id',
         ]);
 
-        Kategori::create([
-            'nama'      => $request->nama,
-            'gudang_id' => $request->gudang_id,
-        ]);
+        Kategori::create($request->only(['nama', 'gudang_id']));
 
         return redirect()->route('admin.datakeseluruhan')
                          ->with('success', 'Kategori berhasil ditambahkan!');
@@ -106,9 +101,8 @@ class DataKeseluruhan extends Controller
     {
         $request->validate([
             'kode'        => 'required|string|max:255|unique:barang,kode',
-            'nama'        => 'required|string|max:255',
+            'nama'        => 'required|string|max:255|unique:barang,nama',
             'harga'       => 'nullable|numeric|min:0',
-            'stok'        => 'nullable|integer|min:0',
             'satuan'      => 'nullable|string|max:50',
             'kategori_id' => 'required|exists:kategori,id',
         ]);
@@ -117,7 +111,7 @@ class DataKeseluruhan extends Controller
             'kode'            => $request->kode,
             'nama'            => $request->nama,
             'harga'           => $request->harga ?? 0,
-            'stok'            => $request->stok ?? 0,
+            'stok'            => 0, // selalu default 0
             'satuan'          => $request->satuan,
             'kategori_id'     => $request->kategori_id,
             'jenis_barang_id' => 1, // default
@@ -132,20 +126,13 @@ class DataKeseluruhan extends Controller
         $barang = Barang::where('kode', $kode)->firstOrFail();
 
         $request->validate([
-            'nama'        => 'required|string|max:255',
+            'nama'        => 'required|string|max:255|unique:barang,nama,' . $barang->id,
             'harga'       => 'nullable|numeric|min:0',
-            'stok'        => 'nullable|integer|min:0',
             'satuan'      => 'nullable|string|max:50',
             'kategori_id' => 'required|exists:kategori,id',
         ]);
 
-        $barang->update([
-            'nama'        => $request->nama,
-            'harga'       => $request->harga ?? 0,
-            'stok'        => $request->stok ?? 0,
-            'satuan'      => $request->satuan,
-            'kategori_id' => $request->kategori_id,
-        ]);
+        $barang->update($request->only(['nama', 'harga', 'stok', 'satuan', 'kategori_id']));
 
         return redirect()->route('admin.datakeseluruhan')
                          ->with('success', 'Barang berhasil diperbarui!');
