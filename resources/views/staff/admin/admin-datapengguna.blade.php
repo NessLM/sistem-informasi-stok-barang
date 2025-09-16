@@ -1,8 +1,51 @@
 <x-layouts.app title="Data Pengguna" :menu="$menu">
+ @if(session('toast'))
+  <div id="toast-notif" 
+       style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+              z-index: 2000; display: flex; justify-content: center; pointer-events: none;">
+
+    <div class="toast-message"
+         style="background: #fff; border-radius: 12px; padding: 14px 22px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;
+                min-width: 280px; max-width: 360px; transition: opacity .5s ease;">
+      
+      {{-- Judul (Hijau kalau success, Merah kalau error) --}}
+      <div style="font-weight: 600; font-size: 16px; margin-bottom: 4px;
+                  color: {{ session('toast.type') === 'success' ? '#28a745' : '#dc3545' }};">
+        {{ session('toast.title') }}
+      </div>
+
+      {{-- Pesan kecil --}}
+      <div style="color:#333; font-size: 14px; line-height: 1.4;">
+        {{ session('toast.message') }}
+      </div>
+    </div>
+  </div>
+
+  <script>
+    setTimeout(() => {
+      const toast = document.getElementById('toast-notif');
+      if (toast) toast.style.opacity = '0';
+      setTimeout(() => toast?.remove(), 500); // biar smooth fade-out
+    }, 3000);
+  </script>
+@endif
+
+
   <div class="page-body"> 
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <a href="{{ route('admin.users.create') }}" class="btn btn-add-user">+ Tambah Pengguna</a>
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-add-user" data-bs-toggle="modal" data-bs-target="#modalCreateUser">
+  + Tambah Pengguna
+</button>
+
+       <button type="button" class="btn btn-add-user" data-bs-toggle="modal" data-bs-target="#modalCreateRole">
+  + Tambah Role
+</button>
+
     </div>
+</div>
+
 
     <div class="card p-3">
         <h4 class="mb-3">Data Pengguna</h4>
@@ -94,6 +137,57 @@
   </div>
   @endpush
 
+{{-- Modal Create User --}}
+@push('modals')
+<div class="modal fade" id="modalCreateUser" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <form id="formCreateUser" method="POST" action="{{ route('admin.users.store') }}" class="modal-content">
+      @csrf
+      <div class="modal-header">
+        <h5 class="modal-title">Tambah Pengguna</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Nama</label>
+          <input type="text" class="form-control" name="nama" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Username</label>
+          <input type="text" class="form-control" name="username" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <input type="password" class="form-control" name="password" required placeholder="Masukkan password">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Role</label>
+          <select class="form-select" name="role_id" required>
+            @foreach ($roles as $role)
+              <option value="{{ $role->id }}">{{ $role->nama }}</option>
+            @endforeach
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Bagian</label>
+          <input type="text" class="form-control" name="bagian">
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="submit" class="btn btn-primary">Simpan</button>
+      </div>
+    </form>
+  </div>
+</div>
+@endpush
+
   {{-- Modal Edit User --}}
   @push('modals')
   <div class="modal fade" id="modalEditUser" tabindex="-1" aria-hidden="true">
@@ -178,6 +272,34 @@
     </div>
   </div>
   @endpush
+
+  {{-- Modal Create Role --}}
+@push('modals')
+<div class="modal fade" id="modalCreateRole" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <form id="formCreateRole" method="POST" action="{{ route('admin.roles.store') }}" class="modal-content">
+      @csrf
+      <div class="modal-header">
+        <h5 class="modal-title">Tambah Role</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Nama Role</label>
+          <input type="text" class="form-control" name="nama" required placeholder="Contoh: Pengelola Barang">
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="submit" class="btn btn-primary">Simpan</button>
+      </div>
+    </form>
+  </div>
+</div>
+@endpush
+
 
   @push('scripts')
   <script>

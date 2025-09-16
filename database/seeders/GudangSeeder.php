@@ -12,11 +12,7 @@ class GudangSeeder extends Seeder
 {
     public function run(): void
     {
-        // Cek / buat gudang
-        $gudang = Gudang::firstOrCreate(
-            ['nama' => 'Gudang Utama'], // unique by nama
-            ['nama' => 'Gudang Utama']
-        );
+        $gudang = Gudang::create(['nama' => 'Gudang Utama']);
 
         // Cek / buat kategori
         $kategori = Kategori::firstOrCreate(

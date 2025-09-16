@@ -10,6 +10,8 @@ use App\Http\Controllers\Admin\RiwayatController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\BarangController;
 use App\Http\Controllers\Admin\LaporanController;
+use App\Http\Controllers\Admin\RoleController;
+
 
 // Pengelola Barang
 use App\Http\Controllers\Pb\DashboardController as PbDashboard;
@@ -60,6 +62,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth','role:Admin'])->group
 
     // Barang (CRUD standar) → admin.barang.index|create|store|show|edit|update|destroy
     Route::resource('barang', BarangController::class);
+
+    Route::resource('roles', RoleController::class);
 
     Route::get('/laporan', LaporanController::class)->name('laporan');
 });
