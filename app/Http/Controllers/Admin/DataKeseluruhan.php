@@ -16,14 +16,18 @@ class DataKeseluruhan extends Controller
         $menu   = MenuHelper::adminMenu();
         $search = $request->input('search');
 
-        // Ambil kategori + barang (filter by search kalau ada)
-        $kategori = Kategori::with(['barang' => function ($q) use ($search) {
-            if ($search) {
-                $q->where('nama', 'like', "%{$search}%")
-                  ->orWhere('kode', 'like', "%{$search}%");
-            }
-        }, 'gudang'])->get();
+        // Ambil kategori + relasi barang + gudang
+        $kategori = Kategori::with([
+            'barang' => function ($q) use ($search) {
+                if ($search) {
+                    $q->where('nama', 'like', "%{$search}%")
+                      ->orWhere('kode', 'like', "%{$search}%");
+                }
+            },
+            'gudang'
+        ])->get();
 
+        // ✅ Ambil semua gudang
         $gudang = Gudang::all();
 
         // Validasi harga min / max
@@ -33,10 +37,12 @@ class DataKeseluruhan extends Controller
         ]);
 
         if ($request->filled('harga_min') && $request->filled('harga_max') && $request->harga_min > $request->harga_max) {
-            return back()->withErrors(['harga_min' => 'Harga minimum tidak boleh lebih besar dari harga maksimum']);
+            return back()->withErrors([
+                'harga_min' => 'Harga minimum tidak boleh lebih besar dari harga maksimum'
+            ]);
         }
 
-        // Query flat barang untuk pencarian/filter
+        // Query barang
         $query = Barang::with('kategori');
 
         if ($search) {
@@ -81,14 +87,20 @@ class DataKeseluruhan extends Controller
 
         $barang = $query->get();
 
-        return view('staff.admin.datakeseluruhan', compact('kategori', 'barang', 'menu', 'gudang'));
+        // ✅ View dengan semua data
+        return view('staff.admin.datakeseluruhan', compact(
+            'kategori',
+            'barang',
+            'menu',
+            'gudang'
+        ));
     }
 
     public function storeKategori(Request $request)
     {
         $request->validate([
             'nama'      => 'required|string|max:255|unique:kategori,nama',
-            'gudang_id' => 'required|exists:gudang,id',
+            'gudang_id' => 'required|exists:gudang,id', // validasi tabel gudang
         ]);
 
         Kategori::create($request->only(['nama', 'gudang_id']));
@@ -111,7 +123,7 @@ class DataKeseluruhan extends Controller
             'kode'            => $request->kode,
             'nama'            => $request->nama,
             'harga'           => $request->harga ?? 0,
-            'stok'            => 0, // selalu default 0
+            'stok'            => 0, // default
             'satuan'          => $request->satuan,
             'kategori_id'     => $request->kategori_id,
             'jenis_barang_id' => 1, // default
@@ -151,7 +163,7 @@ class DataKeseluruhan extends Controller
     {
         $kategori = Kategori::findOrFail($id);
 
-        // Hapus semua barang dalam kategori ini
+        // Hapus semua barang dalam kategori
         $kategori->barang()->delete();
         $kategori->delete();
 
