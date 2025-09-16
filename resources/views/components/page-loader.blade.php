@@ -210,10 +210,17 @@
   
     // Inisialisasi
     document.addEventListener('DOMContentLoaded', () => {
-      window.pageLoader = new PageLoader();
-      window.pageLoader.start();
-      window.pageLoader.simulate(); // hapus jika tak ingin simulasi otomatis
-    });
+  const noLoader = document.body.hasAttribute('data-no-loader');
+  if (noLoader) {
+    document.getElementById('page-loader')?.classList.add('is-hidden');
+    return;
+  }
+
+  window.pageLoader = new PageLoader();
+  window.pageLoader.start();
+  window.pageLoader.simulate();
+});
+
     window.addEventListener('load', () => window.pageLoader?.finish());
     </script>
   @endonce
