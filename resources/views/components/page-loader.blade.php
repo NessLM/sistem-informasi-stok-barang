@@ -100,19 +100,11 @@
 
     // 🔑 Inisialisasi HANYA jika tidak dimatikan oleh layout (no-loader)
     document.addEventListener('DOMContentLoaded', () => {
-      if (document.documentElement.classList.contains('no-loader')) {
-        const el = document.getElementById('page-loader');
-        if (el) el.classList.add('is-hidden');
-        return;
-      }
-      window.pageLoader = new PageLoader();
+-load      window.pageLoader = new PageLoader();
       window.pageLoader.start();
-      window.pageLoader.simulate(); // opsional
+      window.pageLoader.simulate(); // hapus jika tak ingin simulasi otomatis
     });
-
-    window.addEventListener('load', () => {
-      if (document.documentElement.classList.contains('no-loader')) return;
-      window.pageLoader?.finish();
-    });
-  </script>
-@endonce
+    window.addEventListener('load', () => window.pageLoader?.finish());
+    </script>
+  @endonce
+  
