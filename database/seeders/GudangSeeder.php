@@ -12,27 +12,48 @@ class GudangSeeder extends Seeder
 {
     public function run(): void
     {
-        $gudang = Gudang::create(['nama' => 'Gudang Utama']);
+        // Cek / buat gudang
+        $gudang = Gudang::firstOrCreate(
+            ['nama' => 'Gudang Utama'], // unique by nama
+            ['nama' => 'Gudang Utama']
+        );
 
-        $kategori = Kategori::create([
-            'nama' => 'Elektronik',
-            'gudang_id' => $gudang->id
-        ]);
+        // Cek / buat kategori
+        $kategori = Kategori::firstOrCreate(
+            [
+                'nama' => 'Elektronik',
+                'gudang_id' => $gudang->id
+            ],
+            [
+                'nama' => 'Elektronik',
+                'gudang_id' => $gudang->id
+            ]
+        );
 
-        $jenisBarang = JenisBarang::create([
-            'nama' => 'Laptop',
-            'kategori_id' => $kategori->id
-        ]);
+        // Cek / buat jenis barang
+        $jenisBarang = JenisBarang::firstOrCreate(
+            [
+                'nama' => 'Laptop',
+                'kategori_id' => $kategori->id
+            ],
+            [
+                'nama' => 'Laptop',
+                'kategori_id' => $kategori->id
+            ]
+        );
 
-        Barang::create([
-            'nama' => 'Laptop Asus ROG',
-            'kategori_id' => $kategori->id,
-            'jenis_barang_id' => $jenisBarang->id, // ⬅️ WAJIB
-            'jumlah' => 10,
-            'kode' => 'LP001',
-            'harga' => 15000000,
-            'stok' => 10,
-            'satuan' => 'unit'
-        ]);
+        // Cek / buat barang
+        Barang::firstOrCreate(
+            ['kode' => 'LP001'], // gunakan kode sebagai unique
+            [
+                'nama' => 'Laptop Asus ROG',
+                'kategori_id' => $kategori->id,
+                'jenis_barang_id' => $jenisBarang->id,
+                'jumlah' => 10,
+                'harga' => 15000000,
+                'stok' => 10,
+                'satuan' => 'unit'
+            ]
+        );
     }
 }
