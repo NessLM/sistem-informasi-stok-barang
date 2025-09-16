@@ -17,7 +17,6 @@ class UserController extends Controller
 {
     public function index()
     {
-        // [ASLI] Ambil data
         $users = User::with('role')->get();
         $roles = Role::all();
         $menu  = MenuHelper::adminMenu();
@@ -32,11 +31,10 @@ class UserController extends Controller
         $users->each(function ($u) {
             $hash = (string) $u->getOriginal('password'); // hash mentah dari DB
 
-            // --- [BARU] Ambil plaintext dari cache (PERSISTEN, TANPA menghapus) ---
             $cacheKey = "user:plainpwd:{$u->id}";
             $plainFromCache = null;
 
-            if ($enc = Cache::get($cacheKey)) {                 // [DIUBAH] get (bukan pull)
+            if ($enc = Cache::get($cacheKey)) {              
                 try {
                     $tmp = Crypt::decryptString($enc);          // decrypt dari cache
                     if (Hash::check($tmp, $hash)) {             // safety: cocok dg hash sekarang?
@@ -128,5 +126,19 @@ class UserController extends Controller
         return back()->with('success', 'Pengguna berhasil diperbarui.');
     }
 
-    // ... method lain (show/destroy/dll.) TETAP, tidak perlu diubah.
+  public function destroy($id)
+{
+    $user = User::findOrFail($id);
+
+    // 🔥 Cegah admin menghapus dirinya sendiri
+    if ($user->id === auth()->id() && $user->role->nama === 'Admin') {
+        return redirect()->route('admin.users.index')
+                         ->withErrors(['msg' => 'Admin tidak bisa menghapus dirinya sendiri.']);
+    }
+
+    $user->delete();
+
+    return redirect()->route('admin.users.index')
+                     ->with('success', 'Pengguna berhasil dihapus!');
+}
 }

@@ -119,7 +119,7 @@
     </style>
 </head>
 
-<body>
+<body  @if(session('no_loader')) data-no-loader="true" @endif>
     {{-- Loader global --}}
     <x-page-loader variant="a" />
 
