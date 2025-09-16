@@ -103,3 +103,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::put('/barang/{kode}', [DataKeseluruhan::class, 'updateBarang'])->name('barang.update');
     Route::delete('/barang/{kode}', [DataKeseluruhan::class, 'destroyBarang'])->name('barang.destroy');
 });
+
+// Tambahkan route untuk filter data dashboard [TAMBAHAN BARU]
+Route::get('/dashboard/filter', [AdminDashboard::class, 'filterData'])->name('dashboard.filter');

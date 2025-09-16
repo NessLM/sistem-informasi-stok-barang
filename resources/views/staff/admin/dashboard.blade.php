@@ -2,6 +2,7 @@
   
   {{-- CSS khusus dashboard --}}
   <link rel="stylesheet" href="{{ asset('assets/css/staff/admin/dashboard.css') }}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
   
   <div class="dashboard-container">
 
@@ -16,7 +17,7 @@
               <i class="bi bi-archive"></i>
             </div>
             <div class="card-content">
-              <div class="card-number">110</div>
+              <div class="card-number">{{ $totalJenisBarang }}</div>
               <div class="card-label">Total Jenis Barang</div>
             </div>
           </div>
@@ -26,7 +27,7 @@
               <i class="bi bi-box-seam"></i>
             </div>
             <div class="card-content">
-              <div class="card-number">880</div>
+              <div class="card-number">{{ $totalBarang }}</div>
               <div class="card-label">Total Barang</div>
             </div>
           </div>
@@ -38,9 +39,17 @@
         <div class="chart-header">
           <h2>Grafik Per Bagian</h2>
           <div class="chart-filter">
-            <button class="filter-btn">
-              <i class="bi bi-funnel"></i>
-            </button>
+            <div class="dropdown">
+              <button class="filter-btn dropdown-toggle" type="button" id="bagianFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-funnel"></i> Filter
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="bagianFilterDropdown">
+                <li><a class="dropdown-item filter-option" href="#" data-type="bagian" data-value="all">Semua</a></li>
+                <li><a class="dropdown-item filter-option" href="#" data-type="bagian" data-value="week">1 Minggu Terakhir</a></li>
+                <li><a class="dropdown-item filter-option" href="#" data-type="bagian" data-value="month">1 Bulan Terakhir</a></li>
+                <li><a class="dropdown-item filter-option" href="#" data-type="bagian" data-value="year">1 Tahun Terakhir</a></li>
+              </ul>
+            </div>
           </div>
         </div>
         <div class="chart-container">
@@ -65,29 +74,29 @@
         <div class="chart-header">
           <h2>Grafik Pengeluaran per Waktu</h2>
           <div class="chart-controls">
-            <select class="sort-select">
-              <option value="default">Sortir</option>
-              <option value="asc">Ascending</option>
-              <option value="desc">Descending</option>
-            </select>
+            <div class="dropdown">
+              <button class="filter-btn dropdown-toggle" type="button" id="pengeluaranFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-funnel"></i> Filter
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="pengeluaranFilterDropdown">
+                <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran" data-value="all">Semua</a></li>
+                <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran" data-value="week">1 Minggu Terakhir</a></li>
+                <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran" data-value="month">1 Bulan Terakhir</a></li>
+                <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran" data-value="year">1 Tahun Terakhir</a></li>
+              </ul>
+            </div>
           </div>
         </div>
         <div class="chart-container">
           <canvas id="pengeluaranChart"></canvas>
         </div>
         <div class="chart-legend yearly">
+          @foreach($years as $year)
           <div class="legend-item">
-            <span class="legend-color year-2020"></span>
-            <span>2020</span>
+            <span class="legend-color year-{{ $year }}"></span>
+            <span>{{ $year }}</span>
           </div>
-          <div class="legend-item">
-            <span class="legend-color year-2021"></span>
-            <span>2021</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-color year-2022"></span>
-            <span>2022</span>
-          </div>
+          @endforeach
         </div>
       </div>
     </div>
@@ -95,21 +104,22 @@
 
   {{-- Chart.js Library --}}
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Data untuk grafik per bagian
+      // Data untuk grafik per bagian (dari database)
       const bagianData = {
-        labels: ['Tata Pemerintahan', 'Kesra & Kemasy', 'Hukum & HAM', 'ADM Pembangunan', 'Perekonomian', 'Pengadaan Barang', 'Protokol'],
+        labels: {!! json_encode($bagianLabels) !!},
         datasets: [
           {
             label: 'Keluar',
-            data: [95, 200, 75, 85, 90, 50, 85],
+            data: {!! json_encode($keluarData) !!},
             backgroundColor: '#EF4444',
             borderRadius: 4
           },
           {
             label: 'Masuk',
-            data: [80, 110, 95, 100, 85, 95, 75],
+            data: {!! json_encode($masukData) !!},
             backgroundColor: '#22C55E',
             borderRadius: 4
           }
@@ -131,9 +141,7 @@
           scales: {
             y: {
               beginAtZero: true,
-              max: 200,
               ticks: {
-                stepSize: 40,
                 color: '#6B7280'
               },
               grid: {
@@ -154,26 +162,10 @@
         }
       };
 
-      // Data untuk grafik pengeluaran per waktu
+      // Data untuk grafik pengeluaran per waktu (dari database)
       const pengeluaranData = {
-        labels: ['Tata Pem', 'Kesra', 'Hukum', 'ADM Pemb', 'Perekono', 'Pengadaan', 'Protokol', 'Umum', 'Keuangan', 'Kepegaw', 'Humas'],
-        datasets: [
-          {
-            label: '2020',
-            data: [70, 55, 87, 31, 20, 95, 15, 48, 77, 97, 61],
-            backgroundColor: '#8B5CF6'
-          },
-          {
-            label: '2021',
-            data: [35, 65, 75, 30, 16, 12, 19, 43, 82, 78, 31],
-            backgroundColor: '#F87171'
-          },
-          {
-            label: '2022',
-            data: [65, 35, 68, 36, 34, 85, 49, 58, 52, 64, 72],
-            backgroundColor: '#06B6D4'
-          }
-        ]
+        labels: {!! json_encode($pengeluaranLabels) !!},
+        datasets: {!! json_encode($pengeluaranData) !!}
       };
 
       // Konfigurasi grafik pengeluaran per waktu
@@ -191,9 +183,7 @@
           scales: {
             y: {
               beginAtZero: true,
-              max: 100,
               ticks: {
-                stepSize: 20,
                 color: '#6B7280'
               },
               grid: {
@@ -214,10 +204,92 @@
 
       // Inisialisasi charts
       const bagianCtx = document.getElementById('bagianChart').getContext('2d');
-      new Chart(bagianCtx, bagianConfig);
+      const bagianChart = new Chart(bagianCtx, bagianConfig);
 
       const pengeluaranCtx = document.getElementById('pengeluaranChart').getContext('2d');
-      new Chart(pengeluaranCtx, pengeluaranConfig);
+      const pengeluaranChart = new Chart(pengeluaranCtx, pengeluaranConfig);
+
+      // Fungsi untuk mengubah warna legend berdasarkan tahun
+      function updateLegendColors() {
+        const years = {!! json_encode($years) !!};
+        const colors = {!! json_encode($colorsForYears) !!};
+        
+        years.forEach((year) => {
+          const colorElement = document.querySelector(`.year-${year}`);
+          if (colorElement && colors[year]) {
+            colorElement.style.backgroundColor = colors[year];
+          }
+        });
+      }
+
+      // Panggil fungsi untuk mengubah warna legend
+      updateLegendColors();
+
+      // Filter dropdown functionality
+      document.querySelectorAll('.filter-option').forEach(item => {
+        item.addEventListener('click', function(e) {
+          e.preventDefault();
+          const type = this.getAttribute('data-type');
+          const value = this.getAttribute('data-value');
+          
+          // Update teks pada tombol dropdown
+          const dropdownButton = this.closest('.dropdown').querySelector('.dropdown-toggle');
+          dropdownButton.innerHTML = `<i class="bi bi-funnel"></i> ${this.textContent}`;
+          
+          if (type === 'bagian') {
+            filterBagianData(value);
+          } else {
+            filterPengeluaranData(value);
+          }
+        });
+      });
+
+      // Fungsi untuk filter data grafik per bagian
+      function filterBagianData(filterType) {
+        // Kirim permintaan AJAX ke server untuk mendapatkan data terfilter
+        fetch(`/admin/dashboard/filter?type=bagian&filter=${filterType}`)
+          .then(response => response.json())
+          .then(data => {
+            // Update data chart
+            bagianChart.data.datasets[0].data = data.keluar;
+            bagianChart.data.datasets[1].data = data.masuk;
+            bagianChart.update();
+          })
+          .catch(error => console.error('Error:', error));
+      }
+
+      // Fungsi untuk filter data grafik pengeluaran per waktu
+      function filterPengeluaranData(filterType) {
+        // Kirim permintaan AJAX ke server untuk mendapatkan data terfilter
+        fetch(`/admin/dashboard/filter?type=pengeluaran&filter=${filterType}`)
+          .then(response => response.json())
+          .then(data => {
+            // Update data chart
+            pengeluaranChart.data.datasets = data;
+            pengeluaranChart.update();
+            
+            // Update legend
+            const legendContainer = document.querySelector('.chart-legend.yearly');
+            legendContainer.innerHTML = '';
+            
+            data.forEach(dataset => {
+              const legendItem = document.createElement('div');
+              legendItem.className = 'legend-item';
+              
+              const colorSpan = document.createElement('span');
+              colorSpan.className = 'legend-color';
+              colorSpan.style.backgroundColor = dataset.backgroundColor;
+              
+              const textSpan = document.createElement('span');
+              textSpan.textContent = dataset.label;
+              
+              legendItem.appendChild(colorSpan);
+              legendItem.appendChild(textSpan);
+              legendContainer.appendChild(legendItem);
+            });
+          })
+          .catch(error => console.error('Error:', error));
+      }
     });
   </script>
 
