@@ -49,7 +49,7 @@
 
     <section class="card shadow-sm p-3">
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-            <h4 class="fw-bold">Data Gudang ATK</h4>
+            <h4>Data Gudang ATK</h4>
             <div class="d-flex flex-wrap gap-2">
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambahKategori">+ Tambah Kategori</button>
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambahBarang">+ Tambah Barang</button>
@@ -124,15 +124,15 @@
             <div class="table-responsive mt-3">
                 <table class="table table-bordered">
                     <thead class="table-dark">
-                        <tr><th>KATEGORI</th><th>GUDANG</th><th style="width:180px">AKSI</th></tr>
+                        <tr><th>KATEGORI</th><th>GUDANG</th><th style="width:180px"class="text-center">AKSI</th></tr>
                     </thead>
                     <tbody>
                         @foreach($kategori as $k)
                             <tr>
-                                <td class="fw-bold">{{ $k->nama }}</td>
+                                <td>{{ $k->nama }}</td>
                                 <td>{{ $k->gudang->nama ?? '-' }}</td>
-                                <td>
-                                    <div class="btn-group">
+                                <td class="text-center">
+                                    <div class="d-flex flex-wrap justify-content-center gap-2">
                                         <button class="btn btn-sm btn-success" onclick="toggleDetail({{ $k->id }})"><i class="bi bi-eye"></i></button>
                                         <form action="{{ route('admin.kategori.destroy', $k->id) }}" method="POST" onsubmit="return confirm('Hapus kategori ini beserta barang di dalamnya?')">
                                             @csrf
