@@ -104,9 +104,9 @@ class DataKeseluruhan extends Controller
 
         Kategori::create($request->only(['nama', 'gudang_id']));
 
-return redirect()->route('staff.admin.datakeseluruhan')
-                 ->with('success', 'Kategori berhasil ditambahkan!');
-
+        // ✅ FIXED: Gunakan route name yang benar
+        return redirect()->route('admin.datakeseluruhan')
+                         ->with('success', 'Kategori berhasil ditambahkan!');
     }
 
     public function storeBarang(Request $request)
@@ -129,7 +129,8 @@ return redirect()->route('staff.admin.datakeseluruhan')
             'jenis_barang_id' => 1, // default
         ]);
 
-        return redirect()->route('staff.admin.datakeseluruhan')
+        // ✅ FIXED: Gunakan route name yang benar
+        return redirect()->route('admin.datakeseluruhan')
                          ->with('success', 'Barang berhasil ditambahkan!');
     }
 
@@ -146,7 +147,8 @@ return redirect()->route('staff.admin.datakeseluruhan')
 
         $barang->update($request->only(['nama', 'harga', 'stok', 'satuan', 'kategori_id']));
 
-        return redirect()->route('staff.admin.datakeseluruhan')
+        // ✅ FIXED: Gunakan route name yang benar
+        return redirect()->route('admin.datakeseluruhan')
                          ->with('success', 'Barang berhasil diperbarui!');
     }
 
@@ -155,7 +157,8 @@ return redirect()->route('staff.admin.datakeseluruhan')
         $barang = Barang::where('kode', $kode)->firstOrFail();
         $barang->delete();
 
-        return redirect()->route('staff.admin.datakeseluruhan')
+        // ✅ FIXED: Gunakan route name yang benar
+        return redirect()->route('admin.datakeseluruhan')
                          ->with('success', 'Barang berhasil dihapus!');
     }
 
@@ -167,7 +170,42 @@ return redirect()->route('staff.admin.datakeseluruhan')
         $kategori->barang()->delete();
         $kategori->delete();
 
-        return redirect()->route('staff.admin.datakeseluruhan')
+        // ✅ FIXED: Gunakan route name yang benar
+        return redirect()->route('admin.datakeseluruhan')
                          ->with('success', 'Kategori berhasil dihapus!');
+    }
+
+    /**
+     * API untuk search suggestions
+     */
+    public function searchSuggestions(Request $request)
+    {
+        $search = $request->get('q', '');
+        
+        if (strlen($search) < 2) {
+            return response()->json([]);
+        }
+
+        $suggestions = Barang::with('kategori')
+            ->where(function ($query) use ($search) {
+                $query->where('nama', 'like', "%{$search}%")
+                      ->orWhere('kode', 'like', "%{$search}%");
+            })
+            ->select('id', 'nama', 'kode', 'stok', 'kategori_id')
+            ->limit(8)
+            ->get()
+            ->map(function ($barang) {
+                return [
+                    'id' => $barang->id,
+                    'nama' => $barang->nama,
+                    'kode' => $barang->kode,
+                    'stok' => $barang->stok,
+                    'kategori' => $barang->kategori->nama ?? '-',
+                    'display' => $barang->nama . ' (' . $barang->kode . ')',
+                    'stock_status' => $barang->stok == 0 ? 'empty' : ($barang->stok < 10 ? 'low' : 'normal')
+                ];
+            });
+
+        return response()->json($suggestions);
     }
 }

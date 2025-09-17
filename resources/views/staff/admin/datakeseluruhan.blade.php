@@ -59,12 +59,239 @@
             </div>
         </div>
 
-        {{-- Search --}}
-        <form action="{{ route('admin.datakeseluruhan') }}" method="GET" class="input-group mb-3">
-            <span class="input-group-text"><i class="bi bi-search"></i></span>
-            <input type="text" name="search" class="form-control" placeholder="Telusuri barang" value="{{ request('search') }}">
-            <button class="btn btn-outline-secondary" type="submit">Cari</button>
-        </form>
+{{-- Search Form dengan Autocomplete --}}
+<div class="position-relative">
+    <form action="{{ route('admin.datakeseluruhan') }}" method="GET" class="input-group mb-3" id="searchForm">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input 
+            type="text" 
+            name="search" 
+            id="searchInput" 
+            class="form-control" 
+            placeholder="Telusuri barang (nama atau kode)" 
+            value="{{ request('search') }}"
+            autocomplete="off"
+        >
+        <button class="btn btn-outline-secondary" type="submit">Cari</button>
+    </form>
+    
+    {{-- Dropdown Suggestions --}}
+    <div id="searchSuggestions" class="dropdown-menu w-100 position-absolute" style="z-index: 1050; max-height: 300px; overflow-y: auto; display: none;">
+        <!-- Suggestions akan diisi via JavaScript -->
+    </div>
+</div>
+
+<style>
+.search-suggestion-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s;
+}
+
+.search-suggestion-item:hover,
+.search-suggestion-item.active {
+    background-color: #f8f9fa;
+}
+
+.search-suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-name {
+    font-weight: 600;
+    color: #333;
+}
+
+.suggestion-code {
+    color: #666;
+    font-size: 0.9em;
+}
+
+.suggestion-meta {
+    font-size: 0.8em;
+    color: #999;
+}
+
+.stock-status {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.75em;
+    font-weight: 500;
+}
+
+.stock-empty {
+    background-color: #dc3545;
+    color: white;
+}
+
+.stock-low {
+    background-color: #ffc107;
+    color: #333;
+}
+
+.stock-normal {
+    background-color: #28a745;
+    color: white;
+}
+
+.loading-suggestion {
+    padding: 8px 12px;
+    text-align: center;
+    color: #666;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const suggestionsContainer = document.getElementById('searchSuggestions');
+    let currentSuggestions = [];
+    let activeSuggestionIndex = -1;
+    let searchTimeout;
+
+    // Function untuk fetch suggestions
+    function fetchSuggestions(query) {
+        if (query.length < 2) {
+            hideSuggestions();
+            return;
+        }
+
+        // Show loading
+        showLoading();
+
+        // Clear previous timeout
+        clearTimeout(searchTimeout);
+
+        // Debounce search request
+        searchTimeout = setTimeout(() => {
+            fetch(`{{ route('admin.api.search.barang') }}?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    currentSuggestions = data;
+                    displaySuggestions(data);
+                })
+                .catch(error => {
+                    console.error('Search error:', error);
+                    hideSuggestions();
+                });
+        }, 300);
+    }
+
+    // Function untuk show loading
+    function showLoading() {
+        suggestionsContainer.innerHTML = '<div class="loading-suggestion"><i class="bi bi-spinner-grow"></i> Mencari...</div>';
+        suggestionsContainer.style.display = 'block';
+    }
+
+    // Function untuk display suggestions
+    function displaySuggestions(suggestions) {
+        if (suggestions.length === 0) {
+            hideSuggestions();
+            return;
+        }
+
+        let html = '';
+        suggestions.forEach((item, index) => {
+            const stockStatusClass = `stock-${item.stock_status}`;
+            const stockText = item.stock_status === 'empty' ? 'Habis' : 
+                             item.stock_status === 'low' ? 'Sedikit' : 'Tersedia';
+            
+            html += `
+                <div class="search-suggestion-item" data-index="${index}">
+                    <div class="suggestion-name">${item.nama}</div>
+                    <div class="suggestion-code">Kode: ${item.kode}</div>
+                    <div class="suggestion-meta">
+                        <small>Kategori: ${item.kategori} | Stok: ${item.stok} | 
+                        <span class="stock-status ${stockStatusClass}">${stockText}</span></small>
+                    </div>
+                </div>
+            `;
+        });
+
+        suggestionsContainer.innerHTML = html;
+        suggestionsContainer.style.display = 'block';
+
+        // Add click event listeners
+        suggestionsContainer.querySelectorAll('.search-suggestion-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const index = parseInt(this.dataset.index);
+                selectSuggestion(index);
+            });
+        });
+    }
+
+    // Function untuk hide suggestions
+    function hideSuggestions() {
+        suggestionsContainer.style.display = 'none';
+        activeSuggestionIndex = -1;
+    }
+
+    // Function untuk select suggestion
+    function selectSuggestion(index) {
+        if (currentSuggestions[index]) {
+            searchInput.value = currentSuggestions[index].display;
+            hideSuggestions();
+            // Auto submit form
+            document.getElementById('searchForm').submit();
+        }
+    }
+
+    // Event listener untuk input
+    searchInput.addEventListener('input', function() {
+        const query = this.value.trim();
+        fetchSuggestions(query);
+    });
+
+    // Event listener untuk keyboard navigation
+    searchInput.addEventListener('keydown', function(e) {
+        const suggestions = suggestionsContainer.querySelectorAll('.search-suggestion-item');
+        
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            activeSuggestionIndex = Math.min(activeSuggestionIndex + 1, suggestions.length - 1);
+            updateActiveSuggestion(suggestions);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            activeSuggestionIndex = Math.max(activeSuggestionIndex - 1, -1);
+            updateActiveSuggestion(suggestions);
+        } else if (e.key === 'Enter') {
+            if (activeSuggestionIndex >= 0) {
+                e.preventDefault();
+                selectSuggestion(activeSuggestionIndex);
+            }
+        } else if (e.key === 'Escape') {
+            hideSuggestions();
+        }
+    });
+
+    // Function untuk update active suggestion
+    function updateActiveSuggestion(suggestions) {
+        suggestions.forEach((item, index) => {
+            if (index === activeSuggestionIndex) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+    }
+
+    // Hide suggestions when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+            hideSuggestions();
+        }
+    });
+
+    // Focus event
+    searchInput.addEventListener('focus', function() {
+        if (this.value.trim().length >= 2) {
+            fetchSuggestions(this.value.trim());
+        }
+    });
+});
+</script>
 
         {{-- Jika ada filter/search --}}
         @if(
@@ -349,7 +576,7 @@
     @endforeach
 @endforeach
 
-{{-- Modal Filter --}}
+{{-- Modal Filter - FIXED --}}
 <div class="modal fade" id="modalFilterBarang" tabindex="-1">
   <div class="modal-dialog modal-lg">
     <form action="{{ route('admin.datakeseluruhan') }}" method="GET" class="modal-content">
@@ -358,50 +585,57 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-  <div class="row g-3">
-      <div class="col-md-6">
-          <label>Stok Minimum</label>
-          <input type="number" name="stok_min" class="form-control" value="{{ request('stok_min') }}">
-      </div>
-      <div class="col-md-6">
-          <label>Stok Maksimum</label>
-          <input type="number" name="stok_max" class="form-control" value="{{ request('stok_max') }}">
-      </div>
-      <div class="col-md-6">
-          <label>Kategori</label>
-          <select name="kategori_id" class="form-select">
-              <option value="">-- Semua --</option>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label>Stok Minimum</label>
+            <input type="number" name="stok_min" class="form-control" value="{{ request('stok_min') }}" min="0">
+          </div>
+          <div class="col-md-6">
+            <label>Stok Maksimum</label>
+            <input type="number" name="stok_max" class="form-control" value="{{ request('stok_max') }}" min="0">
+          </div>
+          <div class="col-md-6">
+            <label>Kategori</label>
+            <select name="kategori_id" class="form-select">
+              <option value="">-- Semua Kategori --</option>
               @foreach($kategori as $k)
-                  <option value="{{ $k->id }}" @if(request('kategori_id')==$k->id) selected @endif>{{ $k->nama }}</option>
+                <option value="{{ $k->id }}" @if(request('kategori_id')==$k->id) selected @endif>{{ $k->nama }}</option>
               @endforeach
-          </select>
-      </div>
-      <div class="col-md-6">
-    <label>Satuan</label>
-    <select name="satuan" class="form-select">
-        <option value="">-- Semua --</option>
-        <option value="pcs"  @if(request('satuan')=='pcs') selected @endif>pcs</option>
-        <option value="box"  @if(request('satuan')=='box') selected @endif>box</option>
-        <option value="rim"  @if(request('satuan')=='rim') selected @endif>rim</option>
-        <option value="unit" @if(request('satuan')=='unit') selected @endif>unit</option>
-        <option value="pack" @if(request('satuan')=='pack') selected @endif>pack</option>
-    </select>
-</div>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label>Satuan</label>
+            <select name="satuan" class="form-select">
+              <option value="">-- Semua Satuan --</option>
+              <option value="Pcs"  @if(request('satuan')=='Pcs') selected @endif>Pcs</option>
+              <option value="Box"  @if(request('satuan')=='Box') selected @endif>Box</option>
+              <option value="Pack" @if(request('satuan')=='Pack') selected @endif>Pack</option>
+              <option value="Rim"  @if(request('satuan')=='Rim') selected @endif>Rim</option>
+              <option value="Unit" @if(request('satuan')=='Unit') selected @endif>Unit</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label>Harga Minimum</label>
+            <input type="number" name="harga_min" class="form-control" value="{{ request('harga_min') }}" step="0.01" min="0">
+          </div>
+          <div class="col-md-6">
+            <label>Harga Maksimum</label>
+            <input type="number" name="harga_max" class="form-control" value="{{ request('harga_max') }}" step="0.01" min="0">
+          </div>
 
-      <div class="col-md-6">
-          <label>Harga Minimum</label>
-          <input type="number" name="harga_min" class="form-control" value="{{ request('harga_min') }}">
+        <!-- Debug Info (bisa dihapus setelah working) -->
+        <div class="mt-3">
+          <small class="text-muted">
+            Debug: Current filters - 
+            Search: {{ request('search') }}, 
+            Kategori: {{ request('kategori_id') }}, 
+            Stok Min: {{ request('stok_min') }}
+          </small>
+        </div>
       </div>
-      <div class="col-md-6">
-          <label>Harga Maksimum</label>
-          <input type="number" name="harga_max" class="form-control" value="{{ request('harga_max') }}">
-      </div>
-  </div>
-</div>
-
       <div class="modal-footer">
-        <a href="{{ route('admin.datakeseluruhan') }}" class="btn btn-secondary">Reset</a>
-        <button class="btn btn-primary" type="submit">Terapkan</button>
+        <a href="{{ route('admin.datakeseluruhan') }}" class="btn btn-secondary">Reset Filter</a>
+        <button class="btn btn-primary" type="submit">Terapkan Filter</button>
       </div>
     </form>
   </div>
