@@ -113,15 +113,15 @@
 
     <!-- Modal/Popup Data Pengembang -->
     <div id="devModal" class="modal-s">
-        <div class="modal-content">
+        <div class="modal-content-s">
             <!-- Header modal (tidak bisa discroll) -->
             <div class="modal-header-s">
-                <button type="button" class="btn-close close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close-s close" data-bs-dismiss="modal" aria-label="Close"></button>
                 <h3>Data Pengembang</h3>
             </div>
 
             <!-- Konten utama modal (bisa discroll) -->
-            <div class="modal-body">
+            <div class="modal-body-s">
                 <!-- 3 Pengembang di atas -->
                 <div class="developers-grid">
                     <!-- Pengembang 1 -->
@@ -260,7 +260,7 @@
             </div>
 
             <!-- Footer modal (tidak bisa discroll) -->
-            <div class="modal-footer">
+            <div class="modal-footer-s">
                 <div class="website-info">
                     <p><strong>Politeknik Manufaktur Negeri Bangka Belitung</strong></p>
                     <p>Kunjungi website kami : <a href="https://polman-babel.ac.id" target="_blank"

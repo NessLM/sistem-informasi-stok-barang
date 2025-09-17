@@ -425,7 +425,7 @@ aside.sb {
     visibility: visible;
 }
 
-.modal-content {
+.modal-content-s {
     background-color: #fff;
     padding: 0; /* Hapus padding dari kontainer utama */
     border-radius: 12px;
@@ -441,7 +441,7 @@ aside.sb {
     flex-direction: column;
 }
 
-.modal-s.show .modal-content {
+.modal-s.show .modal-content-s {
     transform: translateY(0);
 }
 
@@ -457,7 +457,7 @@ aside.sb {
 }
 
 /* Tombol close Bootstrap style */
-.btn-close {
+.btn-close-s {
     position: absolute;
     top: 15px;
     right: 20px;
@@ -473,7 +473,7 @@ aside.sb {
     z-index: 11; /* Lebih tinggi dari header */
 }
 
-.btn-close:hover {
+.btn-close-s:hover {
     opacity: 1;
 }
 
@@ -486,7 +486,7 @@ aside.sb {
 }
 
 /* Konten utama modal (bisa discroll) */
-.modal-body {
+.modal-body-s {
     flex: 1;
     overflow-y: auto;
     padding: 0 25px;
@@ -494,7 +494,7 @@ aside.sb {
 }
 
 /* Footer modal (tetap di bawah, tidak bisa discroll) */
-.modal-footer {
+.modal-footer-s {
     padding: 15px 25px 20px;
     border-top: 1px solid #e0e0e0;
     background: #fff;
@@ -622,18 +622,18 @@ aside.sb {
         grid-template-columns: 1fr;
     }
     
-    .modal-content {
+    .modal-content-s {
         width: 95%;
         max-height: 90vh;
     }
     
-    .modal-body {
+    .modal-body-s {
         max-height: calc(90vh - 160px);
         padding: 0 15px;
     }
     
     .modal-header,
-    .modal-footer {
+    .modal-footer-s {
         padding-left: 15px;
         padding-right: 15px;
     }
@@ -657,20 +657,20 @@ aside.sb {
 }
 
 /* Styling untuk scrollbar di dalam modal */
-.modal-body::-webkit-scrollbar {
+.modal-body-s::-webkit-scrollbar {
     width: 8px;
 }
 
-.modal-body::-webkit-scrollbar-track {
+.modal-body-s::-webkit-scrollbar-track {
     background: #f1f1f1;
     border-radius: 4px;
 }
 
-.modal-body::-webkit-scrollbar-thumb {
+.modal-body-s::-webkit-scrollbar-thumb {
     background: #c1c1c1;
     border-radius: 4px;
 }
 
-.modal-body::-webkit-scrollbar-thumb:hover {
+.modal-body-s::-webkit-scrollbar-thumb:hover {
     background: #a8a8a8;
 }
