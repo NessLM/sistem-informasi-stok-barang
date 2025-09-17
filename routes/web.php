@@ -48,6 +48,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth','role:Admin'])->group
 
     /* ===== Dashboard ===== */
     Route::get('/dashboard', AdminDashboard::class)->name('dashboard');
+    
+    // Rute untuk filter dashboard
+    Route::get('/dashboard/filter', [AdminDashboard::class, 'filterData'])->name('dashboard.filter');
 
     /* ===== Data Keseluruhan ===== */
     Route::get('/datakeseluruhan',            [DataKeseluruhan::class, 'index'])->name('datakeseluruhan');
