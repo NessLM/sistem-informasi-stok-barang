@@ -1,6 +1,7 @@
 /* ==== CONTENT AREA ==== */
 .content {
-    margin-left: 20px; /* biar ga ketutup sidebar */
+    margin-left: 20px;
+    /* biar ga ketutup sidebar */
     background: #f5f7fb;
     min-height: 100vh;
 }
@@ -25,12 +26,13 @@
 
 /* ==== Page body khusus Data Pengguna ==== */
 .page-body {
-    padding: 5px 5px 15px 15px; /* top right bottom left - margin kanan cuma 10px */
-    width: calc(
-        101% - 25px
-    ); /* full width minus padding kiri (15px) + margin kanan (10px) */
+    padding: 5px 5px 15px 15px;
+    /* top right bottom left - margin kanan cuma 10px */
+    width: calc(101% - 25px);
+    /* full width minus padding kiri (15px) + margin kanan (10px) */
     margin: 0;
-    box-sizing: border-box; /* pastikan width calculation benar */
+    box-sizing: border-box;
+    /* pastikan width calculation benar */
 }
 
 .page-body h2 {
@@ -75,7 +77,8 @@
 
 /* ==== BUTTON STYLE ==== */
 .btn-primary {
-    background: #2072b7; /* biru sesuai tombol Tambah Pengguna */
+    background: #2072b7;
+    /* biru sesuai tombol Tambah Pengguna */
     border: none;
     font-weight: 500;
     border-radius: 8px;
@@ -117,14 +120,14 @@
 .btn-add-user {
     background: linear-gradient(135deg, #3d6c8c 25%, #4d83b9 100%);
     border: none;
-    color: #fff; /* teks putih */
+    color: #fff;
     font-weight: 600;
     border-radius: 8px;
     padding: 8px 18px;
-    margin-top: 5px; /* kasih spasi kecil dari atas */
+    margin-top: 5px;
     transition: background 0.2s;
-    text-decoration: none; /* 🔑 Hapus underline */
-    display: inline-block; /* biar properti tombol rapi */
+    text-decoration: none;
+    display: inline-block;
     font-size: 14px;
 }
 
@@ -164,8 +167,8 @@
 }
 
 .table .action-buttons {
-    display: flex; /* biar sejajar horizontal */
-    gap: 8px; /* jarak antar tombol */
+    display: flex;
+    gap: 8px;
     justify-content: center;
 }
 
@@ -175,7 +178,7 @@
 }
 
 #modalEditUser .field-pass input.form-control {
-    padding-right: 2.25rem; /* ruang buat ikon di kanan */
+    padding-right: 2.25rem;
 }
 
 #modalEditUser .field-pass .pass-toggle {
@@ -190,27 +193,29 @@
     height: 2rem;
     border: 0;
     background: transparent;
-    color: #6c757d; /* warna ikon default */
+    color: #6c757d;
     border-radius: 6px;
     cursor: pointer;
 }
 
 #modalEditUser .field-pass .pass-toggle i {
-    font-size: 1.05rem; /* ukuran ikon */
+    font-size: 1.05rem;
     line-height: 1;
 }
 
 #modalEditUser .field-pass .pass-toggle:hover {
-    color: #495057; /* sedikit lebih gelap saat hover */
+    color: #495057;
 }
 
 #modalEditUser .field-pass .pass-toggle:focus {
     outline: none;
     box-shadow: none;
 }
+
 .field-pass .toggle-pass:hover {
     color: #3a4654;
 }
+
 .field-pass .toggle-pass:focus {
     outline: none;
     box-shadow: none;

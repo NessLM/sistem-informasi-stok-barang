@@ -13,6 +13,10 @@ class GudangSeeder extends Seeder
     public function run(): void
     {
         $gudang = Gudang::create(['nama' => 'Gudang Utama']);
+        $gudang = Gudang::create(['nama' => 'Gudang ATK']);
+        $gudang = Gudang::create(['nama' => 'Gudang Listrik']);
+        $gudang = Gudang::create(['nama' => 'Gudang Kebersihan']);
+        $gudang = Gudang::create(['nama' => 'Gudang B Komputer']);
 
         // Cek / buat kategori
         $kategori = Kategori::firstOrCreate(

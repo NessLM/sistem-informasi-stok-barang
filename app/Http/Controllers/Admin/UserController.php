@@ -57,7 +57,7 @@ class UserController extends Controller
             $u->setRawAttributes($attr, true); // ❗ hanya untuk view; JANGAN $u->save()
         });
 
-        return view('staff.admin.admin-datapengguna', compact('users', 'roles', 'menu'));
+        return view('staff.admin.data_pengguna', compact('users', 'roles', 'menu'));
     }
 
     /**

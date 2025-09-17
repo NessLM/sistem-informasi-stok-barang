@@ -21,8 +21,9 @@
     {{-- CSS sidebar milikmu --}}
     <link rel="stylesheet" href="{{ asset('assets/css/components/sidebar.css') }}">
 
-    <link rel="stylesheet" href="{{ asset('assets/css/staff/admin/datapengguna-admin.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/staff/admin/data_pengguna.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/staff/admin/riwayat.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/staff/admin/data_keseluruhan.css') }}">
     {{-- halaman tertentu boleh push CSS sendiri dari slot --}}
 
     <style>
@@ -47,14 +48,16 @@
 
         /* ====== Konten: offset & lebar mengikuti sidebar (tanpa overflow) ====== */
         main.content {
-    margin-left: var(--sb-w) !important;
-    width: calc(100% - var(--sb-w)) !important;
-    padding: 20px !important; /* Kembalikan padding */
-    transition: margin-left .3s ease, width .3s ease;
-    margin-top: 70px; /* Sesuaikan dengan tinggi header */
-    min-height: calc(100vh - 70px);
-    box-sizing: border-box;
-}
+            margin-left: var(--sb-w) !important;
+            width: calc(100% - var(--sb-w)) !important;
+            padding: 20px !important;
+            /* Kembalikan padding */
+            transition: margin-left .3s ease, width .3s ease;
+            margin-top: 70px;
+            /* Sesuaikan dengan tinggi header */
+            min-height: calc(100vh - 70px);
+            box-sizing: border-box;
+        }
 
         /* Kartu fallback */
         .card {
@@ -66,26 +69,28 @@
 
         /* ===== Header Global (flat, nempel kiri/kanan/atas) ===== */
         .page-header {
-    display: flex; 
-    align-items: center; 
-    justify-content: space-between; 
-    gap: 12px;
-    background: #fff; 
-    padding: 14px 18px; 
-    margin: 0; 
-    border: 0; 
-    border-radius: 0;
-    border-bottom: 1px solid #e5e7eb; 
-    box-shadow: 0 12px 16px -12px #CBCCCB;
-    position: fixed; 
-    top: 0; 
-    left: var(--sb-w);
-    width: calc(100% - var(--sb-w));
-    z-index: 1000;
-    transition: left .3s ease, width .3s ease;
-    height: 70px; /* Tambahkan tinggi tetap */
-    box-sizing: border-box; /* Pastikan padding termasuk dalam tinggi */
-}
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            background: #fff;
+            padding: 14px 18px;
+            margin: 0;
+            border: 0;
+            border-radius: 0;
+            border-bottom: 1px solid #e5e7eb;
+            box-shadow: 0 12px 16px -12px #CBCCCB;
+            position: fixed;
+            top: 0;
+            left: var(--sb-w);
+            width: calc(100% - var(--sb-w));
+            z-index: 1000;
+            transition: left .3s ease, width .3s ease;
+            height: 70px;
+            /* Tambahkan tinggi tetap */
+            box-sizing: border-box;
+            /* Pastikan padding termasuk dalam tinggi */
+        }
 
         .ph-left {
             display: flex;
