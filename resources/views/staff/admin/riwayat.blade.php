@@ -133,7 +133,6 @@
                                     <th>Gudang</th>
                                     <th>Nama Barang</th>
                                     <th>Jumlah</th>
-                                    <th>Bagian</th>
                                     <th>Bukti</th>
                                     <th>Alur Barang</th>
                                 </tr>
@@ -147,7 +146,6 @@
                                         <td class="fw-medium">{{ $item->gudang }}</td>
                                         <td class="fw-medium">{{ $item->nama_barang }}</td>
                                         <td><span>{{ $item->jumlah }}</span></td>
-                                        <td>{{ $item->bagian }}</td>
                                         <td>
                                             @if ($item->bukti)
                                                 <span class="riwayat-bukti-icon" data-bs-toggle="modal"

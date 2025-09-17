@@ -60,10 +60,10 @@
             <span class="legend-color keluar"></span>
             <span>Keluar</span>
           </div>
-          <div class="legend-item">
+          {{-- <div class="legend-item">
             <span class="legend-color masuk"></span>
             <span>Masuk</span>
-          </div>
+          </div> --}}
         </div>
       </div>
     </div>

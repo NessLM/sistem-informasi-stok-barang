@@ -128,7 +128,6 @@
                     <th width="12%">Gudang</th>
                     <th width="20%">Nama Barang</th>
                     <th width="8%">Jumlah</th>
-                    <th width="15%">Bagian</th>
                     <th width="12%">Alur Barang</th>
                 </tr>
             </thead>
@@ -142,7 +141,6 @@
                         <td>{{ $item->gudang }}</td>
                         <td>{{ $item->nama_barang }}</td>
                         <td class="text-center">{{ $item->jumlah }}</td>
-                        <td>{{ $item->bagian }}</td>
                         <td>{{ $item->alur_barang }}</td>
                     </tr>
                     @endforeach

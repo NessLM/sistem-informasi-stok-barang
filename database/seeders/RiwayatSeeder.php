@@ -42,7 +42,7 @@ class RiwayatSeeder extends Seeder
                 'gudang' => 'ATK',
                 'nama_barang' => 'Amplop',
                 'jumlah' => 10,
-                'bagian' => 'Bagian Umum',
+                'bagian' => '',
                 'bukti' => 'bukti3.png',
                 'alur_barang' => 'Masuk',
                 'created_at' => now(),
