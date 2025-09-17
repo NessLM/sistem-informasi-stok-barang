@@ -21,7 +21,6 @@
 </head>
 
 <main class="page-wrap container py-4">
-    <h1 class="title">Data Keseluruhan</h1>
 
     {{-- Toast sukses --}}
     @if(session('success'))
