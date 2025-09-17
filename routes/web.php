@@ -40,6 +40,7 @@ Route::middleware(['auth','role:Admin'])
     ->name('staff.admin.dashboard');
 
 
+
 /* =========================================================================
  |  ADMIN AREA
  |  Semua route diawali 'admin.'
@@ -48,9 +49,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth','role:Admin'])->group
 
     /* ===== Dashboard ===== */
     Route::get('/dashboard', AdminDashboard::class)->name('dashboard');
-    
-    // Rute untuk filter dashboard
-    Route::get('/dashboard/filter', [AdminDashboard::class, 'filterData'])->name('dashboard.filter');
 
     /* ===== Data Keseluruhan ===== */
     Route::get('/datakeseluruhan',            [DataKeseluruhan::class, 'index'])->name('datakeseluruhan');
@@ -58,7 +56,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth','role:Admin'])->group
     Route::get('/datakeseluruhan/listrik',    [BarangController::class, 'index'])->name('datakeseluruhan.listrik');
     Route::get('/datakeseluruhan/kebersihan', [BarangController::class, 'index'])->name('datakeseluruhan.kebersihan');
     Route::get('/datakeseluruhan/komputer',   [BarangController::class, 'index'])->name('datakeseluruhan.komputer');
-    
+
+    /* ===== API Search Suggestions ===== */
+    Route::get('/api/search-barang', [DataKeseluruhan::class, 'searchSuggestions'])->name('api.search.barang');
 
     // Tambah jenis & kategori
     Route::post('/datakeseluruhan/jenis', [DataKeseluruhan::class, 'storeJenis'])->name('jenis.store');
@@ -80,13 +80,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth','role:Admin'])->group
 
     /* ===== Laporan ===== */
     Route::get('/laporan', LaporanController::class)->name('laporan');
-});
-Route::prefix('admin')->name('admin.')->middleware(['auth','role:Admin'])->group(function () {
-    
-    // ... route yang sudah ada ...
-    
-    /* ===== API Search Suggestions ===== */
-    Route::get('/api/search-barang', [DataKeseluruhan::class, 'searchSuggestions'])->name('api.search.barang');
 });
 
 

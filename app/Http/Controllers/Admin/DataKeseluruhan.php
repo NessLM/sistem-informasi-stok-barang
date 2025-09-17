@@ -182,30 +182,41 @@ class DataKeseluruhan extends Controller
     {
         $search = $request->get('q', '');
         
+        // Debug log
+        \Log::info('Search API called', ['query' => $search]);
+        
         if (strlen($search) < 2) {
             return response()->json([]);
         }
 
-        $suggestions = Barang::with('kategori')
-            ->where(function ($query) use ($search) {
-                $query->where('nama', 'like', "%{$search}%")
-                      ->orWhere('kode', 'like', "%{$search}%");
-            })
-            ->select('id', 'nama', 'kode', 'stok', 'kategori_id')
-            ->limit(8)
-            ->get()
-            ->map(function ($barang) {
-                return [
-                    'id' => $barang->id,
-                    'nama' => $barang->nama,
-                    'kode' => $barang->kode,
-                    'stok' => $barang->stok,
-                    'kategori' => $barang->kategori->nama ?? '-',
-                    'display' => $barang->nama . ' (' . $barang->kode . ')',
-                    'stock_status' => $barang->stok == 0 ? 'empty' : ($barang->stok < 10 ? 'low' : 'normal')
-                ];
-            });
+        try {
+            $suggestions = Barang::with('kategori')
+                ->where(function ($query) use ($search) {
+                    $query->where('nama', 'like', "%{$search}%")
+                          ->orWhere('kode', 'like', "%{$search}%");
+                })
+                ->select('id', 'nama', 'kode', 'stok', 'kategori_id')
+                ->limit(8)
+                ->get()
+                ->map(function ($barang) {
+                    return [
+                        'id' => $barang->id,
+                        'nama' => $barang->nama,
+                        'kode' => $barang->kode,
+                        'stok' => $barang->stok,
+                        'kategori' => $barang->kategori->nama ?? '-',
+                        'display' => $barang->nama . ' (' . $barang->kode . ')',
+                        'stock_status' => $barang->stok == 0 ? 'empty' : ($barang->stok < 10 ? 'low' : 'normal')
+                    ];
+                });
 
-        return response()->json($suggestions);
+            \Log::info('Search results', ['count' => $suggestions->count(), 'results' => $suggestions]);
+
+            return response()->json($suggestions);
+            
+        } catch (\Exception $e) {
+            \Log::error('Search API error', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Search failed'], 500);
+        }
     }
 }
