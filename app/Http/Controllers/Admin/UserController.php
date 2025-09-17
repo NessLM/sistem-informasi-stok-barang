@@ -66,13 +66,14 @@ class UserController extends Controller
      * setelah $user->save().
      */
     public function store(Request $request)
-    {
+{
+    try {
         $validated = $request->validate([
             'nama'     => 'required|string|max:255',
             'username' => 'required|string|max:100|unique:users,username',
             'role_id'  => 'required|exists:roles,id',
             'bagian'   => 'nullable|string|max:255',
-            'password' => 'required|string|min:6', // plaintext dari form
+            'password' => 'required|string|min:6',
         ]);
 
         $user = new User();
@@ -80,66 +81,90 @@ class UserController extends Controller
         $user->username = $validated['username'];
         $user->role_id  = $validated['role_id'];
         $user->bagian   = $validated['bagian'] ?? null;
-
-        // Cast 'hashed' di model akan MENG-HASH otomatis saat save
-        $user->password = $validated['password'];
+        $user->password = $validated['password']; // auto-hash oleh cast
         $user->save();
 
-        // === [DIUBAH] Simpan plaintext PERMANEN ke cache (terenkripsi)
+        // simpan plaintext di cache
         $cacheKey = "user:plainpwd:{$user->id}";
-        Cache::forever($cacheKey, Crypt::encryptString($validated['password'])); // ⬅️ permanen
+        Cache::forever($cacheKey, Crypt::encryptString($validated['password']));
 
-        return back()->with('success', 'Pengguna berhasil dibuat.');
+        return back()->with('toast', [
+            'type' => 'success',
+            'title' => 'Berhasil',
+            'message' => 'Pengguna berhasil dibuat.'
+        ]);
+    } catch (\Throwable $e) {
+        return back()->withInput()->with('toast', [
+            'type' => 'error',
+            'title' => 'Gagal',
+            'message' => 'Terjadi kesalahan: Tidak dapat menggunakan username yang sama.'
+        ]);
     }
+}
 
-    /**
-     * [DIUBAH] Saat password diubah: timpa cache dengan plaintext baru (permanen).
-     */
-    public function update(Request $request, $id)
-    {
-        $user = User::findOrFail($id);
+public function update(Request $request, $id)
+{
+    $user = User::findOrFail($id);
 
+    try {
         $validated = $request->validate([
             'nama'     => 'required|string|max:255',
             'username' => 'required|string|max:100|unique:users,username,' . $user->id,
             'role_id'  => 'required|exists:roles,id',
             'bagian'   => 'nullable|string|max:255',
-            'password' => 'nullable|string|min:6', // "Password Baru" (boleh kosong)
+            'password' => 'nullable|string|min:6',
         ]);
 
-        // [ASLI] Update field non-password
         $user->nama     = $validated['nama'];
         $user->username = $validated['username'];
         $user->role_id  = $validated['role_id'];
         $user->bagian   = $validated['bagian'] ?? $user->bagian;
 
-        // [ASLI] Ubah password hanya kalau diisi
         if (!empty($validated['password'])) {
-            $user->password = $validated['password']; // cast 'hashed' → auto-hash
-
-            // === [DIUBAH] Timpa cache dengan plaintext baru (permanen)
+            $user->password = $validated['password'];
             $cacheKey = "user:plainpwd:{$user->id}";
-            Cache::forever($cacheKey, Crypt::encryptString($validated['password'])); // ⬅️ permanen
+            Cache::forever($cacheKey, Crypt::encryptString($validated['password']));
         }
 
         $user->save();
 
-        return back()->with('success', 'Pengguna berhasil diperbarui.');
+        return back()->with('toast', [
+            'type' => 'success',
+            'title' => 'Berhasil',
+            'message' => 'Pengguna berhasil diperbarui.'
+        ]);
+    } catch (\Throwable $e) {
+        return back()->withInput()->with('toast', [
+            'type' => 'error',
+            'title' => 'Gagal',
+            'message' => 'Terjadi kesalahan: Tidak dapat menggunakan username yang sama.' 
+        ]);
     }
+}
+
 
     public function destroy($id)
-    {
-        $user = User::findOrFail($id);
+{
+    $user = User::findOrFail($id);
 
-        // 🔒 Cegah admin menghapus dirinya sendiri
-        if ((int) $user->id === (int) Auth::id() && optional($user->role)->nama === 'Admin') {
-            return redirect()->route('admin.users.index')
-                ->withErrors(['msg' => 'Admin tidak bisa menghapus dirinya sendiri.']);
-        }
-
-        $user->delete();
-
+    // 🔒 Cegah admin menghapus dirinya sendiri
+    if ((int) $user->id === (int) Auth::id() && optional($user->role)->nama === 'Admin') {
         return redirect()->route('admin.users.index')
-            ->with('success', 'Pengguna berhasil dihapus!');
+            ->with('toast', [
+                'type' => 'error',
+                'title' => 'Gagal',
+                'message' => 'Admin tidak bisa menghapus dirinya sendiri.'
+            ]);
     }
+
+    $user->delete();
+
+    return redirect()->route('admin.users.index')
+        ->with('toast', [
+            'type' => 'success',
+            'title' => 'Berhasil',
+            'message' => 'Pengguna berhasil dihapus!'
+        ]);
+}
+
 }
