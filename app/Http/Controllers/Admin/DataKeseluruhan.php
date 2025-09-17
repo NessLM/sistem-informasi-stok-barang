@@ -27,7 +27,6 @@ class DataKeseluruhan extends Controller
             'gudang'
         ])->get();
 
-        // ✅ Ambil semua gudang
         $gudang = Gudang::all();
 
         // Validasi harga min / max
@@ -105,8 +104,9 @@ class DataKeseluruhan extends Controller
 
         Kategori::create($request->only(['nama', 'gudang_id']));
 
-        return redirect()->route('admin.datakeseluruhan')
-                         ->with('success', 'Kategori berhasil ditambahkan!');
+return redirect()->route('staff.admin.datakeseluruhan')
+                 ->with('success', 'Kategori berhasil ditambahkan!');
+
     }
 
     public function storeBarang(Request $request)
@@ -129,7 +129,7 @@ class DataKeseluruhan extends Controller
             'jenis_barang_id' => 1, // default
         ]);
 
-        return redirect()->route('admin.datakeseluruhan')
+        return redirect()->route('staff.admin.datakeseluruhan')
                          ->with('success', 'Barang berhasil ditambahkan!');
     }
 
@@ -146,7 +146,7 @@ class DataKeseluruhan extends Controller
 
         $barang->update($request->only(['nama', 'harga', 'stok', 'satuan', 'kategori_id']));
 
-        return redirect()->route('admin.datakeseluruhan')
+        return redirect()->route('staff.admin.datakeseluruhan')
                          ->with('success', 'Barang berhasil diperbarui!');
     }
 
@@ -155,7 +155,7 @@ class DataKeseluruhan extends Controller
         $barang = Barang::where('kode', $kode)->firstOrFail();
         $barang->delete();
 
-        return redirect()->route('admin.datakeseluruhan')
+        return redirect()->route('staff.admin.datakeseluruhan')
                          ->with('success', 'Barang berhasil dihapus!');
     }
 
@@ -167,7 +167,7 @@ class DataKeseluruhan extends Controller
         $kategori->barang()->delete();
         $kategori->delete();
 
-        return redirect()->route('admin.datakeseluruhan')
+        return redirect()->route('staff.admin.datakeseluruhan')
                          ->with('success', 'Kategori berhasil dihapus!');
     }
 }

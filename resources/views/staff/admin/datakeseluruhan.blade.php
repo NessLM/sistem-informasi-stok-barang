@@ -21,7 +21,6 @@
 </head>
 
 <main class="page-wrap container py-4">
-    <h1 class="title">Data Keseluruhan</h1>
 
     {{-- Toast sukses --}}
     @if(session('success'))
@@ -50,7 +49,7 @@
 
     <section class="card shadow-sm p-3">
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-            <h4 class="fw-bold">Data Gudang ATK</h4>
+            <h4>Data Gudang ATK</h4>
             <div class="d-flex flex-wrap gap-2">
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambahKategori">+ Tambah Kategori</button>
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambahBarang">+ Tambah Barang</button>
@@ -125,15 +124,15 @@
             <div class="table-responsive mt-3">
                 <table class="table table-bordered">
                     <thead class="table-dark">
-                        <tr><th>KATEGORI</th><th>GUDANG</th><th style="width:180px">AKSI</th></tr>
+                        <tr><th>KATEGORI</th><th>GUDANG</th><th style="width:180px"class="text-center">AKSI</th></tr>
                     </thead>
                     <tbody>
                         @foreach($kategori as $k)
                             <tr>
-                                <td class="fw-bold">{{ $k->nama }}</td>
+                                <td>{{ $k->nama }}</td>
                                 <td>{{ $k->gudang->nama ?? '-' }}</td>
-                                <td>
-                                    <div class="btn-group">
+                                <td class="text-center">
+                                    <div class="d-flex flex-wrap justify-content-center gap-2">
                                         <button class="btn btn-sm btn-success" onclick="toggleDetail({{ $k->id }})"><i class="bi bi-eye"></i></button>
                                         <form action="{{ route('admin.kategori.destroy', $k->id) }}" method="POST" onsubmit="return confirm('Hapus kategori ini beserta barang di dalamnya?')">
                                             @csrf
@@ -165,7 +164,7 @@
                                                             <td>Rp {{ number_format($b->harga ?? 0,0,',','.') }}</td>
                                                             <td>{{ $b->stok }}</td>
                                                             <td>{{ $b->satuan }}</td>
-                                                            <td>
+                                                            <td class="d-flex gap-2">
                                                                 <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalEditBarang-{{ $b->id }}">
                                                                     <i class="bi bi-pencil"></i>
                                                                 </button>
@@ -211,17 +210,17 @@
                         <input type="text" class="form-control" name="nama" id="nama" required>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="gudang_id" class="form-label">Gudang</label>
-                        <select class="form-select" name="gudang_id" id="gudang_id" required>
-                            <option value="">-- Pilih Gudang --</option>
-                            @forelse($gudang as $g)
-                                <option value="{{ $g->id }}">{{ $g->nama }}</option>
-                            @empty
-                                <option disabled>⚠️ Tidak ada data gudang</option>
-                            @endforelse
-                        </select>
-                    </div>
+<div class="mb-3">
+    <label for="gudang_id" class="form-label">Pilih Gudang</label>
+    <select name="gudang_id" id="gudang_id" class="form-select" required>
+        <option value="">-- Pilih Gudang --</option>
+        @foreach($gudang as $item)
+            <option value="{{ $item->id }}">{{ $item->nama }}</option>
+        @endforeach
+    </select>
+</div>
+
+
                 </div>
 
                 <div class="modal-footer">
@@ -359,54 +358,47 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <div class="row g-3">
-            <div class="col-md-6">
-                <label>Kode</label>
-                <input type="text" name="kode" class="form-control" value="{{ request('kode') }}">
-            </div>
-            <div class="col-md-6">
-                <label>Nama</label>
-                <input type="text" name="search" class="form-control" value="{{ request('search') }}">
-            </div>
-            <div class="col-md-6">
-                <label>Stok Minimum</label>
-                <input type="number" name="stok_min" class="form-control" value="{{ request('stok_min') }}">
-            </div>
-            <div class="col-md-6">
-                <label>Stok Maksimum</label>
-                <input type="number" name="stok_max" class="form-control" value="{{ request('stok_max') }}">
-            </div>
-            <div class="col-md-6">
-                <label>Kategori</label>
-                <select name="kategori_id" class="form-select">
-                    <option value="">-- Semua --</option>
-                    @foreach($kategori as $k)
-                        <option value="{{ $k->id }}" @if(request('kategori_id')==$k->id) selected @endif>{{ $k->nama }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-md-6">
-                <label>Satuan</label>
-                <input type="text" name="satuan" class="form-control" value="{{ request('satuan') }}">
-            </div>
-            <div class="col-md-6">
-                <label>Nomor Awal</label>
-                <input type="number" name="nomor_awal" class="form-control" value="{{ request('nomor_awal') }}">
-            </div>
-            <div class="col-md-6">
-                <label>Nomor Akhir</label>
-                <input type="number" name="nomor_akhir" class="form-control" value="{{ request('nomor_akhir') }}">
-            </div>
-            <div class="col-md-6">
-                <label>Harga Minimum</label>
-                <input type="number" name="harga_min" class="form-control" value="{{ request('harga_min') }}">
-            </div>
-            <div class="col-md-6">
-                <label>Harga Maksimum</label>
-                <input type="number" name="harga_max" class="form-control" value="{{ request('harga_max') }}">
-            </div>
-        </div>
+  <div class="row g-3">
+      <div class="col-md-6">
+          <label>Stok Minimum</label>
+          <input type="number" name="stok_min" class="form-control" value="{{ request('stok_min') }}">
       </div>
+      <div class="col-md-6">
+          <label>Stok Maksimum</label>
+          <input type="number" name="stok_max" class="form-control" value="{{ request('stok_max') }}">
+      </div>
+      <div class="col-md-6">
+          <label>Kategori</label>
+          <select name="kategori_id" class="form-select">
+              <option value="">-- Semua --</option>
+              @foreach($kategori as $k)
+                  <option value="{{ $k->id }}" @if(request('kategori_id')==$k->id) selected @endif>{{ $k->nama }}</option>
+              @endforeach
+          </select>
+      </div>
+      <div class="col-md-6">
+    <label>Satuan</label>
+    <select name="satuan" class="form-select">
+        <option value="">-- Semua --</option>
+        <option value="pcs"  @if(request('satuan')=='pcs') selected @endif>pcs</option>
+        <option value="box"  @if(request('satuan')=='box') selected @endif>box</option>
+        <option value="rim"  @if(request('satuan')=='rim') selected @endif>rim</option>
+        <option value="unit" @if(request('satuan')=='unit') selected @endif>unit</option>
+        <option value="pack" @if(request('satuan')=='pack') selected @endif>pack</option>
+    </select>
+</div>
+
+      <div class="col-md-6">
+          <label>Harga Minimum</label>
+          <input type="number" name="harga_min" class="form-control" value="{{ request('harga_min') }}">
+      </div>
+      <div class="col-md-6">
+          <label>Harga Maksimum</label>
+          <input type="number" name="harga_max" class="form-control" value="{{ request('harga_max') }}">
+      </div>
+  </div>
+</div>
+
       <div class="modal-footer">
         <a href="{{ route('admin.datakeseluruhan') }}" class="btn btn-secondary">Reset</a>
         <button class="btn btn-primary" type="submit">Terapkan</button>

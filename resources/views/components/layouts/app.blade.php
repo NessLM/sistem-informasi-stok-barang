@@ -67,11 +67,61 @@
             margin: 0; font-weight: 600; letter-spacing: -.01em; line-height: 1.2;
             font-size: clamp(18px, 2.2vw, 26px); color: #111827;
         }
-        .ph-badge { width: 40px; height: auto; object-fit: contain }
+        .ph-badge { 
+    width: 40px; 
+    height: 40px; /* Tambahkan tinggi yang sama dengan lebar agar tidak gepeng */
+    object-fit: contain;
+    /* Efek tebal: tambahkan shadow dan stroke */
+    filter: drop-shadow(0px 1px 1px rgba(0, 0, 0, 0.5));
+    /* Animasi logo bupati dengan jeda 5 detik */
+    animation: logoAnimation 5s infinite;
+}
+
+/* Untuk browser yang tidak support filter, gunakan alternatif */
+@supports not (filter: drop-shadow(0px 0px 0px)) {
+    .ph-badge {
+        border: 1.5px solid rgba(0, 0, 0, 0.3);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+}
+
         @media (max-width:640px){ .ph-badge { width: 34px } }
 
         /* 🔑 Hanya tampilkan loader jika <html> TIDAK punya class no-loader */
         html.no-loader #page-loader { display: none !important; }
+
+        /* Animasi untuk logo bupati */
+        /* Animasi untuk logo bupati */
+@keyframes logoAnimation {
+    0%, 62.5% {
+        transform: translateY(0) rotateY(0) scale(1);
+    }
+    67.5% {
+        transform: translateY(-4px) rotateY(0) scale(1.05); /* Sedikit membesar */
+    }
+    77.5% { 
+        transform: translateY(-4px) rotateY(90deg) scale(1.05);
+    }
+    82.5% { 
+        transform: translateY(-4px) rotateY(180deg) scale(1.05);
+    }
+    87.5% {
+        transform: translateY(-4px) rotateY(270deg) scale(1.05);
+    }
+    92.5% { 
+        transform: translateY(-4px) rotateY(360deg) scale(1.05);
+    }
+    100% { 
+        transform: translateY(0) rotateY(360deg) scale(1);
+    }
+}
+
+@media (max-width:640px){ 
+    .ph-badge { 
+        width: 34px; 
+        height: 34px; /* Jaga proporsi di mobile */
+    } 
+}
     </style>
 </head>
 

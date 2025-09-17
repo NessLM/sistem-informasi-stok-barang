@@ -96,6 +96,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth','role:Admin'])->group
 });
 
 
+
 /* =========================================================================
  |  PB & PJ (tetap)
  * ========================================================================= */
@@ -106,3 +107,4 @@ Route::middleware(['auth','role:Pengelola Barang'])
 Route::middleware(['auth','role:Penanggung Jawab'])
     ->get('/pj', PjDashboard::class)
     ->name('staff.pj.dashboard');
+

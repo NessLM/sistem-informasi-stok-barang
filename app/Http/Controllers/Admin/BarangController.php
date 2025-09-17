@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Barang;
 use App\Models\Kategori;
+use App\Models\Gudang;
 use Illuminate\Http\Request;
 use App\Helpers\MenuHelper;
 
@@ -22,9 +23,12 @@ class BarangController extends Controller
             }
         }])->get();
 
+        // Ambil semua gudang biar dropdown muncul
+        $gudang = Gudang::all();
+
         $menu = MenuHelper::adminMenu();
 
-        return view('staff.admin.datakeseluruhan', compact('kategori', 'menu', 'search'));
+        return view('staff.admin.datakeseluruhan', compact('kategori', 'menu', 'search', 'gudang'));
     }
 
     public function store(Request $request)
@@ -58,9 +62,10 @@ class BarangController extends Controller
     {
         $barang = Barang::findOrFail($id);
         $kategori = Kategori::all();
+        $gudang = Gudang::all(); // kalau butuh dropdown gudang juga di edit
         $menu = MenuHelper::adminMenu();
 
-        return view('staff.admin.edit-barang', compact('barang', 'kategori', 'menu'));
+        return view('staff.admin.edit-barang', compact('barang', 'kategori', 'menu', 'gudang'));
     }
 
     public function update(Request $request, $id)
@@ -97,7 +102,7 @@ class BarangController extends Controller
         $barang = Barang::findOrFail($id);
         $barang->delete();
 
-        return redirect()->route('admin.barang.index')
+        return redirect()->route('/admin/datakeseluruhan/atk')
                          ->with('success', 'Barang berhasil dihapus!');
     }
 }
