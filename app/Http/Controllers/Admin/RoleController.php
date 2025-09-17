@@ -17,33 +17,47 @@ class RoleController extends Controller
         return view('admin.roles.index', compact('roles'));
     }
 
-    public function store(Request $request)
-    {
-        $request->validate([
+   public function store(Request $request)
+{
+    try {
+        $validated = $request->validate([
             'nama' => 'required|string|max:255|unique:roles,nama',
         ]);
 
-        try {
-            Role::create($request->only('nama'));
-            return $this->toastSuccess('Role berhasil ditambahkan.');
-        } catch (\Exception $e) {
-            return $this->toastError('Terjadi kesalahan saat menambahkan role.');
-        }
-    }
+        Role::create($validated);
 
-    public function update(Request $request, Role $role)
-    {
-        $request->validate([
+        return $this->toastSuccess('Role berhasil ditambahkan.');
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        // ambil error pertama
+        $errorMessage = $e->validator->errors()->first('nama');
+        return $this->toastError('Gagal menambahkan role: Tidak dapat menggunakan nama role yang sama.')
+                     ->withErrors($e->errors())
+                     ->withInput();
+    } catch (\Exception $e) {
+        return $this->toastError('Terjadi kesalahan saat menambahkan role.');
+    }
+}
+
+public function update(Request $request, Role $role)
+{
+    try {
+        $validated = $request->validate([
             'nama' => 'required|string|max:255|unique:roles,nama,' . $role->id,
         ]);
 
-        try {
-            $role->update($request->only('nama'));
-            return $this->toastSuccess('Role berhasil diupdate.');
-        } catch (\Exception $e) {
-            return $this->toastError('Terjadi kesalahan saat mengupdate role.');
-        }
+        $role->update($validated);
+
+        return $this->toastSuccess('Role berhasil diupdate.');
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        $errorMessage = $e->validator->errors()->first('nama');
+        return $this->toastError('Gagal mengupdate role: ' . $errorMessage)
+                     ->withErrors($e->errors())
+                     ->withInput();
+    } catch (\Exception $e) {
+        return $this->toastError('Terjadi kesalahan saat mengupdate role.');
     }
+}
+
 
     public function destroy(Role $role)
     {

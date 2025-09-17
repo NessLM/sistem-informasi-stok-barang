@@ -27,7 +27,6 @@ class DataKeseluruhan extends Controller
             'gudang'
         ])->get();
 
-        // ✅ Ambil semua gudang
         $gudang = Gudang::all();
 
         // Validasi harga min / max
@@ -105,6 +104,7 @@ class DataKeseluruhan extends Controller
 
         Kategori::create($request->only(['nama', 'gudang_id']));
 
+        // ✅ FIXED: Gunakan route name yang benar
         return redirect()->route('admin.datakeseluruhan')
                          ->with('success', 'Kategori berhasil ditambahkan!');
     }
@@ -129,6 +129,7 @@ class DataKeseluruhan extends Controller
             'jenis_barang_id' => 1, // default
         ]);
 
+        // ✅ FIXED: Gunakan route name yang benar
         return redirect()->route('admin.datakeseluruhan')
                          ->with('success', 'Barang berhasil ditambahkan!');
     }
@@ -146,6 +147,7 @@ class DataKeseluruhan extends Controller
 
         $barang->update($request->only(['nama', 'harga', 'stok', 'satuan', 'kategori_id']));
 
+        // ✅ FIXED: Gunakan route name yang benar
         return redirect()->route('admin.datakeseluruhan')
                          ->with('success', 'Barang berhasil diperbarui!');
     }
@@ -155,6 +157,7 @@ class DataKeseluruhan extends Controller
         $barang = Barang::where('kode', $kode)->firstOrFail();
         $barang->delete();
 
+        // ✅ FIXED: Gunakan route name yang benar
         return redirect()->route('admin.datakeseluruhan')
                          ->with('success', 'Barang berhasil dihapus!');
     }
@@ -167,7 +170,53 @@ class DataKeseluruhan extends Controller
         $kategori->barang()->delete();
         $kategori->delete();
 
+        // ✅ FIXED: Gunakan route name yang benar
         return redirect()->route('admin.datakeseluruhan')
                          ->with('success', 'Kategori berhasil dihapus!');
+    }
+
+    /**
+     * API untuk search suggestions
+     */
+    public function searchSuggestions(Request $request)
+    {
+        $search = $request->get('q', '');
+        
+        // Debug log
+        \Log::info('Search API called', ['query' => $search]);
+        
+        if (strlen($search) < 2) {
+            return response()->json([]);
+        }
+
+        try {
+            $suggestions = Barang::with('kategori')
+                ->where(function ($query) use ($search) {
+                    $query->where('nama', 'like', "%{$search}%")
+                          ->orWhere('kode', 'like', "%{$search}%");
+                })
+                ->select('id', 'nama', 'kode', 'stok', 'kategori_id')
+                ->limit(8)
+                ->get()
+                ->map(function ($barang) {
+                    return [
+                        'id' => $barang->id,
+                        'nama' => $barang->nama,
+                        'kode' => $barang->kode,
+                        'stok' => $barang->stok,
+                        'kategori' => $barang->kategori->nama ?? '-',
+                        'display' => $barang->nama . ' (' . $barang->kode . ')',
+                        'stock_status' => $barang->stok == 0 ? 'empty' : ($barang->stok < 10 ? 'low' : 'normal')
+                    ];
+                });
+
+            \Log::info('Search results', ['count' => $suggestions->count(), 'results' => $suggestions]);
+
+            return response()->json($suggestions);
+            
+        } catch (\Exception $e) {
+            \Log::error('Search API error', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Search failed'], 500);
+        }
     }
 }

@@ -2,18 +2,9 @@
 
 /* ===== VARIABLES & BASE STYLES ===== */
 .riwayat-container {
-    padding: 20px;
+    padding-left: 10px;
     background-color: #f8f9fa;
     min-height: 100vh;
-}
-
-.riwayat-header {
-    font-size: 1.8rem;
-    font-weight: 600;
-    color: #2c3e50;
-    margin-bottom: 1.5rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #e9ecef;
 }
 
 /* ===== FILTER CARD COMPONENT ===== */
@@ -21,15 +12,8 @@
     border: none;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-}
-
-.riwayat-filter-header {
-    background: linear-gradient(135deg, #4e73df 0%, #2a3f9d 100%);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 8px 8px 0 0;
 }
 
 .riwayat-filter-title {
@@ -40,13 +24,14 @@
 }
 
 .riwayat-filter-body {
-    padding: 20px;
+    padding: 10px;
 }
 
 .riwayat-filter-body h3 {
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     color: #2c3e50;
     font-weight: 600;
+    font-size: 25px;
 }
 
 .riwayat-filter-form {
@@ -144,7 +129,6 @@
     box-shadow: 0 0 0 3px rgba(28, 200, 138, 0.25);
 }
 
-
 /* ===== DROPDOWN STYLES ===== */
 /* Hide default dropdown arrows */
 .riwayat-btn-filter::after,
@@ -181,6 +165,30 @@
     padding: 8px 16px;
     transition: all 0.2s ease;
     color: #2c3e50;
+}
+
+/* Ubah font size teks tombol dropdown */
+.riwayat-btn-filter {
+    font-size: 14px; /* default 14-16px, silakan sesuaikan */
+}
+
+/* Ubah font size item dalam list dropdown */
+.riwayat-filter-dropdown .dropdown-item {
+    font-size: 15px;
+}
+
+/* Font size untuk tombol Unduh */
+.riwayat-btn-download {
+    font-size: 14px; /* ubah sesuai kebutuhan */
+}
+
+/* Font size untuk item Excel & PDF */
+.riwayat-download-dropdown .dropdown-item {
+    font-size: 15px;
+}
+/* Font size untuk tombol Reset */
+.riwayat-btn-reset {
+    font-size: 14px; /* ubah sesuai kebutuhan */
 }
 
 .riwayat-filter-dropdown .dropdown-item:hover,
@@ -274,7 +282,15 @@
     font-size: 20px;
     padding: 6px 12px;
 }
-
+/*Untuk mengubah warna header tabel barang masuk*/
+.riwayat-header-masuk h5 {
+    color: black;
+    font-weight: 600;
+}
+.riwayat-header-keluar h5 {
+    color: black;
+    font-weight: 600;
+}
 /* Empty state */
 .riwayat-empty-state {
     text-align: center;
@@ -312,7 +328,8 @@
 }
 
 #buktiModal .btn-close:hover {
-    filter: invert(23%) sepia(96%) saturate(7492%) hue-rotate(356deg) brightness(95%) contrast(108%);
+    filter: invert(23%) sepia(96%) saturate(7492%) hue-rotate(356deg)
+        brightness(95%) contrast(108%);
     transform: scale(1.1);
 }
 

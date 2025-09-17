@@ -21,7 +21,7 @@ class DashboardController extends Controller
         $totalJenisBarang = JenisBarang::count();
         $totalBarang = Barang::sum('stok');
 
-        // Daftar 7 bagian yang diminta
+        // Daftar 9 bagian (7 awal + 2 baru)
         $bagianList = [
             'Tata Pemerintahan',
             'Kesejahteraan Rakyat', 
@@ -29,7 +29,9 @@ class DashboardController extends Controller
             'ADM Pembangunan',
             'Perekonomian',
             'Pengadaan',
-            'Protokol'
+            'Protokol',
+            'Organisasi', // Bagian baru
+            'Umum'        // Bagian baru
         ];
 
         // Data untuk grafik per bagian
@@ -116,7 +118,9 @@ class DashboardController extends Controller
             'ADM Pembangunan',
             'Perekonomian',
             'Pengadaan',
-            'Protokol'
+            'Protokol',
+            'Organisasi', // Bagian baru
+            'Umum'        // Bagian baru
         ];
 
         $keluarData = [];
@@ -161,7 +165,9 @@ class DashboardController extends Controller
             'ADM Pembangunan',
             'Perekonomian',
             'Pengadaan',
-            'Protokol'
+            'Protokol',
+            'Organisasi', // Bagian baru
+            'Umum'        // Bagian baru
         ];
 
         $currentYear = date('Y');
@@ -215,4 +221,4 @@ class DashboardController extends Controller
         
         return $colors[$index] ?? $colors[0];
     }
-}
+}   

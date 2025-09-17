@@ -119,7 +119,7 @@
         @if($alurFilter == 'Semua' || $alurFilter == 'Masuk')
             <!-- Tabel Barang Masuk -->
             <div class="card riwayat-table-card mb-4">
-                <div class="card-header bg-success text-white">
+                <div class="card-header riwayat-header-masuk">
                     <h5 class="mb-0">Barang Masuk</h5>
                 </div>
                 <div class="card-body p-0">
@@ -185,7 +185,7 @@
         @if($alurFilter == 'Semua' || $alurFilter == 'Keluar')
             <!-- Tabel Barang Keluar -->
             <div class="card riwayat-table-card">
-                <div class="card-header bg-danger text-white">
+                <div class="card-header riwayat-header-keluar">
                     <h5 class="mb-0">Barang Keluar</h5>
                 </div>
                 <div class="card-body p-0">

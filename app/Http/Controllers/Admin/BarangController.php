@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Barang;
 use App\Models\Kategori;
+use App\Models\Gudang;
 use Illuminate\Http\Request;
 use App\Helpers\MenuHelper;
 
@@ -22,9 +23,13 @@ class BarangController extends Controller
             }
         }])->get();
 
+        // Ambil semua gudang biar dropdown muncul
+        $gudang = Gudang::all();
+
         $menu = MenuHelper::adminMenu();
 
-        return view('staff.admin.datakeseluruhan', compact('kategori', 'menu', 'search'));
+        // ✅ Sesuaikan dengan lokasi blade kamu
+        return view('staff.admin.datakeseluruhan', compact('kategori', 'menu', 'search', 'gudang'));
     }
 
     public function store(Request $request)
@@ -50,17 +55,19 @@ class BarangController extends Controller
             'kategori_id' => $request->kategori_id,
         ]);
 
+        // ✅ Route name sesuai web.php
         return redirect()->route('admin.barang.index')
                          ->with('success', 'Barang berhasil ditambahkan!');
     }
 
     public function edit($id)
     {
-        $barang = Barang::findOrFail($id);
+        $barang   = Barang::findOrFail($id);
         $kategori = Kategori::all();
-        $menu = MenuHelper::adminMenu();
+        $gudang   = Gudang::all();
+        $menu     = MenuHelper::adminMenu();
 
-        return view('staff.admin.edit-barang', compact('barang', 'kategori', 'menu'));
+        return view('staff.admin.edit-barang', compact('barang', 'kategori', 'menu', 'gudang'));
     }
 
     public function update(Request $request, $id)
@@ -97,7 +104,8 @@ class BarangController extends Controller
         $barang = Barang::findOrFail($id);
         $barang->delete();
 
-        return redirect()->route('admin.barang.index')
+        // ✅ FIXED: Gunakan route name yang benar sesuai web.php
+        return redirect()->route('admin.datakeseluruhan')
                          ->with('success', 'Barang berhasil dihapus!');
     }
 }
