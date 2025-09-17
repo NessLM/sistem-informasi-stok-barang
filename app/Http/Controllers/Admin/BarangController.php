@@ -28,6 +28,7 @@ class BarangController extends Controller
 
         $menu = MenuHelper::adminMenu();
 
+        // ✅ Sesuaikan dengan lokasi blade kamu
         return view('staff.admin.datakeseluruhan', compact('kategori', 'menu', 'search', 'gudang'));
     }
 
@@ -54,16 +55,17 @@ class BarangController extends Controller
             'kategori_id' => $request->kategori_id,
         ]);
 
+        // ✅ Route name sesuai web.php
         return redirect()->route('admin.barang.index')
                          ->with('success', 'Barang berhasil ditambahkan!');
     }
 
     public function edit($id)
     {
-        $barang = Barang::findOrFail($id);
+        $barang   = Barang::findOrFail($id);
         $kategori = Kategori::all();
-        $gudang = Gudang::all(); // kalau butuh dropdown gudang juga di edit
-        $menu = MenuHelper::adminMenu();
+        $gudang   = Gudang::all();
+        $menu     = MenuHelper::adminMenu();
 
         return view('staff.admin.edit-barang', compact('barang', 'kategori', 'menu', 'gudang'));
     }
@@ -102,7 +104,8 @@ class BarangController extends Controller
         $barang = Barang::findOrFail($id);
         $barang->delete();
 
-        return redirect()->route('/admin/datakeseluruhan/atk')
+        // ✅ FIXED: Gunakan route name yang benar sesuai web.php
+        return redirect()->route('admin.datakeseluruhan')
                          ->with('success', 'Barang berhasil dihapus!');
     }
 }
