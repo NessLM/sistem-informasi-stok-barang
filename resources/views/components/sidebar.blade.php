@@ -112,10 +112,10 @@
     </div>
 
     <!-- Modal/Popup Data Pengembang -->
-    <div id="devModal" class="modal">
+    <div id="devModal" class="modal-s">
         <div class="modal-content">
             <!-- Header modal (tidak bisa discroll) -->
-            <div class="modal-header">
+            <div class="modal-header-s">
                 <button type="button" class="btn-close close" data-bs-dismiss="modal" aria-label="Close"></button>
                 <h3>Data Pengembang</h3>
             </div>
