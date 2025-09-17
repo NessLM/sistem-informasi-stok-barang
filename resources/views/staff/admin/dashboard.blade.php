@@ -41,7 +41,7 @@
           <div class="chart-filter">
             <div class="dropdown">
               <button class="filter-btn dropdown-toggle" type="button" id="bagianFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-funnel"></i> Filter
+                <i class="bi bi-funnel"></i> <span>Semua</span>
               </button>
               <ul class="dropdown-menu" aria-labelledby="bagianFilterDropdown">
                 <li><a class="dropdown-item filter-option" href="#" data-type="bagian" data-value="all">Semua</a></li>
@@ -68,21 +68,22 @@
       </div>
     </div>
 
-    {{-- Row kedua: Grafik Pengeluaran per Waktu --}}
+    {{-- Row kedua: Pengeluaran per Tahun (X-axis = Tahun) --}}
     <div class="dashboard-row">
       <div class="wide-chart-section">
         <div class="chart-header">
-          <h2>Grafik Pengeluaran per Waktu</h2>
+          <h2>Grafik Pengeluaran per Tahun</h2> {{-- [FIX] judul sudah per Tahun --}}
           <div class="chart-controls">
             <div class="dropdown">
               <button class="filter-btn dropdown-toggle" type="button" id="pengeluaranFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-funnel"></i> Filter
+                <i class="bi bi-funnel"></i> <span>Semua</span>
               </button>
               <ul class="dropdown-menu" aria-labelledby="pengeluaranFilterDropdown">
+                {{-- [FIX] Filter tahun --}}
                 <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran" data-value="all">Semua</a></li>
-                <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran" data-value="week">1 Minggu Terakhir</a></li>
-                <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran" data-value="month">1 Bulan Terakhir</a></li>
-                <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran" data-value="year">1 Tahun Terakhir</a></li>
+                <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran" data-value="5y">5 Tahun Terakhir</a></li>
+                <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran" data-value="7y">7 Tahun Terakhir</a></li>
+                <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran" data-value="10y">10 Tahun Terakhir</a></li>
               </ul>
             </div>
           </div>
@@ -90,23 +91,22 @@
         <div class="chart-container">
           <canvas id="pengeluaranChart"></canvas>
         </div>
+        {{-- [FIX] Legend sederhana: hanya keterangan dataset, bukan daftar tahun --}}
         <div class="chart-legend yearly">
-          @foreach($years as $year)
           <div class="legend-item">
-            <span class="legend-color year-{{ $year }}"></span>
-            <span>{{ $year }}</span>
+            <span class="legend-color" style="background:#8B5CF6"></span>
+            <span>Keluar</span>
           </div>
-          @endforeach
         </div>
       </div>
     </div>
   </div>
 
-  {{-- Chart.js Library --}}
+  {{-- Chart.js --}}
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Data untuk grafik per bagian (dari database)
+      // ====== Grafik Per Bagian ======
       const bagianData = {
         labels: {!! json_encode($bagianLabels) !!},
         datasets: [
@@ -125,169 +125,90 @@
         ]
       };
 
-      // Konfigurasi grafik per bagian
       const bagianConfig = {
         type: 'bar',
         data: bagianData,
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              display: false
-            }
-          },
+          plugins: { legend: { display: false } },
           scales: {
-            y: {
-              beginAtZero: true,
-              ticks: {
-                color: '#6B7280'
-              },
-              grid: {
-                color: '#F3F4F6'
-              }
-            },
-            x: {
-              ticks: {
-                color: '#6B7280',
-                maxRotation: 45,
-                minRotation: 45
-              },
-              grid: {
-                display: false
-              }
-            }
+            y: { beginAtZero: true, ticks: { color: '#6B7280' }, grid: { color: '#F3F4F6' } },
+            x: { ticks: { color: '#6B7280', maxRotation: 45, minRotation: 45 }, grid: { display: false } }
           }
         }
       };
 
-      // Data untuk grafik pengeluaran per waktu (dari database)
+      // ====== Pengeluaran per Tahun (X labels = Tahun, 1 dataset Keluar) ======
       const pengeluaranData = {
-        labels: {!! json_encode($pengeluaranLabels) !!},
-        datasets: {!! json_encode($pengeluaranData) !!}
+        labels: {!! json_encode($pengeluaranLabels) !!},   // TAHUN
+        datasets: {!! json_encode($pengeluaranData) !!}     // 1 dataset 'Keluar'
       };
 
-      // Konfigurasi grafik pengeluaran per waktu
       const pengeluaranConfig = {
         type: 'bar',
         data: pengeluaranData,
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              display: false
-            }
-          },
+          plugins: { legend: { display: false } },
           scales: {
-            y: {
-              beginAtZero: true,
-              ticks: {
-                color: '#6B7280'
-              },
-              grid: {
-                color: '#F3F4F6'
-              }
-            },
-            x: {
-              ticks: {
-                color: '#6B7280'
-              },
-              grid: {
-                display: false
-              }
-            }
+            y: { beginAtZero: true, ticks: { color: '#6B7280' }, grid: { color: '#F3F4F6' } },
+            x: { ticks: { color: '#6B7280' }, grid: { display: false } }
           }
         }
       };
 
-      // Inisialisasi charts
-      const bagianCtx = document.getElementById('bagianChart').getContext('2d');
-      const bagianChart = new Chart(bagianCtx, bagianConfig);
+      // Init charts
+      const bagianChart = new Chart(document.getElementById('bagianChart').getContext('2d'), bagianConfig);
+      const pengeluaranChart = new Chart(document.getElementById('pengeluaranChart').getContext('2d'), pengeluaranConfig);
 
-      const pengeluaranCtx = document.getElementById('pengeluaranChart').getContext('2d');
-      const pengeluaranChart = new Chart(pengeluaranCtx, pengeluaranConfig);
-
-      // Fungsi untuk mengubah warna legend berdasarkan tahun
-      function updateLegendColors() {
-        const years = {!! json_encode($years) !!};
-        const colors = {!! json_encode($colorsForYears) !!};
-        
-        years.forEach((year) => {
-          const colorElement = document.querySelector(`.year-${year}`);
-          if (colorElement && colors[year]) {
-            colorElement.style.backgroundColor = colors[year];
-          }
-        });
-      }
-
-      // Panggil fungsi untuk mengubah warna legend
-      updateLegendColors();
-
-      // Filter dropdown functionality
+      // ====== Dropdown filter ======
       document.querySelectorAll('.filter-option').forEach(item => {
         item.addEventListener('click', function(e) {
           e.preventDefault();
-          const type = this.getAttribute('data-type');
+          const type  = this.getAttribute('data-type');
           const value = this.getAttribute('data-value');
-          
-          // Update teks pada tombol dropdown
-          const dropdownButton = this.closest('.dropdown').querySelector('.dropdown-toggle');
-          dropdownButton.innerHTML = `<i class="bi bi-funnel"></i> ${this.textContent}`;
-          
-          if (type === 'bagian') {
-            filterBagianData(value);
-          } else {
-            filterPengeluaranData(value);
-          }
+          // ganti label tombol
+          const btn = this.closest('.dropdown').querySelector('.dropdown-toggle');
+          btn.innerHTML = `<i class="bi bi-funnel"></i> <span>${this.textContent}</span>`;
+          if (type === 'bagian') filterBagianData(value);
+          else filterPengeluaranData(value);
         });
       });
 
-      // Fungsi untuk filter data grafik per bagian
+      // --- Filter Per Bagian (week/month/year) ---
       function filterBagianData(filterType) {
-        // Kirim permintaan AJAX ke server untuk mendapatkan data terfilter
         fetch(`/admin/dashboard/filter?type=bagian&filter=${filterType}`)
-          .then(response => response.json())
+          .then(r => r.json())
           .then(data => {
-            // Update data chart
             bagianChart.data.datasets[0].data = data.keluar;
             bagianChart.data.datasets[1].data = data.masuk;
             bagianChart.update();
           })
-          .catch(error => console.error('Error:', error));
+          .catch(console.error);
       }
 
-      // Fungsi untuk filter data grafik pengeluaran per waktu
+      // --- Filter Pengeluaran per Tahun (all | 5y | 7y | 10y) ---
       function filterPengeluaranData(filterType) {
-        // Kirim permintaan AJAX ke server untuk mendapatkan data terfilter
         fetch(`/admin/dashboard/filter?type=pengeluaran&filter=${filterType}`)
-          .then(response => response.json())
-          .then(data => {
-            // Update data chart
-            pengeluaranChart.data.datasets = data;
+          .then(r => r.json())
+          .then(payload => {
+            // [FIX] shape baru: { labels: [...tahun], data: [...] }
+            pengeluaranChart.data.labels = payload.labels;
+            if (pengeluaranChart.data.datasets.length === 0) {
+              pengeluaranChart.data.datasets.push({
+                label: 'Keluar',
+                data: payload.data,
+                backgroundColor: '#8B5CF6',
+                borderRadius: 4
+              });
+            } else {
+              pengeluaranChart.data.datasets[0].data = payload.data;
+            }
             pengeluaranChart.update();
-            
-            // Update legend
-            const legendContainer = document.querySelector('.chart-legend.yearly');
-            legendContainer.innerHTML = '';
-            
-            data.forEach(dataset => {
-              const legendItem = document.createElement('div');
-              legendItem.className = 'legend-item';
-              
-              const colorSpan = document.createElement('span');
-              colorSpan.className = 'legend-color';
-              colorSpan.style.backgroundColor = dataset.backgroundColor;
-              
-              const textSpan = document.createElement('span');
-              textSpan.textContent = dataset.label;
-              
-              legendItem.appendChild(colorSpan);
-              legendItem.appendChild(textSpan);
-              legendContainer.appendChild(legendItem);
-            });
           })
-          .catch(error => console.error('Error:', error));
+          .catch(console.error);
       }
     });
   </script>
