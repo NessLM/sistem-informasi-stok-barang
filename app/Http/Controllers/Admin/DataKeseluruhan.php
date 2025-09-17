@@ -29,12 +29,6 @@ class DataKeseluruhan extends Controller
 
         $gudang = Gudang::all();
 
-    return dd([
-        'route'   => 'admin.datakeseluruhan',
-        'gudang'  => $gudang->toArray(),
-        'count'   => $gudang->count(),
-    ]);
-
         // Validasi harga min / max
         $request->validate([
             'harga_min' => 'nullable|numeric|min:0',
@@ -93,7 +87,7 @@ class DataKeseluruhan extends Controller
         $barang = $query->get();
 
         // ✅ View dengan semua data
-        return view('admin.datakeseluruhan', compact(
+        return view('staff.admin.datakeseluruhan', compact(
             'kategori',
             'barang',
             'menu',
@@ -110,7 +104,7 @@ class DataKeseluruhan extends Controller
 
         Kategori::create($request->only(['nama', 'gudang_id']));
 
-return redirect()->route('admin.datakeseluruhan.atk')
+return redirect()->route('staff.admin.datakeseluruhan')
                  ->with('success', 'Kategori berhasil ditambahkan!');
 
     }
@@ -135,7 +129,7 @@ return redirect()->route('admin.datakeseluruhan.atk')
             'jenis_barang_id' => 1, // default
         ]);
 
-        return redirect()->route('admin.datakeseluruhan')
+        return redirect()->route('staff.admin.datakeseluruhan')
                          ->with('success', 'Barang berhasil ditambahkan!');
     }
 
@@ -152,7 +146,7 @@ return redirect()->route('admin.datakeseluruhan.atk')
 
         $barang->update($request->only(['nama', 'harga', 'stok', 'satuan', 'kategori_id']));
 
-        return redirect()->route('admin.datakeseluruhan')
+        return redirect()->route('staff.admin.datakeseluruhan')
                          ->with('success', 'Barang berhasil diperbarui!');
     }
 
@@ -161,7 +155,7 @@ return redirect()->route('admin.datakeseluruhan.atk')
         $barang = Barang::where('kode', $kode)->firstOrFail();
         $barang->delete();
 
-        return redirect()->route('admin.datakeseluruhan')
+        return redirect()->route('staff.admin.datakeseluruhan')
                          ->with('success', 'Barang berhasil dihapus!');
     }
 
@@ -173,7 +167,7 @@ return redirect()->route('admin.datakeseluruhan.atk')
         $kategori->barang()->delete();
         $kategori->delete();
 
-        return redirect()->route('admin.datakeseluruhan')
+        return redirect()->route('staff.admin.datakeseluruhan')
                          ->with('success', 'Kategori berhasil dihapus!');
     }
 }
