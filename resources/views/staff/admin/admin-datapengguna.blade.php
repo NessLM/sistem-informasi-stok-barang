@@ -159,10 +159,42 @@
           <input type="text" class="form-control" name="username" required>
         </div>
 
-        <div class="mb-3">
-          <label class="form-label">Password</label>
-          <input type="password" class="form-control" name="password" required placeholder="Masukkan password">
-        </div>
+        {{-- 🔐 Tambahan: Password (Tambah Pengguna) + tombol eye toggle (inline, tidak menambah <script> baru) --}}
+         <div class="mb-3">
+           <label class="form-label">Password</label>
+           <div class="position-relative">
+             <input
+               type="password"
+               class="form-control pe-5"
+               name="password"            {{-- penting: name tidak diubah agar tetap tersubmit --}}
+               required
+               autocomplete="new-password"
+               placeholder="Masukkan password"
+             >
+             <button
+               type="button"
+               class="pass-toggle"
+               aria-label="Tampilkan password"
+               aria-pressed="false"
+               style="position:absolute; top:50%; right:10px; transform:translateY(-50%); display:inline-flex; align-items:center; justify-content:center; width:2rem; height:2rem; border:0; background:transparent; color:#6c757d;"
+               {{-- onclick inline supaya tidak mengganggu submit form --}}
+               onclick="(function(btn){
+                 const i = btn.parentElement.querySelector('input[name=&quot;password&quot;]');
+                 const hidden = i.type === 'password';
+                 i.type = hidden ? 'text' : 'password';
+                 btn.setAttribute('aria-pressed', hidden ? 'true' : 'false');
+                 const icon = btn.querySelector('i');
+                 if (icon) {
+                   icon.classList.toggle('bi-eye', hidden);
+                   icon.classList.toggle('bi-eye-slash', !hidden);
+                 }
+                 i.focus({ preventScroll: true });
+               })(this)"
+             >
+               <i class="bi bi-eye-slash" aria-hidden="true"></i>
+             </button>
+           </div>
+         </div>
 
         <div class="mb-3">
           <label class="form-label">Role</label>
