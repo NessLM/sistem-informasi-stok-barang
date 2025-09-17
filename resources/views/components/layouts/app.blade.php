@@ -1,8 +1,8 @@
 @props([
     'title' => 'Stokita', // <title> tab & default heading
-    'menu' => [], // menu untuk sidebar
-    'heading' => null, // override heading (opsional)
-    'showCrest' => true, // crest kanan
+    'menu' => [],         // menu untuk sidebar
+    'heading' => null,    // override heading (opsional)
+    'showCrest' => true,  // crest kanan
 ])
 
 <!doctype html>
@@ -18,7 +18,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-
     {{-- CSS sidebar milikmu --}}
     <link rel="stylesheet" href="{{ asset('assets/css/components/sidebar.css') }}">
 
@@ -27,37 +26,22 @@
     {{-- halaman tertentu boleh push CSS sendiri dari slot --}}
 
     <style>
-        body {
-            margin: 0;
-            background: #EFF0EE;
-        }
+        body { margin: 0; background: #EFF0EE; }
 
         /* ====== Sidebar width variable (sinkron dengan state collapsed) ====== */
-        .layout {
-            --sb-w: 270px;
-        }
+        .layout { --sb-w: 270px; }
+        .layout.is-collapsed { --sb-w: 80px; }
 
-        /* normal: sidebar 270px */
-        .layout.is-collapsed {
-            --sb-w: 80px;
-        }
-
-        /* collapsed: sidebar 80px */
-        .modal-footer .btn {
-            min-height: 42px;
-            /* samain tinggi */
-        }
+        .modal-footer .btn { min-height: 42px; /* samain tinggi */ }
 
         /* ====== Konten: offset & lebar mengikuti sidebar (tanpa overflow) ====== */
         main.content {
             margin-left: var(--sb-w) !important;
-            width: calc(100% - var(--sb-w)) !important;
-            /* <- inilah kuncinya */
+            width: calc(100% - var(--sb-w)) !important; /* <- kunci lebar responsif */
             padding: 0 !important;
             transition: margin-left .3s ease, width .3s ease;
             margin-top: 100px;
         }
-
 
         /* Kartu fallback */
         .card {
@@ -69,58 +53,47 @@
 
         /* ===== Header Global (flat, nempel kiri/kanan/atas) ===== */
         .page-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            background: #fff;
-            padding: 14px 18px;
-            margin: 0;
-            border: 0;
-            border-radius: 0;
-            border-bottom: 1px solid #e5e7eb;
-            box-shadow: 0 12px 16px -12px #CBCCCB;
-            /* bayangan hanya bawah */
-            position: fixed;
-            top: 0;
-            left: var(--sb-w);
-            /* supaya tidak ketiban sidebar */
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            background: #fff; padding: 14px 18px; margin: 0; border: 0; border-radius: 0;
+            border-bottom: 1px solid #e5e7eb; box-shadow: 0 12px 16px -12px #CBCCCB;
+            position: fixed; top: 0; left: var(--sb-w);
             width: calc(100% - var(--sb-w));
             z-index: 1000;
             transition: left .3s ease, width .3s ease;
         }
 
-        .ph-left {
-            display: flex;
-            align-items: center;
-            gap: 10px
-        }
-
+        .ph-left { display: flex; align-items: center; gap: 10px }
         .ph-title {
-            margin: 0;
-            font-weight: 600;
-            letter-spacing: -.01em;
-            line-height: 1.2;
-            font-size: clamp(18px, 2.2vw, 26px);
-            color: #111827;
+            margin: 0; font-weight: 600; letter-spacing: -.01em; line-height: 1.2;
+            font-size: clamp(18px, 2.2vw, 26px); color: #111827;
         }
+        .ph-badge { width: 40px; height: auto; object-fit: contain }
+        @media (max-width:640px){ .ph-badge { width: 34px } }
 
-        .ph-badge {
-            width: 40px;
-            height: auto;
-            object-fit: contain
-        }
-
-        @media (max-width:640px) {
-            .ph-badge {
-                width: 34px
-            }
-        }
+        /* 🔑 Hanya tampilkan loader jika <html> TIDAK punya class no-loader */
+        html.no-loader #page-loader { display: none !important; }
     </style>
 </head>
 
 <body>
-    {{-- Loader global --}}
+    {{-- 🔑 Early script: tampilkan loader hanya untuk RELOAD.
+         Kecuali ada flag 'forceLoaderOnce' (mis. dari LOGIN/LOGOUT) yang memaksa sekali tampil. --}}
+    <script>
+      (function(){
+        try{
+          var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+          var type = nav ? nav.type : (performance.navigation && performance.navigation.type === 1 ? 'reload' : 'navigate');
+          var force = sessionStorage.getItem('forceLoaderOnce') === '1';
+
+          if (type !== 'reload' && !force) {
+            document.documentElement.classList.add('no-loader');
+          }
+          if (force) sessionStorage.removeItem('forceLoaderOnce');
+        }catch(e){}
+      })();
+    </script>
+
+    {{-- Loader global (akan auto-hidden jika <html> punya class no-loader) --}}
     <x-page-loader variant="a" />
 
     <div class="layout">
@@ -131,7 +104,7 @@
         <main class="content">
             @php
                 $logo = asset('assets/banner/logo_bupati.png'); // crest kanan
-                $pageHeading = $heading ?? $title; // judul header
+                $pageHeading = $heading ?? $title;              // judul header
             @endphp
 
             {{-- Header nempel kiri/kanan/atas + shadow bawah --}}
@@ -144,33 +117,53 @@
                 @endif
             </header>
 
-            {{-- Slot konten halaman (punya padding sendiri via CSS halaman, mis: dashboard.css) --}}
+            {{-- Slot konten halaman --}}
             {{ $slot }}
         </main>
-
-        {{-- Toggle collapse sidebar --}}
-        <script>
-            document.addEventListener("DOMContentLoaded", () => {
-                const btn = document.querySelector("[data-toggle='sidebar']");
-                if (btn) {
-                    btn.addEventListener("click", () => {
-                        document.querySelector(".layout").classList.toggle("is-collapsed");
-                    });
-                }
-            });
-        </script>
     </div>
-    {{-- tempat untuk modal html di-append --}}
+
+    {{-- Toggle collapse sidebar --}}
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const btn = document.querySelector("[data-toggle='sidebar']");
+        if (btn) {
+          btn.addEventListener("click", () => {
+            document.querySelector(".layout").classList.toggle("is-collapsed");
+          });
+        }
+      });
+    </script>
+
+    {{-- ✅ LOGOUT HOOK: paksa loader muncul SEKALI di halaman tujuan (login)
+        saat user logout. Tidak menampilkan overlay di halaman saat ini. --}}
+    <script>
+      (function(){
+        const flagOnce = () => { try { sessionStorage.setItem('forceLoaderOnce','1'); } catch(e){} };
+
+        // 1) Form POST /logout (paling umum di Laravel)
+        document.addEventListener('submit', function(ev){
+          const f = ev.target;
+          if (!f || !f.action) return;
+          if (/\/logout(\?|$)/i.test(f.action)) {
+            flagOnce();
+            // tidak perlu show overlay sekarang — biarkan login page yang tampilkan
+          }
+        }, true);
+
+        // 2) Kalau pakai <a> GET atau tombol custom, kasih atribut data-logout
+        document.addEventListener('click', function(ev){
+          const el = ev.target.closest('a[data-logout], button[data-logout]');
+          if (el) { flagOnce(); }
+        }, true);
+      })();
+    </script>
+
+    {{-- Tempat untuk modal html di-append --}}
     @stack('modals')
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-    {{-- tempat untuk script js --}}
+    {{-- Tempat untuk script js tambahan per-halaman --}}
     @stack('scripts')
 </body>
-
-</html>
-
-</body>
-
 </html>

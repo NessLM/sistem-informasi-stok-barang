@@ -9,11 +9,13 @@ class Gudang extends Model
 {
     use HasFactory;
 
+    // Pakai tabel 'gudang' (bukan plural)
     protected $table = 'gudang';
+
     protected $fillable = ['nama'];
 
     public function kategori()
     {
-        return $this->hasMany(Kategori::class);
+        return $this->hasMany(Kategori::class, 'gudang_id', 'id');
     }
 }

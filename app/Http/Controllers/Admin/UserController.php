@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Role;
@@ -17,7 +18,6 @@ class UserController extends Controller
 {
     public function index()
     {
-        // [ASLI] Ambil data
         $users = User::with('role')->get();
         $roles = Role::all();
         $menu  = MenuHelper::adminMenu();
@@ -32,11 +32,10 @@ class UserController extends Controller
         $users->each(function ($u) {
             $hash = (string) $u->getOriginal('password'); // hash mentah dari DB
 
-            // --- [BARU] Ambil plaintext dari cache (PERSISTEN, TANPA menghapus) ---
             $cacheKey = "user:plainpwd:{$u->id}";
             $plainFromCache = null;
 
-            if ($enc = Cache::get($cacheKey)) {                 // [DIUBAH] get (bukan pull)
+            if ($enc = Cache::get($cacheKey)) {
                 try {
                     $tmp = Crypt::decryptString($enc);          // decrypt dari cache
                     if (Hash::check($tmp, $hash)) {             // safety: cocok dg hash sekarang?
@@ -50,7 +49,7 @@ class UserController extends Controller
             }
 
             // Kalau cache ada → tampil plaintext; kalau tidak → "(disembunyikan)"
-            $safeText = $plainFromCache ?: '(disembunyikan)';
+            $safeText = $plainFromCache ?: '(plain cache nya belum ada, seeder ulang)';
 
             // Timpa NILAI MENTAH 'password' AGAR Blade lama tetap jalan tanpa bocor hash
             $attr = $u->getAttributes();
@@ -128,5 +127,19 @@ class UserController extends Controller
         return back()->with('success', 'Pengguna berhasil diperbarui.');
     }
 
-    // ... method lain (show/destroy/dll.) TETAP, tidak perlu diubah.
+    public function destroy($id)
+    {
+        $user = User::findOrFail($id);
+
+        // 🔒 Cegah admin menghapus dirinya sendiri
+        if ((int) $user->id === (int) Auth::id() && optional($user->role)->nama === 'Admin') {
+            return redirect()->route('admin.users.index')
+                ->withErrors(['msg' => 'Admin tidak bisa menghapus dirinya sendiri.']);
+        }
+
+        $user->delete();
+
+        return redirect()->route('admin.users.index')
+            ->with('success', 'Pengguna berhasil dihapus!');
+    }
 }

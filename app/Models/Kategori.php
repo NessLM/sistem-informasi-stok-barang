@@ -11,12 +11,11 @@ class Kategori extends Model
 
     protected $table = 'kategori';
 
-    // ✅ pastikan 'gudang_id' ada di sini
     protected $fillable = ['nama', 'gudang_id'];
 
     public function gudang()
     {
-        return $this->belongsTo(Gudang::class);
+        return $this->belongsTo(Gudang::class, 'gudang_id'); // tambahin foreign key
     }
 
     public function barang()
