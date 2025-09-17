@@ -164,7 +164,7 @@
                                                             <td>Rp {{ number_format($b->harga ?? 0,0,',','.') }}</td>
                                                             <td>{{ $b->stok }}</td>
                                                             <td>{{ $b->satuan }}</td>
-                                                            <td>
+                                                            <td class="d-flex gap-2">
                                                                 <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalEditBarang-{{ $b->id }}">
                                                                     <i class="bi bi-pencil"></i>
                                                                 </button>
@@ -210,17 +210,17 @@
                         <input type="text" class="form-control" name="nama" id="nama" required>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="gudang_id" class="form-label">Gudang</label>
-                        <select class="form-select" name="gudang_id" id="gudang_id" required>
-                            <option value="">-- Pilih Gudang --</option>
-                            @forelse($gudang as $g)
-                                <option value="{{ $g->id }}">{{ $g->nama }}</option>
-                            @empty
-                                <option disabled>⚠️ Tidak ada data gudang</option>
-                            @endforelse
-                        </select>
-                    </div>
+<div class="mb-3">
+    <label for="gudang_id" class="form-label">Pilih Gudang</label>
+    <select name="gudang_id" id="gudang_id" class="form-select" required>
+        <option value="">-- Pilih Gudang --</option>
+        @foreach($gudang as $item)
+            <option value="{{ $item->id }}">{{ $item->nama }}</option>
+        @endforeach
+    </select>
+</div>
+
+
                 </div>
 
                 <div class="modal-footer">
