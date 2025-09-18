@@ -17,7 +17,7 @@ class DataKeseluruhan extends Controller
         $search = $request->input('search');
 
         // Ambil kategori + relasi barang + gudang
-        $kategori = Kategori::with([
+        $kategoriQuery = Kategori::with([
             'barang' => function ($q) use ($search) {
                 if ($search) {
                     $q->where('nama', 'like', "%{$search}%")
@@ -25,9 +25,21 @@ class DataKeseluruhan extends Controller
                 }
             },
             'gudang'
-        ])->get();
+        ]);
 
+        // Filter kategori berdasarkan gudang yang dipilih
+        if ($request->filled('gudang_id')) {
+            $kategoriQuery->where('gudang_id', $request->gudang_id);
+        }
+
+        $kategori = $kategoriQuery->get();
         $gudang = Gudang::all();
+
+        // Tentukan gudang yang sedang dipilih (jika ada)
+        $selectedGudang = null;
+        if ($request->filled('gudang_id')) {
+            $selectedGudang = Gudang::find($request->gudang_id);
+        }
 
         // Validasi harga min / max
         $request->validate([
@@ -52,6 +64,11 @@ class DataKeseluruhan extends Controller
         }
 
         // Filter tambahan
+        if ($request->filled('gudang_id')) {
+            $query->whereHas('kategori', function($q) use ($request) {
+                $q->where('gudang_id', $request->gudang_id);
+            });
+        }
         if ($request->filled('kode')) {
             $query->where('kode', 'like', "%{$request->kode}%");
         }
@@ -90,7 +107,8 @@ class DataKeseluruhan extends Controller
             'kategori',
             'barang',
             'menu',
-            'gudang'
+            'gudang',
+            'selectedGudang'
         ));
     }
 

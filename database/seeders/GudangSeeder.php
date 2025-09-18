@@ -12,48 +12,65 @@ class GudangSeeder extends Seeder
 {
     public function run(): void
     {
-        $gudang = Gudang::create(['nama' => 'Gudang Utama']);
-        $gudang = Gudang::create(['nama' => 'Gudang ATK']);
-        $gudang = Gudang::create(['nama' => 'Gudang Listrik']);
-        $gudang = Gudang::create(['nama' => 'Gudang Kebersihan']);
-        $gudang = Gudang::create(['nama' => 'Gudang B Komputer']);
+        $daftarGudang = [
+            'Gudang Utama',
+            'Gudang ATK',
+            'Gudang Listrik',
+            'Gudang Kebersihan',
+            'Gudang B Komputer'
+        ];
 
-        // Cek / buat kategori
-        $kategori = Kategori::firstOrCreate(
-            [
-                'nama' => 'Elektronik',
-                'gudang_id' => $gudang->id
-            ],
-            [
-                'nama' => 'Elektronik',
-                'gudang_id' => $gudang->id
-            ]
-        );
+        foreach ($daftarGudang as $namaGudang) {
+            $gudang = Gudang::firstOrCreate(['nama' => $namaGudang]);
 
-        // Cek / buat jenis barang
-        $jenisBarang = JenisBarang::firstOrCreate(
-            [
-                'nama' => 'Laptop',
-                'kategori_id' => $kategori->id
-            ],
-            [
-                'nama' => 'Laptop',
-                'kategori_id' => $kategori->id
-            ]
-        );
+            // beberapa kategori per gudang
+            $kategoriList = [
+                'Elektronik',
+                'Peralatan',
+                'Bahan Habis Pakai',
+                'Furnitur'
+            ];
 
-        // Cek / buat barang
-        Barang::firstOrCreate(
-            ['kode' => 'LP001'], // gunakan kode sebagai unique
-            [
-                'nama' => 'Laptop Asus ROG',
-                'kategori_id' => $kategori->id,
-                'jenis_barang_id' => $jenisBarang->id,
-                'jumlah' => 10,
-                'harga' => 15000000,
-                'stok' => 10,
-                'satuan' => 'unit'
-            ]
-        );
+            foreach ($kategoriList as $kategoriNama) {
+                $kategori = Kategori::firstOrCreate([
+                    'nama' => $kategoriNama,
+                    'gudang_id' => $gudang->id
+                ]);
+
+                // jenis barang untuk setiap kategori
+                $jenisList = [
+                    'Laptop',
+                    'Printer',
+                    'Kabel',
+                    'Meja',
+                    'Kursi'
+                ];
+
+                foreach ($jenisList as $jenisNama) {
+                    $jenisBarang = JenisBarang::firstOrCreate([
+                        'nama' => $jenisNama,
+                        'kategori_id' => $kategori->id
+                    ]);
+
+                    // barang contoh per jenis barang
+                    for ($i = 1; $i <= 3; $i++) {
+                        Barang::firstOrCreate(
+                            [
+                                'kode' => strtoupper(substr($jenisNama, 0, 2)) . str_pad($i, 3, '0', STR_PAD_LEFT)
+                            ],
+                            [
+                                'nama' => $jenisNama . ' ' . $i,
+                                'kategori_id' => $kategori->id,
+                                'jenis_barang_id' => $jenisBarang->id,
+                                'jumlah' => rand(5, 20),
+                                'stok' => rand(5, 20),
+                                'harga' => rand(100000, 5000000),
+                                'satuan' => 'unit'
+                            ]
+                        );
+                    }
+                }
+            }
+        }
     }
 }
