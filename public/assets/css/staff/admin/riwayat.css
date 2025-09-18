@@ -61,7 +61,7 @@
     border-radius: 6px;
     padding: 10px 20px;
     color: white;
-    font-weight: 600;
+    font-weight: 300;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
@@ -72,7 +72,7 @@
     border-radius: 6px;
     padding: 10px 20px;
     color: white;
-    font-weight: 600;
+    font-weight: 300;
     transition: all 0.3s ease;
     align-items: center;
 }
