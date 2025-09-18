@@ -28,7 +28,6 @@ class DashboardController extends Controller
          * - Urut alfabet biar stabil
          * - "Umum" dikecualikan
          */
-        // [CHANGE]
         $bagianRows = Riwayat::select('bagian', DB::raw('SUM(jumlah) AS total'))
             ->where('alur_barang', 'Keluar')
             ->where('bagian', 'NOT LIKE', '%Umum%')
@@ -36,9 +35,8 @@ class DashboardController extends Controller
             ->orderBy('bagian')
             ->get();
 
-        // [CHANGE] labels & data dinamis
+        // [FIX LABEL] hapus prefix "Bagian " (case-insensitive)
         $bagianLabels = $bagianRows->pluck('bagian')
-            // [FIX LABEL] hapus prefix "Bagian " (case-insensitive, plus spasi)
             ->map(fn($b) => preg_replace('/^\s*Bagian\s+/i', '', $b))
             ->values();
         $keluarData   = $bagianRows->pluck('total')->map(fn($v) => (int)$v)->values();
@@ -47,7 +45,7 @@ class DashboardController extends Controller
          * GRAFIK PENGELUARAN PER TAHUN
          * ========================================================= */
         $currentYear        = (int) date('Y');
-        $years              = range($currentYear - 9, $currentYear); // "Semua" = 9 tahun terakhir
+        $years              = range($currentYear - 9, $currentYear);
         $pengeluaranLabels  = $years;
 
         $colorsForYears        = [];
@@ -81,7 +79,6 @@ class DashboardController extends Controller
     }
 
     /* ==================== AJAX FILTER ==================== */
-
     public function filterData(Request $request)
     {
         $type   = $request->query('type', 'bagian');
@@ -92,11 +89,10 @@ class DashboardController extends Controller
             : $this->filterPengeluaranData($filter);
     }
 
-    // [CHANGE] Per Bagian → dynamic labels + hanya Keluar + exclude "Umum"
+    // [CHANGE] Per Bagian → kirim juga rentang tanggal untuk badge
     private function filterBagianData($filter)
     {
-        // 1) Ambil BASELINE LABELS dari seluruh waktu (hanya "Keluar", exclude "Umum")
-        //    -> label ini TETAP dipakai untuk setiap filter supaya batangnya tidak hilang.
+        // baseline labels (supaya batang tidak hilang)
         $allTimeLabels = Riwayat::query()
             ->where('alur_barang', 'Keluar')
             ->where('bagian', 'NOT LIKE', '%Umum%')
@@ -106,57 +102,49 @@ class DashboardController extends Controller
             ->pluck('bagian')
             ->values();
 
-        // 2) Siapkan query terfilter berdasar rentang waktu
-        $q = Riwayat::query()
-            ->where('alur_barang', 'Keluar');
+        $q = Riwayat::query()->where('alur_barang', 'Keluar');
 
-        // [NEW] siapkan teks rentang tanggal (untuk badge di UI)
-        $now = Carbon::now();
-        $rangeText = 'Semua Data';
+        $start = null; $end = null; // [NEW] untuk badge
         if ($filter === 'week') {
-            $from = $now->copy()->subWeek();
-            $q->where('tanggal', '>=', $from);
-            $rangeText = $from->format('d/m/Y') . ' – ' . $now->format('d/m/Y');
+            $start = Carbon::now()->subWeek();
+            $q->where('tanggal', '>=', $start);
         } elseif ($filter === 'month') {
-            $from = $now->copy()->subMonth();
-            $q->where('tanggal', '>=', $from);
-            $rangeText = $from->format('d/m/Y') . ' – ' . $now->format('d/m/Y');
+            $start = Carbon::now()->subMonth();
+            $q->where('tanggal', '>=', $start);
         } elseif ($filter === 'year') {
-            $from = $now->copy()->subYear();
-            $q->where('tanggal', '>=', $from);
-            $rangeText = $from->format('d/m/Y') . ' – ' . $now->format('d/m/Y');
+            $start = Carbon::now()->subYear();
+            $q->where('tanggal', '>=', $start);
         }
-        // 'all' -> tanpa filter tanggal
+        $end = Carbon::now();
 
-        // 3) Hitung total per label baseline sesuai filter; yang tidak ada → 0
         $keluarData = [];
         foreach ($allTimeLabels as $bagian) {
             $total = (clone $q)
                 ->where('bagian', 'LIKE', '%' . $bagian . '%')
                 ->sum('jumlah');
-
-            $keluarData[] = (int) $total;  // jika tidak ada -> 0
+            $keluarData[] = (int) $total;
         }
 
-        // 4) Kembalikan labels baseline + nilai hasil filter + [NEW] range_text
         return response()->json([
+            // label tampilan (hapus prefix "Bagian ")
             'labels' => collect($allTimeLabels)->map(
                 fn($b) => preg_replace('/^\s*Bagian\s+/i', '', $b)
             )->values(),
-            'keluar'     => $keluarData,
-            'range_text' => $rangeText, // [NEW]
+            'keluar' => $keluarData,
+            // [NEW] info rentang untuk badge (null => "Semua Data")
+            'range' => $start ? ['start' => $start->toDateString(), 'end' => $end->toDateString()] : null,
         ]);
     }
 
-    // (tidak diubah) Filter Pengeluaran per Tahun
+    // (tetap) Filter Pengeluaran per Tahun
     private function filterPengeluaranData($filter)
     {
         $currentYear = (int) date('Y');
 
-        if ($filter === '5y')  $years = range($currentYear - 4, $currentYear);
-        elseif ($filter === '7y')  $years = range($currentYear - 6, $currentYear);
+        if ($filter === '5y')      $years = range($currentYear - 4,  $currentYear);
+        elseif ($filter === '7y')  $years = range($currentYear - 6,  $currentYear);
         elseif ($filter === '10y') $years = range($currentYear - 10, $currentYear);
-        else                       $years = range($currentYear - 9, $currentYear); // "Semua"
+        else                       $years = range($currentYear - 9,  $currentYear);
 
         $totals = [];
         $colors = [];
