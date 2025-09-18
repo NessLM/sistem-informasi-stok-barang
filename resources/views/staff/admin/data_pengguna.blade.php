@@ -66,7 +66,7 @@
                         $adminCount = 0;
                         $otherCount = 0;
                     @endphp
-                    
+
                     {{-- Loop pertama untuk admin yang sedang login --}}
                     @foreach ($users as $index => $u)
                         @if ($u->id === auth()->id())
@@ -93,7 +93,7 @@
                             </tr>
                         @endif
                     @endforeach
-                    
+
                     {{-- Loop kedua untuk admin lainnya --}}
                     @foreach ($users as $index => $u)
                         @if ($u->role?->nama === 'Admin' && $u->id !== auth()->id())
@@ -126,7 +126,7 @@
                             </tr>
                         @endif
                     @endforeach
-                    
+
                     {{-- Loop ketiga untuk non-admin --}}
                     @foreach ($users as $index => $u)
                         @if ($u->role?->nama !== 'Admin')
@@ -179,7 +179,7 @@
                     <div class="row w-100 g-2">
                         <div class="col">
                             <button type="button" class="btn btn-secondary w-100 py-2" data-bs-dismiss="modal">
-                                Cancel
+                                Batal
                             </button>
                         </div>
                         <div class="col">
@@ -187,7 +187,7 @@
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-danger w-100 py-2">
-                                    Yes, Hapus
+                                    Hapus
                                 </button>
                             </form>
                         </div>
@@ -210,19 +210,21 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Nama</label>
-                        <input type="text" class="form-control" name="nama" required>
+                        <input type="text" class="form-control" name="nama" required placeholder="Masukkan nama">
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Username</label>
-                        <input type="text" class="form-control" name="username" required>
+                        <input type="text" class="form-control" name="username" required placeholder="Masukkan username">
+                        <div id="username-feedback" class="invalid-feedback"></div>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Password</label>
                         <div class="position-relative">
-                            <input type="password" class="form-control pe-5" name="password" 
-                                required autocomplete="new-password" placeholder="Masukkan password">
+                            <input type="password" class="form-control pe-5" name="password" required
+                                autocomplete="new-password" placeholder="Masukkan password"
+                                pattern="^(?=.*[a-zA-Z])(?=.*\d).{8,}$">
                             <button type="button" class="pass-toggle" aria-label="Tampilkan password"
                                 aria-pressed="false"
                                 style="position:absolute; top:50%; right:10px; transform:translateY(-50%); display:inline-flex; align-items:center; justify-content:center; width:2rem; height:2rem; border:0; background:transparent; color:#6c757d;"
@@ -241,6 +243,9 @@
                                 <i class="bi bi-eye-slash" aria-hidden="true"></i>
                             </button>
                         </div>
+                        <div id="password-feedback" class="invalid-feedback"></div>
+                        <small class="form-text text-muted">Minimal 8 karakter dan harus mengandung huruf dan
+                            angka</small>
                     </div>
 
                     <div class="mb-3">
@@ -256,7 +261,7 @@
 
                     <div class="mb-3">
                         <label class="form-label">Bagian</label>
-                        <input type="text" class="form-control" name="bagian">
+                        <input type="text" class="form-control" name="bagian" required placeholder="Masukkan bagian">
                     </div>
                 </div>
 
@@ -291,6 +296,7 @@
                     <div class="mb-3">
                         <label class="form-label">Username</label>
                         <input type="text" class="form-control" name="username" id="user_username" required>
+                        <div id="edit-username-feedback" class="invalid-feedback"></div>
                     </div>
 
                     <div class="mb-3">
@@ -304,7 +310,8 @@
                         </label>
                         <div class="position-relative">
                             <input type="password" class="form-control pe-5" name="password" id="user_password"
-                                autocomplete="new-password" placeholder="Masukkan password baru (opsional)">
+                                autocomplete="new-password" placeholder="Masukkan password baru (opsional)"
+                                pattern="^(?=.*[a-zA-Z])(?=.*\d).{8,}$">
                             <button type="button" class="pass-toggle" id="toggle_user_password"
                                 aria-label="Tampilkan password" aria-pressed="false"
                                 style="position:absolute; top:50%; right:10px; transform:translateY(-50%); 
@@ -313,6 +320,9 @@
                                 <i class="bi bi-eye-slash" aria-hidden="true"></i>
                             </button>
                         </div>
+                        <div id="edit-password-feedback" class="invalid-feedback"></div>
+                        <small class="form-text text-muted">Minimal 8 karakter dan harus mengandung huruf dan
+                            angka</small>
                     </div>
 
                     <div class="mb-3">
@@ -326,7 +336,7 @@
 
                     <div class="mb-3">
                         <label class="form-label">Bagian</label>
-                        <input type="text" class="form-control" name="bagian" id="user_bagian">
+                        <input type="text" class="form-control" name="bagian" id="user_bagian" required>
                     </div>
                 </div>
 
@@ -381,8 +391,9 @@
                         document.getElementById('user_username').value = this.dataset.username || '';
                         document.getElementById('user_role').value = roleId || '';
                         document.getElementById('user_bagian').value = this.dataset.bagian || '';
-                        document.getElementById('user_old_password').value = this.dataset.password || '';
-                        
+                        document.getElementById('user_old_password').value = this.dataset.password ||
+                            '';
+
                         // Set nilai hidden field
                         document.getElementById('user_role_hidden').value = roleId;
 
@@ -409,12 +420,82 @@
                     btn.addEventListener('click', function() {
                         const id = this.dataset.id;
                         const formDelete = document.getElementById('formDeleteUser');
-                        formDelete.action = "{{ route('admin.users.destroy', ':id') }}".replace(':id', id);
+                        formDelete.action = "{{ route('admin.users.destroy', ':id') }}".replace(':id',
+                            id);
 
                         const modal = new bootstrap.Modal(document.getElementById('modalDeleteUser'));
                         modal.show();
                     });
                 });
+
+                // Validasi form tambah pengguna
+                const formCreateUser = document.getElementById('formCreateUser');
+                if (formCreateUser) {
+                    formCreateUser.addEventListener('submit', function(e) {
+                        const password = this.querySelector('input[name="password"]');
+                        const username = this.querySelector('input[name="username"]');
+                        let isValid = true;
+
+                        // Reset feedback
+                        document.getElementById('password-feedback').textContent = '';
+                        document.getElementById('username-feedback').textContent = '';
+                        password.classList.remove('is-invalid');
+                        username.classList.remove('is-invalid');
+
+                        // Validasi password - perbolehkan simbol
+                        if (password.value.length < 8) {
+                            password.classList.add('is-invalid');
+                            document.getElementById('password-feedback').textContent =
+                                'Password minimal 8 karakter';
+                            isValid = false;
+                        } else if (!/(?=.*[a-zA-Z])(?=.*\d)/.test(password.value)) {
+                            // Hanya memeriksa minimal 1 huruf dan 1 angka
+                            password.classList.add('is-invalid');
+                            document.getElementById('password-feedback').textContent =
+                                'Password harus mengandung huruf dan angka';
+                            isValid = false;
+                        }
+
+                        if (!isValid) {
+                            e.preventDefault();
+                        }
+                    });
+                }
+
+                // Validasi form edit pengguna
+                const formEditUser = document.getElementById('formEditUser');
+                if (formEditUser) {
+                    formEditUser.addEventListener('submit', function(e) {
+                        const password = this.querySelector('input[name="password"]');
+                        const username = this.querySelector('input[name="username"]');
+                        let isValid = true;
+
+                        // Reset feedback
+                        document.getElementById('edit-password-feedback').textContent = '';
+                        document.getElementById('edit-username-feedback').textContent = '';
+                        password.classList.remove('is-invalid');
+                        username.classList.remove('is-invalid');
+
+                        // Validasi password hanya jika diisi
+                        // Validasi password - perbolehkan simbol
+                        if (password.value.length < 8) {
+                            password.classList.add('is-invalid');
+                            document.getElementById('password-feedback').textContent =
+                                'Password minimal 8 karakter';
+                            isValid = false;
+                        } else if (!/(?=.*[a-zA-Z])(?=.*\d)/.test(password.value)) {
+                            // Hanya memeriksa minimal 1 huruf dan 1 angka
+                            password.classList.add('is-invalid');
+                            document.getElementById('password-feedback').textContent =
+                                'Password harus mengandung huruf dan angka';
+                            isValid = false;
+                        }
+
+                        if (!isValid) {
+                            e.preventDefault();
+                        }
+                    });
+                }
             });
 
             // Toggle show/hide Password Baru
@@ -436,7 +517,9 @@
                         icon.classList.toggle('bi-eye-slash', !hidden);
                     }
 
-                    passInput.focus({ preventScroll: true });
+                    passInput.focus({
+                        preventScroll: true
+                    });
                 });
 
                 modalEl.addEventListener('hidden.bs.modal', () => {
@@ -448,17 +531,17 @@
                         icon.classList.add('bi-eye-slash');
                     }
                     passInput.value = '';
-                    
+
                     // Reset semua disabled state saat modal ditutup
                     const roleField = document.getElementById('user_role');
                     if (roleField) roleField.disabled = false;
-                    
+
                     const usernameField = document.getElementById('user_username');
                     if (usernameField) usernameField.disabled = false;
-                    
+
                     const namaField = document.getElementById('user_nama');
                     if (namaField) namaField.disabled = false;
-                    
+
                     const bagianField = document.getElementById('user_bagian');
                     if (bagianField) bagianField.disabled = false;
                 });

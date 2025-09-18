@@ -8,11 +8,10 @@ use App\Models\User;
 use App\Models\Role;
 use Illuminate\Http\Request;
 use App\Helpers\MenuHelper;
-
-// === [BARU] Import untuk solusi ini ===
-use Illuminate\Support\Facades\Hash;   // verifikasi plaintext ↔ hash (safety)
-use Illuminate\Support\Facades\Cache;  // simpan plaintext permanen (bukan DB)
-use Illuminate\Support\Facades\Crypt;  // enkripsi/dekripsi plaintext di cache
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
@@ -69,13 +68,30 @@ class UserController extends Controller
     public function store(Request $request)
     {
         try {
-            $validated = $request->validate([
+            $validator = Validator::make($request->all(), [
                 'nama'     => 'required|string|max:255',
                 'username' => 'required|string|max:100|unique:users,username',
                 'role_id'  => 'required|exists:roles,id',
-                'bagian'   => 'nullable|string|max:255',
-                'password' => 'required|string|min:6',
+                'bagian'   => 'required|string|max:255',
+                'password' => [
+                    'required',
+                    'string',
+                    'min:8',
+                    'regex:/^(?=.*[a-zA-Z])(?=.*\d).+$/'
+                ],
+            ], [
+                'password.regex' => 'Password harus mengandung huruf dan angka.',
             ]);
+
+            if ($validator->fails()) {
+                return back()->withInput()->withErrors($validator)->with('toast', [
+                    'type' => 'error',
+                    'title' => 'Gagal!',
+                    'message' => 'Username sudah digunakan.'
+                ]);
+            }
+
+            $validated = $validator->validated();
 
             $user = new User();
             $user->nama     = $validated['nama'];
@@ -97,7 +113,7 @@ class UserController extends Controller
             return back()->withInput()->with('toast', [
                 'type' => 'error',
                 'title' => 'Gagal',
-                'message' => 'Terjadi kesalahan: Tidak dapat menggunakan username yang sama.'
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
             ]);
         }
     }
@@ -107,13 +123,30 @@ class UserController extends Controller
         $user = User::findOrFail($id);
 
         try {
-            $validated = $request->validate([
+            $validator = Validator::make($request->all(), [
                 'nama'     => 'required|string|max:255',
                 'username' => 'required|string|max:100|unique:users,username,' . $user->id,
                 'role_id'  => 'required|exists:roles,id',
-                'bagian'   => 'nullable|string|max:255',
-                'password' => 'nullable|string|min:6',
+                'bagian'   => 'required|string|max:255',
+                'password' => [
+                    'nullable',
+                    'string',
+                    'min:8',
+                    'regex:/^(?=.*[a-zA-Z])(?=.*\d).+$/'
+                ],
+            ], [
+                'password.regex' => 'Password harus mengandung huruf dan angka',
             ]);
+
+            if ($validator->fails()) {
+                return back()->withInput()->withErrors($validator)->with('toast', [
+                    'type' => 'error',
+                    'title' => 'Gagal',
+                    'message' => 'Username tidak boleh sama.'
+                ]);
+            }
+
+            $validated = $validator->validated();
 
             $user->nama     = $validated['nama'];
             $user->username = $validated['username'];
