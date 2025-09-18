@@ -31,11 +31,16 @@ main.content {
 
 /* Cegah teks menu turun ke baris baru */
 .sb-link span {
-    white-space: nowrap;       /* jangan pindah baris */
-    overflow: hidden;          /* sembunyikan teks yang kepanjangan */
-    text-overflow: ellipsis;   /* kasih "..." kalau terlalu panjang */
-    display: block;            /* biar aturan overflow berfungsi */
-    max-width: 200px;          /* sesuaikan dengan lebar sidebar */
+    white-space: nowrap;
+    /* jangan pindah baris */
+    overflow: hidden;
+    /* sembunyikan teks yang kepanjangan */
+    text-overflow: ellipsis;
+    /* kasih "..." kalau terlalu panjang */
+    display: block;
+    /* biar aturan overflow berfungsi */
+    max-width: 200px;
+    /* sesuaikan dengan lebar sidebar */
 }
 
 .layout.is-collapsed .sb-link span,
@@ -94,7 +99,8 @@ aside.sb {
     top: 0;
     left: 0;
     height: 100svh;
-    z-index: 1005; /* Pastikan lebih rendah dari modal */
+    z-index: 1005;
+    /* Pastikan lebih rendah dari modal */
 }
 
 /* ── Brand: fixed height & compact logo ─────────────────────────── */
@@ -374,26 +380,29 @@ aside.sb {
 
 .sb-item .sb-link.is-active {
     background: #ffffff;
-    color: #0d5ba3;                     /* teks/ikon biru gelap */
-    box-shadow: 0 6px 14px rgba(0,0,0,.12);
+    color: #0d5ba3;
+    /* teks/ikon biru gelap */
+    box-shadow: 0 6px 14px rgba(0, 0, 0, .12);
 }
 
 .sb-item.is-active summary {
     background: #ffffff;
     color: #0d5ba3;
-    box-shadow: 0 6px 14px rgba(0,0,0,.12);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, .12);
     border-radius: 10px;
 }
 
 .sb-children .sb-link.is-active {
     background: #ffffff;
     color: #0d5ba3;
-    box-shadow: 0 6px 14px rgba(0,0,0,.12);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, .12);
 }
 
 /* Saat open, caret sudah rotate 90deg (rule di atas).
    Biar lebih jelas, naikkan opasitas */
-.sb-item details[open] .caret { opacity: 1; }
+.sb-item details[open] .caret {
+    opacity: 1;
+}
 
 /* Hover tidak mengganggu state aktif */
 .sb-item .sb-link.is-active:hover,
@@ -429,7 +438,8 @@ aside.sb {
 
 .modal-content-s {
     background-color: #fff;
-    padding: 0; /* Hapus padding dari kontainer utama */
+    padding: 0;
+    /* Hapus padding dari kontainer utama */
     border-radius: 12px;
     width: 90%;
     max-width: 900px;
@@ -438,7 +448,8 @@ aside.sb {
     position: relative;
     transform: translateY(-20px);
     transition: transform 0.3s ease;
-    overflow: hidden; /* Pastikan tidak ada overflow dari kontainer utama */
+    overflow: hidden;
+    /* Pastikan tidak ada overflow dari kontainer utama */
     display: flex;
     flex-direction: column;
 }
@@ -455,7 +466,8 @@ aside.sb {
     position: sticky;
     top: 0;
     z-index: 10;
-    flex-shrink: 0; /* Pastikan header tidak menyusut */
+    flex-shrink: 0;
+    /* Pastikan header tidak menyusut */
 }
 
 /* Tombol close Bootstrap style */
@@ -472,7 +484,8 @@ aside.sb {
     padding: 0.25em;
     cursor: pointer;
     transition: opacity 0.2s;
-    z-index: 11; /* Lebih tinggi dari header */
+    z-index: 11;
+    /* Lebih tinggi dari header */
 }
 
 .btn-close-s:hover {
@@ -484,7 +497,8 @@ aside.sb {
     color: #ffffff;
     text-align: center;
     font-size: 1.5rem;
-    padding-right: 30px; /* Ruang untuk tombol close */
+    padding-right: 30px;
+    /* Ruang untuk tombol close */
 }
 
 /* Konten utama modal (bisa discroll) */
@@ -492,7 +506,8 @@ aside.sb {
     flex: 1;
     overflow-y: auto;
     padding: 0 25px;
-    max-height: calc(85vh - 160px); /* Tinggi maksimum dikurangi header dan footer */
+    max-height: calc(85vh - 160px);
+    /* Tinggi maksimum dikurangi header dan footer */
 }
 
 /* Footer modal (tetap di bawah, tidak bisa discroll) */
@@ -503,8 +518,10 @@ aside.sb {
     position: sticky;
     bottom: 0;
     z-index: 10;
-    flex-shrink: 0; /* Pastikan footer tidak menyusut */
-    text-align: center; /* Memusatkan konten footer */
+    flex-shrink: 0;
+    /* Pastikan footer tidak menyusut */
+    text-align: center;
+    /* Memusatkan konten footer */
 }
 
 /* Container untuk daftar pengembang - layout grid */
@@ -540,8 +557,8 @@ aside.sb {
 }
 
 .dev-photo {
-    width: 100px;
-    height: 100px;
+    width: 120px;
+    height: 120px;
     border-radius: 50%;
     object-fit: cover;
     margin-bottom: 12px;
@@ -558,6 +575,7 @@ aside.sb {
 }
 
 .dev-details td {
+    text-align: center;
     padding: 4px 0;
     vertical-align: top;
     font-size: 0.9rem;
@@ -574,9 +592,11 @@ aside.sb {
     color: #2c3e50;
 }
 
+
 /* Website info di bagian bawah - DIPUSATKAN */
 .website-info {
-    text-align: center; /* Memusatkan teks */
+    text-align: center;
+    /* Memusatkan teks */
     width: 100%;
 }
 
@@ -598,13 +618,44 @@ aside.sb {
 }
 
 /* Pointer cursor untuk elemen yang bisa diklik */
-.org-logo, .org-name {
+.org-logo,
+.org-name {
     cursor: pointer;
     transition: opacity 0.2s;
 }
 
-.org-logo:hover, .org-name:hover {
+.org-logo:hover,
+.org-name:hover {
     opacity: 0.8;
+}
+
+
+/* Gaya untuk bagian media sosial di modal */
+.social-media-section {
+    text-align: center;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.social-media-section p {
+    font-weight: 500;
+}
+
+.social-media-links {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.social-icon {
+    width: 32px;
+    height: 32px;
+    transition: transform 0.3s ease;
+}
+
+.social-icon:hover {
+    transform: scale(1.1);
 }
 
 /* Responsiveness untuk modal */
@@ -612,47 +663,48 @@ aside.sb {
     .developers-grid {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .developers-bottom {
         grid-template-columns: 1fr;
     }
 }
 
 @media (max-width: 768px) {
+
     .developers-grid,
     .developers-bottom {
         grid-template-columns: 1fr;
     }
-    
+
     .modal-content-s {
         width: 95%;
         max-height: 90vh;
     }
-    
+
     .modal-body-s {
         max-height: calc(90vh - 160px);
         padding: 0 15px;
     }
-    
+
     .modal-header,
     .modal-footer-s {
         padding-left: 15px;
         padding-right: 15px;
     }
-    
+
     .developer-item {
         padding: 12px;
     }
-    
+
     .dev-photo {
         width: 70px;
         height: 70px;
     }
-    
+
     .dev-details td:first-child {
         width: 40%;
     }
-    
+
     .dev-details td:last-child {
         width: 60%;
     }
