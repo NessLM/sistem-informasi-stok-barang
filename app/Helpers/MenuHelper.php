@@ -14,7 +14,7 @@ class MenuHelper
         // mapping data gudang jadi children menu
         $gudangMenus = $gudangs->map(function ($g) {
             return [
-                'label'  => 'Gudang ' . $g->nama,
+                'label'  => $g->nama,
                 'icon'   => 'bi-grid',
                 'route'  => 'admin.datakeseluruhan.show',
                 'params' => ['id' => $g->id], // untuk route parameter

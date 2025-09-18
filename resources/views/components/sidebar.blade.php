@@ -45,25 +45,26 @@
                         </summary>
 
                         <div class="sb-children">
-                            @foreach ($it['children'] as $ch)
-                                @php
-                                    $isChildActive = false;
-                                    if (!empty($ch['route'])) {
-                                        $isChildActive = request()->routeIs($ch['route']) ||
-                                                         request()->routeIs($ch['route'] . '.*');
-                                    }
-                                    $routeParams = $ch['params'] ?? [];
-                                @endphp
+    @foreach ($it['children'] as $ch)
+        @php
+            $isChildActive = false;
+            if (!empty($ch['route'])) {
+                $isChildActive = request()->routeIs($ch['route']) ||
+                                 request()->routeIs($ch['route'] . '.*');
+            }
+            $routeParams = $ch['params'] ?? [];
+        @endphp
 
-                                <a href="{{ isset($ch['route']) ? route($ch['route'], $routeParams) : '#' }}"
-                                   class="sb-link {{ $isChildActive ? 'is-active' : '' }}">
-                                    @if (!empty($ch['icon']))
-                                        <i class="bi {{ $ch['icon'] }}"></i>
-                                    @endif
-                                    <span>{{ $ch['label'] }}</span>
-                                </a>
-                            @endforeach
-                        </div>
+        <a href="{{ isset($ch['route']) ? route($ch['route'], $routeParams) : '#' }}"
+           class="sb-link {{ $isChildActive ? 'active' : '' }}">
+            @if (!empty($ch['icon']))
+                <i class="bi {{ $ch['icon'] }}"></i>
+            @endif
+            <span>{{ $ch['label'] }}</span>
+        </a>
+    @endforeach
+</div>
+
                     </details>
                 @else
                     <a href="{{ isset($it['route']) ? route($it['route']) : '#' }}"

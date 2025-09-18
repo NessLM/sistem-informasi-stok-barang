@@ -41,7 +41,49 @@
 
         <section class="card shadow-sm p-3">
             <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-                <h4>Data Gudang ATK</h4>
+                @php
+                    $title = 'Data Gudang ATK'; // default
+                    
+                    // Jika ada kategori dan semua kategori dari gudang yang sama
+                    if($kategori->isNotEmpty()) {
+                        $firstGudang = $kategori->first()->gudang->nama ?? null;
+                        $allSameGudang = $kategori->every(function($k) use ($firstGudang) {
+                            return ($k->gudang->nama ?? null) === $firstGudang;
+                        });
+                        
+                        if($allSameGudang && $firstGudang) {
+                            // Hindari duplikasi kata "Gudang"
+                            if(str_starts_with($firstGudang, 'Gudang')) {
+                                $title = 'Data ' . $firstGudang;
+                            } else {
+                                $title = 'Data Gudang ' . $firstGudang;
+                            }
+                        }
+                    }
+                    
+                    // Override berdasarkan filter gudang jika ada
+                    if(request()->filled('gudang_id') && isset($selectedGudang)) {
+                        $gudangNama = $selectedGudang->nama;
+                        if(str_starts_with($gudangNama, 'Gudang')) {
+                            $title = 'Data ' . $gudangNama;
+                        } else {
+                            $title = 'Data Gudang ' . $gudangNama;
+                        }
+                    }
+                    
+                    // Override berdasarkan URL path
+                    $currentPath = request()->path();
+                    if (str_contains($currentPath, '/atk')) {
+                        $title = 'Data Gudang ATK';
+                    } elseif (str_contains($currentPath, '/listrik')) {
+                        $title = 'Data Gudang Listrik';
+                    } elseif (str_contains($currentPath, '/kebersihan')) {
+                        $title = 'Data Gudang Kebersihan';
+                    } elseif (str_contains($currentPath, '/komputer')) {
+                        $title = 'Data Gudang Komputer';
+                    }
+                @endphp
+                <h4>{{ $title }}</h4>
                 <div class="d-flex flex-wrap gap-2">
                     <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#modalTambahKategori">
                         <div class="btn-text">+ Tambah Kategori</div>
@@ -77,6 +119,7 @@
                     request()->filled('stok_min') ||
                     request()->filled('stok_max') ||
                     request()->filled('kategori_id') ||
+                    request()->filled('gudang_id') ||
                     request()->filled('satuan') ||
                     request()->filled('nomor_awal') ||
                     request()->filled('nomor_akhir') ||
@@ -138,6 +181,7 @@
                     !request()->filled('stok_min') &&
                     !request()->filled('stok_max') &&
                     !request()->filled('kategori_id') &&
+                    !request()->filled('gudang_id') &&
                     !request()->filled('satuan') &&
                     !request()->filled('nomor_awal') &&
                     !request()->filled('nomor_akhir') &&
@@ -430,6 +474,17 @@
                             <label>Stok Maksimum</label>
                             <input type="number" name="stok_max" class="form-control"
                                 value="{{ request('stok_max') }}" min="0">
+                        </div>
+                        <div class="col-md-6">
+                            <label>Gudang</label>
+                            <select name="gudang_id" class="form-select">
+                                <option value="">-- Semua Gudang --</option>
+                                @foreach ($gudang as $g)
+                                    <option value="{{ $g->id }}"
+                                        @if (request('gudang_id') == $g->id) selected @endif>{{ $g->nama }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
                         <div class="col-md-6">
                             <label>Kategori</label>
