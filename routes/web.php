@@ -20,14 +20,15 @@ use App\Http\Controllers\Pj\DashboardController as PjDashboard;
 /* =========================================================================
  |  AUTH
  * ========================================================================= */
+
 Route::get('/login',  [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'store'])->name('login.attempt');
-Route::post('/logout',[AuthController::class, 'destroy'])->name('logout');
+Route::post('/logout', [AuthController::class, 'destroy'])->name('logout');
 
 Route::redirect('/', '/login'); // default ke login
 // Tambahkan di bagian ALIAS KOMPATIBILITAS
-Route::middleware(['auth','role:Admin'])
-    ->get('/staff/admin/datakeseluruhan', fn () => to_route('admin.datakeseluruhan'))
+Route::middleware(['auth', 'role:Admin'])
+    ->get('/staff/admin/datakeseluruhan', fn() => to_route('admin.datakeseluruhan'))
     ->name('staff.admin.datakeseluruhan');
 
 
@@ -35,8 +36,8 @@ Route::middleware(['auth','role:Admin'])
  |  ALIAS KOMPATIBILITAS
  |  Banyak kode lama masih pakai 'staff.admin.dashboard'
  * ========================================================================= */
-Route::middleware(['auth','role:Admin'])
-    ->get('/admin', fn () => to_route('admin.dashboard'))
+Route::middleware(['auth', 'role:Admin'])
+    ->get('/admin', fn() => to_route('admin.dashboard'))
     ->name('staff.admin.dashboard');
 
 
@@ -45,10 +46,13 @@ Route::middleware(['auth','role:Admin'])
  |  ADMIN AREA
  |  Semua route diawali 'admin.'
  * ========================================================================= */
-Route::prefix('admin')->name('admin.')->middleware(['auth','role:Admin'])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:Admin'])->group(function () {
 
     /* ===== Dashboard ===== */
     Route::get('/dashboard', AdminDashboard::class)->name('dashboard');
+
+    // [FIX] endpoint AJAX untuk filter grafik dashboard
+    Route::get('/dashboard/filter', [AdminDashboard::class, 'filterData'])->name('dashboard.filter');
 
     /* ===== Data Keseluruhan ===== */
     Route::get('/datakeseluruhan',            [DataKeseluruhan::class, 'index'])->name('datakeseluruhan');
@@ -86,10 +90,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth','role:Admin'])->group
 /* =========================================================================
  |  PB & PJ
  * ========================================================================= */
-Route::middleware(['auth','role:Pengelola Barang'])
+Route::middleware(['auth', 'role:Pengelola Barang'])
     ->get('/pb', PbDashboard::class)
     ->name('staff.pb.dashboard');
 
-Route::middleware(['auth','role:Penanggung Jawab'])
+Route::middleware(['auth', 'role:Penanggung Jawab'])
     ->get('/pj', PjDashboard::class)
     ->name('staff.pj.dashboard');
