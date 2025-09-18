@@ -9,7 +9,6 @@
     <head>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-
     </head>
 
     <main class="page-wrap container py-4">
@@ -44,10 +43,12 @@
             <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
                 <h4>Data Gudang ATK</h4>
                 <div class="d-flex flex-wrap gap-2">
-                    <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#modalTambahKategori"><div class="btn-text">+
-                        Tambah Kategori</div></button>
-                    <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#modalTambahBarang"><div class="btn-text">+ Tambah
-                        Barang</div></button>
+                    <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#modalTambahKategori">
+                        <div class="btn-text">+ Tambah Kategori</div>
+                    </button>
+                    <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#modalTambahBarang">
+                        <div class="btn-text">+ Tambah Barang</div>
+                    </button>
                     <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalFilterBarang">
                         <i class="bi bi-funnel"></i> Filter
                     </button>
@@ -56,7 +57,7 @@
 
             {{-- Search Form dengan Autocomplete --}}
             <div class="position-relative mb-3">
-                <form action="{{ route('admin.datakeseluruhan') }}" method="GET" class="input-group" id="searchForm">
+                <form action="{{ route('admin.datakeseluruhan.index') }}" method="GET" class="input-group" id="searchForm">
                     <span class="input-group-text"><i class="bi bi-search"></i></span>
                     <input type="text" name="search" id="searchInput" class="form-control"
                         placeholder="Telusuri barang (nama atau kode)" value="{{ request('search') }}"
@@ -67,10 +68,8 @@
                 {{-- Dropdown Suggestions --}}
                 <div id="searchSuggestions" class="dropdown-menu w-100 position-absolute"
                     style="z-index: 1050; max-height: 300px; overflow-y: auto; display: none;">
-                    <!-- Suggestions akan diisi via JavaScript -->
                 </div>
             </div>
-
 
             {{-- Jika ada filter/search --}}
             @if (request()->filled('search') ||
@@ -150,7 +149,7 @@
                             <tr>
                                 <th>KATEGORI</th>
                                 <th>GUDANG</th>
-                                <th style="width:180px"class="text-center">AKSI</th>
+                                <th style="width:180px" class="text-center">AKSI</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -193,13 +192,11 @@
                                                     </thead>
                                                     <tbody>
                                                         @foreach ($k->barang as $i => $b)
-                                                            <tr
-                                                                @if ($b->stok == 0) class="table-danger" @endif>
+                                                            <tr @if ($b->stok == 0) class="table-danger" @endif>
                                                                 <td>{{ $i + 1 }}</td>
                                                                 <td>{{ $b->nama }}</td>
                                                                 <td>{{ $b->kode }}</td>
-                                                                <td>Rp {{ number_format($b->harga ?? 0, 0, ',', '.') }}
-                                                                </td>
+                                                                <td>Rp {{ number_format($b->harga ?? 0, 0, ',', '.') }}</td>
                                                                 <td>{{ $b->stok }}</td>
                                                                 <td>{{ $b->satuan }}</td>
                                                                 <td class="d-flex gap-2">
@@ -208,8 +205,7 @@
                                                                         data-bs-target="#modalEditBarang-{{ $b->id }}">
                                                                         <i class="bi bi-pencil"></i>
                                                                     </button>
-                                                                    <form
-                                                                        action="{{ route('admin.barang.destroy', $b->id) }}"
+                                                                    <form action="{{ route('admin.barang.destroy', $b->id) }}"
                                                                         method="POST" class="d-inline"
                                                                         onsubmit="return confirm('Hapus barang ini?')">
                                                                         @csrf
@@ -322,16 +318,11 @@
                                     class="form-control @error('harga') is-invalid @enderror"
                                     value="{{ old('harga') }}">
                                 <select name="satuan" class="form-select">
-                                    <option value="Pcs" @if (old('satuan') == 'Pcs') selected @endif>Pcs
-                                    </option>
-                                    <option value="Box" @if (old('satuan') == 'Box') selected @endif>Box
-                                    </option>
-                                    <option value="Pack" @if (old('satuan') == 'Pack') selected @endif>Pack
-                                    </option>
-                                    <option value="Rim" @if (old('satuan') == 'Rim') selected @endif>Rim
-                                    </option>
-                                    <option value="Unit" @if (old('satuan') == 'Unit') selected @endif>Unit
-                                    </option>
+                                    <option value="Pcs" @if (old('satuan') == 'Pcs') selected @endif>Pcs</option>
+                                    <option value="Box" @if (old('satuan') == 'Box') selected @endif>Box</option>
+                                    <option value="Pack" @if (old('satuan') == 'Pack') selected @endif>Pack</option>
+                                    <option value="Rim" @if (old('satuan') == 'Rim') selected @endif>Rim</option>
+                                    <option value="Unit" @if (old('satuan') == 'Unit') selected @endif>Unit</option>
                                 </select>
                             </div>
                             @error('harga')
@@ -390,16 +381,11 @@
                                         <input type="number" step="0.01" name="harga" class="form-control"
                                             value="{{ $b->harga }}">
                                         <select name="satuan" class="form-select">
-                                            <option value="Pcs" @if ($b->satuan == 'Pcs') selected @endif>
-                                                Pcs</option>
-                                            <option value="Box" @if ($b->satuan == 'Box') selected @endif>
-                                                Box</option>
-                                            <option value="Pack" @if ($b->satuan == 'Pack') selected @endif>
-                                                Pack</option>
-                                            <option value="Rim" @if ($b->satuan == 'Rim') selected @endif>
-                                                Rim</option>
-                                            <option value="Unit" @if ($b->satuan == 'Unit') selected @endif>
-                                                Unit</option>
+                                            <option value="Pcs" @if ($b->satuan == 'Pcs') selected @endif>Pcs</option>
+                                            <option value="Box" @if ($b->satuan == 'Box') selected @endif>Box</option>
+                                            <option value="Pack" @if ($b->satuan == 'Pack') selected @endif>Pack</option>
+                                            <option value="Rim" @if ($b->satuan == 'Rim') selected @endif>Rim</option>
+                                            <option value="Unit" @if ($b->satuan == 'Unit') selected @endif>Unit</option>
                                         </select>
                                     </div>
                                 </div>
@@ -418,7 +404,7 @@
     {{-- Modal Filter --}}
     <div class="modal fade" id="modalFilterBarang" tabindex="-1">
         <div class="modal-dialog modal-lg">
-            <form action="{{ route('admin.datakeseluruhan') }}" method="GET" class="modal-content">
+            <form action="{{ route('admin.datakeseluruhan.index') }}" method="GET" class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Filter Barang</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -462,11 +448,9 @@
                                 <option value="">-- Semua Satuan --</option>
                                 <option value="Pcs" @if (request('satuan') == 'Pcs') selected @endif>Pcs</option>
                                 <option value="Box" @if (request('satuan') == 'Box') selected @endif>Box</option>
-                                <option value="Pack" @if (request('satuan') == 'Pack') selected @endif>Pack
-                                </option>
+                                <option value="Pack" @if (request('satuan') == 'Pack') selected @endif>Pack</option>
                                 <option value="Rim" @if (request('satuan') == 'Rim') selected @endif>Rim</option>
-                                <option value="Unit" @if (request('satuan') == 'Unit') selected @endif>Unit
-                                </option>
+                                <option value="Unit" @if (request('satuan') == 'Unit') selected @endif>Unit</option>
                             </select>
                         </div>
                         <div class="col-md-6">
@@ -492,7 +476,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <a href="{{ route('admin.datakeseluruhan') }}" class="btn btn-secondary">Reset Filter</a>
+                    <a href="{{ route('admin.datakeseluruhan.index') }}" class="btn btn-secondary">Reset Filter</a>
                     <button class="btn btn-primary" type="submit">Terapkan Filter</button>
                 </div>
             </form>
@@ -561,10 +545,8 @@
                 }, 300);
             }
 
-            // Function untuk show loading
             function showLoading() {
-                suggestionsContainer.innerHTML =
-                    '<div class="loading-suggestion"><i class="bi bi-hourglass-split"></i> Mencari...</div>';
+                suggestionsContainer.innerHTML = '<div class="loading-suggestion">Mencari...</div>';
                 suggestionsContainer.style.display = 'block';
             }
 
