@@ -19,6 +19,7 @@
               <div class="card-label">Total Jenis Barang</div>
             </div>
           </div>
+          
           <div class="summary-card">
             <div class="card-icon"><i class="bi bi-box-seam"></i></div>
             <div class="card-content">
@@ -32,10 +33,14 @@
       {{-- Kolom Grafik Per Bagian --}}
       <div class="chart-section">
         <div class="chart-header">
-          <h2>Grafik Per Bagian</h2>
+          <div style="display:flex;align-items:center;gap:10px">
+            <h2>Grafik Per Bagian</h2>
+            {{-- [NEW] badge keterangan rentang waktu --}}
+            <span id="bagianRangeHint" class="range-hint" title="Rentang data">Semua Data</span>
+          </div>
 
-          {{-- [NEW] Pager + Filter --}}
           <div class="chart-filter">
+            {{-- [NEW] Pager (Prev / X/Y / Next) --}}
             <div class="pager" id="bagianPager" style="display:none">
               <button class="pager-btn" id="bagianPrev" title="Sebelumnya" aria-label="Sebelumnya">
                 <i class="bi bi-chevron-left"></i>
@@ -60,11 +65,10 @@
           </div>
         </div>
 
-        {{-- tidak scrollable lagi, karena kita paging --}}
-        <div class="chart-container">
+        {{-- [CHANGE] tambahkan id untuk area drag --}}
+        <div class="chart-container" id="bagianChartBox">
           <canvas id="bagianChart"></canvas>
         </div>
-
         <div class="chart-legend">
           <div class="legend-item">
             <span class="legend-color keluar"></span>
@@ -74,7 +78,7 @@
       </div>
     </div>
 
-    {{-- Row kedua: Grafik Pengeluaran per Tahun (tetap) --}}
+    {{-- Row kedua: Grafik Pengeluaran per Tahun --}}
     <div class="dashboard-row">
       <div class="wide-chart-section">
         <div class="chart-header">
@@ -101,6 +105,7 @@
     </div>
   </div>
 
+  {{-- Chart.js Library --}}
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -112,7 +117,8 @@
       let allData   = {!! json_encode($keluarData) !!};     // full
       let pageStart = 0;                                     // index mulai
 
-      const bagianCtx = document.getElementById('bagianChart').getContext('2d');
+      const bagianCtx  = document.getElementById('bagianChart').getContext('2d');
+      const rangeBadge = document.getElementById('bagianRangeHint'); // [NEW]
       const bagianChart = new Chart(bagianCtx, {
         type: 'bar',
         data: { labels: [], datasets: [{ label: 'Keluar', data: [], backgroundColor: '#EF4444', borderRadius: 4 }] },
@@ -120,8 +126,15 @@
           responsive: true, maintainAspectRatio: false,
           plugins: { legend: { display: false } },
           scales: {
-            y: { beginAtZero: true, ticks: { color: '#6B7280' }, grid: { color: '#F3F4F6' } },
-            x: { ticks: { color: '#6B7280', maxRotation: 45, minRotation: 45 }, grid: { display: false } }
+            y: {
+              beginAtZero: true,
+              ticks: { color: '#6B7280' },
+              grid:  { color: '#F3F4F6' }
+            },
+            x: {
+              ticks: { color: '#6B7280', maxRotation: 45, minRotation: 45 },
+              grid:  { display: false }
+            }
           }
         }
       });
@@ -131,22 +144,18 @@
       const btnPrev   = document.getElementById('bagianPrev');
       const btnNext   = document.getElementById('bagianNext');
 
-      function totalPages() {
-        return Math.max(1, Math.ceil(allLabels.length / PER_PAGE));
-      }
-      function currentPage() {
-        return Math.floor(pageStart / PER_PAGE) + 1;
-      }
-      function renderPager() {
+      function totalPages() { return Math.max(1, Math.ceil(allLabels.length / PER_PAGE)); }
+      function currentPage(){ return Math.floor(pageStart / PER_PAGE) + 1; }
+      function renderPager(){
         const pages = totalPages();
         // tampilkan pager hanya jika ada lebih dari 9
         pagerBox.style.display = (allLabels.length > PER_PAGE) ? 'flex' : 'none';
-        pagerInfo.textContent = `${currentPage()}/${pages}`;
+        pagerInfo.textContent  = `${currentPage()}/${pages}`;
         // disabled state
         btnPrev.disabled = pageStart === 0;
         btnNext.disabled = (pageStart + PER_PAGE) >= allLabels.length;
       }
-      function sliceData() {
+      function sliceData(){
         const end = Math.min(pageStart + PER_PAGE, allLabels.length);
         const lab = allLabels.slice(pageStart, end);
         const dat = allData.slice(pageStart, end);
@@ -155,7 +164,6 @@
         bagianChart.update();
         renderPager();
       }
-
       // init first render
       sliceData();
 
@@ -167,43 +175,80 @@
         if (pageStart + PER_PAGE < allLabels.length) { pageStart += PER_PAGE; sliceData(); }
       });
 
-      // filter dropdown click handler (umum)
-      document.querySelectorAll('.filter-option').forEach(el => {
-        el.addEventListener('click', function(e) {
+      // [NEW] Drag / Swipe untuk next/prev halaman
+      (function enableDragPager(){
+        const box = document.getElementById('bagianChartBox');
+        let startX = 0, isDown = false;
+
+        const onDown = (x) => { isDown = true; startX = x; box.classList.add('dragging'); };
+        const onUp   = (x) => {
+          if (!isDown) return;
+          isDown = false; box.classList.remove('dragging');
+          const dx = x - startX;
+          const THRESH = 60; // piksel
+          if (dx <= -THRESH) { // geser kiri -> next
+            if (pageStart + PER_PAGE < allLabels.length) { pageStart += PER_PAGE; sliceData(); }
+          } else if (dx >= THRESH) { // geser kanan -> prev
+            if (pageStart >= PER_PAGE) { pageStart -= PER_PAGE; sliceData(); }
+          }
+        };
+
+        // Mouse
+        box.addEventListener('mousedown', (e)=> onDown(e.clientX));
+        window.addEventListener('mouseup',   (e)=> onUp(e.clientX));
+        // Touch
+        box.addEventListener('touchstart', (e)=> onDown(e.touches[0].clientX), {passive:true});
+        box.addEventListener('touchend',   (e)=> {
+          const t = e.changedTouches[0]; onUp(t.clientX);
+        }, {passive:true});
+      })();
+
+      // Filter dropdown functionality
+      document.querySelectorAll('.filter-option').forEach(item => {
+        item.addEventListener('click', function(e) {
           e.preventDefault();
           const type  = this.getAttribute('data-type');
           const value = this.getAttribute('data-value');
-          this.closest('.dropdown').querySelector('.dropdown-toggle').innerHTML =
-            `<i class="bi bi-funnel"></i> ${this.textContent}`;
-
-          if (type === 'bagian')  filterBagian(value);
-          else                    filterPengeluaran(value);
+          // Update teks pada tombol dropdown
+          const dropdownButton = this.closest('.dropdown').querySelector('.dropdown-toggle');
+          dropdownButton.innerHTML = `<i class="bi bi-funnel"></i> ${this.textContent}`;
+          
+          if (type === 'bagian') {
+            filterBagian(value);
+          } else {
+            filterPengeluaran(value);
+          }
         });
       });
 
-      // filter Per Bagian → update full arrays, reset pageStart, render 9 pertama
-      function filterBagian(filterType){
+      // [CHANGE] Fungsi untuk filter data grafik per bagian + update badge range
+      function filterBagian(filterType) {
         fetch(`${FILTER_URL}?type=bagian&filter=${filterType}`)
-          .then(r => r.json())
-          .then(d => {
-            allLabels = d.labels || [];
-            allData   = d.keluar || [];
+          .then(response => response.json())
+          .then(data => {
+            allLabels = data.labels || [];
+            allData   = data.keluar || [];
             pageStart = 0; // reset ke halaman 1
+            // [NEW] update badge keterangan range
+            document.getElementById('bagianRangeHint').textContent = data.range_text || 'Semua Data';
             sliceData();
           })
-          .catch(console.error);
+          .catch(error => console.error('Error:', error));
       }
 
-      /* ====================== Pengeluaran per Tahun (tetap) ====================== */
+      /* ====================== Grafik Pengeluaran per Tahun (dibiarkan) ====================== */
       const pengeluaranData = {
         labels: {!! json_encode($pengeluaranLabels) !!},
         datasets: {!! json_encode($pengeluaranData) !!}
       };
+
       const pengeluaranChart = new Chart(document.getElementById('pengeluaranChart').getContext('2d'), {
         type: 'bar',
         data: pengeluaranData,
         options: {
-          responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
           scales: {
             y: { beginAtZero: true, ticks: { color: '#6B7280' }, grid: { color: '#F3F4F6' } },
             x: { ticks: { color: '#6B7280' }, grid: { display: false } }
@@ -211,39 +256,47 @@
         }
       });
 
-      function renderYearLegend(years, colorsMap){
-        const box = document.getElementById('legendYears'); box.innerHTML = '';
-        years.forEach(y => {
-          const item  = document.createElement('div'); item.className = 'legend-item';
-          const color = document.createElement('span'); color.className = 'legend-color';
-          color.style.backgroundColor = colorsMap[y] || '#8B5CF6';
-          const text  = document.createElement('span'); text.textContent = y;
-          item.appendChild(color); item.appendChild(text); box.appendChild(item);
+      // Fungsi untuk mengubah warna legend berdasarkan tahun
+      function renderYearLegend(years, colorsMap) {
+        const legendContainer = document.getElementById('legendYears');
+        legendContainer.innerHTML = '';
+        years.forEach(year => {
+          const legendItem = document.createElement('div');
+          legendItem.className = 'legend-item';
+          const colorSpan = document.createElement('span');
+          colorSpan.className = 'legend-color';
+          colorSpan.style.backgroundColor = colorsMap[year] || '#8B5CF6';
+          const textSpan = document.createElement('span');
+          textSpan.textContent = year;
+          legendItem.appendChild(colorSpan);
+          legendItem.appendChild(textSpan);
+          legendContainer.appendChild(legendItem);
         });
       }
       renderYearLegend({!! json_encode($years) !!}, {!! json_encode($colorsForYears) !!});
 
-      function filterPengeluaran(filterType){
+      // Fungsi untuk filter data grafik pengeluaran per waktu
+      function filterPengeluaran(filterType) {
         fetch(`${FILTER_URL}?type=pengeluaran&filter=${filterType}`)
-          .then(r => r.json())
-          .then(d => {
-            pengeluaranChart.data.labels = d.labels;
+          .then(response => response.json())
+          .then(data => {
+            pengeluaranChart.data.labels = data.labels;
             if (pengeluaranChart.data.datasets.length === 0) {
               pengeluaranChart.data.datasets.push({
                 label: 'Keluar',
-                data: d.data,
-                backgroundColor: d.labels.map(y => d.colors[y] || '#8B5CF6'),
+                data: data.data,
+                backgroundColor: data.labels.map(y => data.colors[y] || '#8B5CF6'),
                 borderRadius: 4
               });
             } else {
-              pengeluaranChart.data.datasets[0].data = d.data;
+              pengeluaranChart.data.datasets[0].data = data.data;
               pengeluaranChart.data.datasets[0].backgroundColor =
-                d.labels.map(y => d.colors[y] || '#8B5CF6');
+                data.labels.map(y => data.colors[y] || '#8B5CF6');
             }
             pengeluaranChart.update();
-            renderYearLegend(d.labels, d.colors);
+            renderYearLegend(data.labels, data.colors);
           })
-          .catch(console.error);
+          .catch(error => console.error('Error:', error));
       }
     });
   </script>

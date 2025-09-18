@@ -357,3 +357,18 @@
     margin-top: 0.5rem;
   }
 }
+
+/* ===== [NEW] Badge keterangan rentang (abu-abu kecil) ===== */
+.range-hint{
+  background:#f3f4f6;
+  color:#6b7280;
+  border:1px solid #e5e7eb;
+  border-radius:999px;
+  font-size:.85rem;
+  padding:4px 10px;
+  line-height:1;
+}
+
+/* ===== [NEW] Visual saat drag / swipe pada chart per bagian ===== */
+#bagianChartBox { cursor: grab; }
+#bagianChartBox.dragging { cursor: grabbing; }

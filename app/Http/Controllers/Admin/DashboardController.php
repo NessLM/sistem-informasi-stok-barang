@@ -37,9 +37,6 @@ class DashboardController extends Controller
             ->get();
 
         // [CHANGE] labels & data dinamis
-        // $bagianLabels = $bagianRows->pluck('bagian')->values();
-
-        // menjadi
         $bagianLabels = $bagianRows->pluck('bagian')
             // [FIX LABEL] hapus prefix "Bagian " (case-insensitive, plus spasi)
             ->map(fn($b) => preg_replace('/^\s*Bagian\s+/i', '', $b))
@@ -47,10 +44,10 @@ class DashboardController extends Controller
         $keluarData   = $bagianRows->pluck('total')->map(fn($v) => (int)$v)->values();
 
         /* =========================================================
-         * GRAFIK PENGELUARAN PER TAHUN  (tidak kamu minta ubah)
+         * GRAFIK PENGELUARAN PER TAHUN
          * ========================================================= */
         $currentYear        = (int) date('Y');
-        $years              = range($currentYear - 9, $currentYear);
+        $years              = range($currentYear - 9, $currentYear); // "Semua" = 9 tahun terakhir
         $pengeluaranLabels  = $years;
 
         $colorsForYears        = [];
@@ -113,14 +110,21 @@ class DashboardController extends Controller
         $q = Riwayat::query()
             ->where('alur_barang', 'Keluar');
 
+        // [NEW] siapkan teks rentang tanggal (untuk badge di UI)
+        $now = Carbon::now();
+        $rangeText = 'Semua Data';
         if ($filter === 'week') {
-            $q->where('tanggal', '>=', Carbon::now()->subWeek());
-        }
-        if ($filter === 'month') {
-            $q->where('tanggal', '>=', Carbon::now()->subMonth());
-        }
-        if ($filter === 'year') {
-            $q->where('tanggal', '>=', Carbon::now()->subYear());
+            $from = $now->copy()->subWeek();
+            $q->where('tanggal', '>=', $from);
+            $rangeText = $from->format('d/m/Y') . ' – ' . $now->format('d/m/Y');
+        } elseif ($filter === 'month') {
+            $from = $now->copy()->subMonth();
+            $q->where('tanggal', '>=', $from);
+            $rangeText = $from->format('d/m/Y') . ' – ' . $now->format('d/m/Y');
+        } elseif ($filter === 'year') {
+            $from = $now->copy()->subYear();
+            $q->where('tanggal', '>=', $from);
+            $rangeText = $from->format('d/m/Y') . ' – ' . $now->format('d/m/Y');
         }
         // 'all' -> tanpa filter tanggal
 
@@ -134,21 +138,15 @@ class DashboardController extends Controller
             $keluarData[] = (int) $total;  // jika tidak ada -> 0
         }
 
-        // 4) Kembalikan labels baseline + nilai hasil filter
-        // return response()->json([
-        //     'labels' => $allTimeLabels,
-        //     'keluar' => $keluarData,
-        // ]);
-        // ganti menjadi:
+        // 4) Kembalikan labels baseline + nilai hasil filter + [NEW] range_text
         return response()->json([
-            // [FIX LABEL] kirim label yang sudah dibersihkan untuk tampilan
             'labels' => collect($allTimeLabels)->map(
                 fn($b) => preg_replace('/^\s*Bagian\s+/i', '', $b)
             )->values(),
-            'keluar' => $keluarData,
+            'keluar'     => $keluarData,
+            'range_text' => $rangeText, // [NEW]
         ]);
     }
-
 
     // (tidak diubah) Filter Pengeluaran per Tahun
     private function filterPengeluaranData($filter)
@@ -158,7 +156,7 @@ class DashboardController extends Controller
         if ($filter === '5y')  $years = range($currentYear - 4, $currentYear);
         elseif ($filter === '7y')  $years = range($currentYear - 6, $currentYear);
         elseif ($filter === '10y') $years = range($currentYear - 10, $currentYear);
-        else                       $years = range($currentYear - 9, $currentYear);
+        else                       $years = range($currentYear - 9, $currentYear); // "Semua"
 
         $totals = [];
         $colors = [];
