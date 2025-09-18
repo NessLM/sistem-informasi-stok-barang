@@ -1,447 +1,571 @@
 :root {
-  --bg-blue: #1e73be;
-  --panel-blue: #1a6cbc;
-  --panel-blue-deep: #0d5ba3;
-  --white: #ffffff;
-  --text: #1d2433;
-  --muted: #9aa3b2;
-  --border: #e6e8ec;
-  --input-bg: #f7f8fa;
-  --shadow: 0 14px 32px rgba(13, 91, 163, 0.22);
-  
-  --page-margin: 50px;
-}
+            --bg-blue: #1e73be;
+            --panel-blue: #1a6cbc;
+            --panel-blue-deep: #0d5ba3;
+            --white: #ffffff;
+            --text: #1d2433;
+            --muted: #9aa3b2;
+            --border: #e6e8ec;
+            --input-bg: #f7f8fa;
+            --shadow: 0 14px 32px rgba(13, 91, 163, 0.22);
+            --page-margin: 50px;
+        }
 
-* {
-  box-sizing: border-box;
-}
-html,
-body {
-  height: 100%;
-}
-body {
-  margin: 0;
-  font-family: "Poppins", system-ui, -apple-system, Segoe UI, Roboto, Arial,
-      sans-serif;
-  background: var(--bg-blue);
-  color: var(--text);
-}
+        * {
+            box-sizing: border-box;
+        }
+        html,
+        body {
+            height: 100%;
+        }
+        body {
+            margin: 0;
+            font-family: "Poppins", system-ui, -apple-system, Segoe UI, Roboto, Arial,
+                sans-serif;
+            background: var(--bg-blue);
+            color: var(--text);
+            /* Mencegah scroll selama animasi berlangsung */
+            overflow: hidden;
+        }
 
-.page-wrap {
-  min-height: 100%;
-  display: grid;
-  place-items: center;
-  padding: var(--page-margin);
-  box-sizing: border-box;
-}
+        .page-wrap {
+            min-height: 100%;
+            display: grid;
+            place-items: center;
+            padding: var(--page-margin);
+            box-sizing: border-box;
+            opacity: 0;
+            animation: fadeIn 0.8s ease-out forwards; 
+            animation-delay: 0.5s;
+        }
 
-/* Panel utama - mengatur ukuran card */
-.panel {
-  width: calc(100% - (2 * var(--page-margin)));
-  max-width: 1100px;
-  background: var(--panel-blue);
-  border-radius: 16px;
-  box-shadow: 0 8px 0 rgba(255, 0, 0, 0.06) inset;
-  transition: all 0.3s ease;
-}
+        /* Panel utama - mengatur ukuran card */
+        .panel {
+            width: calc(100% - (2 * var(--page-margin)));
+            max-width: 1100px;
+            background: var(--panel-blue);
+            border-radius: 16px;
+            box-shadow: 0 8px 0 rgba(255, 0, 0, 0.06) inset;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideUpFadeIn 0.8s ease-out forwards; 
+            animation-delay: 0.5s;
+        }
 
-/* Card login - struktur utama */
-.card {
-  background: var(--white);
-  border-radius: 14px;
-  overflow: hidden;
-  display: grid;
-  grid-template-columns: 52% 48%;
-  box-shadow: var(--shadow);
-  min-height: 500px;
-}
+        /* Card login - struktur utama */
+        .card {
+            background: var(--white);
+            border-radius: 14px;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 52% 48%;
+            box-shadow: var(--shadow);
+            min-height: 500px;
+        }
 
-.card-left {
-  position: relative;
-  min-height: 100%;
-}
-.banner {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+        .card-left {
+            position: relative;
+            min-height: 100%;
+            opacity: 0;
+            animation: fadeIn 0.8s ease-out forwards;
+            animation-delay: 1s;
+        }
 
-/* Emblem dengan animasi atas bawah */
-.emblem {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: clamp(120px, 38%, 240px);
-  filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.3));
-  animation: floatUpDown 3s infinite ease-in-out;
-  z-index: 2;
-}
+        .banner {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            animation: fadeIn 1s ease-out forwards;
+            animation-delay: 1.1s; 
+        }
 
-/* Animasi naik turun */
-@keyframes floatUpDown {
-  0%, 100% { 
-    transform: translate(-50%, -50%) translateY(0); 
-  }
-  50% { 
-    transform: translate(-50%, -50%) translateY(-15px); 
-  }
-}
+        /* Emblem dengan animasi atas bawah */
+        .emblem {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: clamp(120px, 38%, 240px);
+            filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.3));
+            z-index: 2;
+            opacity: 0;
+            animation: floatUpDown 3s infinite ease-in-out, fadeIn 0.8s ease-out forwards;
+            animation-delay: 0s, 1.2s;
+        }
 
-.card-right {
-  padding: 40px 35px 35px;
-  display: grid;
-  align-content: start;
-  gap: 18px;
-  overflow-y: auto;
-}
+        /* Animasi naik turun */
+        @keyframes floatUpDown {
+            0%, 100% { 
+                transform: translate(-50%, -50%) translateY(0); 
+            }
+            50% { 
+                transform: translate(-50%, -50%) translateY(-15px); 
+            }
+        }
 
-/* Title dengan margin bottom yang lebih besar untuk jarak dengan username */
-.title {
-  margin: 0 0 30px; 
-  font-size: clamp(26px, 3.2vw, 40px);
-  font-weight: 800;
-  letter-spacing: 0.5px;
-  text-align: center;
-}
+        .card-right {
+            padding: 40px 35px 35px;
+            display: grid;
+            align-content: start;
+            gap: 18px;
+            overflow-y: auto;
+            opacity: 0;
+            transform: translateX(20px);
+            animation: slideLeftFadeIn 0.8s ease-out forwards;
+            animation-delay: 1.2s;
+        }
 
-.login-form {
-  display: grid;
-  gap: 14px;
-}
+        /* Title dengan margin bottom yang lebih besar untuk jarak dengan username */
+        .title {
+            margin: 0 0 30px; 
+            font-size: clamp(26px, 3.2vw, 40px);
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeInUp 0.6s ease-out forwards;
+            animation-delay: 1.4s;
+        }
 
-label {
-  font-size: 14px;
-  color: #2c3442;
-  font-weight: 500;
-}
+        .login-form {
+            display: grid;
+            gap: 14px;
+        }
 
-.field {
-  position: relative;
-}
+        label {
+            font-size: 14px;
+            color: #2c3442;
+            font-weight: 500;
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
 
-input {
-  width: 100%;
-  appearance: none;
-  border: 1px solid var(--border);
-  background: var(--input-bg);
-  border-radius: 10px;
-  height: 46px;
-  padding: 0 14px;
-  font: inherit;
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
-  font-size: 15px;
-}
+        /* Animasi untuk setiap field form */
+        .field:nth-child(1) { animation-delay: 1.8s; }
+        .field:nth-child(2) { animation-delay: 1.9s; } 
 
-input::placeholder {
-  color: var(--muted);
-}
+        .field {
+            position: relative;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeInUp 0.5s ease-out forwards; 
+        }
 
-input:focus {
-  border-color: var(--panel-blue);
-  box-shadow: 0 0 0 4px rgba(30, 115, 190, 0.14);
-  background: #fff;
-}
+        input {
+            width: 100%;
+            appearance: none;
+            border: 1px solid var(--border);
+            background: var(--input-bg);
+            border-radius: 10px;
+            height: 46px;
+            padding: 0 14px;
+            font: inherit;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+            font-size: 15px;
+        }
 
-.field-pass input{ padding-right: 44px; }
-.field-pass .toggle-pass{
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  border: 0;
-  background: transparent;
-  padding: 0;
-  line-height: 1;
-  cursor: pointer;
-  color: #6b7785;
-  font-size: 18px;
-}
-.field-pass .toggle-pass:hover{ color: #3a4654; }
-.field-pass .toggle-pass:focus{ outline: none; box-shadow: none; }
+        input::placeholder {
+            color: var(--muted);
+        }
 
-input[type="password"]::-ms-reveal,
-input[type="password"]::-ms-clear {
-  display: none;
-}
+        input:focus {
+            border-color: var(--panel-blue);
+            box-shadow: 0 0 0 4px rgba(30, 115, 190, 0.14);
+            background: #fff;
+        }
 
-input[type="password"]::-webkit-contacts-auto-fill-button,
-input[type="password"]::-webkit-credentials-auto-fill-button {
-  display: none;
-  visibility: hidden;
-  pointer-events: none;
-  position: absolute;
-  right: 0;
-}
+        .field-pass input{ padding-right: 44px; }
+        .field-pass .toggle-pass{
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: 0;
+            background: transparent;
+            padding: 0;
+            line-height: 1;
+            cursor: pointer;
+            color: #6b7785;
+            font-size: 18px;
+        }
+        .field-pass .toggle-pass:hover{ color: #3a4654; }
+        .field-pass .toggle-pass:focus{ outline: none; box-shadow: none; }
 
-.btn{
-  margin-top: 20px;
-  background: var(--panel-blue-deep);
-  color: var(--white);
-  border: 0;
-  height: 46px;
-  border-radius: 10px;
-  font-weight: 700;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: transform 0.05s ease-in, filter 0.2s ease;
-  font-size: 16px;
-}
-.btn:hover {
-  filter: brightness(1.1);
-  background: var(--panel-blue-deep);
-}
-.btn:active {
-  transform: translateY(1px);
-}
+        input[type="password"]::-ms-reveal,
+        input[type="password"]::-ms-clear {
+            display: none;
+        }
 
-/* ================= RESPONSIVE BREAKPOINTS ================= */
+        input[type="password"]::-webkit-contacts-auto-fill-button,
+        input[type="password"]::-webkit-credentials-auto-fill-button {
+            display: none;
+            visibility: hidden;
+            pointer-events: none;
+            position: absolute;
+            right: 0;
+        }
 
-/* Untuk layar yang lebih kecil, kurangi margin */
-@media (max-width: 1400px) {
-  :root {
-    --page-margin: 80px;
-  }
-}
+        .btn{
+            margin-top: 20px;
+            background: var(--panel-blue-deep);
+            color: var(--white);
+            border: 0;
+            height: 46px;
+            border-radius: 10px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            margin-top: 50px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: transform 0.05s ease-in, filter 0.2s ease;
+            font-size: 16px;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeInUp 0.5s ease-out forwards;
+            animation-delay: 1.5s;
+        }
+        .btn:hover {
+            filter: brightness(1.1);
+            background: var(--panel-blue-deep);
+        }
+        .btn:active {
+            transform: translateY(1px);
+        }
 
-@media (max-width: 1200px) {
-  :root {
-    --page-margin: 60px;
-  }
-}
+        /* =============== ANIMASI KEYFRAMES =============== */
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; visibility: hidden; }
+        }
 
-/* Tablet Landscape (1024px ke bawah) */
-@media (max-width: 1024px) {
-  :root {
-    --page-margin: 40px;
-  }
-  
-  .card-right {
-    padding: 30px 25px 25px;
-  }
-  
-  /* Jarak title di tablet */
-  .title {
-    margin: 0 0 20px;
-  }
-}
+        @keyframes zoomIn {
+            from { 
+                opacity: 0;
+                transform: scale(0.8); 
+            }
+            to { 
+                opacity: 1;
+                transform: scale(1); 
+            }
+        }
 
-/* Tablet Portrait (868px ke bawah) */
-@media (max-width: 868px) {
-  :root {
-    --page-margin: 30px;
-  }
-  
-  .page-wrap {
-    padding: var(--page-margin);
-    /* Memastikan card selalu di tengah */
-    align-items: center;
-  }
-  
-  .panel {
-    width: calc(100% - (2 * var(--page-margin)));
-    margin: 0 auto;
-  }
-  
-  .card {
-    grid-template-columns: 1fr;
-    min-height: auto;
-  }
-  
-  .card-left {
-    min-height: 280px;
-  }
-  
-  .card-right {
-    padding: 30px 25px;
-  }
-  
-  .emblem {
-    width: clamp(100px, 30%, 180px);
-    animation: floatUpDown 4s infinite ease-in-out;
-  }
-  
-  @keyframes floatUpDown {
-    0%, 100% { 
-      transform: translate(-50%, -50%) translateY(0); 
-    }
-    50% { 
-      transform: translate(-50%, -50%) translateY(-10px); 
-    }
-  }
-}
+        @keyframes fadeOutUp {
+            from { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to { 
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+        }
 
-/* Smartphone Landscape (668px ke bawah) */
-@media (max-width: 668px) {
-  :root {
-    --page-margin: 20px;
-  }
-  
-  .page-wrap {
-    /* Memastikan card selalu di tengah di smartphone */
-    align-items: center;
-    justify-items: center;
-  }
-  
-  .panel {
-    width: calc(100% - (2 * var(--page-margin)));
-  }
-  
-  .card-left {
-    min-height: 220px;
-  }
-  
-  .card-right {
-    padding: 25px 20px;
-    gap: 15px;
-  }
-  
-  .title {
-    font-size: 24px;
-    margin-bottom: 20px; /* Jarak tetap konsisten */
-  }
-  
-  .login-form {
-    gap: 12px;
-  }
-  
-  input {
-    height: 44px;
-    font-size: 14px;
-  }
-  
-  .btn {
-    height: 44px;
-    margin-top: 15px;
-    font-size: 15px;
-  }
-}
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
 
-/* Smartphone Portrait (480px ke bawah) - PERBAIKAN UTAMA */
-@media (max-width: 480px) {
-  :root {
-    --page-margin: 15px;
-  }
-  
-  .page-wrap {
-    padding: var(--page-margin);
-    /* MEMASTIKAN CARD DI TENGAH */
-    align-items: center;
-    justify-items: center;
-    padding-top: var(--page-margin);
-    padding-bottom: var(--page-margin);
-  }
-  
-  .panel {
-    width: calc(100% - (2 * var(--page-margin)));
-    border-radius: 12px;
-    /* Memastikan panel tidak melebihi tinggi viewport */
-    max-height: 95vh;
-    overflow: hidden;
-  }
-  
-  .card {
-    border-radius: 10px;
-    /* Menggunakan grid layout untuk konten yang fleksibel */
-    display: flex;
-    flex-direction: column;
-    max-height: 100%;
-  }
-  
-  .card-left {
-    min-height: 180px;
-    flex-shrink: 0;
-  }
-  
-  .card-right {
-    padding: 20px 15px;
-    /* Memungkinkan scrolling jika konten terlalu panjang */
-    overflow-y: auto;
-    flex-grow: 1;
-  }
-  
-  .emblem {
-    width: 80px;
-  }
-  
-  .title {
-    font-size: 22px;
-    margin-bottom: 15px; /* Jarak yang sesuai untuk mobile */
-  }
-  
-  label {
-    font-size: 13px;
-  }
-  
-  input {
-    height: 42px;
-    padding: 0 12px;
-    font-size: 14px;
-  }
-  
-  .btn {
-    height: 42px;
-    font-size: 14px;
-    margin-top: 15px;
-  }
-}
+        @keyframes slideUpFadeIn {
+            from { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-/* Very Small Devices (360px ke bawah) */
-@media (max-width: 360px) {
-  :root {
-    --page-margin: 10px;
-  }
-  
-  .card-right {
-    padding: 15px 12px;
-  }
-  
-  .title {
-    font-size: 20px;
-    margin-bottom: 12px;
-  }
-  
-  input {
-    height: 40px;
-    font-size: 13px;
-  }
-  
-  .btn {
-    height: 40px;
-    font-size: 13px;
-  }
-}
+        @keyframes slideLeftFadeIn {
+            from { 
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
 
-/* Tinggi layar sangat pendek (max-height: 600px) */
-@media (max-height: 600px) and (orientation: landscape) {
-  .page-wrap {
-    padding: 10px;
-    align-items: center; /* Diubah dari flex-start ke center */
-  }
-  
-  .panel {
-    margin: 10px auto;
-  }
-  
-  .card {
-    grid-template-columns: 45% 55%;
-    min-height: 300px;
-    max-height: 90vh;
-  }
-  
-  .card-left {
-    min-height: 300px;
-  }
-  
-  .card-right {
-    padding: 20px 15px;
-    overflow-y: auto;
-  }
-  
-  .title {
-    margin-bottom: 15px;
-  }
-}
+        @keyframes fadeInUp {
+            from { 
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ================= RESPONSIVE BREAKPOINTS ================= */
+
+        /* Untuk layar yang lebih kecil, kurangi margin */
+        @media (max-width: 1400px) {
+            :root {
+                --page-margin: 80px;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            :root {
+                --page-margin: 60px;
+            }
+        }
+
+        /* Tablet Landscape (1024px ke bawah) */
+        @media (max-width: 1024px) {
+            :root {
+                --page-margin: 40px;
+            }
+            
+            .card-right {
+                padding: 30px 25px 25px;
+            }
+            
+            /* Jarak title di tablet */
+            .title {
+                margin: 0 0 20px;
+            }
+        }
+
+        /* Tablet Portrait (868px ke bawah) */
+        @media (max-width: 868px) {
+            :root {
+                --page-margin: 30px;
+            }
+            
+            .page-wrap {
+                padding: var(--page-margin);
+                /* Memastikan card selalu di tengah */
+                align-items: center;
+            }
+            
+            .panel {
+                width: calc(100% - (2 * var(--page-margin)));
+                margin: 0 auto;
+            }
+            
+            .card {
+                grid-template-columns: 1fr;
+                min-height: auto;
+            }
+            
+            .card-left {
+                min-height: 280px;
+            }
+            
+            .card-right {
+                padding: 30px 25px;
+            }
+            
+            .emblem {
+                width: clamp(100px, 30%, 180px);
+                animation: floatUpDown 4s infinite ease-in-out, fadeIn 0.6s ease-out forwards;
+            }
+            
+            @keyframes floatUpDown {
+                0%, 100% { 
+                    transform: translate(-50%, -50%) translateY(0); 
+                }
+                50% { 
+                    transform: translate(-50%, -50%) translateY(-10px); 
+                }
+            }
+        }
+
+        /* Smartphone Landscape (668px ke bawah) */
+        @media (max-width: 668px) {
+            :root {
+                --page-margin: 20px;
+            }
+            
+            .page-wrap {
+                /* Memastikan card selalu di tengah di smartphone */
+                align-items: center;
+                justify-items: center;
+            }
+            
+            .panel {
+                width: calc(100% - (2 * var(--page-margin)));
+            }
+            
+            .card-left {
+                min-height: 220px;
+            }
+            
+            .card-right {
+                padding: 25px 20px;
+                gap: 15px;
+            }
+            
+            .title {
+                font-size: 24px;
+                margin-bottom: 20px; /* Jarak tetap konsisten */
+            }
+            
+            .login-form {
+                gap: 12px;
+            }
+            
+            input {
+                height: 44px;
+                font-size: 14px;
+            }
+            
+            .btn {
+                height: 44px;
+                margin-top: 15px;
+                font-size: 15px;
+            }
+            
+            /* Animasi overlay untuk mobile */
+            .overlay-logo {
+                width: 80px;
+            }
+        }
+
+        /* Smartphone Portrait (480px ke bawah) - PERBAIKAN UTAMA */
+        @media (max-width: 480px) {
+            :root {
+                --page-margin: 15px;
+            }
+            
+            .page-wrap {
+                padding: var(--page-margin);
+                /* MEMASTIKAN CARD DI TENGAH */
+                align-items: center;
+                justify-items: center;
+                padding-top: var(--page-margin);
+                padding-bottom: var(--page-margin);
+            }
+            
+            .panel {
+                width: calc(100% - (2 * var(--page-margin)));
+                border-radius: 12px;
+                /* Memastikan panel tidak melebihi tinggi viewport */
+                max-height: 95vh;
+                overflow: hidden;
+            }
+            
+            .card {
+                border-radius: 10px;
+                /* Menggunakan grid layout untuk konten yang fleksibel */
+                display: flex;
+                flex-direction: column;
+                max-height: 100%;
+            }
+            
+            .card-left {
+                min-height: 180px;
+                flex-shrink: 0;
+            }
+            
+            .card-right {
+                padding: 20px 15px;
+                /* Memungkinkan scrolling jika konten terlalu panjang */
+                overflow-y: auto;
+                flex-grow: 1;
+            }
+            
+            .emblem {
+                width: 80px;
+            }
+            
+            .title {
+                font-size: 22px;
+                margin-bottom: 15px; /* Jarak yang sesuai untuk mobile */
+            }
+            
+            label {
+                font-size: 13px;
+            }
+            
+            input {
+                height: 42px;
+                padding: 0 12px;
+                font-size: 14px;
+            }
+            
+            .btn {
+                height: 42px;
+                font-size: 14px;
+                margin-top: 15px;
+            }
+            
+            /* Animasi overlay untuk mobile kecil */
+            .overlay-logo {
+                width: 70px;
+            }
+        }
+
+        /* Very Small Devices (360px ke bawah) */
+        @media (max-width: 360px) {
+            :root {
+                --page-margin: 10px;
+            }
+            
+            .card-right {
+                padding: 15px 12px;
+            }
+            
+            .title {
+                font-size: 20px;
+                margin-bottom: 12px;
+            }
+            
+            input {
+                height: 40px;
+                font-size: 13px;
+            }
+            
+            .btn {
+                height: 40px;
+                font-size: 13px;
+            }
+            
+            .overlay-logo {
+                width: 60px;
+            }
+        }
+
+        /* Tinggi layar sangat pendek (max-height: 600px) */
+        @media (max-height: 600px) and (orientation: landscape) {
+            .page-wrap {
+                padding: 10px;
+                align-items: center; /* Diubah dari flex-start ke center */
+            }
+            
+            .panel {
+                margin: 10px auto;
+            }
+            
+            .card {
+                grid-template-columns: 45% 55%;
+                min-height: 300px;
+                max-height: 90vh;
+            }
+            
+            .card-left {
+                min-height: 300px;
+            }
+            
+            .card-right {
+                padding: 20px 15px;
+                overflow-y: auto;
+            }
+            
+            .title {
+                margin-bottom: 15px;
+            }
+            
+            /* Animasi overlay untuk landscape */
+            .overlay-logo {
+                width: 80px;
+            }
+        }

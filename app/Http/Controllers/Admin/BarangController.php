@@ -25,11 +25,11 @@ class BarangController extends Controller
 
         // Ambil semua gudang biar dropdown muncul
         $gudang = Gudang::all();
+        $barang = collect(); // Initialize empty collection for search results
 
         $menu = MenuHelper::adminMenu();
 
-        // ✅ Sesuaikan dengan lokasi blade kamu
-        return view('staff.admin.datakeseluruhan', compact('kategori', 'menu', 'search', 'gudang'));
+        return view('staff.admin.datakeseluruhan', compact('kategori', 'menu', 'search', 'gudang', 'barang'));
     }
 
     public function store(Request $request)
@@ -53,10 +53,11 @@ class BarangController extends Controller
             'stok'        => $request->stok ?? 0,
             'satuan'      => $request->satuan,
             'kategori_id' => $request->kategori_id,
+            'jenis_barang_id' => 1, // default
         ]);
 
-        // ✅ Route name sesuai web.php
-        return redirect()->route('admin.barang.index')
+        // ✅ FIXED: Route name sesuai web.php
+        return redirect()->route('admin.datakeseluruhan.index')
                          ->with('success', 'Barang berhasil ditambahkan!');
     }
 
@@ -95,7 +96,8 @@ class BarangController extends Controller
             'kategori_id' => $request->kategori_id,
         ]);
 
-        return redirect()->route('admin.barang.index')
+        // ✅ FIXED: Route name sesuai web.php
+        return redirect()->route('admin.datakeseluruhan.index')
                          ->with('success', 'Barang berhasil diperbarui!');
     }
 
@@ -104,8 +106,8 @@ class BarangController extends Controller
         $barang = Barang::findOrFail($id);
         $barang->delete();
 
-        // ✅ FIXED: Gunakan route name yang benar sesuai web.php
-        return redirect()->route('admin.datakeseluruhan')
+        // ✅ FIXED: Route name sesuai web.php
+        return redirect()->route('admin.datakeseluruhan.index')
                          ->with('success', 'Barang berhasil dihapus!');
     }
 }
