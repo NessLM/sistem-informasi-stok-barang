@@ -137,7 +137,7 @@ public function update(Request $request, $id)
         return back()->withInput()->with('toast', [
             'type' => 'error',
             'title' => 'Gagal',
-            'message' => 'Terjadi kesalahan: Tidak dapat menggunakan username yang sama.' 
+            'message' => 'Terjadi kesalahan: ' . $e->getMessage()
         ]);
     }
 }
