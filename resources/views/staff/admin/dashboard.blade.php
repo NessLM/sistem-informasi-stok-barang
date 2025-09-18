@@ -11,7 +11,7 @@
       <div class="summary-section">
         <h2>Ringkasan</h2>
 
-        {{-- [CHANGE] Kembali ke layout KLASIK: ikon bulat di kiri, angka & label di kanan --}}
+        {{-- KLASIK: ikon bulat di kiri, angka & label di kanan (match CSS kamu) --}}
         <div class="summary-cards summary-cards--classic">
           {{-- Card: Total Jenis Barang --}}
           <div class="summary-card summary-card--classic">
@@ -39,11 +39,11 @@
 
       {{-- ======================= GRAFIK PER BAGIAN ======================= --}}
       <div class="chart-section">
-        <div class="chart-header chart-header--wrap"> {{-- [NEW] wrap supaya badge tanggal tak mepet --}}
+        {{-- [NEW] wrap supaya badge tanggal tidak mepet saat panjang --}}
+        <div class="chart-header chart-header--wrap">
           <div class="chart-header-left">
             <h2>Grafik Per Bagian</h2>
-
-            {{-- [CHANGE] badge keterangan rentang (akan diisi JS) --}}
+            {{-- Badge keterangan rentang (diisi via JS) --}}
             <span id="rangeHintBagian" class="range-hint" title="Semua Data">Semua Data</span>
           </div>
 
@@ -94,8 +94,9 @@
         <div class="chart-header chart-header--wrap">
           <div class="chart-header-left">
             <h2>Grafik Pengeluaran per Tahun</h2>
-            {{-- [NEW] badge rentang tahunan ditampilkan juga (opsional) --}}
-            <span id="rangeHintTahun" class="range-hint" title="Semua Data">Semua Data</span>
+            {{-- [OPSIONAL-HILANGKAN BADGE TAHUN]
+                 kalau mau DISEMBUNYIKAN, comment span di bawah + baris JS yg setRangeHint untuk Tahun --}}
+            {{-- <span id="rangeHintTahun" class="range-hint" title="Semua Data">Semua Data</span> --}}
           </div>
 
           <div class="chart-controls">
@@ -128,17 +129,26 @@
       const FILTER_URL = "{{ route('admin.dashboard.filter') }}";
 
       /* ====================== Grafik Per Bagian (Keluar only) ====================== */
-      const PER_PAGE = 9; // << batas 9 bar
-      let allLabels = {!! json_encode($bagianLabels) !!};   // full
-      let allData   = {!! json_encode($keluarData) !!};     // full
+      const PER_PAGE = 9; // batas 9 bar
+      let allLabels = {!! json_encode($bagianLabels) !!};   // full labels (sudah "Bagian " dibersihkan di controller)
+      let allData   = {!! json_encode($keluarData) !!};     // full data
       let pageStart = 0;                                     // index mulai
 
       const bagianCtx = document.getElementById('bagianChart').getContext('2d');
       const bagianChart = new Chart(bagianCtx, {
         type: 'bar',
-        data: { labels: [], datasets: [{ label: 'Keluar', data: [], backgroundColor: '#EF4444', borderRadius: 4 }] },
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Keluar',
+            data: [],
+            backgroundColor: '#EF4444',
+            borderRadius: 4
+          }]
+        },
         options: {
-          responsive: true, maintainAspectRatio: false,
+          responsive: true,
+          maintainAspectRatio: false,
           plugins: { legend: { display: false } },
           scales: {
             y: { beginAtZero: true, ticks: { color: '#6B7280' }, grid: { color: '#F3F4F6' } },
@@ -169,10 +179,14 @@
       }
       sliceData(); // first render
 
-      btnPrev.addEventListener('click', () => { if (pageStart >= PER_PAGE){ pageStart -= PER_PAGE; sliceData(); }});
-      btnNext.addEventListener('click', () => { if (pageStart + PER_PAGE < allLabels.length){ pageStart += PER_PAGE; sliceData(); }});
+      btnPrev.addEventListener('click', () => {
+        if (pageStart >= PER_PAGE){ pageStart -= PER_PAGE; sliceData(); }
+      });
+      btnNext.addEventListener('click', () => {
+        if (pageStart + PER_PAGE < allLabels.length){ pageStart += PER_PAGE; sliceData(); }
+      });
 
-      // ===== Drag / swipe untuk paging (visual cue di CSS) =====
+      // ===== Drag / swipe untuk paging (ada visual cue di CSS: #bagianChartBox.grabbing) =====
       (function enableDragToPage(){
         const box = document.getElementById('bagianChartBox');
         let isDown = false, startX = 0;
@@ -199,7 +213,7 @@
 
       // ===== Helper format tanggal untuk badge (ID locale) =====
       function fmt(d){ const z=n=>String(n).padStart(2,'0'); return `${z(d.getDate())}/${z(d.getMonth()+1)}/${d.getFullYear()}`; }
-      function setRangeHint(el, text, titleText){ el.textContent = text; el.title = titleText || text; }
+      function setRangeHint(el, text, titleText){ if(!el) return; el.textContent = text; el.title = titleText || text; }
 
       // ===== Filter dropdown (keduanya) =====
       document.querySelectorAll('.filter-option').forEach(el => {
@@ -245,7 +259,8 @@
         type: 'bar',
         data: pengeluaranData,
         options: {
-          responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
           scales: {
             y: { beginAtZero: true, ticks: { color: '#6B7280' }, grid: { color: '#F3F4F6' } },
             x: { ticks: { color: '#6B7280' }, grid: { display: false } }
@@ -285,19 +300,21 @@
             pengeluaranChart.update();
             renderYearLegend(d.labels, d.colors);
 
-            // [NEW] badge rentang untuk grafik tahunan (mis. '2016–2025')
+            // [OPSIONAL-HILANGKAN BADGE TAHUN] -> kalau kamu hide span di HTML, baris di bawah juga bisa dihapus
             const hintT = document.getElementById('rangeHintTahun');
-            if (d.labels && d.labels.length){
-              const txt = `${d.labels[0]} – ${d.labels[d.labels.length-1]}`;
-              setRangeHint(hintT, txt, txt);
-            } else setRangeHint(hintT, 'Semua Data', 'Semua Data');
+            if (hintT){
+              if (d.labels && d.labels.length){
+                const txt = `${d.labels[0]} – ${d.labels[d.labels.length-1]}`;
+                setRangeHint(hintT, txt, txt);
+              } else setRangeHint(hintT, 'Semua Data', 'Semua Data');
+            }
           })
           .catch(console.error);
       }
 
-      // [NEW] set awal -> badge “Semua Data”
+      // set awal -> badge “Semua Data”
       setRangeHint(document.getElementById('rangeHintBagian'), 'Semua Data', 'Semua Data');
-      setRangeHint(document.getElementById('rangeHintTahun'),  'Semua Data', 'Semua Data');
+      setRangeHint(document.getElementById('rangeHintTahun'),  'Semua Data', 'Semua Data'); // [OPSIONAL-HILANGKAN BADGE TAHUN]
     });
   </script>
 </x-layouts.app>
