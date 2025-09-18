@@ -17,51 +17,54 @@ use Illuminate\Support\Facades\Crypt;  // enkripsi/dekripsi plaintext di cache
 class UserController extends Controller
 {
     public function index()
-{
-    // Mengambil semua user dengan role dan mengurutkan
-    $users = User::with('role')
-        ->leftJoin('roles', 'users.role_id', '=', 'roles.id')
-        ->select('users.*')
-        ->orderByRaw("
+    {
+        // Mengambil semua user dengan role dan mengurutkan
+        $users = User::with('role')
+            ->leftJoin('roles', 'users.role_id', '=', 'roles.id')
+            ->select('users.*')
+            ->orderByRaw(
+                "
             CASE 
                 WHEN users.id = ? THEN 0 
                 WHEN roles.nama = 'Admin' THEN 1 
                 ELSE 2 
             END
-        ", [auth()->id()]) // Admin yang login paling atas
-        ->orderBy('roles.nama')
-        ->orderBy('users.nama')
-        ->get();
-        
-    $roles = Role::all();
-    $menu  = MenuHelper::adminMenu();
+        ",
+                [Auth::id()]
+            )
+            ->orderBy('roles.nama')
+            ->orderBy('users.nama')
+            ->get();
 
-    $users->each(function ($u) {
-        $hash = (string) $u->getOriginal('password');
-        $cacheKey = "user:plainpwd:{$u->id}";
-        $plainFromCache = null;
+        $roles = Role::all();
+        $menu  = MenuHelper::adminMenu();
 
-        if ($enc = Cache::get($cacheKey)) {
-            try {
-                $tmp = Crypt::decryptString($enc);
-                if (Hash::check($tmp, $hash)) {
-                    $plainFromCache = $tmp;
-                } else {
-                    Cache::forget($cacheKey);
+        $users->each(function ($u) {
+            $hash = (string) $u->getOriginal('password');
+            $cacheKey = "user:plainpwd:{$u->id}";
+            $plainFromCache = null;
+
+            if ($enc = Cache::get($cacheKey)) {
+                try {
+                    $tmp = Crypt::decryptString($enc);
+                    if (Hash::check($tmp, $hash)) {
+                        $plainFromCache = $tmp;
+                    } else {
+                        Cache::forget($cacheKey);
+                    }
+                } catch (\Throwable $e) {
+                    // corrupt → abaikan
                 }
-            } catch (\Throwable $e) {
-                // corrupt → abaikan
             }
-        }
 
-        $safeText = $plainFromCache ?: '(plain cache nya belum ada, seeder ulang)';
-        $attr = $u->getAttributes();
-        $attr['password'] = $safeText;
-        $u->setRawAttributes($attr, true);
-    });
+            $safeText = $plainFromCache ?: '(plain cache nya belum ada, seeder ulang)';
+            $attr = $u->getAttributes();
+            $attr['password'] = $safeText;
+            $u->setRawAttributes($attr, true);
+        });
 
-    return view('staff.admin.data_pengguna', compact('users', 'roles', 'menu'));
-}
+        return view('staff.admin.data_pengguna', compact('users', 'roles', 'menu'));
+    }
 
     public function store(Request $request)
     {
@@ -99,69 +102,68 @@ class UserController extends Controller
         }
     }
 
-public function update(Request $request, $id)
-{
-    $user = User::findOrFail($id);
+    public function update(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
 
-    try {
-        $validated = $request->validate([
-            'nama'     => 'required|string|max:255',
-            'username' => 'required|string|max:100|unique:users,username,' . $user->id,
-            'role_id'  => 'required|exists:roles,id',
-            'bagian'   => 'nullable|string|max:255',
-            'password' => 'nullable|string|min:6',
-        ]);
+        try {
+            $validated = $request->validate([
+                'nama'     => 'required|string|max:255',
+                'username' => 'required|string|max:100|unique:users,username,' . $user->id,
+                'role_id'  => 'required|exists:roles,id',
+                'bagian'   => 'nullable|string|max:255',
+                'password' => 'nullable|string|min:6',
+            ]);
 
-        $user->nama     = $validated['nama'];
-        $user->username = $validated['username'];
-        $user->role_id  = $validated['role_id'];
-        $user->bagian   = $validated['bagian'] ?? $user->bagian;
+            $user->nama     = $validated['nama'];
+            $user->username = $validated['username'];
+            $user->role_id  = $validated['role_id'];
+            $user->bagian   = $validated['bagian'] ?? $user->bagian;
 
-        if (!empty($validated['password'])) {
-            $user->password = $validated['password'];
-            $cacheKey = "user:plainpwd:{$user->id}";
-            Cache::forever($cacheKey, Crypt::encryptString($validated['password']));
+            if (!empty($validated['password'])) {
+                $user->password = $validated['password'];
+                $cacheKey = "user:plainpwd:{$user->id}";
+                Cache::forever($cacheKey, Crypt::encryptString($validated['password']));
+            }
+
+            $user->save();
+
+            return back()->with('toast', [
+                'type' => 'success',
+                'title' => 'Berhasil',
+                'message' => 'Pengguna berhasil diperbarui.'
+            ]);
+        } catch (\Throwable $e) {
+            return back()->withInput()->with('toast', [
+                'type' => 'error',
+                'title' => 'Gagal',
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ]);
         }
-
-        $user->save();
-
-        return back()->with('toast', [
-            'type' => 'success',
-            'title' => 'Berhasil',
-            'message' => 'Pengguna berhasil diperbarui.'
-        ]);
-    } catch (\Throwable $e) {
-        return back()->withInput()->with('toast', [
-            'type' => 'error',
-            'title' => 'Gagal',
-            'message' => 'Terjadi kesalahan: ' . $e->getMessage()
-        ]);
     }
-}
 
 
     public function destroy($id)
-{
-    $user = User::findOrFail($id);
+    {
+        $user = User::findOrFail($id);
 
-    // 🔒 Cegah admin menghapus dirinya sendiri
-    if ((int) $user->id === (int) Auth::id() && optional($user->role)->nama === 'Admin') {
+        // 🔒 Cegah admin menghapus dirinya sendiri
+        if ((int) $user->id === (int) Auth::id() && optional($user->role)->nama === 'Admin') {
+            return redirect()->route('admin.users.index')
+                ->with('toast', [
+                    'type' => 'error',
+                    'title' => 'Gagal',
+                    'message' => 'Admin tidak bisa menghapus dirinya sendiri.'
+                ]);
+        }
+
+        $user->delete();
+
         return redirect()->route('admin.users.index')
             ->with('toast', [
-                'type' => 'error',
-                'title' => 'Gagal',
-                'message' => 'Admin tidak bisa menghapus dirinya sendiri.'
+                'type' => 'success',
+                'title' => 'Berhasil',
+                'message' => 'Pengguna berhasil dihapus!'
             ]);
     }
-
-    $user->delete();
-
-    return redirect()->route('admin.users.index')
-        ->with('toast', [
-            'type' => 'success',
-            'title' => 'Berhasil',
-            'message' => 'Pengguna berhasil dihapus!'
-        ]);
-}
-
 }
