@@ -44,9 +44,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:Admin'])->grou
     Route::get('/dashboard', AdminDashboard::class)->name('dashboard');
     Route::get('/dashboard/filter', [AdminDashboard::class, 'filterData'])->name('dashboard.filter');
 
-/* ===== Data Keseluruhan ===== */
-Route::get('/datakeseluruhan', [DataKeseluruhan::class, 'index'])->name('datakeseluruhan.index');
-Route::get('/datakeseluruhan/{id}', [DataKeseluruhan::class, 'show'])->name('datakeseluruhan.show');
+    /* ===== Data Keseluruhan ===== */
+    Route::get('/datakeseluruhan', [DataKeseluruhan::class, 'index'])->name('datakeseluruhan.index');
+    Route::get('/datakeseluruhan/{id}', [DataKeseluruhan::class, 'show'])->name('datakeseluruhan.show');
 
     // filter kategori khusus
     Route::get('/datakeseluruhan/atk',        [BarangController::class, 'index'])->name('datakeseluruhan.atk');
@@ -80,14 +80,23 @@ Route::get('/datakeseluruhan/{id}', [DataKeseluruhan::class, 'show'])->name('dat
 });
 
 /* =========================================================================
- |  PB & PJ
+ |  PB AREA - PENGELOLA BARANG
+ * ========================================================================= */
+Route::prefix('pb')->name('pb.')->middleware(['auth', 'role:Pengelola Barang'])->group(function () {
+    
+    /* ===== Dashboard PB ===== */
+    Route::get('/dashboard', PbDashboard::class)->name('dashboard');
+    Route::get('/dashboard/filter', [PbDashboard::class, 'filterData'])->name('dashboard.filter');
+    
+});
+
+/* =========================================================================
+ |  BACKWARD COMPATIBILITY - PB & PJ ROUTES
  * ========================================================================= */
 Route::middleware(['auth', 'role:Pengelola Barang'])
-    ->get('/pb', PbDashboard::class)
+    ->get('/pb', fn() => to_route('pb.dashboard'))
     ->name('staff.pb.dashboard');
 
 Route::middleware(['auth', 'role:Penanggung Jawab'])
     ->get('/pj', PjDashboard::class)
     ->name('staff.pj.dashboard');
-
-;
