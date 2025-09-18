@@ -17,7 +17,7 @@ class DataKeseluruhan extends Controller
         $search = $request->input('search');
 
         // Ambil kategori + relasi barang + gudang
-        $kategori = Kategori::with([
+        $kategoriQuery = Kategori::with([
             'barang' => function ($q) use ($search) {
                 if ($search) {
                     $q->where('nama', 'like', "%{$search}%")
@@ -25,9 +25,21 @@ class DataKeseluruhan extends Controller
                 }
             },
             'gudang'
-        ])->get();
+        ]);
 
+        // Filter kategori berdasarkan gudang yang dipilih
+        if ($request->filled('gudang_id')) {
+            $kategoriQuery->where('gudang_id', $request->gudang_id);
+        }
+
+        $kategori = $kategoriQuery->get();
         $gudang = Gudang::all();
+
+        // Tentukan gudang yang sedang dipilih (jika ada)
+        $selectedGudang = null;
+        if ($request->filled('gudang_id')) {
+            $selectedGudang = Gudang::find($request->gudang_id);
+        }
 
         // Validasi harga min / max
         $request->validate([
@@ -52,6 +64,11 @@ class DataKeseluruhan extends Controller
         }
 
         // Filter tambahan
+        if ($request->filled('gudang_id')) {
+            $query->whereHas('kategori', function($q) use ($request) {
+                $q->where('gudang_id', $request->gudang_id);
+            });
+        }
         if ($request->filled('kode')) {
             $query->where('kode', 'like', "%{$request->kode}%");
         }
@@ -86,12 +103,32 @@ class DataKeseluruhan extends Controller
 
         $barang = $query->get();
 
-        // ✅ View dengan semua data
         return view('staff.admin.datakeseluruhan', compact(
             'kategori',
             'barang',
             'menu',
-            'gudang'
+            'gudang',
+            'selectedGudang'
+        ));
+    }
+
+    public function show($id)
+    {
+        $menu = \App\Helpers\MenuHelper::adminMenu();
+
+        // Ambil gudang beserta kategori & barangnya
+        $gudangTerpilih = Gudang::with('kategori.barang')->findOrFail($id);
+
+        $gudang = Gudang::all(); // supaya tetap muncul di modal tambah kategori
+        $kategori = $gudangTerpilih->kategori; // kategori hanya dari gudang ini
+        $barang = $kategori->flatMap->barang; // barang dari semua kategori di gudang ini
+
+        return view('staff.admin.datakeseluruhan', compact(
+            'menu',
+            'gudang',
+            'kategori',
+            'barang',
+            'gudangTerpilih'
         ));
     }
 
@@ -104,8 +141,8 @@ class DataKeseluruhan extends Controller
 
         Kategori::create($request->only(['nama', 'gudang_id']));
 
-        // ✅ FIXED: Gunakan route name yang benar
-        return redirect()->route('admin.datakeseluruhan')
+        // ✅ FIXED: Gunakan route name yang sesuai web.php
+        return redirect()->route('admin.datakeseluruhan.index')
                          ->with('success', 'Kategori berhasil ditambahkan!');
     }
 
@@ -129,8 +166,8 @@ class DataKeseluruhan extends Controller
             'jenis_barang_id' => 1, // default
         ]);
 
-        // ✅ FIXED: Gunakan route name yang benar
-        return redirect()->route('admin.datakeseluruhan')
+        // ✅ FIXED: Gunakan route name yang sesuai web.php
+        return redirect()->route('admin.datakeseluruhan.index')
                          ->with('success', 'Barang berhasil ditambahkan!');
     }
 
@@ -147,8 +184,8 @@ class DataKeseluruhan extends Controller
 
         $barang->update($request->only(['nama', 'harga', 'stok', 'satuan', 'kategori_id']));
 
-        // ✅ FIXED: Gunakan route name yang benar
-        return redirect()->route('admin.datakeseluruhan')
+        // ✅ FIXED: Gunakan route name yang sesuai web.php
+        return redirect()->route('admin.datakeseluruhan.index')
                          ->with('success', 'Barang berhasil diperbarui!');
     }
 
@@ -157,8 +194,8 @@ class DataKeseluruhan extends Controller
         $barang = Barang::where('kode', $kode)->firstOrFail();
         $barang->delete();
 
-        // ✅ FIXED: Gunakan route name yang benar
-        return redirect()->route('admin.datakeseluruhan')
+        // ✅ FIXED: Gunakan route name yang sesuai web.php
+        return redirect()->route('admin.datakeseluruhan.index')
                          ->with('success', 'Barang berhasil dihapus!');
     }
 
@@ -170,8 +207,8 @@ class DataKeseluruhan extends Controller
         $kategori->barang()->delete();
         $kategori->delete();
 
-        // ✅ FIXED: Gunakan route name yang benar
-        return redirect()->route('admin.datakeseluruhan')
+        // ✅ FIXED: Gunakan route name yang sesuai web.php
+        return redirect()->route('admin.datakeseluruhan.index')
                          ->with('success', 'Kategori berhasil dihapus!');
     }
 

@@ -2,22 +2,33 @@
 
 namespace App\Helpers;
 
+use App\Models\Gudang;
+
 class MenuHelper
 {
     public static function adminMenu()
     {
+        // ambil semua gudang dari database
+        $gudangs = Gudang::all();
+
+        // mapping data gudang jadi children menu
+        $gudangMenus = $gudangs->map(function ($g) {
+            return [
+                'label'  => $g->nama,
+                'icon'   => 'bi-grid',
+                'route'  => 'admin.datakeseluruhan.show',
+                'params' => ['id' => $g->id], // untuk route parameter
+            ];
+        })->toArray();
+
         return [
             ['label' => 'Dashboard', 'icon' => 'bi-grid', 'route' => 'admin.dashboard'],
+
             [
                 'label' => 'Data Keseluruhan',
                 'icon'  => 'bi-card-list',
-                'route' => 'admin.datakeseluruhan.index', // parent bisa diklik
-                'children' => [
-                    ['label' => 'Gudang ATK',        'icon' => 'bi-grid', 'route' => 'admin.datakeseluruhan.atk'],
-                    ['label' => 'Gudang Listrik',    'icon' => 'bi-grid', 'route' => 'admin.datakeseluruhan.listrik'],
-                    ['label' => 'Gudang Kebersihan', 'icon' => 'bi-grid', 'route' => 'admin.datakeseluruhan.kebersihan'],
-                    ['label' => 'Gudang B Komputer', 'icon' => 'bi-grid', 'route' => 'admin.datakeseluruhan.komputer'],
-                ]
+                'route' => 'admin.datakeseluruhan.index',
+                'children' => $gudangMenus
             ],
 
             ['label' => 'Riwayat',       'icon' => 'bi-clock-history', 'route' => 'admin.riwayat.index'],
@@ -25,7 +36,6 @@ class MenuHelper
             ['label' => 'Data Pengguna', 'icon' => 'bi-people', 'route' => 'admin.users.index'],
         ];
     }
-
 
     public static function pbMenu()
     {
@@ -57,3 +67,5 @@ class MenuHelper
         ];
     }
 }
+
+
