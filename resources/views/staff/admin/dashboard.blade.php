@@ -1,11 +1,10 @@
 <x-layouts.app title="Dashboard Admin" :menu="$menu">
-  {{-- CSS --}}
   <link rel="stylesheet" href="{{ asset('assets/css/staff/admin/dashboard.css') }}">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 
   <div class="dashboard-container">
 
-    {{-- ===== Row 1: Per Bagian ===== --}}
+    {{-- ===== Row 1: Ringkasan & Grafik Per Bagian ===== --}}
     <div class="dashboard-row">
       <div class="summary-section">
         <h2>Ringkasan</h2>
@@ -49,15 +48,14 @@
           <canvas id="bagianChart"></canvas>
         </div>
 
-        {{-- [FIX] legend: tampilkan Masuk & Keluar --}}
+        {{-- [FIX] Legend: hanya Keluar --}}
         <div class="chart-legend">
           <div class="legend-item"><span class="legend-color keluar"></span><span>Keluar</span></div>
-          <div class="legend-item"><span class="legend-color masuk"></span><span>Masuk</span></div>
         </div>
       </div>
     </div>
 
-    {{-- ===== Row 2: Pengeluaran per Tahun ===== --}}
+    {{-- ===== Row 2: Pengeluaran per Tahun (tidak diubah) ===== --}}
     <div class="dashboard-row">
       <div class="wide-chart-section">
         <div class="chart-header">
@@ -68,7 +66,6 @@
                 <i class="bi bi-funnel"></i> Semua
               </button>
               <ul class="dropdown-menu" aria-labelledby="pengeluaranFilterDropdown">
-                {{-- [FIX] opsi filter sesuai tahun --}}
                 <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran" data-value="all">Semua</a></li>
                 <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran" data-value="5y">5 Tahun Terakhir</a></li>
                 <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran" data-value="7y">7 Tahun Terakhir</a></li>
@@ -82,22 +79,21 @@
           <canvas id="pengeluaranChart"></canvas>
         </div>
 
-        {{-- [FIX] legend tahun dinamis (bukan "Keluar") --}}
         <div class="chart-legend yearly" id="legendYears"></div>
       </div>
     </div>
   </div>
 
-  {{-- Chart.js --}}
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      /* ===== Grafik Per Bagian ===== */
+      const FILTER_URL = "{{ route('admin.dashboard.filter') }}";
+
+      // ===== Grafik Per Bagian (Keluar only) =====
       const bagianData = {
         labels: {!! json_encode($bagianLabels) !!},
         datasets: [
-          { label: 'Keluar', data: {!! json_encode($keluarData) !!}, backgroundColor: '#EF4444', borderRadius: 4 },
-          { label: 'Masuk',  data: {!! json_encode($masukData) !!},  backgroundColor: '#22C55E', borderRadius: 4 }
+          { label: 'Keluar', data: {!! json_encode($keluarData) !!}, backgroundColor: '#EF4444', borderRadius: 4 }
         ]
       };
       const bagianChart = new Chart(document.getElementById('bagianChart').getContext('2d'), {
@@ -112,12 +108,10 @@
         }
       });
 
-      /* ===== Pengeluaran per Tahun ===== */
-      const initialYears  = {!! json_encode($years) !!};
-      const initialColors = {!! json_encode($colorsForYears) !!};
+      // ===== Pengeluaran per Tahun (tetap) =====
       const pengeluaranData = {
-        labels: {!! json_encode($pengeluaranLabels) !!}, // tahun
-        datasets: {!! json_encode($pengeluaranData) !!}   // 1 dataset, warna per-bar
+        labels: {!! json_encode($pengeluaranLabels) !!},
+        datasets: {!! json_encode($pengeluaranData) !!}  // 1 dataset "Keluar" warna per bar
       };
       const pengeluaranChart = new Chart(document.getElementById('pengeluaranChart').getContext('2d'), {
         type: 'bar',
@@ -131,7 +125,9 @@
         }
       });
 
-      // [FIX] render legend tahun (chip warna per tahun)
+      // Legend tahun awal
+      renderYearLegend({!! json_encode($years) !!}, {!! json_encode($colorsForYears) !!});
+
       function renderYearLegend(years, colorsMap){
         const box = document.getElementById('legendYears');
         box.innerHTML = '';
@@ -147,44 +143,42 @@
           box.appendChild(item);
         });
       }
-      renderYearLegend(initialYears, initialColors);
 
-      // ===== Dropdown filter handling =====
+      // === Dropdown filters
       document.querySelectorAll('.filter-option').forEach(el => {
         el.addEventListener('click', function(e) {
           e.preventDefault();
           const type  = this.getAttribute('data-type');
           const value = this.getAttribute('data-value');
-          // update label tombol
           this.closest('.dropdown').querySelector('.dropdown-toggle').innerHTML =
             `<i class="bi bi-funnel"></i> ${this.textContent}`;
-          if (type === 'bagian') filterBagian(value);
-          else filterPengeluaran(value);
+
+          if (type === 'bagian')  filterBagian(value);
+          else                    filterPengeluaran(value);
         });
       });
 
-      // [FIX] filter per bagian
+      // [FIX] Filter Per Bagian → dataset tunggal keluar
       function filterBagian(filterType){
-        fetch(`/admin/dashboard/filter?type=bagian&filter=${filterType}`)
+        fetch(`${FILTER_URL}?type=bagian&filter=${filterType}`)
           .then(r => r.json())
           .then(d => {
             bagianChart.data.datasets[0].data = d.keluar;
-            bagianChart.data.datasets[1].data = d.masuk;
             bagianChart.update();
           })
           .catch(console.error);
       }
 
-      // [FIX] filter per tahun
+      // Filter Pengeluaran per Tahun (tidak berubah)
       function filterPengeluaran(filterType){
-        fetch(`/admin/dashboard/filter?type=pengeluaran&filter=${filterType}`)
+        fetch(`${FILTER_URL}?type=pengeluaran&filter=${filterType}`)
           .then(r => r.json())
           .then(payload => {
-            // payload: { labels: [...tahun], data: [...], colors: {tahun: warna} }
             pengeluaranChart.data.labels = payload.labels;
             if (pengeluaranChart.data.datasets.length === 0) {
               pengeluaranChart.data.datasets.push({
-                label: 'Keluar', data: payload.data,
+                label: 'Keluar',
+                data: payload.data,
                 backgroundColor: payload.labels.map(y => payload.colors[y] || '#8B5CF6'),
                 borderRadius: 4
               });
