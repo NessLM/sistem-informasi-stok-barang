@@ -316,6 +316,40 @@
   background-color: #f3f4f6;
 }
 
+/* ===== Pager for "Grafik Per Bagian" ===== */
+.pager {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 8px;
+}
+
+.pager-btn {
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.pager-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pager-btn:hover:not(:disabled) {
+  background: #e5e7eb;
+  border-color: #9ca3af;
+}
+
+.pager-info {
+  color: #6b7280;
+  min-width: 40px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .dropdown-menu {
@@ -323,3 +357,18 @@
     margin-top: 0.5rem;
   }
 }
+
+/* ===== [NEW] Badge keterangan rentang (abu-abu kecil) ===== */
+.range-hint{
+  background:#f3f4f6;
+  color:#6b7280;
+  border:1px solid #e5e7eb;
+  border-radius:999px;
+  font-size:.85rem;
+  padding:4px 10px;
+  line-height:1;
+}
+
+/* ===== [NEW] Visual saat drag / swipe pada chart per bagian ===== */
+#bagianChartBox { cursor: grab; }
+#bagianChartBox.dragging { cursor: grabbing; }
