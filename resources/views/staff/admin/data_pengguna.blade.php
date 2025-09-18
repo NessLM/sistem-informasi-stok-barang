@@ -61,33 +61,103 @@
                     </tr>
                 </thead>
                 <tbody>
+                    @php
+                        $currentUserCount = 0;
+                        $adminCount = 0;
+                        $otherCount = 0;
+                    @endphp
+                    
+                    {{-- Loop pertama untuk admin yang sedang login --}}
                     @foreach ($users as $index => $u)
-                        <tr>
-                            <td>{{ $index + 1 }}</td>
-                            <td>{{ $u->nama }}</td>
-                            <td>{{ $u->username }}</td>
-                            <td>{{ $u->role?->nama ?? '-' }}</td>
-                            <td>{{ $u->bagian }}</td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button type="button" class="btn btn-warning btn-sm btn-action editUser"
-                                        data-id="{{ $u->id }}" data-nama="{{ $u->nama }}"
-                                        data-username="{{ $u->username }}" data-role-id="{{ $u->role_id }}"
-                                        data-role-name="{{ $u->role?->nama }}" data-bagian="{{ $u->bagian }}"
-                                        data-password="{{ $u->password }}" data-bs-toggle="modal"
-                                        data-bs-target="#modalEditUser">
-                                        <i class="bi bi-pencil"></i> Edit
-                                    </button>
-
-                                    @if (!($u->id === auth()->id() && $u->role?->nama === 'Admin'))
-                                        <button type="button" class="btn btn-danger btn-sm btn-action btnDelete"
-                                            data-id="{{ $u->id }}">
-                                            <i class="bi bi-trash"></i> Hapus
+                        @if ($u->id === auth()->id())
+                            @php $currentUserCount++; @endphp
+                            <tr>
+                                <td>{{ $currentUserCount }}</td>
+                                <td>{{ $u->nama }}</td>
+                                <td>{{ $u->username }}</td>
+                                <td>{{ $u->role?->nama ?? '-' }}</td>
+                                <td>{{ $u->bagian }}</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button type="button" class="btn btn-warning btn-sm btn-action editUser"
+                                            data-id="{{ $u->id }}" data-nama="{{ $u->nama }}"
+                                            data-username="{{ $u->username }}" data-role-id="{{ $u->role_id }}"
+                                            data-role-name="{{ $u->role?->nama }}" data-bagian="{{ $u->bagian }}"
+                                            data-password="{{ $u->password }}" data-bs-toggle="modal"
+                                            data-bs-target="#modalEditUser">
+                                            <i class="bi bi-pencil"></i> Edit
                                         </button>
-                                    @endif
-                                </div>
-                            </td>
-                        </tr>
+                                        {{-- Tombol hapus dihidden untuk admin yang login --}}
+                                    </div>
+                                </td>
+                            </tr>
+                        @endif
+                    @endforeach
+                    
+                    {{-- Loop kedua untuk admin lainnya --}}
+                    @foreach ($users as $index => $u)
+                        @if ($u->role?->nama === 'Admin' && $u->id !== auth()->id())
+                            @php $adminCount++; @endphp
+                            <tr>
+                                <td>{{ $currentUserCount + $adminCount }}</td>
+                                <td>{{ $u->nama }}</td>
+                                <td>{{ $u->username }}</td>
+                                <td>{{ $u->role?->nama ?? '-' }}</td>
+                                <td>{{ $u->bagian }}</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button type="button" class="btn btn-warning btn-sm btn-action editUser"
+                                            data-id="{{ $u->id }}" data-nama="{{ $u->nama }}"
+                                            data-username="{{ $u->username }}" data-role-id="{{ $u->role_id }}"
+                                            data-role-name="{{ $u->role?->nama }}" data-bagian="{{ $u->bagian }}"
+                                            data-password="{{ $u->password }}" data-bs-toggle="modal"
+                                            data-bs-target="#modalEditUser">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </button>
+
+                                        @if (!($u->id === auth()->id() && $u->role?->nama === 'Admin'))
+                                            <button type="button" class="btn btn-danger btn-sm btn-action btnDelete"
+                                                data-id="{{ $u->id }}">
+                                                <i class="bi bi-trash"></i> Hapus
+                                            </button>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                        @endif
+                    @endforeach
+                    
+                    {{-- Loop ketiga untuk non-admin --}}
+                    @foreach ($users as $index => $u)
+                        @if ($u->role?->nama !== 'Admin')
+                            @php $otherCount++; @endphp
+                            <tr>
+                                <td>{{ $currentUserCount + $adminCount + $otherCount }}</td>
+                                <td>{{ $u->nama }}</td>
+                                <td>{{ $u->username }}</td>
+                                <td>{{ $u->role?->nama ?? '-' }}</td>
+                                <td>{{ $u->bagian }}</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button type="button" class="btn btn-warning btn-sm btn-action editUser"
+                                            data-id="{{ $u->id }}" data-nama="{{ $u->nama }}"
+                                            data-username="{{ $u->username }}" data-role-id="{{ $u->role_id }}"
+                                            data-role-name="{{ $u->role?->nama }}" data-bagian="{{ $u->bagian }}"
+                                            data-password="{{ $u->password }}" data-bs-toggle="modal"
+                                            data-bs-target="#modalEditUser">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </button>
+
+                                        @if (!($u->id === auth()->id() && $u->role?->nama === 'Admin'))
+                                            <button type="button" class="btn btn-danger btn-sm btn-action btnDelete"
+                                                data-id="{{ $u->id }}">
+                                                <i class="bi bi-trash"></i> Hapus
+                                            </button>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                        @endif
                     @endforeach
                 </tbody>
             </table>
@@ -199,74 +269,74 @@
     </div>
 
     {{-- Modal Edit User --}}
-<div class="modal fade" id="modalEditUser" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <form id="formEditUser" method="POST" class="modal-content">
-            @csrf
-            @method('PUT')
-            <div class="modal-header">
-                <h5 class="modal-title">Edit Pengguna</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-
-            <div class="modal-body">
-                <input type="hidden" name="id" id="user_id">
-                 <input type="hidden" name="role_id" id="user_role_hidden">
-
-                <div class="mb-3">
-                    <label class="form-label">Nama</label>
-                    <input type="text" class="form-control" name="nama" id="user_nama" required>
+    <div class="modal fade" id="modalEditUser" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form id="formEditUser" method="POST" class="modal-content">
+                @csrf
+                @method('PUT')
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Pengguna</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label">Username</label>
-                    <input type="text" class="form-control" name="username" id="user_username" required>
-                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="user_id">
+                    <input type="hidden" name="role_id" id="user_role_hidden">
 
-                <div class="mb-3">
-                    <label class="form-label">Password Lama</label>
-                    <input type="text" class="form-control" id="user_old_password" readonly>
-                </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nama</label>
+                        <input type="text" class="form-control" name="nama" id="user_nama" required>
+                    </div>
 
-                <div class="mb-3">
-                    <label class="form-label">
-                        Password Baru <small class="text-muted">(kosongkan jika tidak diubah)</small>
-                    </label>
-                    <div class="position-relative">
-                        <input type="password" class="form-control pe-5" name="password" id="user_password"
-                            autocomplete="new-password" placeholder="Masukkan password baru (opsional)">
-                        <button type="button" class="pass-toggle" id="toggle_user_password"
-                            aria-label="Tampilkan password" aria-pressed="false"
-                            style="position:absolute; top:50%; right:10px; transform:translateY(-50%); 
-                                   display:inline-flex; align-items:center; justify-content:center; 
-                                   width:2rem; height:2rem; border:0; background:transparent; color:#6c757d;">
-                            <i class="bi bi-eye-slash" aria-hidden="true"></i>
-                        </button>
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        <input type="text" class="form-control" name="username" id="user_username" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Password Lama</label>
+                        <input type="text" class="form-control" id="user_old_password" readonly>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Password Baru <small class="text-muted">(kosongkan jika tidak diubah)</small>
+                        </label>
+                        <div class="position-relative">
+                            <input type="password" class="form-control pe-5" name="password" id="user_password"
+                                autocomplete="new-password" placeholder="Masukkan password baru (opsional)">
+                            <button type="button" class="pass-toggle" id="toggle_user_password"
+                                aria-label="Tampilkan password" aria-pressed="false"
+                                style="position:absolute; top:50%; right:10px; transform:translateY(-50%); 
+                                       display:inline-flex; align-items:center; justify-content:center; 
+                                       width:2rem; height:2rem; border:0; background:transparent; color:#6c757d;">
+                                <i class="bi bi-eye-slash" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Role</label>
+                        <select class="form-select" name="role_id_select" id="user_role" required>
+                            @foreach ($roles as $role)
+                                <option value="{{ $role->id }}">{{ $role->nama }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Bagian</label>
+                        <input type="text" class="form-control" name="bagian" id="user_bagian">
                     </div>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label">Role</label>
-                    <select class="form-select" name="role_id_select" id="user_role" required>
-                        @foreach ($roles as $role)
-                            <option value="{{ $role->id }}">{{ $role->nama }}</option>
-                        @endforeach
-                    </select>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
                 </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Bagian</label>
-                    <input type="text" class="form-control" name="bagian" id="user_bagian">
-                </div>
-            </div>
-
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
-</div>
 
     {{-- Modal Create Role --}}
     <div class="modal fade" id="modalCreateRole" tabindex="-1" aria-hidden="true">
@@ -297,102 +367,102 @@
 
     @push('scripts')
         <script>
-    document.addEventListener("DOMContentLoaded", () => {
-        // === EDIT USER ===
-        document.querySelectorAll('.editUser').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const id = this.dataset.id;
-        const roleName = this.dataset.roleName;
-        const roleId = this.dataset.roleId;
-        const isCurrentAdmin = (parseInt(id) === {{ auth()->id() }});
+            document.addEventListener("DOMContentLoaded", () => {
+                // === EDIT USER ===
+                document.querySelectorAll('.editUser').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = this.dataset.id;
+                        const roleName = this.dataset.roleName;
+                        const roleId = this.dataset.roleId;
+                        const isCurrentAdmin = (parseInt(id) === {{ auth()->id() }});
 
-        document.getElementById('user_id').value = id;
-        document.getElementById('user_nama').value = this.dataset.nama || '';
-        document.getElementById('user_username').value = this.dataset.username || '';
-        document.getElementById('user_role').value = roleId || '';
-        document.getElementById('user_bagian').value = this.dataset.bagian || '';
-        document.getElementById('user_old_password').value = this.dataset.password || '';
-        
-        // Set nilai hidden field
-        document.getElementById('user_role_hidden').value = roleId;
+                        document.getElementById('user_id').value = id;
+                        document.getElementById('user_nama').value = this.dataset.nama || '';
+                        document.getElementById('user_username').value = this.dataset.username || '';
+                        document.getElementById('user_role').value = roleId || '';
+                        document.getElementById('user_bagian').value = this.dataset.bagian || '';
+                        document.getElementById('user_old_password').value = this.dataset.password || '';
+                        
+                        // Set nilai hidden field
+                        document.getElementById('user_role_hidden').value = roleId;
 
-        // 🔒 Hanya disable ROLE untuk Admin yang sedang login
-        if (isCurrentAdmin && roleName === "Admin") {
-            document.getElementById('user_role').disabled = true;
-            // Gunakan hidden field untuk role_id
-            document.getElementById('user_role').name = 'role_id_select';
-            document.getElementById('user_role_hidden').name = 'role_id';
-        } else {
-            document.getElementById('user_role').disabled = false;
-            // Gunakan select field untuk role_id
-            document.getElementById('user_role').name = 'role_id';
-            document.getElementById('user_role_hidden').name = '';
-        }
+                        // 🔒 Hanya disable ROLE untuk Admin yang sedang login
+                        if (isCurrentAdmin && roleName === "Admin") {
+                            document.getElementById('user_role').disabled = true;
+                            // Gunakan hidden field untuk role_id
+                            document.getElementById('user_role').name = 'role_id_select';
+                            document.getElementById('user_role_hidden').name = 'role_id';
+                        } else {
+                            document.getElementById('user_role').disabled = false;
+                            // Gunakan select field untuk role_id
+                            document.getElementById('user_role').name = 'role_id';
+                            document.getElementById('user_role_hidden').name = '';
+                        }
 
-        document.getElementById('formEditUser').action =
-            "{{ route('admin.users.update', ':id') }}".replace(':id', id);
-    });
-});
+                        document.getElementById('formEditUser').action =
+                            "{{ route('admin.users.update', ':id') }}".replace(':id', id);
+                    });
+                });
 
-        // === DELETE USER ===
-        document.querySelectorAll('.btnDelete').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const id = this.dataset.id;
-                const formDelete = document.getElementById('formDeleteUser');
-                formDelete.action = "{{ route('admin.users.destroy', ':id') }}".replace(':id', id);
+                // === DELETE USER ===
+                document.querySelectorAll('.btnDelete').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = this.dataset.id;
+                        const formDelete = document.getElementById('formDeleteUser');
+                        formDelete.action = "{{ route('admin.users.destroy', ':id') }}".replace(':id', id);
 
-                const modal = new bootstrap.Modal(document.getElementById('modalDeleteUser'));
-                modal.show();
+                        const modal = new bootstrap.Modal(document.getElementById('modalDeleteUser'));
+                        modal.show();
+                    });
+                });
             });
-        });
-    });
 
-    // Toggle show/hide Password Baru
-    (function() {
-        const passInput = document.getElementById('user_password');
-        const toggleBtn = document.getElementById('toggle_user_password');
-        const modalEl = document.getElementById('modalEditUser');
+            // Toggle show/hide Password Baru
+            (function() {
+                const passInput = document.getElementById('user_password');
+                const toggleBtn = document.getElementById('toggle_user_password');
+                const modalEl = document.getElementById('modalEditUser');
 
-        if (!passInput || !toggleBtn || !modalEl) return;
+                if (!passInput || !toggleBtn || !modalEl) return;
 
-        toggleBtn.addEventListener('click', function() {
-            const hidden = passInput.type === 'password';
-            passInput.type = hidden ? 'text' : 'password';
-            this.setAttribute('aria-pressed', String(hidden));
+                toggleBtn.addEventListener('click', function() {
+                    const hidden = passInput.type === 'password';
+                    passInput.type = hidden ? 'text' : 'password';
+                    this.setAttribute('aria-pressed', String(hidden));
 
-            const icon = this.querySelector('i');
-            if (icon) {
-                icon.classList.toggle('bi-eye', hidden);
-                icon.classList.toggle('bi-eye-slash', !hidden);
-            }
+                    const icon = this.querySelector('i');
+                    if (icon) {
+                        icon.classList.toggle('bi-eye', hidden);
+                        icon.classList.toggle('bi-eye-slash', !hidden);
+                    }
 
-            passInput.focus({ preventScroll: true });
-        });
+                    passInput.focus({ preventScroll: true });
+                });
 
-        modalEl.addEventListener('hidden.bs.modal', () => {
-            passInput.type = 'password';
-            toggleBtn.setAttribute('aria-pressed', 'false');
-            const icon = toggleBtn.querySelector('i');
-            if (icon) {
-                icon.classList.remove('bi-eye');
-                icon.classList.add('bi-eye-slash');
-            }
-            passInput.value = '';
-            
-            // Reset semua disabled state saat modal ditutup
-            const roleField = document.getElementById('user_role');
-            if (roleField) roleField.disabled = false;
-            
-            const usernameField = document.getElementById('user_username');
-            if (usernameField) usernameField.disabled = false;
-            
-            const namaField = document.getElementById('user_nama');
-            if (namaField) namaField.disabled = false;
-            
-            const bagianField = document.getElementById('user_bagian');
-            if (bagianField) bagianField.disabled = false;
-        });
-    })();
-</script>
+                modalEl.addEventListener('hidden.bs.modal', () => {
+                    passInput.type = 'password';
+                    toggleBtn.setAttribute('aria-pressed', 'false');
+                    const icon = toggleBtn.querySelector('i');
+                    if (icon) {
+                        icon.classList.remove('bi-eye');
+                        icon.classList.add('bi-eye-slash');
+                    }
+                    passInput.value = '';
+                    
+                    // Reset semua disabled state saat modal ditutup
+                    const roleField = document.getElementById('user_role');
+                    if (roleField) roleField.disabled = false;
+                    
+                    const usernameField = document.getElementById('user_username');
+                    if (usernameField) usernameField.disabled = false;
+                    
+                    const namaField = document.getElementById('user_nama');
+                    if (namaField) namaField.disabled = false;
+                    
+                    const bagianField = document.getElementById('user_bagian');
+                    if (bagianField) bagianField.disabled = false;
+                });
+            })();
+        </script>
     @endpush
 </x-layouts.app>
