@@ -25,10 +25,11 @@ class DashboardController extends Controller
          * GRAFIK BARANG KELUAR PER KATEGORI (2021-2025)
          * =========================================================
          * Menampilkan data keluar per kategori barang untuk 5 tahun terakhir
+         * Berdasarkan kolom 'gudang' di tabel riwayat
          */
         $years = [2021, 2022, 2023, 2024, 2025];
         
-        // Mapping kategori dengan nama yang akan ditampilkan
+        // Mapping gudang dengan kategori yang akan ditampilkan
         $kategorMap = [
             'ATK' => 'G. ATK',
             'Kebersihan' => 'G. Kebersihan', 
@@ -38,16 +39,13 @@ class DashboardController extends Controller
 
         $keluarPerKategori = [];
         
-        foreach ($kategorMap as $kategoriKey => $kategoriLabel) {
+        foreach ($kategorMap as $gudangName => $kategoriLabel) {
             $dataPerTahun = [];
             foreach ($years as $year) {
-                $total = Riwayat::join('barang', 'riwayat.barang_id', '=', 'barang.id')
-                    ->join('jenis_barang', 'barang.jenis_barang_id', '=', 'jenis_barang.id')
-                    ->join('kategori', 'jenis_barang.kategori_id', '=', 'kategori.id')
-                    ->where('riwayat.alur_barang', 'Keluar')
-                    ->where('kategori.nama', $kategoriKey)
-                    ->whereYear('riwayat.tanggal', $year)
-                    ->sum('riwayat.jumlah');
+                $total = Riwayat::where('alur_barang', 'Keluar')
+                    ->where('gudang', $gudangName)
+                    ->whereYear('tanggal', $year)
+                    ->sum('jumlah');
                 
                 $dataPerTahun[] = (int) $total;
             }
@@ -55,7 +53,7 @@ class DashboardController extends Controller
             $keluarPerKategori[] = [
                 'label' => $kategoriLabel,
                 'data' => $dataPerTahun,
-                'backgroundColor' => $this->getColorForKategori($kategoriKey),
+                'backgroundColor' => $this->getColorForKategori($gudangName),
                 'borderRadius' => 4,
             ];
         }
@@ -131,16 +129,13 @@ class DashboardController extends Controller
 
         $datasets = [];
         
-        foreach ($kategorMap as $kategoriKey => $kategoriLabel) {
+        foreach ($kategorMap as $gudangName => $kategoriLabel) {
             $dataPerTahun = [];
             foreach ($years as $year) {
-                $total = Riwayat::join('barang', 'riwayat.barang_id', '=', 'barang.id')
-                    ->join('jenis_barang', 'barang.jenis_barang_id', '=', 'jenis_barang.id')
-                    ->join('kategori', 'jenis_barang.kategori_id', '=', 'kategori.id')
-                    ->where('riwayat.alur_barang', 'Keluar')
-                    ->where('kategori.nama', $kategoriKey)
-                    ->whereYear('riwayat.tanggal', $year)
-                    ->sum('riwayat.jumlah');
+                $total = Riwayat::where('alur_barang', 'Keluar')
+                    ->where('gudang', $gudangName)
+                    ->whereYear('tanggal', $year)
+                    ->sum('jumlah');
                 
                 $dataPerTahun[] = (int) $total;
             }
@@ -148,7 +143,7 @@ class DashboardController extends Controller
             $datasets[] = [
                 'label' => $kategoriLabel,
                 'data' => $dataPerTahun,
-                'backgroundColor' => $this->getColorForKategori($kategoriKey),
+                'backgroundColor' => $this->getColorForKategori($gudangName),
                 'borderRadius' => 4,
             ];
         }
