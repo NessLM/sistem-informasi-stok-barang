@@ -8,6 +8,7 @@ use App\Models\Riwayat;
 use App\Models\Barang;
 use App\Models\JenisBarang;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;     // [CHANGE] dipakai untuk agregasi
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -20,53 +21,45 @@ class DashboardController extends Controller
         $totalJenisBarang = JenisBarang::count();
         $totalBarang      = Barang::sum('stok');
 
-        // ==== 9 label tetap untuk "Grafik Per Bagian" ====
-        // [FIX] pastikan "Keuangan" ada dan tetap 9 slot
-        $bagianList = [
-            'Tata Pemerintahan',
-            'Kesejahteraan Rakyat',
-            'Keuangan',            // [FIX]
-            'Hukum',
-            'ADM Pembangunan',
-            'Perekonomian',
-            'Pengadaan',
-            'Protokol',
-            'Umum',
-        ];
+        /* =========================================================
+         * GRAFIK PER BAGIAN  (HANYA KELUAR, TANPA DEFAULT, EXCLUDE "Umum")
+         * =========================================================
+         * - Ambil hanya bagian yang benar-benar punya transaksi Keluar
+         * - Urut alfabet biar stabil
+         * - "Umum" dikecualikan
+         */
+        // [CHANGE]
+        $bagianRows = Riwayat::select('bagian', DB::raw('SUM(jumlah) AS total'))
+            ->where('alur_barang', 'Keluar')
+            ->where('bagian', 'NOT LIKE', '%Umum%')
+            ->groupBy('bagian')
+            ->orderBy('bagian')
+            ->get();
 
-        // ==== Data Grafik Per Bagian (Keluar & Masuk) ====
-        $bagianLabels = $bagianList;
-        $keluarData   = [];
-        $masukData    = [];
-        foreach ($bagianList as $bagian) {
-            $keluar = Riwayat::where('bagian', 'like', '%' . $bagian . '%')
-                ->where('alur_barang', 'Keluar')->sum('jumlah');
-            $masuk  = Riwayat::where('bagian', 'like', '%' . $bagian . '%')
-                ->where('alur_barang', 'Masuk')->sum('jumlah');
-            $keluarData[] = (int)$keluar;   // bisa 0
-            $masukData[]  = (int)$masuk;    // bisa 0
-        }
+        // [CHANGE] labels & data dinamis
+        $bagianLabels = $bagianRows->pluck('bagian')
+            // [FIX LABEL] hapus prefix "Bagian " (case-insensitive, plus spasi)
+            ->map(fn($b) => preg_replace('/^\s*Bagian\s+/i', '', $b))
+            ->values();
+        $keluarData   = $bagianRows->pluck('total')->map(fn($v) => (int)$v)->values();
 
-        // ==== Data "Pengeluaran per Tahun" (X = tahun, hanya Keluar) ====
+        /* =========================================================
+         * GRAFIK PENGELUARAN PER TAHUN
+         * ========================================================= */
         $currentYear        = (int) date('Y');
-        $years              = range($currentYear - 9, $currentYear); // 2016..tahun-ini saat 2025
+        $years              = range($currentYear - 9, $currentYear); // "Semua" = 9 tahun terakhir
         $pengeluaranLabels  = $years;
 
-        // warna per tahun + total per tahun
-        $colorsForYears           = [];
-        $colorsForYearsOrdered    = [];
-        $totalsPerYear            = [];
+        $colorsForYears        = [];
+        $colorsForYearsOrdered = [];
+        $totalsPerYear         = [];
         foreach ($years as $y) {
-            $sum = Riwayat::where('alur_barang', 'Keluar')
-                    ->whereYear('tanggal', $y)->sum('jumlah');
-            $totalsPerYear[] = (int)$sum;
-
+            $totalsPerYear[] = (int) Riwayat::where('alur_barang', 'Keluar')
+                ->whereYear('tanggal', $y)->sum('jumlah');
             $c = $this->getColorForYear($y);
-            $colorsForYears[$y]        = $c;
-            $colorsForYearsOrdered[]   = $c;
+            $colorsForYears[$y]      = $c;
+            $colorsForYearsOrdered[] = $c;
         }
-
-        // 1 dataset; warna per-bar mengikuti tahun
         $pengeluaranData = [[
             'label'           => 'Keluar',
             'data'            => $totalsPerYear,
@@ -79,68 +72,100 @@ class DashboardController extends Controller
             'totalJenisBarang',
             'totalBarang',
             'bagianLabels',
-            'keluarData', 'masukData',
-            'pengeluaranLabels', 'pengeluaranData',
-            'years', 'colorsForYears' // untuk legend tahun awal
+            'keluarData',
+            'pengeluaranLabels',
+            'pengeluaranData',
+            'years',
+            'colorsForYears'
         ));
     }
 
+    /* ==================== AJAX FILTER ==================== */
+
     public function filterData(Request $request)
     {
-        $type   = $request->input('type');
-        $filter = $request->input('filter');
+        $type   = $request->query('type', 'bagian');
+        $filter = $request->query('filter', 'all');
 
-        if ($type === 'bagian') return $this->filterBagianData($filter);
-        return $this->filterPengeluaranData($filter);
+        return $type === 'bagian'
+            ? $this->filterBagianData($filter)
+            : $this->filterPengeluaranData($filter);
     }
 
+    // [CHANGE] Per Bagian → dynamic labels + hanya Keluar + exclude "Umum"
     private function filterBagianData($filter)
     {
-        // sama dengan di __invoke
-        $bagianList = [
-            'Tata Pemerintahan','Kesejahteraan Rakyat','Keuangan','Hukum',
-            'ADM Pembangunan','Perekonomian','Pengadaan','Protokol','Umum',
-        ];
+        // 1) Ambil BASELINE LABELS dari seluruh waktu (hanya "Keluar", exclude "Umum")
+        //    -> label ini TETAP dipakai untuk setiap filter supaya batangnya tidak hilang.
+        $allTimeLabels = Riwayat::query()
+            ->where('alur_barang', 'Keluar')
+            ->where('bagian', 'NOT LIKE', '%Umum%')
+            ->select('bagian')
+            ->groupBy('bagian')
+            ->orderBy('bagian')
+            ->pluck('bagian')
+            ->values();
 
-        $keluarData = []; $masukData = [];
-        $q = Riwayat::query();
+        // 2) Siapkan query terfilter berdasar rentang waktu
+        $q = Riwayat::query()
+            ->where('alur_barang', 'Keluar');
 
-        // [FIX] filter periode berfungsi
-        if ($filter === 'week')  $q->where('tanggal', '>=', Carbon::now()->subWeek());
-        if ($filter === 'month') $q->where('tanggal', '>=', Carbon::now()->subMonth());
-        if ($filter === 'year')  $q->where('tanggal', '>=', Carbon::now()->subYear());
-        // 'all' -> tanpa where tanggal
+        // [NEW] siapkan teks rentang tanggal (untuk badge di UI)
+        $now = Carbon::now();
+        $rangeText = 'Semua Data';
+        if ($filter === 'week') {
+            $from = $now->copy()->subWeek();
+            $q->where('tanggal', '>=', $from);
+            $rangeText = $from->format('d/m/Y') . ' – ' . $now->format('d/m/Y');
+        } elseif ($filter === 'month') {
+            $from = $now->copy()->subMonth();
+            $q->where('tanggal', '>=', $from);
+            $rangeText = $from->format('d/m/Y') . ' – ' . $now->format('d/m/Y');
+        } elseif ($filter === 'year') {
+            $from = $now->copy()->subYear();
+            $q->where('tanggal', '>=', $from);
+            $rangeText = $from->format('d/m/Y') . ' – ' . $now->format('d/m/Y');
+        }
+        // 'all' -> tanpa filter tanggal
 
-        foreach ($bagianList as $bagian) {
-            $keluar = (clone $q)->where('bagian', 'like', '%' . $bagian . '%')
-                ->where('alur_barang','Keluar')->sum('jumlah');
-            $masuk  = (clone $q)->where('bagian', 'like', '%' . $bagian . '%')
-                ->where('alur_barang','Masuk')->sum('jumlah');
-            $keluarData[] = (int)$keluar;
-            $masukData[]  = (int)$masuk;
+        // 3) Hitung total per label baseline sesuai filter; yang tidak ada → 0
+        $keluarData = [];
+        foreach ($allTimeLabels as $bagian) {
+            $total = (clone $q)
+                ->where('bagian', 'LIKE', '%' . $bagian . '%')
+                ->sum('jumlah');
+
+            $keluarData[] = (int) $total;  // jika tidak ada -> 0
         }
 
-        return response()->json(['keluar'=>$keluarData, 'masuk'=>$masukData]);
+        // 4) Kembalikan labels baseline + nilai hasil filter + [NEW] range_text
+        return response()->json([
+            'labels' => collect($allTimeLabels)->map(
+                fn($b) => preg_replace('/^\s*Bagian\s+/i', '', $b)
+            )->values(),
+            'keluar'     => $keluarData,
+            'range_text' => $rangeText, // [NEW]
+        ]);
     }
 
+    // (tidak diubah) Filter Pengeluaran per Tahun
     private function filterPengeluaranData($filter)
     {
         $currentYear = (int) date('Y');
 
-        // [FIX] filter rentang tahun
-        if ($filter === '5y')      $years = range($currentYear - 4, $currentYear);
+        if ($filter === '5y')  $years = range($currentYear - 4, $currentYear);
         elseif ($filter === '7y')  $years = range($currentYear - 6, $currentYear);
-        elseif ($filter === '10y') $years = range($currentYear - 9, $currentYear);
+        elseif ($filter === '10y') $years = range($currentYear - 10, $currentYear);
         else                       $years = range($currentYear - 9, $currentYear); // "Semua"
 
-        $totals = []; $colors = [];
+        $totals = [];
+        $colors = [];
         foreach ($years as $y) {
-            $totals[]    = (int) Riwayat::where('alur_barang','Keluar')
-                              ->whereYear('tanggal', $y)->sum('jumlah');
-            $colors[$y]  = $this->getColorForYear($y);
+            $totals[]   = (int) Riwayat::where('alur_barang', 'Keluar')
+                ->whereYear('tanggal', $y)->sum('jumlah');
+            $colors[$y] = $this->getColorForYear($y);
         }
 
-        // [FIX] kirim labels + data + warna per tahun
         return response()->json([
             'labels' => $years,
             'data'   => $totals,
@@ -150,8 +175,8 @@ class DashboardController extends Controller
 
     private function getColorForYear($year)
     {
-        // palet looping (stabil)
-        $palette = ['#8B5CF6','#F87171','#06B6D4','#10B981','#F59E0B'];
+        // palet stabil; otomatis berulang
+        $palette = ['#8B5CF6', '#F87171', '#06B6D4', '#10B981', '#F59E0B'];
         $currentYear = (int) date('Y');
         $idx = ($currentYear - (int)$year) % count($palette);
         if ($idx < 0) $idx += count($palette);
