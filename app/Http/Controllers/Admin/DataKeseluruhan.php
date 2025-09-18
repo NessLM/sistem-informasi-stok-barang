@@ -112,6 +112,53 @@ class DataKeseluruhan extends Controller
         ));
     }
 
+    /**
+     * Menampilkan data gudang spesifik berdasarkan slug
+     * 
+     * @param string $slug
+     * @param Request $request
+     * @return \Illuminate\View\View
+     */
+    public function gudang($slug, Request $request)
+    {
+        $menu = MenuHelper::adminMenu();
+
+        // Konversi slug ke nama gudang menggunakan helper
+        $gudangName = MenuHelper::slugToGudangName($slug);
+        
+        // Cari gudang berdasarkan nama (case insensitive)
+        $selectedGudang = Gudang::whereRaw('LOWER(nama) LIKE ?', ['%' . strtolower($gudangName) . '%'])->first();
+        
+        if (!$selectedGudang) {
+            abort(404, "Gudang dengan slug '{$slug}' tidak ditemukan");
+        }
+        
+        // Ambil semua gudang untuk dropdown/filter
+        $gudang = Gudang::all();
+        
+        // Ambil kategori dari gudang yang dipilih
+        $kategori = Kategori::with(['barang', 'gudang'])
+                      ->where('gudang_id', $selectedGudang->id)
+                      ->get();
+        
+        // Inisialisasi collection barang kosong
+        $barang = collect();
+        
+        // Jika ada filter/search, ambil data barang yang sesuai
+        if ($this->hasAnyFilter($request)) {
+            $barang = $this->getFilteredBarang($request, $selectedGudang->id);
+        }
+        
+        // Return view yang sama dengan index
+        return view('staff.admin.datakeseluruhan', compact(
+            'kategori', 
+            'barang', 
+            'menu',
+            'gudang', 
+            'selectedGudang'
+        ));
+    }
+
     public function show($id)
     {
         $menu = \App\Helpers\MenuHelper::adminMenu();
@@ -255,5 +302,104 @@ class DataKeseluruhan extends Controller
             \Log::error('Search API error', ['error' => $e->getMessage()]);
             return response()->json(['error' => 'Search failed'], 500);
         }
+    }
+
+    /**
+     * Cek apakah ada filter yang aktif
+     * 
+     * @param Request $request
+     * @return bool
+     */
+    private function hasAnyFilter(Request $request)
+    {
+        $filterFields = [
+            'search', 'kode', 'stok_min', 'stok_max', 
+            'kategori_id', 'gudang_id', 'satuan', 
+            'nomor_awal', 'nomor_akhir', 'harga_min', 'harga_max'
+        ];
+        
+        foreach ($filterFields as $field) {
+            if ($request->filled($field)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    /**
+     * Ambil data barang berdasarkan filter
+     * 
+     * @param Request $request
+     * @param int|null $gudangId
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    private function getFilteredBarang(Request $request, $gudangId = null)
+    {
+        $query = Barang::with(['kategori.gudang']);
+        
+        // Filter berdasarkan gudang jika disediakan
+        if ($gudangId) {
+            $query->whereHas('kategori', function($q) use ($gudangId) {
+                $q->where('gudang_id', $gudangId);
+            });
+        }
+        
+        // Filter search (nama atau kode)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('kode', 'like', "%{$search}%");
+            });
+        }
+        
+        // Filter kode spesifik
+        if ($request->filled('kode')) {
+            $query->where('kode', 'like', "%{$request->kode}%");
+        }
+        
+        // Filter stok minimum
+        if ($request->filled('stok_min')) {
+            $query->where('stok', '>=', (int) $request->stok_min);
+        }
+        
+        // Filter stok maksimum
+        if ($request->filled('stok_max')) {
+            $query->where('stok', '<=', (int) $request->stok_max);
+        }
+        
+        // Filter kategori
+        if ($request->filled('kategori_id')) {
+            $query->where('kategori_id', $request->kategori_id);
+        }
+        
+        // Filter satuan
+        if ($request->filled('satuan')) {
+            $query->where('satuan', $request->satuan);
+        }
+        
+        // Filter harga
+        if ($request->filled('harga_min') && $request->filled('harga_max')) {
+            $query->whereBetween('harga', [
+                (float) $request->harga_min,
+                (float) $request->harga_max,
+            ]);
+        } elseif ($request->filled('harga_min')) {
+            $query->where('harga', '>=', (float) $request->harga_min);
+        } elseif ($request->filled('harga_max')) {
+            $query->where('harga', '<=', (float) $request->harga_max);
+        }
+        
+        // Filter range ID/nomor
+        if ($request->filled('nomor_awal')) {
+            $query->where('id', '>=', (int) $request->nomor_awal);
+        }
+        
+        if ($request->filled('nomor_akhir')) {
+            $query->where('id', '<=', (int) $request->nomor_akhir);
+        }
+        
+        return $query->get();
     }
 }
