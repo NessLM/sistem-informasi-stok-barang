@@ -108,6 +108,46 @@
 }
 
 /* ==== TITLE DALAM CARD (Data Pengguna) ==== */
+/* ==== HEADER DENGAN TOMBOL DI SEBELAH KANAN ==== */
+.card-header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 15px 20px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e5e9f2;
+}
+
+.card-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1d2433;
+    margin: 0;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+}
+
+/* Responsif untuk tampilan mobile */
+@media (max-width: 768px) {
+    .card-header-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .button-group {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+
+
 .card h4 {
     font-size: 18px;
     font-weight: 600;

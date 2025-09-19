@@ -15,7 +15,7 @@
   
     <div class="page-body">
       <div class="card">
-        <h2>Laporan</h2>
+        <h3>Laporan</h3>
   
         <table class="table table-bordered table-laporan">
           <thead>

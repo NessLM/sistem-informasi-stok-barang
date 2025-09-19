@@ -1,4 +1,5 @@
 <x-layouts.app title="Data Pengguna" :menu="$menu">
+    <!-- Kode toast notification tetap sama -->
     @if (session('toast'))
         <div id="toast-notif"
             style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
@@ -33,8 +34,10 @@
     @endif
 
     <div class="page-body">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div class="d-flex gap-2">
+        <!-- Header dengan judul dan tombol di sebelah kanan -->
+        <div class="card-header-container">
+            <h3 class="card-title">Data Pengguna</h3>
+            <div class="button-group">
                 <button type="button" class="btn btn-add-user" data-bs-toggle="modal"
                     data-bs-target="#modalCreateUser">
                     + Tambah Pengguna
@@ -48,8 +51,8 @@
         </div>
 
         <div class="card p-3">
-            <h4 class="mb-3">Data Pengguna</h4>
             <table class="table table-bordered">
+                <!-- Isi tabel tetap sama -->
                 <thead>
                     <tr>
                         <th>No</th>
@@ -210,12 +213,14 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Nama</label>
-                        <input type="text" class="form-control" name="nama" required placeholder="Masukkan nama">
+                        <input type="text" class="form-control" name="nama" required
+                            placeholder="Masukkan nama">
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Username</label>
-                        <input type="text" class="form-control" name="username" required placeholder="Masukkan username">
+                        <input type="text" class="form-control" name="username" required
+                            placeholder="Masukkan username">
                         <div id="username-feedback" class="invalid-feedback"></div>
                     </div>
 
@@ -261,7 +266,8 @@
 
                     <div class="mb-3">
                         <label class="form-label">Bagian</label>
-                        <input type="text" class="form-control" name="bagian" required placeholder="Masukkan bagian">
+                        <input type="text" class="form-control" name="bagian" required
+                            placeholder="Masukkan bagian">
                     </div>
                 </div>
 
