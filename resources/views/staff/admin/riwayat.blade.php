@@ -114,6 +114,19 @@
             $riwayatMasuk = $riwayat->where('alur_barang', 'Masuk');
             $riwayatKeluar = $riwayat->where('alur_barang', 'Keluar');
             $alurFilter = request('alur_barang', 'Semua');
+            
+            // Konfigurasi pagination
+            $itemsPerPage = 10;
+            $currentPageMasuk = request('page_masuk', 1);
+            $currentPageKeluar = request('page_keluar', 1);
+            
+            // Paginasi untuk data masuk
+            $masukPaginated = $riwayatMasuk->slice(($currentPageMasuk - 1) * $itemsPerPage, $itemsPerPage);
+            $totalPagesMasuk = ceil($riwayatMasuk->count() / $itemsPerPage);
+            
+            // Paginasi untuk data keluar
+            $keluarPaginated = $riwayatKeluar->slice(($currentPageKeluar - 1) * $itemsPerPage, $itemsPerPage);
+            $totalPagesKeluar = ceil($riwayatKeluar->count() / $itemsPerPage);
         @endphp
 
         @if($alurFilter == 'Semua' || $alurFilter == 'Masuk')
@@ -123,8 +136,8 @@
                     <h5 class="mb-0">Barang Masuk</h5>
                 </div>
                 <div class="card-body p-0">
-                    <div class="riwayat-table-container">
-                        <table class="table table-bordered">
+                    <div class="table-responsive">
+                        <table class="table table-bordered mb-0">
                             <thead>
                                 <tr>
                                     <th>No</th>
@@ -138,9 +151,9 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($riwayatMasuk as $item)
+                                @forelse($masukPaginated as $item)
                                     <tr>
-                                        <td class="fw-semibold">{{ $loop->iteration }}</td>
+                                        <td class="fw-semibold">{{ ($currentPageMasuk - 1) * $itemsPerPage + $loop->iteration }}</td>
                                         <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
                                         <td>{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }} WIB</td>
                                         <td class="fw-medium">{{ $item->gudang }}</td>
@@ -166,7 +179,7 @@
                                 @empty
                                     @if($alurFilter == 'Masuk')
                                         <tr>
-                                            <td colspan="9" class="riwayat-empty-state">
+                                            <td colspan="8" class="riwayat-empty-state text-center py-4">
                                                 <i class="bi bi-inbox"></i>
                                                 <p>Tidak ada data barang masuk ditemukan</p>
                                             </td>
@@ -176,6 +189,25 @@
                             </tbody>
                         </table>
                     </div>
+                    
+                    <!-- Pagination untuk Barang Masuk -->
+                    @if($totalPagesMasuk > 1)
+                    <div class="card-footer d-flex justify-content-center align-items-center">
+                        <div class="pagination-controls">
+                            <button class="btn btn-sm btn-outline-primary pagination-btn" 
+                                    onclick="changePage('masuk', {{ max(1, $currentPageMasuk - 1) }})" 
+                                    {{ $currentPageMasuk <= 1 ? 'disabled' : '' }}>
+                                <i class="bi bi-chevron-left"></i> Sebelumnya
+                            </button>
+                            <span class="mx-2">Halaman {{ $currentPageMasuk }} dari {{ $totalPagesMasuk }}</span>
+                            <button class="btn btn-sm btn-outline-primary pagination-btn" 
+                                    onclick="changePage('masuk', {{ min($totalPagesMasuk, $currentPageMasuk + 1) }})" 
+                                    {{ $currentPageMasuk >= $totalPagesMasuk ? 'disabled' : '' }}>
+                                Selanjutnya <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    @endif
                 </div>
             </div>
         @endif
@@ -187,8 +219,8 @@
                     <h5 class="mb-0">Barang Keluar</h5>
                 </div>
                 <div class="card-body p-0">
-                    <div class="riwayat-table-container">
-                        <table class="table table-bordered">
+                    <div class="table-responsive">
+                        <table class="table table-bordered mb-0">
                             <thead>
                                 <tr>
                                     <th>No</th>
@@ -203,9 +235,9 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($riwayatKeluar as $item)
+                                @forelse($keluarPaginated as $item)
                                     <tr>
-                                        <td class="fw-semibold">{{ $loop->iteration }}</td>
+                                        <td class="fw-semibold">{{ ($currentPageKeluar - 1) * $itemsPerPage + $loop->iteration }}</td>
                                         <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
                                         <td>{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }} WIB</td>
                                         <td class="fw-medium">{{ $item->gudang }}</td>
@@ -232,7 +264,7 @@
                                 @empty
                                     @if($alurFilter == 'Keluar')
                                         <tr>
-                                            <td colspan="9" class="riwayat-empty-state">
+                                            <td colspan="9" class="riwayat-empty-state text-center py-4">
                                                 <i class="bi bi-inbox"></i>
                                                 <p>Tidak ada data barang keluar ditemukan</p>
                                             </td>
@@ -242,6 +274,25 @@
                             </tbody>
                         </table>
                     </div>
+                    
+                    <!-- Pagination untuk Barang Keluar -->
+                    @if($totalPagesKeluar > 1)
+                    <div class="card-footer d-flex justify-content-center align-items-center">
+                        <div class="pagination-controls">
+                            <button class="btn btn-sm btn-outline-primary pagination-btn" 
+                                    onclick="changePage('keluar', {{ max(1, $currentPageKeluar - 1) }})" 
+                                    {{ $currentPageKeluar <= 1 ? 'disabled' : '' }}>
+                                <i class="bi bi-chevron-left"></i> Sebelumnya
+                            </button>
+                            <span class="mx-2">Halaman {{ $currentPageKeluar }} dari {{ $totalPagesKeluar }}</span>
+                            <button class="btn btn-sm btn-outline-primary pagination-btn" 
+                                    onclick="changePage('keluar', {{ min($totalPagesKeluar, $currentPageKeluar + 1) }})" 
+                                    {{ $currentPageKeluar >= $totalPagesKeluar ? 'disabled' : '' }}>
+                                Selanjutnya <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    @endif
                 </div>
             </div>
         @endif
@@ -289,12 +340,7 @@
                         this.classList.add('active');
 
                         // Submit form
-                        const tableContainer = document.querySelector('.riwayat-table-container');
-                        tableContainer.classList.add('riwayat-loading');
-
-                        setTimeout(() => {
-                            document.getElementById('filterForm').submit();
-                        }, 300);
+                        document.getElementById('filterForm').submit();
                     });
                 });
 
@@ -320,6 +366,72 @@
                 form.submit();
                 form.removeChild(input);
             }
+            
+            function changePage(type, page) {
+                // Update URL tanpa reload halaman
+                const url = new URL(window.location.href);
+                url.searchParams.set(`page_${type}`, page);
+                
+                // Scroll ke bagian atas tabel
+                const tableElement = document.querySelector(`.riwayat-header-${type}`).closest('.card');
+                if (tableElement) {
+                    tableElement.scrollIntoView({ behavior: 'smooth' });
+                }
+                
+                // Lakukan request AJAX untuk mendapatkan data baru
+                fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.text())
+                .then(html => {
+                    // Parse HTML response
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    
+                    // Temukan tabel yang sesuai
+                    const newTable = doc.querySelector(`.riwayat-header-${type}`).closest('.card');
+                    
+                    // Ganti tabel lama dengan yang baru
+                    const oldTable = document.querySelector(`.riwayat-header-${type}`).closest('.card');
+                    if (oldTable && newTable) {
+                        oldTable.outerHTML = newTable.outerHTML;
+                    }
+                    
+                    // Re-init event listeners untuk elemen yang baru dibuat
+                    initEventListeners();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Fallback: reload halaman jika AJAX gagal
+                    window.location.href = url;
+                });
+            }
+            
+            function initEventListeners() {
+                // Inisialisasi ulang event listeners untuk bukti icon
+                document.querySelectorAll('.riwayat-bukti-icon').forEach(icon => {
+                    icon.addEventListener('click', function() {
+                        const imageUrl = this.getAttribute('data-image');
+                        const modalImage = document.querySelector('#buktiImage');
+                        modalImage.src = imageUrl;
+                    });
+                });
+                
+                // Inisialisasi ulang event listeners untuk pagination buttons
+                document.querySelectorAll('.pagination-btn').forEach(btn => {
+                    const onclick = btn.getAttribute('onclick');
+                    if (onclick) {
+                        btn.onclick = function() {
+                            eval(onclick);
+                        };
+                    }
+                });
+            }
         </script>
+    @endpush
+    
+    @push('styles')
     @endpush
 </x-layouts.app>

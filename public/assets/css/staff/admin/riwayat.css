@@ -169,7 +169,8 @@
 
 /* Ubah font size teks tombol dropdown */
 .riwayat-btn-filter {
-    font-size: 14px; /* default 14-16px, silakan sesuaikan */
+    font-size: 14px;
+    /* default 14-16px, silakan sesuaikan */
 }
 
 /* Ubah font size item dalam list dropdown */
@@ -179,16 +180,19 @@
 
 /* Font size untuk tombol Unduh */
 .riwayat-btn-download {
-    font-size: 14px; /* ubah sesuai kebutuhan */
+    font-size: 14px;
+    /* ubah sesuai kebutuhan */
 }
 
 /* Font size untuk item Excel & PDF */
 .riwayat-download-dropdown .dropdown-item {
     font-size: 15px;
 }
+
 /* Font size untuk tombol Reset */
 .riwayat-btn-reset {
-    font-size: 14px; /* ubah sesuai kebutuhan */
+    font-size: 14px;
+    /* ubah sesuai kebutuhan */
 }
 
 .riwayat-filter-dropdown .dropdown-item:hover,
@@ -213,9 +217,58 @@
 }
 
 /* ===== TABLE & DATA STYLES ===== */
+/* Styling untuk pagination controls */
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+
+.pagination-btn {
+    color: #3498db;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.875rem;
+    white-space: nowrap;
+}
+
+.pagination-btn:disabled {
+    color: #3498db;
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Memastikan tabel tidak memiliki scroll */
+.table-responsive {
+    overflow: visible;
+}
+
+/* Menghilangkan border radius pada card body */
+.riwayat-table-card .card-body {
+    border-radius: 0;
+}
+
+/* Styling untuk card footer */
+.card-footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid rgba(0, 0, 0, .125);
+    padding: 0.75rem 1.25rem;
+}
+
+/* Responsive design untuk pagination */
+@media (max-width: 768px) {
+    .pagination-controls {
+        flex-direction: column;
+        gap: 8px;
+    }
+}
+
+
 .riwayat-table-container {
     max-height: 600px;
-    overflow-y: auto;
+    overflow: visible;
+    max-height: none;
 }
 
 .riwayat-table-container td {
@@ -282,15 +335,18 @@
     font-size: 20px;
     padding: 6px 12px;
 }
+
 /*Untuk mengubah warna header tabel barang masuk*/
 .riwayat-header-masuk h5 {
     color: black;
     font-weight: 600;
 }
+
 .riwayat-header-keluar h5 {
     color: black;
     font-weight: 600;
 }
+
 /* Empty state */
 .riwayat-empty-state {
     text-align: center;
@@ -328,8 +384,7 @@
 }
 
 #buktiModal .btn-close:hover {
-    filter: invert(23%) sepia(96%) saturate(7492%) hue-rotate(356deg)
-        brightness(95%) contrast(108%);
+    filter: invert(23%) sepia(96%) saturate(7492%) hue-rotate(356deg) brightness(95%) contrast(108%);
     transform: scale(1.1);
 }
 
