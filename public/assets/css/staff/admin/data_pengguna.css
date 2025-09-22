@@ -140,13 +140,12 @@
         align-items: flex-start;
         gap: 15px;
     }
-    
+
     .button-group {
         width: 100%;
         justify-content: flex-end;
     }
 }
-
 
 .card h4 {
     font-size: 18px;
@@ -211,6 +210,17 @@
     gap: 8px;
     justify-content: center;
 }
+
+.modal .modal-content {
+    font-size: 15px; /* ubah sesuai kebutuhan */
+}
+
+.modal .form-control,
+.modal .form-select {
+    font-size: 14px;   /* ukuran teks */
+    padding: 8px 10px; /* tinggi field */
+}
+
 
 /* ==== Password Baru: eye toggle di dalam input (modal Edit User) ==== */
 #modalEditUser .field-pass {
