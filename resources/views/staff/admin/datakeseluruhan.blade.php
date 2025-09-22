@@ -441,8 +441,8 @@
     @endforeach
 
     {{-- Modal Filter --}}
-    <div class="modal fade" id="modalFilterBarang" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+    <div class="modal fade" id="modalFilterBarang" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <form action="{{ route('admin.datakeseluruhan.index') }}" method="GET" class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Filter Barang</h5>

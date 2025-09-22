@@ -129,9 +129,6 @@
                                 <tr>
                                     <td>Mahasiswa POLMAN BABEL D-IV Teknologi Rekayasa Perangkat Lunak</td>
                                 </tr>
-                                <tr>
-                                    <td>Jln. Kapten Soiraiman 1, Sri Pemandang, Sungailiat</td>
-                                </tr>
                             </table>
                             <div class="social-media-section">
                                 <div class="social-media-links">
@@ -163,9 +160,6 @@
                                 </tr>
                                 <tr>
                                     <td>Mahasiswa POLMAN BABEL D-IV Teknologi Rekayasa Perangkat Lunak</td>
-                                </tr>
-                                <tr>
-                                    <td>Jln. K.H. Agus Salim, Belakang Masjid, Desa Pemali</td>
                                 </tr>
                             </table>
                             <div class="social-media-section">
@@ -199,9 +193,6 @@
                                 </tr>
                                 <tr>
                                     <td>Mahasiswa POLMAN BABEL D-IV Teknologi Rekayasa Perangkat Lunak</td>
-                                </tr>
-                                <tr>
-                                    <td>Jln. Sisingamangaraja, No. 05, Desa Air Ruai</td>
                                 </tr>
                             </table>
                             <div class="social-media-section">
@@ -238,9 +229,6 @@
                                 <tr>
                                     <td>Mahasiswa POLMAN BABEL D-IV Teknologi Rekayasa Perangkat Lunak</td>
                                 </tr>
-                                <tr>
-                                    <td>Jln. Sisingamangaraja, Perumahan Bumi Arwana Permai Blok F22, Desa Air Ruai</td>
-                                </tr>
                             </table>
                             <div class="social-media-section">
                                 <div class="social-media-links">
@@ -272,9 +260,6 @@
                                 </tr>
                                 <tr>
                                     <td>Mahasiswa POLMAN BABEL D-IV Teknologi Rekayasa Perangkat Lunak</td>
-                                </tr>
-                                <tr>
-                                    <td>Jln. Kompleks Nangnung Utara, Kost Oren No. 02, Sungailiat</td>
                                 </tr>
                             </table>
                             <div class="social-media-section">
