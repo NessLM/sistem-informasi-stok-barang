@@ -301,11 +301,11 @@
                 </form>
             </div>
         </div>
-    </div>
+    </div>  
 
     {{-- Modal Tambah Barang --}}
-    <div class="modal fade" id="modalTambahBarang" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+    <div class="modal fade" id="modalTambahBarang" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <form action="{{ route('admin.barang.store') }}" method="POST" class="modal-content">
                 @csrf
                 <div class="modal-header">
@@ -378,8 +378,8 @@
     {{-- Modal Edit Barang --}}
     @foreach ($kategori as $k)
         @foreach ($k->barang as $b)
-            <div class="modal fade" id="modalEditBarang-{{ $b->id }}" tabindex="-1">
-                <div class="modal-dialog modal-lg">
+            <div class="modal fade" id="modalEditBarang-{{ $b->id }}" tabindex="-1"aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
                     <form action="{{ route('admin.barang.update', $b->id) }}" method="POST" class="modal-content">
                         @csrf
                         @method('PUT')
