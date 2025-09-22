@@ -110,4 +110,41 @@ class BarangController extends Controller
         return redirect()->route('admin.datakeseluruhan.index')
                          ->with('success', 'Barang berhasil dihapus!');
     }
+
+public function search(Request $request)
+{
+    $q        = $request->get('q');
+    $gudangId = $request->get('gudang_id');
+
+    $barang = Barang::with(['kategori.gudang'])
+        ->whereHas('kategori', function ($sub) use ($gudangId) {
+            if ($gudangId) {
+                $sub->where('gudang_id', $gudangId);
+            }
+        })
+        ->when($q, function ($query) use ($q) {
+            $query->where(function ($q2) use ($q) {
+                $q2->where('nama', 'like', "%{$q}%")
+                   ->orWhere('kode', 'like', "%{$q}%");
+            });
+        })
+        ->get();
+
+    return response()->json($barang->map(function ($b) {
+        return [
+            'id'           => $b->id,
+            'nama'         => $b->nama,
+            'kode'         => $b->kode,
+            'stok'         => $b->stok,
+            'kategori'     => $b->kategori->nama ?? '-',
+            'gudang'       => $b->kategori->gudang->nama ?? '-',
+            'stock_status' => $b->stok == 0 ? 'empty' : ($b->stok < 5 ? 'low' : 'available'),
+        ];
+    }));
+}
+
+
+
+
+
 }
