@@ -346,24 +346,26 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-                        <div class="col-md-6">
-                            <label>Harga / Satuan</label>
-                            <div class="input-group">
-                                <input type="number" step="0.01" name="harga"
-                                    class="form-control @error('harga') is-invalid @enderror"
-                                    value="{{ old('harga') }}">
-                                <select name="satuan" class="form-select">
-                                    <option value="Pcs" @if (old('satuan') == 'Pcs') selected @endif>Pcs</option>
-                                    <option value="Box" @if (old('satuan') == 'Box') selected @endif>Box</option>
-                                    <option value="Pack" @if (old('satuan') == 'Pack') selected @endif>Pack</option>
-                                    <option value="Rim" @if (old('satuan') == 'Rim') selected @endif>Rim</option>
-                                    <option value="Unit" @if (old('satuan') == 'Unit') selected @endif>Unit</option>
-                                </select>
-                            </div>
-                            @error('harga')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                       <div class="col-md-6">
+    <label>Harga / Satuan</label>
+    <div class="input-group">
+        <span class="input-group-text">Rp</span>
+        <input type="text" name="harga" id="hargaTambah"
+            class="form-control @error('harga') is-invalid @enderror"
+            value="{{ old('harga') }}">
+        <select name="satuan" class="form-select">
+            <option value="Pcs" @if (old('satuan') == 'Pcs') selected @endif>Pcs</option>
+            <option value="Box" @if (old('satuan') == 'Box') selected @endif>Box</option>
+            <option value="Pack" @if (old('satuan') == 'Pack') selected @endif>Pack</option>
+            <option value="Rim" @if (old('satuan') == 'Rim') selected @endif>Rim</option>
+            <option value="Unit" @if (old('satuan') == 'Unit') selected @endif>Unit</option>
+        </select>
+    </div>
+    @error('harga')
+        <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+
                         <input type="hidden" name="stok" value="0">
                     </div>
                 </div>
@@ -410,20 +412,22 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <div class="col-md-6">
-                                    <label>Harga / Satuan</label>
-                                    <div class="input-group">
-                                        <input type="number" step="0.01" name="harga" class="form-control"
-                                            value="{{ $b->harga }}">
-                                        <select name="satuan" class="form-select">
-                                            <option value="Pcs" @if ($b->satuan == 'Pcs') selected @endif>Pcs</option>
-                                            <option value="Box" @if ($b->satuan == 'Box') selected @endif>Box</option>
-                                            <option value="Pack" @if ($b->satuan == 'Pack') selected @endif>Pack</option>
-                                            <option value="Rim" @if ($b->satuan == 'Rim') selected @endif>Rim</option>
-                                            <option value="Unit" @if ($b->satuan == 'Unit') selected @endif>Unit</option>
-                                        </select>
-                                    </div>
-                                </div>
+                               <div class="col-md-6">
+    <label>Harga / Satuan</label>
+    <div class="input-group">
+        <span class="input-group-text">Rp</span>
+        <input type="text" name="harga" id="hargaEdit-{{ $b->id }}"
+            class="form-control" value="{{ $b->harga }}">
+        <select name="satuan" class="form-select">
+            <option value="Pcs" @if ($b->satuan == 'Pcs') selected @endif>Pcs</option>
+            <option value="Box" @if ($b->satuan == 'Box') selected @endif>Box</option>
+            <option value="Pack" @if ($b->satuan == 'Pack') selected @endif>Pack</option>
+            <option value="Rim" @if ($b->satuan == 'Rim') selected @endif>Rim</option>
+            <option value="Unit" @if ($b->satuan == 'Unit') selected @endif>Unit</option>
+        </select>
+    </div>
+</div>
+
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -713,6 +717,24 @@
     }
 </script>
 
+<script>
+function formatRupiah(angka) {
+    return angka.replace(/\D/g, "")
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+
+// Tambah Barang
+document.getElementById('hargaTambah')?.addEventListener('input', function() {
+    this.value = formatRupiah(this.value);
+});
+
+// Edit Barang (loop semua harga edit)
+document.querySelectorAll('[id^="hargaEdit-"]').forEach(input => {
+    input.addEventListener('input', function() {
+        this.value = formatRupiah(this.value);
+    });
+});
+</script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Modal Konfirmasi Hapus -->
@@ -721,7 +743,7 @@
         <form method="POST" id="deleteForm" class="modal-content">
             @csrf
             @method('DELETE')
-            <div class="modal-header bg-danger text-white">
+            <div class="modal-header">
                 <h5 class="modal-title">Konfirmasi Hapus</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
