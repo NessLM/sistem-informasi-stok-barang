@@ -45,10 +45,16 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:Admin'])->grou
     Route::get('/dashboard/filter', [AdminDashboard::class, 'filterData'])->name('dashboard.filter');
 
     /* ===== Data Keseluruhan ===== */
+    // Route utama untuk overview semua gudang
     Route::get('/datakeseluruhan', [DataKeseluruhan::class, 'index'])->name('datakeseluruhan.index');
+    
+    // Route untuk gudang spesifik berdasarkan slug
+    Route::get('/datakeseluruhan/gudang/{slug}', [DataKeseluruhan::class, 'gudang'])->name('datakeseluruhan.gudang');
+    
+    // Route lama untuk backward compatibility
     Route::get('/datakeseluruhan/{id}', [DataKeseluruhan::class, 'show'])->name('datakeseluruhan.show');
 
-    // filter kategori khusus
+    // Filter kategori khusus - tetap menggunakan BarangController
     Route::get('/datakeseluruhan/atk',        [BarangController::class, 'index'])->name('datakeseluruhan.atk');
     Route::get('/datakeseluruhan/listrik',    [BarangController::class, 'index'])->name('datakeseluruhan.listrik');
     Route::get('/datakeseluruhan/kebersihan', [BarangController::class, 'index'])->name('datakeseluruhan.kebersihan');
