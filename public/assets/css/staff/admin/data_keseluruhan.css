@@ -108,3 +108,58 @@
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
+/* === Form Field di Modal === */
+.modal .form-label {
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #333;
+}
+
+.modal .form-control,
+.modal .form-select {
+    border-radius: 6px;
+    border: 1px solid #ced4da;
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.modal .form-control:focus,
+.modal .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    outline: none;
+}
+
+.modal .input-group .form-control {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.modal .input-group .form-select {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+/* Invalid feedback (biar lebih rapih) */
+.modal .invalid-feedback {
+    font-size: 0.8rem;
+    color: #dc3545;
+}
+
+/* Button dalam modal */
+.modal .btn {
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-weight: 500;
+}
+
+.modal .btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.modal .btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
