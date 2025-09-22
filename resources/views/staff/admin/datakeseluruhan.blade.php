@@ -206,14 +206,11 @@
                                             <button class="btn btn-sm btn-success"
                                                 onclick="toggleDetail({{ $k->id }})"><i
                                                     class="bi bi-eye"></i></button>
-                                            <form action="{{ route('admin.kategori.destroy', $k->id) }}" method="POST"
-                                                onsubmit="return confirm('Hapus kategori ini beserta barang di dalamnya?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-danger">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </form>
+                                            <button type="button" class="btn btn-sm btn-danger"
+    onclick="confirmDelete('{{ route('admin.kategori.destroy', $k->id) }}', 'Kategori {{ $k->nama }}')">
+    <i class="bi bi-trash"></i>
+</button>
+
                                         </div>
                                     </td>
                                 </tr>
@@ -249,16 +246,10 @@
                                                                         data-bs-target="#modalEditBarang-{{ $b->id }}">
                                                                         <i class="bi bi-pencil"></i>
                                                                     </button>
-                                                                    <form action="{{ route('admin.barang.destroy', $b->id) }}"
-                                                                        method="POST" class="d-inline"
-                                                                        onsubmit="return confirm('Hapus barang ini?')">
-                                                                        @csrf
-                                                                        @method('DELETE')
-                                                                        <button type="submit"
-                                                                            class="btn btn-sm btn-danger">
-                                                                            <i class="bi bi-trash"></i>
-                                                                        </button>
-                                                                    </form>
+                                                                    <button type="button" class="btn btn-sm btn-danger"
+                                                                        onclick="confirmDelete('{{ route('admin.barang.destroy', $b->id) }}', 'Barang {{ $b->nama }}')">
+                                                                        <i class="bi bi-trash"></i>
+                                                                    </button>
                                                                 </td>
                                                             </tr>
                                                         @endforeach
@@ -454,82 +445,70 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label>Cari Nama/Kode Barang</label>
-                            <input type="text" name="search" class="form-control"
-                                value="{{ request('search') }}" placeholder="Nama atau kode barang">
-                        </div>
-                        <div class="col-md-6">
-                            <label>Kode Barang</label>
-                            <input type="text" name="kode" class="form-control" value="{{ request('kode') }}"
-                                placeholder="Filter berdasarkan kode">
-                        </div>
-                        <div class="col-md-6">
-                            <label>Stok Minimum</label>
-                            <input type="number" name="stok_min" class="form-control"
-                                value="{{ request('stok_min') }}" min="0">
-                        </div>
-                        <div class="col-md-6">
-                            <label>Stok Maksimum</label>
-                            <input type="number" name="stok_max" class="form-control"
-                                value="{{ request('stok_max') }}" min="0">
-                        </div>
-                        <div class="col-md-6">
-                            <label>Gudang</label>
-                            <select name="gudang_id" class="form-select">
-                                <option value="">-- Semua Gudang --</option>
-                                @foreach ($gudang as $g)
-                                    <option value="{{ $g->id }}"
-                                        @if (request('gudang_id') == $g->id) selected @endif>{{ $g->nama }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label>Kategori</label>
-                            <select name="kategori_id" class="form-select">
-                                <option value="">-- Semua Kategori --</option>
-                                @foreach ($kategori as $k)
-                                    <option value="{{ $k->id }}"
-                                        @if (request('kategori_id') == $k->id) selected @endif>{{ $k->nama }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label>Satuan</label>
-                            <select name="satuan" class="form-select">
-                                <option value="">-- Semua Satuan --</option>
-                                <option value="Pcs" @if (request('satuan') == 'Pcs') selected @endif>Pcs</option>
-                                <option value="Box" @if (request('satuan') == 'Box') selected @endif>Box</option>
-                                <option value="Pack" @if (request('satuan') == 'Pack') selected @endif>Pack</option>
-                                <option value="Rim" @if (request('satuan') == 'Rim') selected @endif>Rim</option>
-                                <option value="Unit" @if (request('satuan') == 'Unit') selected @endif>Unit</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label>Harga Minimum</label>
-                            <input type="number" name="harga_min" class="form-control"
-                                value="{{ request('harga_min') }}" step="0.01" min="0">
-                        </div>
-                        <div class="col-md-6">
-                            <label>Harga Maksimum</label>
-                            <input type="number" name="harga_max" class="form-control"
-                                value="{{ request('harga_max') }}" step="0.01" min="0">
-                        </div>
-                        <div class="col-md-6">
-                            <label>ID/Nomor Awal</label>
-                            <input type="number" name="nomor_awal" class="form-control"
-                                value="{{ request('nomor_awal') }}" min="1">
-                        </div>
-                        <div class="col-md-6">
-                            <label>ID/Nomor Akhir</label>
-                            <input type="number" name="nomor_akhir" class="form-control"
-                                value="{{ request('nomor_akhir') }}" min="1">
-                        </div>
-                    </div>
-                </div>
+    <div class="row g-3">
+        <!-- Satuan -->
+        <div class="col-md-6">
+            <label class="form-label">Satuan</label>
+            <select name="satuan" class="form-select">
+                <option value="">-- Semua Satuan --</option>
+                <option value="Pcs" @if (request('satuan') == 'Pcs') selected @endif>Pcs</option>
+                <option value="Box" @if (request('satuan') == 'Box') selected @endif>Box</option>
+                <option value="Pack" @if (request('satuan') == 'Pack') selected @endif>Pack</option>
+                <option value="Rim" @if (request('satuan') == 'Rim') selected @endif>Rim</option>
+                <option value="Unit" @if (request('satuan') == 'Unit') selected @endif>Unit</option>
+            </select>
+        </div>
+
+        <!-- Rentang Harga -->
+        <div class="col-md-6">
+            <label class="form-label">Rentang Harga</label>
+            <div class="d-flex gap-2">
+                <input type="number" name="harga_min" class="form-control"
+                    placeholder="Min Harga" value="{{ request('harga_min') }}" step="0.01" min="0">
+                <input type="number" name="harga_max" class="form-control"
+                    placeholder="Max Harga" value="{{ request('harga_max') }}" step="0.01" min="0">
+            </div>
+        </div>
+
+        <!-- Kategori -->
+        <div class="col-md-6">
+            <label class="form-label">Kategori</label>
+            <select name="kategori_id" class="form-select">
+                <option value="">-- Semua Kategori --</option>
+                @foreach ($kategori as $k)
+                    <option value="{{ $k->id }}" @if (request('kategori_id') == $k->id) selected @endif>
+                        {{ $k->nama }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        <!-- Stok -->
+        <div class="col-md-6">
+            <label class="form-label">Stok</label>
+            <div class="d-flex gap-2">
+                <input type="number" name="stok_min" class="form-control"
+                    placeholder="Stok Minimum" value="{{ request('stok_min') }}" min="0">
+                <input type="number" name="stok_max" class="form-control"
+                    placeholder="Stok Maksimal" value="{{ request('stok_max') }}" min="0">
+            </div>
+        </div>
+
+        <!-- Gudang -->
+        <div class="col-md-12">
+            <label class="form-label">Gudang</label>
+            <select name="gudang_id" class="form-select">
+                <option value="">-- Semua Gudang --</option>
+                @foreach ($gudang as $g)
+                    <option value="{{ $g->id }}" @if (request('gudang_id') == $g->id) selected @endif>
+                        {{ $g->nama }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+    </div>
+</div>
+
                 <div class="modal-footer">
                     <a href="{{ route('admin.datakeseluruhan.index') }}" class="btn btn-secondary">Reset Filter</a>
                     <button class="btn btn-primary" type="submit">Terapkan Filter</button>
@@ -719,6 +698,44 @@
         });
     </script>
 
+    <script>
+    function confirmDelete(actionUrl, itemName) {
+        // Set action form hapus
+        document.getElementById('deleteForm').setAttribute('action', actionUrl);
+
+        // Update pesan modal
+        document.getElementById('deleteMessage').innerText =
+            "Apakah Anda yakin ingin menghapus " + itemName + "?";
+
+        // Tampilkan modal
+        let modal = new bootstrap.Modal(document.getElementById('modalConfirmDelete'));
+        modal.show();
+    }
+</script>
+
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Modal Konfirmasi Hapus -->
+<div class="modal fade" id="modalConfirmDelete" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form method="POST" id="deleteForm" class="modal-content">
+            @csrf
+            @method('DELETE')
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Konfirmasi Hapus</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="deleteMessage">Apakah Anda yakin ingin menghapus data ini?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-danger">Hapus</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
 
 </x-layouts.app>
