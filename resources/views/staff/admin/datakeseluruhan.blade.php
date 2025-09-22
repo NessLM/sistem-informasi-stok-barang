@@ -523,6 +523,239 @@
 
     {{-- JavaScript --}}
     <script>
+
+        // Autocomplete search functionality dengan filter gudang
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const suggestionsContainer = document.getElementById('searchSuggestions');
+    let currentSuggestions = [];
+    let activeSuggestionIndex = -1;
+    let searchTimeout;
+
+    // Check if elements exist
+    if (!searchInput || !suggestionsContainer) {
+        console.log('Search elements not found');
+        return;
+    }
+
+    // Function untuk mendapatkan gudang ID yang aktif
+    function getActiveGudangId() {
+        // 1. Cek dari filter modal gudang_id
+        const modalGudangSelect = document.querySelector('#modalFilterBarang select[name="gudang_id"]');
+        if (modalGudangSelect && modalGudangSelect.value) {
+            return modalGudangSelect.value;
+        }
+
+        // 2. Cek dari URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('gudang_id')) {
+            return urlParams.get('gudang_id');
+        }
+
+        // 3. Cek dari path URL untuk gudang spesifik
+        const currentPath = window.location.pathname;
+        if (currentPath.includes('/atk')) {
+            return getGudangIdByName('ATK');
+        } else if (currentPath.includes('/listrik')) {
+            return getGudangIdByName('Listrik');
+        } else if (currentPath.includes('/kebersihan')) {
+            return getGudangIdByName('Kebersihan');
+        } else if (currentPath.includes('/komputer')) {
+            return getGudangIdByName('Komputer');
+        }
+
+        return null;
+    }
+
+    // Function untuk mendapatkan gudang ID berdasarkan nama
+    function getGudangIdByName(namaGudang) {
+        const gudangSelect = document.querySelector('select[name="gudang_id"]');
+        if (!gudangSelect) return null;
+
+        for (let option of gudangSelect.options) {
+            if (option.text.toLowerCase().includes(namaGudang.toLowerCase())) {
+                return option.value;
+            }
+        }
+        return null;
+    }
+
+    // Function untuk fetch suggestions dengan filter gudang
+    function fetchSuggestions(query) {
+        if (query.length < 2) {
+            hideSuggestions();
+            return;
+        }
+
+        showLoading();
+        clearTimeout(searchTimeout);
+
+        searchTimeout = setTimeout(() => {
+            const activeGudangId = getActiveGudangId();
+            let searchUrl = `{{ route('admin.api.search.barang') }}?q=${encodeURIComponent(query)}`;
+            
+            // Tambahkan gudang_id jika ada
+            if (activeGudangId) {
+                searchUrl += `&gudang_id=${activeGudangId}`;
+            }
+
+            console.log('Fetching with gudang filter:', searchUrl);
+
+            fetch(searchUrl)
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Search results:', data);
+                    currentSuggestions = data;
+                    displaySuggestions(data);
+                })
+                .catch(error => {
+                    console.error('Search error:', error);
+                    hideSuggestions();
+                });
+        }, 300);
+    }
+
+    function showLoading() {
+        suggestionsContainer.innerHTML = '<div class="loading-suggestion">Mencari...</div>';
+        suggestionsContainer.style.display = 'block';
+    }
+
+    // Function untuk display suggestions
+    function displaySuggestions(suggestions) {
+        if (suggestions.length === 0) {
+            suggestionsContainer.innerHTML = 
+                '<div class="loading-suggestion">Tidak ada barang ditemukan</div>';
+            return;
+        }
+
+        let html = '';
+        suggestions.forEach((item, index) => {
+            const stockStatusClass = `stock-${item.stock_status}`;
+            const stockText = item.stock_status === 'empty' ? 'Habis' :
+                item.stock_status === 'low' ? 'Sedikit' : 'Tersedia';
+
+            html += `
+                <div class="search-suggestion-item" data-index="${index}">
+                    <div class="suggestion-name">${item.nama}</div>
+                    <div class="suggestion-code">Kode: ${item.kode}</div>
+                    <div class="suggestion-meta">
+                        <small>Kategori: ${item.kategori} | Gudang: ${item.gudang} | Stok: ${item.stok} | 
+                        <span class="stock-status ${stockStatusClass}">${stockText}</span></small>
+                    </div>
+                </div>
+            `;
+        });
+
+        suggestionsContainer.innerHTML = html;
+        suggestionsContainer.style.display = 'block';
+
+        // Add click event listeners
+        suggestionsContainer.querySelectorAll('.search-suggestion-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const index = parseInt(this.dataset.index);
+                selectSuggestion(index);
+            });
+        });
+    }
+
+    // Function untuk hide suggestions
+    function hideSuggestions() {
+        suggestionsContainer.style.display = 'none';
+        activeSuggestionIndex = -1;
+    }
+
+    // Function untuk select suggestion
+    function selectSuggestion(index) {
+        if (currentSuggestions[index]) {
+            const suggestion = currentSuggestions[index];
+            searchInput.value = suggestion.nama;
+            hideSuggestions();
+
+            // Auto submit form dengan gudang filter
+            const form = document.getElementById('searchForm');
+            const activeGudangId = getActiveGudangId();
+            
+            // Tambahkan hidden input untuk gudang_id jika ada
+            if (activeGudangId) {
+                let hiddenGudangInput = form.querySelector('input[name="gudang_id"]');
+                if (!hiddenGudangInput) {
+                    hiddenGudangInput = document.createElement('input');
+                    hiddenGudangInput.type = 'hidden';
+                    hiddenGudangInput.name = 'gudang_id';
+                    form.appendChild(hiddenGudangInput);
+                }
+                hiddenGudangInput.value = activeGudangId;
+            }
+            
+            form.submit();
+        }
+    }
+
+    // Event listeners
+    searchInput.addEventListener('input', function() {
+        const query = this.value.trim();
+        console.log('Input changed:', query);
+        fetchSuggestions(query);
+    });
+
+    searchInput.addEventListener('keydown', function(e) {
+        const suggestions = suggestionsContainer.querySelectorAll('.search-suggestion-item');
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            activeSuggestionIndex = Math.min(activeSuggestionIndex + 1, suggestions.length - 1);
+            updateActiveSuggestion(suggestions);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            activeSuggestionIndex = Math.max(activeSuggestionIndex - 1, -1);
+            updateActiveSuggestion(suggestions);
+        } else if (e.key === 'Enter') {
+            if (activeSuggestionIndex >= 0) {
+                e.preventDefault();
+                selectSuggestion(activeSuggestionIndex);
+            }
+        } else if (e.key === 'Escape') {
+            hideSuggestions();
+        }
+    });
+
+    function updateActiveSuggestion(suggestions) {
+        suggestions.forEach((item, index) => {
+            if (index === activeSuggestionIndex) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+    }
+
+    // Hide suggestions when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+            hideSuggestions();
+        }
+    });
+
+    searchInput.addEventListener('focus', function() {
+        if (this.value.trim().length >= 2) {
+            fetchSuggestions(this.value.trim());
+        }
+    });
+
+    // Update search ketika filter gudang berubah
+    const gudangSelects = document.querySelectorAll('select[name="gudang_id"]');
+    gudangSelects.forEach(select => {
+        select.addEventListener('change', function() {
+            // Clear current search
+            if (searchInput.value.trim().length >= 2) {
+                fetchSuggestions(searchInput.value.trim());
+            }
+        });
+    });
+});
         // Toggle detail function
         function toggleDetail(id) {
             let el = document.getElementById('detail-' + id);
@@ -562,8 +795,12 @@
 
                 // Debounce search request
                 searchTimeout = setTimeout(() => {
-                    const searchUrl =
-                        `{{ route('admin.api.search.barang') }}?q=${encodeURIComponent(query)}`;
+const gudangId = document.querySelector('select[name="gudang_id"]')?.value || '';
+const searchUrl =
+    `{{ route('admin.api.search.barang') }}?q=${encodeURIComponent(query)}&gudang_id=${gudangId}`;
+
+
+
                     console.log('Fetching:', searchUrl);
 
                     fetch(searchUrl)
@@ -757,7 +994,4 @@ document.querySelectorAll('[id^="hargaEdit-"]').forEach(input => {
         </form>
     </div>
 </div>
-
-
-
 </x-layouts.app>
