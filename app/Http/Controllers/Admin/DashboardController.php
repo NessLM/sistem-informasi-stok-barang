@@ -7,6 +7,7 @@ use App\Helpers\MenuHelper;
 use App\Models\Riwayat;
 use App\Models\Barang;
 use App\Models\JenisBarang;
+use App\Models\Gudang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;     // [CHANGE] dipakai untuk agregasi
 use Carbon\Carbon;
@@ -17,9 +18,12 @@ class DashboardController extends Controller
     {
         $menu = MenuHelper::adminMenu();
 
-        // Ringkasan
+        // Ringkasan (default: semua gudang)
         $totalJenisBarang = JenisBarang::count();
         $totalBarang      = Barang::sum('stok');
+
+        // Data gudang untuk dropdown filter
+        $gudangs = Gudang::orderBy('nama')->get();
 
         /* =========================================================
          * GRAFIK PER BAGIAN  (HANYA KELUAR, TANPA DEFAULT, EXCLUDE "Umum")
@@ -69,6 +73,7 @@ class DashboardController extends Controller
             'menu',
             'totalJenisBarang',
             'totalBarang',
+            'gudangs',
             'bagianLabels',
             'keluarData',
             'pengeluaranLabels',
@@ -84,9 +89,48 @@ class DashboardController extends Controller
         $type   = $request->query('type', 'bagian');
         $filter = $request->query('filter', 'all');
 
+        if ($type === 'ringkasan') {
+            return $this->filterRingkasanData($filter);
+        }
+
         return $type === 'bagian'
             ? $this->filterBagianData($filter)
             : $this->filterPengeluaranData($filter);
+    }
+
+    // [NEW] Filter Ringkasan berdasarkan gudang
+    private function filterRingkasanData($gudangFilter)
+    {
+        if ($gudangFilter === 'all') {
+            // Semua gudang
+            $totalJenisBarang = JenisBarang::count();
+            $totalBarang = Barang::sum('stok');
+        } else {
+            // Filter berdasarkan gudang tertentu
+            $gudang = Gudang::where('nama', $gudangFilter)->first();
+            
+            if (!$gudang) {
+                return response()->json([
+                    'totalJenisBarang' => 0,
+                    'totalBarang' => 0
+                ]);
+            }
+
+            // Hitung total jenis barang berdasarkan gudang
+            $totalJenisBarang = JenisBarang::whereHas('kategori', function($query) use ($gudang) {
+                $query->where('gudang_id', $gudang->id);
+            })->count();
+
+            // Hitung total barang berdasarkan gudang
+            $totalBarang = Barang::whereHas('kategori', function($query) use ($gudang) {
+                $query->where('gudang_id', $gudang->id);
+            })->sum('stok');
+        }
+
+        return response()->json([
+            'totalJenisBarang' => (int) $totalJenisBarang,
+            'totalBarang' => (int) $totalBarang
+        ]);
     }
 
     // [CHANGE] Per Bagian → kirim juga rentang tanggal untuk badge

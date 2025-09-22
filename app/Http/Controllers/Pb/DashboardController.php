@@ -22,14 +22,9 @@ class DashboardController extends Controller
         $totalBarang      = Barang::sum('stok');
 
         /* =========================================================
-         * GRAFIK BARANG KELUAR PER KATEGORI (2021-2025)
+         * GRAFIK BARANG KELUAR PER KATEGORI (default: semua data)
          * =========================================================
-         * Menampilkan data keluar per kategori barang untuk 5 tahun terakhir
-         * Berdasarkan kolom 'gudang' di tabel riwayat
          */
-        $years = [2021, 2022, 2023, 2024, 2025];
-        
-        // Mapping gudang dengan kategori yang akan ditampilkan
         $kategorMap = [
             'ATK' => 'G. ATK',
             'Kebersihan' => 'G. Kebersihan', 
@@ -37,31 +32,24 @@ class DashboardController extends Controller
             'Komputer' => 'G.B. Komputer'
         ];
 
-        $keluarPerKategori = [];
-        
+        $keluarPerKategoriLabels = [];
+        $keluarPerKategoriData = [];
+
+        // Ambil semua data (tanpa filter waktu)
         foreach ($kategorMap as $gudangName => $kategoriLabel) {
-            $dataPerTahun = [];
-            foreach ($years as $year) {
-                $total = Riwayat::where('alur_barang', 'Keluar')
-                    ->where('gudang', $gudangName)
-                    ->whereYear('tanggal', $year)
-                    ->sum('jumlah');
-                
-                $dataPerTahun[] = (int) $total;
-            }
+            $total = Riwayat::where('alur_barang', 'Keluar')
+                ->where('gudang', $gudangName)
+                ->sum('jumlah');
             
-            $keluarPerKategori[] = [
-                'label' => $kategoriLabel,
-                'data' => $dataPerTahun,
-                'backgroundColor' => $this->getColorForKategori($gudangName),
-                'borderRadius' => 4,
-            ];
+            $keluarPerKategoriLabels[] = $kategoriLabel;
+            $keluarPerKategoriData[] = (int) $total;
         }
 
         /* =========================================================
          * GRAFIK BARANG MASUK DAN KELUAR (2021-2025)  
          * =========================================================
          */
+        $years = [2021, 2022, 2023, 2024, 2025];
         $masukData = [];
         $keluarData = [];
         
@@ -92,8 +80,9 @@ class DashboardController extends Controller
             'menu',
             'totalJenisBarang',
             'totalBarang',
+            'keluarPerKategoriLabels',
+            'keluarPerKategoriData',
             'years',
-            'keluarPerKategori',
             'masukKeluarData'
         ));
     }
@@ -103,23 +92,16 @@ class DashboardController extends Controller
     public function filterData(Request $request)
     {
         $type   = $request->query('type', 'kategori');
-        $filter = $request->query('filter', '5y');
+        $filter = $request->query('filter', 'all');
 
         return $type === 'kategori'
             ? $this->filterKategoriData($filter)
             : $this->filterMasukKeluarData($filter);
     }
 
-    // Filter data kategori berdasarkan rentang tahun
+    // Filter data kategori berdasarkan rentang waktu
     private function filterKategoriData($filter)
     {
-        $currentYear = (int) date('Y');
-        
-        if ($filter === '3y')      $years = range($currentYear - 2, $currentYear);
-        elseif ($filter === '5y')  $years = [2021, 2022, 2023, 2024, 2025];
-        elseif ($filter === '7y')  $years = range($currentYear - 6, $currentYear);
-        else                       $years = [2021, 2022, 2023, 2024, 2025]; // default
-
         $kategorMap = [
             'ATK' => 'G. ATK',
             'Kebersihan' => 'G. Kebersihan',
@@ -127,30 +109,47 @@ class DashboardController extends Controller
             'Komputer' => 'G.B. Komputer'
         ];
 
-        $datasets = [];
+        $q = Riwayat::query()->where('alur_barang', 'Keluar');
         
+        $start = null; 
+        $end = null;
+        
+        // Filter berdasarkan waktu
+        if ($filter === 'week') {
+            $start = Carbon::now()->subWeek();
+            $q->where('tanggal', '>=', $start);
+        } elseif ($filter === 'month') {
+            $start = Carbon::now()->subMonth();
+            $q->where('tanggal', '>=', $start);
+        } elseif ($filter === 'year') {
+            $start = Carbon::now()->subYear();
+            $q->where('tanggal', '>=', $start);
+        }
+        $end = Carbon::now();
+
+        $labels = [];
+        $data = [];
+
         foreach ($kategorMap as $gudangName => $kategoriLabel) {
-            $dataPerTahun = [];
-            foreach ($years as $year) {
-                $total = Riwayat::where('alur_barang', 'Keluar')
-                    ->where('gudang', $gudangName)
-                    ->whereYear('tanggal', $year)
-                    ->sum('jumlah');
-                
-                $dataPerTahun[] = (int) $total;
-            }
+            $total = (clone $q)
+                ->where('gudang', $gudangName)
+                ->sum('jumlah');
             
-            $datasets[] = [
-                'label' => $kategoriLabel,
-                'data' => $dataPerTahun,
-                'backgroundColor' => $this->getColorForKategori($gudangName),
-                'borderRadius' => 4,
-            ];
+            $labels[] = $kategoriLabel;
+            $data[] = (int) $total;
         }
 
         return response()->json([
-            'labels' => $years,
-            'datasets' => $datasets,
+            'labels' => $labels,
+            'data' => $data,
+            'colors' => [
+                $this->getColorForKategori('ATK'),
+                $this->getColorForKategori('Kebersihan'),
+                $this->getColorForKategori('Listrik'),
+                $this->getColorForKategori('Komputer')
+            ],
+            // Info rentang untuk badge (null => "Semua Data")
+            'range' => $start ? ['start' => $start->toDateString(), 'end' => $end->toDateString()] : null,
         ]);
     }
 

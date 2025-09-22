@@ -14,76 +14,80 @@
 /* --- Baris layout 2 kolom (Ringkasan | Grafik Barang Keluar) --- */
 .dashboard-row {
   display: flex;
-  gap: 25px;
+  gap: 26px;
   margin-bottom: 30px;
-  align-items: stretch;
+  align-items: stretch;          /* Kedua kolom sama tinggi */
 }
 
 .dashboard-row > * { min-width: 0; }
 .dashboard-row:last-child { margin-bottom: 0; }
 
-/* ==================== Summary Section (kolom kiri) ==================== */
+/* ==================== Summary Section (kolom kiri) - SAMA DENGAN ADMIN ==================== */
 .summary-section {
-  flex: 0 0 300px;
+  flex: 0 0 360px;
   background: #fff;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+  display: flex;                 /* Jadikan flex container */
+  flex-direction: column;        /* Konten ditumpuk vertikal */
 }
 
 .summary-section h2 {
   color: #374151;
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin: 0 0 20px 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0 0 16px 0;
 }
 
 .summary-cards {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 14px;
+  flex: 1;                       /* Ambil ruang vertikal tersisa */
+  height: 100%;                  /* Benar-benar penuh */
 }
 
-.summary-card {
-  background: #f8fafc;
-  border-radius: 10px;
-  padding: 20px;
+/* ===== VARIAN KLASIK (ikon bulat kiri, teks kanan) - SAMA DENGAN ADMIN ===== */
+.summary-cards--classic { gap: 14px; }
+
+.summary-card--classic{
   display: flex;
   align-items: center;
-  gap: 15px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  gap: 14px;
+  background: #f3f6fb;
+  border: 1px solid #e6ecf4;
+  border-radius: 16px;
+  padding: 14px 16px;
+  box-shadow: 0 6px 14px rgba(15,23,42,0.06);
+  flex: 1;                       /* Kartu ikuti tinggi kolom (dua kartu = bagi rata) */
+  min-height: 92px;              /* Batas minimal biar tidak kependekan saat layar kecil */
 }
 
-.summary-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+.summary-card__icon-circle{
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  background: #e6f0ff;
+  color: #0f172a;
+  font-size: 22px;
+  flex: 0 0 auto;
 }
 
-.card-icon {
-  width: 50px;
-  height: 50px;
-  background: #e0f2fe;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #0369a1;
-  font-size: 1.5rem;
-}
+.summary-card__body{ display:flex; flex-direction:column; }
 
-.card-content { flex: 1; }
-
-.card-number {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1f2937;
+.summary-card__number{
+  font-weight: 800;
+  font-size: 1.8rem;
   line-height: 1;
+  color: #0f172a;
+  margin-bottom: 4px;
 }
 
-.card-label {
-  color: #6b7280;
-  font-size: 0.9rem;
-  margin-top: 5px;
+.summary-card__label{
+  font-size: .95rem;
+  font-weight: 600;
+  color: #4b5563;
 }
 
 /* ==================== Chart Sections ==================== */
@@ -91,86 +95,128 @@
 .wide-chart-section {
   flex: 1;
   background: #fff;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
 }
 
+/* Header di atas chart (judul + filter/controls) */
 .chart-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
+/* Memungkinkan elemen header membungkus (badge tanggal panjang) */
+.chart-header--wrap { flex-wrap: wrap; gap: 10px 12px; }
+.chart-header-left { display:flex; align-items:center; gap:10px; min-width:320px; }
 .chart-header h2 {
   color: #374151;
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-size: 1.1rem;
+  font-weight: 700;
   margin: 0;
 }
 
 .chart-filter,
-.chart-controls {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+.chart-controls { display:flex; align-items:center; gap:8px; }
 
-.filter-btn {
+/* Tombol corong (filter) */
+.filter-btn,
+.dropdown-toggle {
   background: #f3f4f6;
   border: 1px solid #d1d5db;
-  border-radius: 8px;
-  padding: 8px 12px;
+  border-radius: 10px;
+  padding: 7px 12px;
   color: #374151;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 0.9rem;
+  font-size: .9rem;
+}
+.filter-btn:hover,
+.dropdown-toggle:hover { background:#e5e7eb; border-color:#9ca3af; }
+
+/* Dropdown styles */
+.dropdown { 
+  position: relative; 
+  display: inline-block; 
 }
 
-.filter-btn:hover {
+.dropdown-toggle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 7px 12px;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: .9rem;
+  text-decoration: none;
+}
+
+.dropdown-toggle:hover {
   background: #e5e7eb;
   border-color: #9ca3af;
 }
 
-.chart-container {
-  height: 300px;
-  margin-bottom: 15px;
-  position: relative;
+.dropdown-menu {
+  position: absolute; 
+  top: 100%; 
+  left: 0; 
+  z-index: 1000; 
+  display: none; 
+  min-width: 12rem;
+  padding: .5rem 0; 
+  margin: .125rem 0 0; 
+  font-size: .9rem; 
+  color: #374151; 
+  text-align: left;
+  list-style: none;
+  background-color: #fff; 
+  border: 1px solid #e5e7eb; 
+  border-radius: .5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,.08);
 }
 
-.chart-container canvas {
-  width: 100% !important;
-  height: 100% !important;
+.dropdown-menu.show { 
+  display: block; 
 }
 
-.wide-chart-section .chart-container { 
-  height: 350px; 
+.dropdown-item { 
+  display: block; 
+  width: 100%; 
+  padding: .5rem 1rem; 
+  color: #374151; 
+  cursor: pointer;
+  text-decoration: none;
+  background: none;
+  border: none;
+  text-align: left;
+  white-space: nowrap;
 }
 
-/* ==================== Legend Styles ==================== */
+.dropdown-item:hover { 
+  background: #f3f4f6; 
+  color: #374151;
+}
+
+/* --- Wadah kanvas Chart.js --- */
+.chart-container { height: 260px; margin-bottom: 12px; position: relative; }
+.chart-container canvas{ width: 100% !important; height: 100% !important; }
+.wide-chart-section .chart-container { height: 300px; }
+
+/* Legend (keterangan warna) */
 .chart-legend {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  padding-top: 10px;
-  border-top: 1px solid #f3f4f6;
-  flex-wrap: wrap;
+  display: flex; justify-content: center; gap: 18px;
+  padding-top: 8px; border-top: 1px solid #f3f4f6;
 }
+.chart-legend.yearly { gap: 22px; }
 
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.9rem;
-  color: #6b7280;
-}
-
-.legend-color {
-  width: 12px;
-  height: 12px;
-  border-radius: 2px;
-}
+.legend-item { display:flex; align-items:center; gap:8px; font-size:.92rem; color:#6b7280; }
+.legend-color { width:12px; height:12px; border-radius:2px; }
 
 /* Warna legend untuk kategori barang keluar */
 .legend-color.atk { background-color: #3B82F6; }
@@ -182,146 +228,45 @@
 .legend-color.masuk { background-color: #22C55E; }
 .legend-color.keluar { background-color: #EF4444; }
 
-/* ==================== Dropdown Styles ==================== */
-.dropdown {
-  position: relative;
-  display: inline-block;
-}
-
-.dropdown-toggle {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  background: #f3f4f6;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  padding: 8px 12px;
-  color: #374151;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.9rem;
-}
-
-.dropdown-toggle:hover {
-  background: #e5e7eb;
-  border-color: #9ca3af;
-}
-
-.dropdown-toggle:after {
-  display: inline-block;
-  margin-left: 0.255em;
-  vertical-align: 0.255em;
-  content: "";
-  border-top: 0.3em solid;
-  border-right: 0.3em solid transparent;
-  border-bottom: 0;
-  border-left: 0.3em solid transparent;
-}
-
-.dropdown-menu {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  z-index: 1000;
-  display: none;
-  min-width: 10rem;
-  padding: 0.5rem 0;
-  margin: 0.125rem 0 0;
-  font-size: 0.9rem;
-  color: #374151;
-  text-align: left;
-  list-style: none;
-  background-color: #fff;
-  background-clip: padding-box;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.375rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-.dropdown-menu.show {
-  display: block;
-}
-
-.dropdown-item {
-  display: block;
-  width: 100%;
-  padding: 0.5rem 1rem;
-  clear: both;
-  font-weight: 400;
-  color: #374151;
-  text-align: inherit;
-  text-decoration: none;
+/* ===== Badge keterangan rentang (abu-abu kecil) - SAMA DENGAN ADMIN ===== */
+.range-hint{
+  background:#f3f4f6;
+  color:#6b7280;
+  border:1px solid #e5e7eb;
+  border-radius:999px;
+  font-size:.85rem;
+  padding:4px 10px;
+  line-height:1;
   white-space: nowrap;
-  background-color: transparent;
-  border: 0;
-  cursor: pointer;
-}
-
-.dropdown-item:hover {
-  background-color: #f3f4f6;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 320px;
 }
 
 /* ==================== Responsiveness ==================== */
 @media (max-width: 1200px) {
-  .dashboard-row { 
-    flex-direction: column; 
-  }
-  
-  .summary-section { 
-    flex: none; 
-  }
-  
-  .summary-cards {
-    flex-direction: row;
-    gap: 20px;
-  }
-  
-  .summary-card { 
-    flex: 1; 
-  }
+  .dashboard-row { flex-direction: column; }  /* mobile/medium: kolom bertumpuk */
+  .summary-section { flex: none; }
+  .range-hint{ max-width: 240px; }
+  .summary-card--classic { min-height: 84px; }   /* sedikit lebih pendek di layar sedang */
 }
 
 @media (max-width: 768px) {
-  .dashboard-container { 
-    padding: 15px; 
-  }
-
-  .summary-cards { 
-    flex-direction: column; 
-    gap: 15px; 
-  }
-
-  .chart-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-
-  .chart-container { 
-    height: 250px; 
-  }
-  
-  .wide-chart-section .chart-container { 
-    height: 300px; 
-  }
-
-  .chart-legend { 
-    flex-wrap: wrap; 
-    gap: 15px; 
-  }
+  .dashboard-container { padding: 14px; }
+  .chart-container { height: 220px; }
+  .wide-chart-section .chart-container { height: 250px; }
+  .chart-legend { flex-wrap: wrap; gap: 12px; }
+  .range-hint{ max-width: 200px; }
+  .summary-card--classic { min-height: 76px; }
 }
 
 @media (max-width: 480px) {
-  .card-number { 
-    font-size: 1.5rem; 
-  }
-  
-  .card-icon { 
+  .summary-card__number { font-size: 1.5rem; }
+  .summary-card__icon-circle { 
     width: 40px; 
     height: 40px; 
     font-size: 1.2rem; 
   }
-  
   .dropdown-menu {
     position: static;
     margin-top: 0.5rem;
