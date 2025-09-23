@@ -13,23 +13,35 @@ class BarangController extends Controller
 {
     public function index(Request $request)
     {
-        $search = $request->input('search');
+        $search   = $request->input('search');
+        $gudangId = $request->input('gudang_id');
 
-        // Ambil kategori + barang (filter kalau ada search)
-        $kategori = Kategori::with(['barang' => function ($q) use ($search) {
+        // Ambil kategori beserta barangnya
+        $kategori = Kategori::with(['barang' => function ($q) use ($search, $gudangId) {
             if ($search) {
-                $q->where('nama', 'like', "%{$search}%")
-                  ->orWhere('kode', 'like', "%{$search}%");
+                $q->where(function ($sub) use ($search) {
+                    $sub->where('nama', 'like', "%{$search}%")
+                        ->orWhere('kode', 'like', "%{$search}%");
+                });
             }
-        }])->get();
+            if ($gudangId) {
+                $q->whereHas('kategori', function ($sub) use ($gudangId) {
+                    $sub->where('gudang_id', $gudangId);
+                });
+            }
+        }])
+        ->when($gudangId, function ($q) use ($gudangId) {
+            $q->where('gudang_id', $gudangId);
+        })
+        ->get();
 
-        // Ambil semua gudang biar dropdown muncul
+        // Ambil semua gudang untuk dropdown
         $gudang = Gudang::all();
-        $barang = collect(); // Initialize empty collection for search results
+        $barang = collect(); // kosong dulu, dipakai saat search manual
 
         $menu = MenuHelper::adminMenu();
 
-        return view('staff.admin.datakeseluruhan', compact('kategori', 'menu', 'search', 'gudang', 'barang'));
+        return view('staff.admin.datakeseluruhan', compact('kategori', 'menu', 'search', 'gudang', 'barang', 'gudangId'));
     }
 
     public function store(Request $request)
@@ -47,16 +59,15 @@ class BarangController extends Controller
         ]);
 
         Barang::create([
-            'kode'        => $request->kode,
-            'nama'        => $request->nama,
-            'harga'       => $request->harga ?? 0,
-            'stok'        => $request->stok ?? 0,
-            'satuan'      => $request->satuan,
-            'kategori_id' => $request->kategori_id,
+            'kode'            => $request->kode,
+            'nama'            => $request->nama,
+            'harga'           => $request->harga ?? 0,
+            'stok'            => $request->stok ?? 0,
+            'satuan'          => $request->satuan,
+            'kategori_id'     => $request->kategori_id,
             'jenis_barang_id' => 1, // default
         ]);
 
-        // ✅ FIXED: Route name sesuai web.php
         return redirect()->route('admin.datakeseluruhan.index')
                          ->with('success', 'Barang berhasil ditambahkan!');
     }
@@ -96,7 +107,6 @@ class BarangController extends Controller
             'kategori_id' => $request->kategori_id,
         ]);
 
-        // ✅ FIXED: Route name sesuai web.php
         return redirect()->route('admin.datakeseluruhan.index')
                          ->with('success', 'Barang berhasil diperbarui!');
     }
@@ -106,45 +116,39 @@ class BarangController extends Controller
         $barang = Barang::findOrFail($id);
         $barang->delete();
 
-        // ✅ FIXED: Route name sesuai web.php
         return redirect()->route('admin.datakeseluruhan.index')
                          ->with('success', 'Barang berhasil dihapus!');
     }
 
-public function search(Request $request)
-{
-    $q        = $request->get('q');
-    $gudangId = $request->get('gudang_id');
+    public function search(Request $request)
+    {
+        $q        = $request->get('q');
+        $gudangId = $request->get('gudang_id');
 
-    $barang = Barang::with(['kategori.gudang'])
-        ->whereHas('kategori', function ($sub) use ($gudangId) {
-            if ($gudangId) {
-                $sub->where('gudang_id', $gudangId);
-            }
-        })
-        ->when($q, function ($query) use ($q) {
-            $query->where(function ($q2) use ($q) {
-                $q2->where('nama', 'like', "%{$q}%")
-                   ->orWhere('kode', 'like', "%{$q}%");
-            });
-        })
-        ->get();
+        $barang = Barang::with(['kategori.gudang'])
+            ->when($gudangId, function ($query, $gudangId) {
+                $query->whereHas('kategori', function ($sub) use ($gudangId) {
+                    $sub->where('gudang_id', $gudangId);
+                });
+            })
+            ->when($q, function ($query) use ($q) {
+                $query->where(function ($q2) use ($q) {
+                    $q2->where('nama', 'like', "%{$q}%")
+                       ->orWhere('kode', 'like', "%{$q}%");
+                });
+            })
+            ->get();
 
-    return response()->json($barang->map(function ($b) {
-        return [
-            'id'           => $b->id,
-            'nama'         => $b->nama,
-            'kode'         => $b->kode,
-            'stok'         => $b->stok,
-            'kategori'     => $b->kategori->nama ?? '-',
-            'gudang'       => $b->kategori->gudang->nama ?? '-',
-            'stock_status' => $b->stok == 0 ? 'empty' : ($b->stok < 5 ? 'low' : 'available'),
-        ];
-    }));
-}
-
-
-
-
-
+        return response()->json($barang->map(function ($b) {
+            return [
+                'id'           => $b->id,
+                'nama'         => $b->nama,
+                'kode'         => $b->kode,
+                'stok'         => $b->stok,
+                'kategori'     => $b->kategori->nama ?? '-',
+                'gudang'       => $b->kategori->gudang->nama ?? '-',
+                'stock_status' => $b->stok == 0 ? 'empty' : ($b->stok < 5 ? 'low' : 'available'),
+            ];
+        }));
+    }
 }
