@@ -54,7 +54,7 @@ class DataKeseluruhan extends Controller
         }
 
         // Query barang
-        $query = Barang::with('kategori');
+        $query = Barang::with('kategori.gudang'); // Sertakan relasi gudang
 
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -114,10 +114,6 @@ class DataKeseluruhan extends Controller
 
     /**
      * Menampilkan data gudang spesifik berdasarkan slug
-     * 
-     * @param string $slug
-     * @param Request $request
-     * @return \Illuminate\View\View
      */
     public function gudang($slug, Request $request)
     {
@@ -183,12 +179,11 @@ class DataKeseluruhan extends Controller
     {
         $request->validate([
             'nama'      => 'required|string|max:255|unique:kategori,nama',
-            'gudang_id' => 'required|exists:gudang,id', // validasi tabel gudang
+            'gudang_id' => 'required|exists:gudang,id',
         ]);
 
         Kategori::create($request->only(['nama', 'gudang_id']));
 
-        // ✅ FIXED: Gunakan route name yang sesuai web.php
         return redirect()->route('admin.datakeseluruhan.index')
                          ->with('success', 'Kategori berhasil ditambahkan!');
     }
@@ -213,7 +208,6 @@ class DataKeseluruhan extends Controller
             'jenis_barang_id' => 1, // default
         ]);
 
-        // ✅ FIXED: Gunakan route name yang sesuai web.php
         return redirect()->route('admin.datakeseluruhan.index')
                          ->with('success', 'Barang berhasil ditambahkan!');
     }
@@ -231,7 +225,6 @@ class DataKeseluruhan extends Controller
 
         $barang->update($request->only(['nama', 'harga', 'stok', 'satuan', 'kategori_id']));
 
-        // ✅ FIXED: Gunakan route name yang sesuai web.php
         return redirect()->route('admin.datakeseluruhan.index')
                          ->with('success', 'Barang berhasil diperbarui!');
     }
@@ -241,7 +234,6 @@ class DataKeseluruhan extends Controller
         $barang = Barang::where('kode', $kode)->firstOrFail();
         $barang->delete();
 
-        // ✅ FIXED: Gunakan route name yang sesuai web.php
         return redirect()->route('admin.datakeseluruhan.index')
                          ->with('success', 'Barang berhasil dihapus!');
     }
@@ -254,30 +246,33 @@ class DataKeseluruhan extends Controller
         $kategori->barang()->delete();
         $kategori->delete();
 
-        // ✅ FIXED: Gunakan route name yang sesuai web.php
         return redirect()->route('admin.datakeseluruhan.index')
                          ->with('success', 'Kategori berhasil dihapus!');
     }
 
     /**
-     * API untuk search suggestions
+     * API untuk search suggestions dengan filter gudang yang BENAR
      */
     public function searchSuggestions(Request $request)
     {
         $search = $request->get('q', '');
-        
-        // Debug log
-        \Log::info('Search API called', ['query' => $search]);
-        
+        $gudangId = $request->get('gudang_id'); // ambil gudang_id dari request
+
         if (strlen($search) < 2) {
             return response()->json([]);
         }
 
         try {
-            $suggestions = Barang::with('kategori')
+            $suggestions = Barang::with(['kategori.gudang'])
                 ->where(function ($query) use ($search) {
                     $query->where('nama', 'like', "%{$search}%")
                           ->orWhere('kode', 'like', "%{$search}%");
+                })
+                // ✅ PERBAIKAN UTAMA: Filter berdasarkan gudang jika ada
+                ->when($gudangId, function ($query, $gudangId) {
+                    $query->whereHas('kategori', function($q) use ($gudangId) {
+                        $q->where('gudang_id', $gudangId);
+                    });
                 })
                 ->select('id', 'nama', 'kode', 'stok', 'kategori_id')
                 ->limit(8)
@@ -289,12 +284,18 @@ class DataKeseluruhan extends Controller
                         'kode' => $barang->kode,
                         'stok' => $barang->stok,
                         'kategori' => $barang->kategori->nama ?? '-',
+                        'gudang' => $barang->kategori->gudang->nama ?? '-', 
                         'display' => $barang->nama . ' (' . $barang->kode . ')',
                         'stock_status' => $barang->stok == 0 ? 'empty' : ($barang->stok < 10 ? 'low' : 'normal')
                     ];
                 });
 
-            \Log::info('Search results', ['count' => $suggestions->count(), 'results' => $suggestions]);
+            \Log::info('Search suggestions', [
+                'query' => $search,
+                'gudang_id' => $gudangId,
+                'results' => $suggestions->count(),
+                'first_result_gudang' => $suggestions->first()['gudang'] ?? null
+            ]);
 
             return response()->json($suggestions);
             
@@ -306,9 +307,6 @@ class DataKeseluruhan extends Controller
 
     /**
      * Cek apakah ada filter yang aktif
-     * 
-     * @param Request $request
-     * @return bool
      */
     private function hasAnyFilter(Request $request)
     {
@@ -329,16 +327,12 @@ class DataKeseluruhan extends Controller
 
     /**
      * Ambil data barang berdasarkan filter
-     * 
-     * @param Request $request
-     * @param int|null $gudangId
-     * @return \Illuminate\Database\Eloquent\Collection
      */
     private function getFilteredBarang(Request $request, $gudangId = null)
     {
         $query = Barang::with(['kategori.gudang']);
         
-        // Filter berdasarkan gudang jika disediakan
+        // ✅ PERBAIKAN: Filter berdasarkan gudang jika disediakan
         if ($gudangId) {
             $query->whereHas('kategori', function($q) use ($gudangId) {
                 $q->where('gudang_id', $gudangId);

@@ -9,8 +9,6 @@
         "Noto Color Emoji";
 }
 
-
-
 main.content {
     margin-left: 300px;
     /* default ketika sidebar normal */
@@ -54,7 +52,7 @@ main.content {
 .sb-nav .sb-item summary span,
 .sb-nav .sb-item summary .caret,
 .sb-nav .sb-link span,
-.sb-nav .sb-children {
+.sb-nav  {
     display: inline-block;
 }
 
@@ -77,7 +75,6 @@ main.content {
 .layout.is-collapsed .sb-brand .brand-img {
     display: none;
 }
-
 
 header.page {
     display: flex;
@@ -171,6 +168,8 @@ aside.sb {
     overflow: auto;
 }
 
+
+
 .sb-item .sb-link,
 .sb-item summary {
     display: flex;
@@ -226,12 +225,23 @@ aside.sb {
 }
 
 .sb-item details[open] .caret {
+    opacity: 1;
     transform: rotate(90deg);
 }
 
+/* GANTI dengan ini */
+.sb-item.is-active .sb-toggle .caret {
+    transform: rotate(90deg);
+    opacity: 1;
+}
+
 .sb-children {
-    display: grid;
+    display: none;
     margin: 6px 0 6px 8px;
+}
+
+.sb-children.show {
+    display: grid;
 }
 
 .sb-children .sb-link {
@@ -371,12 +381,119 @@ aside.sb {
 }
 
 /* =========================================================
-   [ADD] Active states untuk sidebar (PILL PUTIH)
-   - Parent aktif (link biasa)   : .sb-item .sb-link.is-active
-   - Parent aktif (summary)      : .sb-item.is-active summary
-   - Child aktif                 : .sb-children .sb-link.is-active
-   - Parent auto-open            : handled by <details open> (HTML)
-   ========================================================= */
+        [ADD] Active states untuk sidebar (PILL PUTIH)
+        - Parent aktif (link biasa)   : .sb-item .sb-link.is-active
+        - Parent aktif (summary)      : .sb-item.is-active summary
+        - Child aktif                 : .sb-children .sb-link.is-active
+        - Parent auto-open            : handled by <details open> (HTML)
+        ========================================================= */
+
+/* ========================================================= */
+/* [PERBAIKAN] Styling untuk sb-parent-item agar konsisten  */
+/* ========================================================= */
+
+.sb-parent-item {
+    display: flex;
+    align-items: center;
+    position: relative;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+/* Link utama dalam parent item */
+.sb-parent-item .sb-main-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    color: #eaf2ff;
+    text-decoration: none;
+    flex: 1;
+    transition: all 0.3s ease;
+}
+
+.sb-main-link {
+    flex: 1;
+}
+
+.sb-toggle {
+    z-index: 2;
+    position: relative;
+}
+
+/* Tombol toggle untuk submenu */
+.sb-parent-item .sb-toggle {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    background: transparent;
+    border: 0;
+    color: #eaf2ff;
+    cursor: pointer;
+    border-radius: 10px;
+    margin-left: auto;
+    transition: all 0.2s;
+}
+
+/* Hover states */
+.sb-parent-item:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.sb-parent-item .sb-main-link:hover,
+.sb-parent-item .sb-toggle:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* Sembunyikan toggle button dropdown ketika sidebar collapsed */
+.layout.is-collapsed .sb-toggle {
+    display: none !important;
+}
+
+/* Active state untuk parent item */
+.sb-parent-item.is-active {
+    background: #ffffff;
+    color: #0d5ba3;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, .12);
+}
+
+.sb-parent-item.is-active .sb-main-link,
+.sb-parent-item.is-active .sb-toggle {
+    color: #0d5ba3;
+}
+
+/* Rotate caret ketika submenu terbuka */
+.sb-parent-item .sb-toggle .caret {
+    transition: transform 0.2s;
+}
+
+.sb-item.is-active .sb-toggle .caret {
+    transform: rotate(90deg);
+}
+
+/* Penyesuaian untuk state collapsed */
+.layout.is-collapsed .sb-parent-item {
+    justify-content: center;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.layout.is-collapsed .sb-parent-item .sb-main-link {
+    padding: 8px;
+    justify-content: center;
+}
+
+.layout.is-collapsed .sb-parent-item .sb-toggle {
+    margin-left: 0;
+    width: 30px;
+    height: 30px;
+}
+
+.layout.is-collapsed .sb-parent-item .sb-main-link span {
+    display: none;
+}
 
 .sb-item .sb-link.is-active {
     background: #ffffff;
@@ -399,10 +516,7 @@ aside.sb {
 }
 
 /* Saat open, caret sudah rotate 90deg (rule di atas).
-   Biar lebih jelas, naikkan opasitas */
-.sb-item details[open] .caret {
-    opacity: 1;
-}
+        Biar lebih jelas, naikkan opasitas */
 
 /* Hover tidak mengganggu state aktif */
 .sb-item .sb-link.is-active:hover,
@@ -411,8 +525,8 @@ aside.sb {
 }
 
 /* =========================================================
-   [UPDATE] Styles untuk modal data pengembang - Layout baru
-   ========================================================= */
+        [UPDATE] Styles untuk modal data pengembang - Layout baru
+        ========================================================= */
 
 /* Modal backdrop */
 .modal-s {
@@ -592,7 +706,6 @@ aside.sb {
     color: #2c3e50;
 }
 
-
 /* Website info di bagian bawah - DIPUSATKAN */
 .website-info {
     text-align: center;
@@ -629,7 +742,6 @@ aside.sb {
     opacity: 0.8;
 }
 
-
 /* Gaya untuk bagian media sosial di modal */
 .social-media-section {
     text-align: center;
@@ -656,6 +768,12 @@ aside.sb {
 
 .social-icon:hover {
     transform: scale(1.1);
+}
+
+.sb-item .sb-link.is-active {
+    background: #ffffff;
+    color: #0d5ba3;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, .12);
 }
 
 /* Responsiveness untuk modal */

@@ -9,7 +9,22 @@
     <div class="dashboard-row">
       {{-- ========================= RINGKASAN ========================= --}}
       <div class="summary-section">
-        <h2>Ringkasan</h2>
+        {{-- [NEW] Header dengan judul dan filter dropdown --}}
+        <div class="summary-header">
+          <h2>Ringkasan</h2>
+          <div class="summary-filter">
+            <button class="summary-filter-btn" type="button" id="summaryFilterBtn">
+              <span id="summaryFilterText">Semua</span>
+              <i class="bi bi-chevron-down"></i>
+            </button>
+            <div class="summary-dropdown-menu" id="summaryDropdownMenu">
+              <button class="summary-dropdown-item" data-value="all">Semua</button>
+              @foreach($gudangs as $gudang)
+                <button class="summary-dropdown-item" data-value="{{ $gudang->nama }}">{{ $gudang->nama }}</button>
+              @endforeach
+            </div>
+          </div>
+        </div>
 
         {{-- KLASIK: ikon bulat di kiri, angka & label di kanan (match CSS kamu) --}}
         <div class="summary-cards summary-cards--classic">
@@ -19,7 +34,7 @@
               <i class="bi bi-box"></i>
             </div>
             <div class="summary-card__body">
-              <div class="summary-card__number">{{ $totalJenisBarang }}</div>
+              <div class="summary-card__number" id="totalJenisBarang">{{ $totalJenisBarang }}</div>
               <div class="summary-card__label">Total Jenis Barang</div>
             </div>
           </div>
@@ -30,7 +45,7 @@
               <i class="bi bi-box-seam"></i>
             </div>
             <div class="summary-card__body">
-              <div class="summary-card__number">{{ $totalBarang }}</div>
+              <div class="summary-card__number" id="totalBarang">{{ $totalBarang }}</div>
               <div class="summary-card__label">Total Barang</div>
             </div>
           </div>
@@ -120,6 +135,7 @@
         <div class="chart-legend yearly" id="legendYears"></div>
       </div>
     </div>
+
   </div>
 
   {{-- Chart.js --}}
@@ -127,6 +143,72 @@
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const FILTER_URL = "{{ route('admin.dashboard.filter') }}";
+
+      /* ====================== Filter Ringkasan ====================== */
+      const summaryFilterBtn = document.getElementById('summaryFilterBtn');
+      const summaryDropdownMenu = document.getElementById('summaryDropdownMenu');
+      const summaryFilterText = document.getElementById('summaryFilterText');
+      const totalJenisBarangEl = document.getElementById('totalJenisBarang');
+      const totalBarangEl = document.getElementById('totalBarang');
+
+      // Toggle dropdown visibility
+      summaryFilterBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        summaryDropdownMenu.classList.toggle('show');
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!summaryFilterBtn.contains(e.target) && !summaryDropdownMenu.contains(e.target)) {
+          summaryDropdownMenu.classList.remove('show');
+        }
+      });
+
+      // Handle filter selection
+      summaryDropdownMenu.addEventListener('click', function(e) {
+        if (e.target.classList.contains('summary-dropdown-item')) {
+          e.preventDefault();
+          const selectedValue = e.target.getAttribute('data-value');
+          const selectedText = e.target.textContent;
+          
+          summaryFilterText.textContent = selectedText;
+          summaryDropdownMenu.classList.remove('show');
+          
+          // Filter ringkasan data
+          filterRingkasan(selectedValue);
+        }
+      });
+
+      function filterRingkasan(gudangFilter) {
+        fetch(`${FILTER_URL}?type=ringkasan&filter=${gudangFilter}`)
+          .then(r => r.json())
+          .then(data => {
+            // Update numbers with animation
+            animateNumber(totalJenisBarangEl, data.totalJenisBarang);
+            animateNumber(totalBarangEl, data.totalBarang);
+          })
+          .catch(console.error);
+      }
+
+      function animateNumber(element, targetValue) {
+        const startValue = parseInt(element.textContent) || 0;
+        const difference = targetValue - startValue;
+        const duration = 800; // milliseconds
+        const steps = 60;
+        const stepValue = difference / steps;
+        let currentStep = 0;
+
+        const interval = setInterval(() => {
+          currentStep++;
+          const currentValue = Math.round(startValue + (stepValue * currentStep));
+          element.textContent = currentValue;
+
+          if (currentStep >= steps) {
+            element.textContent = targetValue;
+            clearInterval(interval);
+          }
+        }, duration / steps);
+      }
 
       /* ====================== Grafik Per Bagian (Keluar only) ====================== */
       const PER_PAGE = 9; // batas 9 bar
@@ -312,7 +394,7 @@
           .catch(console.error);
       }
 
-      // set awal -> badge “Semua Data”
+      // set awal -> badge "Semua Data"
       setRangeHint(document.getElementById('rangeHintBagian'), 'Semua Data', 'Semua Data');
       setRangeHint(document.getElementById('rangeHintTahun'),  'Semua Data', 'Semua Data'); // [OPSIONAL-HILANGKAN BADGE TAHUN]
     });

@@ -38,11 +38,93 @@
   flex-direction: column;        /* [FIX_HEIGHT] konten ditumpuk vertikal */
 }
 
+/* [NEW] Header summary dengan judul dan filter */
+.summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .summary-section h2 {
   color: #374151;
   font-size: 1.05rem;
   font-weight: 700;
-  margin: 0 0 16px 0;
+  margin: 0;
+}
+
+/* [NEW] Filter gudang pada ringkasan */
+.summary-filter {
+  position: relative;
+  display: inline-block;
+}
+
+.summary-filter-btn {
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 6px 10px;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.85rem;
+  min-width: 120px;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.summary-filter-btn:hover {
+  background: #e5e7eb;
+  border-color: #9ca3af;
+}
+
+.summary-filter-btn i {
+  font-size: 0.8rem;
+  margin-left: 6px;
+}
+
+.summary-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  display: none;
+  min-width: 180px;
+  padding: 0.5rem 0;
+  margin: 0.125rem 0 0;
+  font-size: 0.85rem;
+  color: #374151;
+  text-align: left;
+  background-color: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,.08);
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.summary-dropdown-menu.show {
+  display: block;
+}
+
+.summary-dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  color: #374151;
+  cursor: pointer;
+  border: none;
+  background: none;
+  text-align: left;
+  font-size: 0.85rem;
+}
+
+.summary-dropdown-item:hover {
+  background: #f3f4f6;
 }
 
 .summary-cards {
@@ -211,4 +293,9 @@
   .chart-legend { flex-wrap: wrap; gap: 12px; }
   .range-hint{ max-width: 200px; }
   .summary-card--classic { min-height: 76px; }
+  
+  /* [NEW] Responsif untuk filter summary */
+  .summary-header { flex-direction: column; align-items: stretch; }
+  .summary-section h2 { text-align: center; margin-bottom: 8px; }
+  .summary-filter { align-self: center; }
 }
