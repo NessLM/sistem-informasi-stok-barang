@@ -263,6 +263,23 @@
             min-height: 42px;
             /* Menyamakan tinggi tombol */
         }
+
+        /* ✅ Safety override header & konten saat mobile */
+        @media (max-width: 992px) {
+            .layout { --sb-w: 0px !important; }
+            .page-header { left: 0 !important; width: 100% !important; }
+            main.content { margin-left: 0 !important; width: 100% !important; }
+        }
+
+                /* ===== Hamburger di header (copy gaya brand-action) ===== */
+        .ph-hamburger{display:none}
+        @media (max-width:992px){
+        .ph-hamburger{display:grid;width:36px;height:36px;place-items:center;border:0;background:transparent;border-radius:10px;margin-right:4px}
+        .page-header{height:56px;padding:10px 14px}
+        main.content{margin-top:56px !important}
+        }
+
+
     </style>
 </head>
 
@@ -302,12 +319,18 @@
             {{-- Header responsif --}}
             <header class="page-header" aria-label="Judul Halaman">
                 <div class="ph-left">
-                    <h1 class="ph-title">{{ $pageHeading }}</h1>
+                  <!-- tombol pemanggil: style sama dengan sidebar -->
+                  <button class="brand-action ph-hamburger" type="button" aria-label="Menu" data-toggle="sidebar">
+                    <i class="bi bi-list"></i>
+                  </button>
+                  <h1 class="ph-title">{{ $pageHeading }}</h1>
                 </div>
                 @if ($showCrest)
-                    <img class="ph-badge" src="{{ $logo }}" alt="Lambang">
+                  <img class="ph-badge" src="{{ $logo }}" alt="Lambang">
                 @endif
             </header>
+              
+              
 
             {{-- Slot konten halaman --}}
             {{ $slot }}
@@ -334,9 +357,7 @@
                     layout.classList.toggle("is-collapsed", willCollapse);
 
                     // Persist ke localStorage
-                    try {
-                        localStorage.setItem('sb-collapsed', willCollapse ? '1' : '0');
-                    } catch (e) {}
+                    try { localStorage.setItem('sb-collapsed', willCollapse ? '1' : '0'); } catch (e) {}
 
                     // Juga toggle class di <html> agar page berikutnya langsung benar tanpa flash
                     document.documentElement.classList.toggle('sb-collapsed', willCollapse);

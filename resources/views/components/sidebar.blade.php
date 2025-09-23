@@ -5,6 +5,7 @@
     'items' => [],
 ])
 
+<div id="sb-backdrop" aria-hidden="true"></div>
 <aside class="sb">
     <div class="sb-brand">
         <img class="brand-img" src="{{ $brandLogo }}" alt="{{ $brand }}" />
