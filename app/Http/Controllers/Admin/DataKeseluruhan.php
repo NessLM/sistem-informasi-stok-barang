@@ -54,14 +54,22 @@ class DataKeseluruhan extends Controller
         }
 
         // Query barang
-        $query = Barang::with('kategori.gudang'); // Sertakan relasi gudang
+$query = Barang::with('kategori.gudang'); // Sertakan relasi gudang
 
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('nama', 'like', "%{$search}%")
-                  ->orWhere('kode', 'like', "%{$search}%");
-            });
-        }
+if ($search) {
+    $query->where(function ($q) use ($search) {
+        $q->where('nama', 'like', "%{$search}%")
+          ->orWhere('kode', 'like', "%{$search}%");
+    });
+}
+
+// ✅ FILTER berdasarkan gudang yang dipilih
+if ($request->filled('gudang_id')) {
+    $query->whereHas('kategori', function($q) use ($request) {
+        $q->where('gudang_id', $request->gudang_id);
+    });
+}
+
 
         // Filter tambahan
         if ($request->filled('gudang_id')) {
