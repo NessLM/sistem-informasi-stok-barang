@@ -88,9 +88,26 @@
   border-color: #9ca3af;
 }
 
-.summary-filter-btn i {
+.summary-filter-btn .bi-funnel {
+  font-size: 0.8rem;
+  margin-right: 6px;
+}
+
+/* [NEW] Arrow icon untuk dropdown - Styling konsisten untuk semua dropdown */
+.summary-filter-btn .arrow-icon,
+.filter-btn .arrow-icon,
+.dropdown-toggle .arrow-icon {
   font-size: 0.8rem;
   margin-left: 6px;
+  transition: transform 0.2s ease;
+  transform: rotate(0deg); /* Default: mengarah ke kanan */
+}
+
+/* [NEW] Rotasi arrow ketika dropdown dibuka */
+.summary-filter-btn[aria-expanded="true"] .arrow-icon,
+.filter-btn[aria-expanded="true"] .arrow-icon,
+.dropdown-toggle[aria-expanded="true"] .arrow-icon {
+  transform: rotate(90deg); /* Berputar 90 derajat ke bawah */
 }
 
 .summary-dropdown-menu {
@@ -210,6 +227,15 @@
   gap: 10px;
 }
 
+/* [NEW] Layout sejajar horizontal untuk semua komponen */
+.chart-header--horizontal {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
 .chart-header--wrap { 
   flex-wrap: wrap; 
   gap: 10px 12px; 
@@ -223,12 +249,21 @@
   flex-wrap: wrap;
 }
 
+/* [NEW] Untuk layout horizontal sejajar */
+.chart-header-horizontal-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
 .chart-header h2 {
   color: #374151;
   font-size: 1.1rem;
   font-weight: 700;
   margin: 0;
   white-space: nowrap; /* NEW: Mencegah judul terpotong */
+  flex-shrink: 0;
 }
 
 .chart-filter,
@@ -251,12 +286,28 @@
   transition: all 0.2s ease;
   font-size: .9rem;
   white-space: nowrap; /* NEW: Mencegah teks terpotong */
+  display: flex;
+  align-items: center;
 }
+
 .filter-btn:hover,
-.dropdown-toggle:hover { background:#e5e7eb; border-color:#9ca3af; }
+.dropdown-toggle:hover { 
+  background:#e5e7eb; 
+  border-color:#9ca3af; 
+}
+
+.filter-btn .bi-funnel,
+.dropdown-toggle .bi-funnel {
+  font-size: 0.8rem;
+  margin-right: 6px;
+}
 
 /* Dropdown styles */
-.dropdown { position: relative; display: inline-block; }
+.dropdown { 
+  position: relative; 
+  display: inline-block; 
+}
+
 .dropdown-menu {
   position: absolute; 
   top: 100%; 
@@ -274,7 +325,11 @@
   border-radius: .5rem;
   box-shadow: 0 4px 12px rgba(0,0,0,.08);
 }
-.dropdown-menu.show { display: block; }
+
+.dropdown-menu.show { 
+  display: block; 
+}
+
 .dropdown-item { 
   display:block; 
   width:100%; 
@@ -282,8 +337,15 @@
   color:#374151; 
   cursor:pointer; 
   white-space: nowrap; /* NEW: Mencegah teks terpotong */
+  border: none;
+  background: none;
+  text-decoration: none;
 }
-.dropdown-item:hover { background:#f3f4f6; }
+
+.dropdown-item:hover { 
+  background:#f3f4f6; 
+  color: #374151;
+}
 
 /* --- Wadah kanvas Chart.js --- */
 .chart-container { 
@@ -292,11 +354,15 @@
   position: relative; 
   overflow: hidden; /* NEW: Mencegah overflow */
 }
+
 .chart-container canvas{ 
   width: 100% !important; 
   height: 100% !important; 
 }
-.wide-chart-section .chart-container { height: 300px; }
+
+.wide-chart-section .chart-container { 
+  height: 300px; 
+}
 
 /* Legend (keterangan warna) */
 .chart-legend {
@@ -307,7 +373,10 @@
   border-top: 1px solid #f3f4f6;
   flex-wrap: wrap; /* NEW: Membuat legend wrap di layar kecil */
 }
-.chart-legend.yearly { gap: 22px; }
+
+.chart-legend.yearly { 
+  gap: 22px; 
+}
 
 .legend-item { 
   display:flex; 
@@ -317,13 +386,17 @@
   color:#6b7280; 
   white-space: nowrap; /* NEW: Mencegah teks terpotong */
 }
+
 .legend-color { 
   width:12px; 
   height:12px; 
   border-radius:2px; 
   flex-shrink: 0; /* NEW: Mencegah ikon warna mengecil */
 }
-.legend-color.keluar  { background-color: #EF4444; }
+
+.legend-color.keluar  { 
+  background-color: #EF4444; 
+}
 
 /* ===== Pager for "Grafik Per Bagian" ===== */
 .pager { 
@@ -333,6 +406,7 @@
   margin-right:6px; 
   flex-shrink: 0; /* NEW: Mencegah pager mengecil */
 }
+
 .pager-btn {
   background:#f3f4f6; 
   border:1px solid #d1d5db; 
@@ -341,8 +415,17 @@
   cursor:pointer;
   flex-shrink: 0; /* NEW: Mencegah tombol mengecil */
 }
-.pager-btn:disabled { opacity:.5; cursor:not-allowed; }
-.pager-btn:hover:not(:disabled) { background:#e5e7eb; border-color:#9ca3af; }
+
+.pager-btn:disabled { 
+  opacity:.5; 
+  cursor:not-allowed; 
+}
+
+.pager-btn:hover:not(:disabled) { 
+  background:#e5e7eb; 
+  border-color:#9ca3af; 
+}
+
 .pager-info { 
   color:#6b7280; 
   min-width:36px; 
@@ -368,8 +451,13 @@
 }
 
 /* ===== [NEW] Visual saat drag / swipe pada chart per bagian ===== */
-#bagianChartBox { cursor: grab; }
-#bagianChartBox.dragging { cursor: grabbing; }
+#bagianChartBox { 
+  cursor: grab; 
+}
+
+#bagianChartBox.dragging { 
+  cursor: grabbing; 
+}
 
 /* ==================== Responsiveness ==================== */
 
@@ -377,148 +465,6 @@
 @media (max-width: 1200px) {
   .dashboard-row { 
     gap: 20px; /* Sedikit mengurangi gap */
-  }
-  
-  .summary-section, 
-  .chart-section {
-    min-width: 280px; /* Sedikit mengurangi lebar minimum */
-  }
-  
-  .chart-header-left { 
-    min-width: 180px; 
-  }
-}
-
-/* Tablet Portrait */
-@media (max-width: 992px) {
-  .dashboard-container { 
-    padding: 16px; 
-  }
-  
-  .dashboard-row {
-    flex-direction: column; /* NEW: Stack vertikal di tablet */
-    gap: 20px;
-  }
-  
-  .summary-section, 
-  .chart-section {
-    flex: none; /* NEW: Non-aktifkan flex di layout vertikal */
-    width: 100%;
-    min-width: auto;
-  }
-  
-  .chart-container { 
-    height: 240px; /* Sedikit mengurangi tinggi chart */
-  }
-  
-  .wide-chart-section .chart-container { 
-    height: 280px; 
-  }
-}
-
-/* Mobile Landscape dan Tablet Kecil */
-@media (max-width: 768px) {
-  .dashboard-container { 
-    padding: 12px; 
-  }
-  
-  .summary-section, 
-  .chart-section,
-  .wide-chart-section {
-    padding: 14px; /* Sedikit mengurangi padding */
-    border-radius: 12px; /* Sedikit mengurangi border radius */
-  }
-  
-  .chart-header {
-    flex-direction: column; /* NEW: Stack header vertikal */
-    align-items: stretch;
-    gap: 12px;
-  }
-  
-  .chart-header-left {
-    min-width: auto;
-    justify-content: space-between;
-  }
-  
-  .chart-filter,
-  .chart-controls {
-    justify-content: center; /* NEW: Tengahkan filter di mobile */
-  }
-  
-  .chart-container { 
-    height: 220px; 
-  }
-  
-  .wide-chart-section .chart-container { 
-    height: 250px; 
-  }
-  
-  .summary-card--classic {
-    min-height: 76px;
-    padding: 12px 14px; /* Sedikit mengurangi padding */
-  }
-  
-  .summary-card__icon-circle {
-    width: 48px; /* Sedikit mengurangi ukuran ikon */
-    height: 48px;
-    font-size: 20px;
-  }
-  
-  .summary-card__number {
-    font-size: 1.6rem; /* Sedikit mengurangi ukuran font */
-  }
-  
-  .range-hint {
-    max-width: 150px; /* Lebih sempit di mobile */
-    font-size: 0.8rem;
-  }
-}
-
-/* Mobile Portrait */
-@media (max-width: 576px) {
-  .dashboard-container { 
-    padding: 10px; 
-  }
-  
-  .summary-section, 
-  .chart-section,
-  .wide-chart-section {
-    padding: 12px;
-    border-radius: 10px;
-  }
-  
-  .summary-header {
-    flex-direction: column; /* NEW: Stack header summary vertikal */
-    align-items: stretch;
-    gap: 10px;
-  }
-  
-  .summary-filter {
-    align-self: center; /* NEW: Tengahkan filter */
-  }
-  
-  .chart-container { 
-    height: 200px; /* Lebih pendek di mobile kecil */
-  }
-  
-  .wide-chart-section .chart-container { 
-    height: 220px; 
-  }
-  
-  .summary-cards--classic {
-    gap: 10px; /* Sedikit mengurangi gap antara kartu */
-  }
-  
-  .summary-card--classic {
-    min-height: 70px;
-    padding: 10px 12px;
-    gap: 12px;
-  }
-  
-  .summary-card__icon-circle {
-    width: 44px;
-    height: 44px;
-    font-size: 18px;
   }
   
   .summary-card__number {
@@ -595,8 +541,364 @@
     align-items: center;
   }
   
+  .chart-header--horizontal {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  
   .range-hint {
     max-width: 100%; /* Full width di layar sangat kecil */
     text-align: center;
   }
+}-section, 
+  .chart-section {
+    min-width: 280px; /* Sedikit mengurangi lebar minimum */
+  }
+  
+  .chart-header-left { 
+    min-width: 180px; 
+  }
+  
+  .chart-header--horizontal {
+    gap: 12px; /* Sedikit mengurangi gap */
+  }
+}
+
+/* Tablet Portrait */
+@media (max-width: 992px) {
+  .dashboard-container { 
+    padding: 16px; 
+  }
+  
+  .dashboard-row {
+    flex-direction: column; /* NEW: Stack vertikal di tablet */
+    gap: 20px;
+  }
+  
+  .summary-section, 
+  .chart-section {
+    flex: none; /* NEW: Non-aktifkan flex di layout vertikal */
+    width: 100%;
+    min-width: auto;
+  }
+  
+  .chart-container { 
+    height: 240px; /* Sedikit mengurangi tinggi chart */
+  }
+  
+  .wide-chart-section .chart-container { 
+    height: 280px; 
+  }
+  
+  /* Layout horizontal masih berlaku di tablet */
+  .chart-header--horizontal {
+    gap: 10px;
+    justify-content: flex-start;
+  }
+}
+
+/* Mobile Landscape dan Tablet Kecil */
+@media (max-width: 768px) {
+  .dashboard-container { 
+    padding: 12px; 
+  }
+  
+  .summary-section, 
+  .chart-section,
+  .wide-chart-section {
+    padding: 14px; /* Sedikit mengurangi padding */
+    border-radius: 12px; /* Sedikit mengurangi border radius */
+  }
+  
+  .chart-header {
+    flex-direction: column; /* NEW: Stack header vertikal untuk chart pengeluaran */
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  /* [NEW] Layout horizontal khusus untuk grafik per bagian tetap dipertahankan */
+  .chart-header--horizontal {
+    flex-direction: row; /* Tetap horizontal */
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .chart-header-left {
+    min-width: auto;
+    justify-content: space-between;
+  }
+  
+  .chart-filter,
+  .chart-controls {
+    justify-content: center; /* NEW: Tengahkan filter di mobile */
+  }
+  
+  .chart-container { 
+    height: 220px; 
+  }
+  
+  .wide-chart-section .chart-container { 
+    height: 250px; 
+  }
+  
+  .summary-card--classic {
+    min-height: 76px;
+    padding: 12px 14px; /* Sedikit mengurangi padding */
+  }
+  
+  .summary-card__icon-circle {
+    width: 48px; /* Sedikit mengurangi ukuran ikon */
+    height: 48px;
+    font-size: 20px;
+  }
+  
+  .summary-card__number {
+    font-size: 1.6rem; /* Sedikit mengurangi ukuran font */
+  }
+  
+  .range-hint {
+    max-width: 150px; /* Lebih sempit di mobile */
+    font-size: 0.8rem;
+  }
+}
+
+/* Mobile Portrait */
+@media (max-width: 576px) {
+  .dashboard-container { 
+    padding: 10px; 
+  }
+  
+  .summary-section, 
+  .chart-section,
+  .wide-chart-section {
+    padding: 12px;
+    border-radius: 10px;
+  }
+  
+  .summary-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  
+  .summary-filter {
+    align-self: center;
+  }
+  
+  .chart-header--horizontal {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  
+  .chart-header-horizontal-item {
+    justify-content: space-between;
+  }
+  
+  .chart-container { 
+    height: 200px;
+  }
+  
+  .wide-chart-section .chart-container { 
+    height: 220px; 
+  }
+  
+  .summary-cards--classic {
+    gap: 10px;
+  }
+  
+  .summary-card--classic {
+    min-height: 70px;
+    padding: 10px 12px;
+    gap: 12px;
+  }
+  
+  .summary-card__icon-circle {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+  }
+  
+  .summary-card__number {
+    font-size: 1.4rem;
+  }
+  
+  .summary-card__label {
+    font-size: 0.85rem;
+  }
+  
+  .chart-header h2 {
+    font-size: 1rem;
+  }
+  
+  .filter-btn,
+  .dropdown-toggle {
+    padding: 5px 8px;
+    font-size: 0.8rem;
+  }
+  
+  .pager {
+    gap: 4px;
+  }
+  
+  .pager-btn {
+    padding: 4px 8px;
+  }
+  
+  .pager-info {
+    font-size: 0.8rem;
+    min-width: 30px;
+  }
+  
+  .range-hint {
+    max-width: 120px;
+    font-size: 0.75rem;
+    padding: 2px 6px;
+  }
+  
+  .chart-legend {
+    gap: 8px;
+  }
+  
+  .legend-item {
+    font-size: 0.8rem;
+  }
+  
+  .dropdown-menu {
+    min-width: 8rem;
+    font-size: 0.8rem;
+  }
+}
+
+/* Mobile Sangat Kecil */
+@media (max-width: 400px) {
+  .dashboard-container { 
+    padding: 8px; 
+  }
+  
+  .summary-section, 
+  .chart-section,
+  .wide-chart-section {
+    padding: 10px;
+  }
+  
+  .chart-container { 
+    height: 180px; 
+  }
+  
+  .wide-chart-section .chart-container { 
+    height: 200px; 
+  }
+  
+  .summary-card--classic {
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+    min-height: auto;
+  }
+  
+  .summary-card__body {
+    align-items: center;
+  }
+  
+  .chart-header-left {
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+  }
+  
+  .chart-header--horizontal {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .range-hint {
+    max-width: 100%;
+    text-align: center;
+  }
+}
+
+/* Utility Classes */
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chart-loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.number-counting {
+  transition: all 0.3s ease;
+}
+
+.summary-card--classic,
+.filter-btn,
+.pager-btn,
+.dropdown-item {
+  transition: all 0.2s ease-in-out;
+}
+
+.summary-filter-btn:focus,
+.filter-btn:focus,
+.pager-btn:focus,
+.dropdown-item:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+  .dashboard-container {
+    background: white;
+    padding: 0;
+  }
+  
+  .summary-section,
+  .chart-section,
+  .wide-chart-section {
+    box-shadow: none;
+    border: 1px solid #ddd;
+    break-inside: avoid;
+  }
+  
+  .filter-btn,
+  .summary-filter,
+  .pager {
+    display: none !important;
+  }
+}
+
+/* Enhanced Touch Targets untuk Mobile */
+@media (max-width: 768px) {
+  .filter-btn,
+  .summary-filter-btn,
+  .pager-btn,
+  .dropdown-item {
+    min-height: 44px;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .summary-dropdown-item {
+    padding: 12px 16px;
+  }
+}
+
+/* Fix untuk Chart.js Responsiveness */
+.chart-container {
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.chart-container canvas {
+  display: block;
 }

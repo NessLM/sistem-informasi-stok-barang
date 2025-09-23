@@ -13,9 +13,9 @@
                 <div class="summary-header">
                     <h2>Ringkasan</h2>
                     <div class="summary-filter">
-                        <button class="summary-filter-btn" type="button" id="summaryFilterBtn">
+                        <button class="summary-filter-btn" type="button" id="summaryFilterBtn" aria-expanded="false">
                             <i class="bi bi-funnel"></i> <span id="summaryFilterText">Semua</span>
-                            <i class="bi bi-chevron-down"></i>
+                            <i class="bi bi-chevron-right arrow-icon"></i>
                         </button>
                         <div class="summary-dropdown-menu" id="summaryDropdownMenu">
                             <button class="summary-dropdown-item" data-value="all">Semua</button>
@@ -55,15 +55,17 @@
 
             {{-- ======================= GRAFIK PER BAGIAN ======================= --}}
             <div class="chart-section">
-                {{-- [NEW] wrap supaya badge tanggal tidak mepet saat panjang --}}
-                <div class="chart-header chart-header--wrap">
-                    <div class="chart-header-left">
+                {{-- [NEW] Layout horizontal sejajar untuk semua komponen --}}
+                <div class="chart-header chart-header--horizontal">
+                    <div class="chart-header-horizontal-item">
                         <h2>Grafik Per Bagian</h2>
-                        {{-- Badge keterangan rentang (diisi via JS) --}}
+                    </div>
+                    
+                    <div class="chart-header-horizontal-item">
                         <span id="rangeHintBagian" class="range-hint" title="Semua Data">Semua Data</span>
                     </div>
 
-                    <div class="chart-filter">
+                    <div class="chart-header-horizontal-item">
                         {{-- Pager (muncul jika data > 9) --}}
                         <div class="pager" id="bagianPager" style="display:none">
                             <button class="pager-btn" id="bagianPrev" title="Sebelumnya" aria-label="Sebelumnya">
@@ -74,12 +76,15 @@
                                 <i class="bi bi-chevron-right"></i>
                             </button>
                         </div>
+                    </div>
 
+                    <div class="chart-header-horizontal-item">
                         {{-- Filter waktu --}}
                         <div class="dropdown">
                             <button class="filter-btn dropdown-toggle" type="button" id="bagianFilterDropdown"
                                 data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="bi bi-funnel"></i> Semua
+                                <i class="bi bi-chevron-right arrow-icon"></i>
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="bagianFilterDropdown">
                                 <li><a class="dropdown-item filter-option" href="#" data-type="bagian"
@@ -125,6 +130,7 @@
                             <button class="filter-btn dropdown-toggle" type="button" id="pengeluaranFilterDropdown"
                                 data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="bi bi-funnel"></i> Semua
+                                <i class="bi bi-chevron-right arrow-icon"></i>
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="pengeluaranFilterDropdown">
                                 <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran"
@@ -155,27 +161,31 @@
         document.addEventListener('DOMContentLoaded', function() {
             const FILTER_URL = "{{ route('admin.dashboard.filter') }}";
 
-            /* ====================== Filter Ringkasan ====================== */
+            /* ====================== [NEW] Atur Arrow Dropdown ====================== */
+            // Untuk custom dropdown Ringkasan
             const summaryFilterBtn = document.getElementById('summaryFilterBtn');
             const summaryDropdownMenu = document.getElementById('summaryDropdownMenu');
             const summaryFilterText = document.getElementById('summaryFilterText');
             const totalJenisBarangEl = document.getElementById('totalJenisBarang');
             const totalBarangEl = document.getElementById('totalBarang');
 
-            // Toggle dropdown visibility
+            // Toggle dropdown visibility dan atur arrow
             summaryFilterBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
+                const isExpanded = this.getAttribute('aria-expanded') === 'true';
+                this.setAttribute('aria-expanded', !isExpanded);
                 summaryDropdownMenu.classList.toggle('show');
             });
 
-            // Close dropdown when clicking outside
+            // Close dropdown ketika klik di luar
             document.addEventListener('click', function(e) {
                 if (!summaryFilterBtn.contains(e.target) && !summaryDropdownMenu.contains(e.target)) {
                     summaryDropdownMenu.classList.remove('show');
+                    summaryFilterBtn.setAttribute('aria-expanded', 'false');
                 }
             });
 
-            // Handle filter selection
+            // Handle filter selection untuk Ringkasan
             summaryDropdownMenu.addEventListener('click', function(e) {
                 if (e.target.classList.contains('summary-dropdown-item')) {
                     e.preventDefault();
@@ -184,6 +194,7 @@
 
                     summaryFilterText.textContent = selectedText;
                     summaryDropdownMenu.classList.remove('show');
+                    summaryFilterBtn.setAttribute('aria-expanded', 'false');
 
                     // Filter ringkasan data
                     filterRingkasan(selectedValue);
@@ -381,14 +392,27 @@
                 el.title = titleText || text;
             }
 
+            // ===== [FIXED] Bootstrap Dropdown Events untuk Arrow Rotation =====
+            // Handle untuk semua dropdown Bootstrap
+            document.querySelectorAll('[data-bs-toggle="dropdown"]').forEach(dropdown => {
+                dropdown.addEventListener('show.bs.dropdown', function () {
+                    this.setAttribute('aria-expanded', 'true');
+                });
+
+                dropdown.addEventListener('hide.bs.dropdown', function () {
+                    this.setAttribute('aria-expanded', 'false');
+                });
+            });
+
             // ===== Filter dropdown (keduanya) =====
             document.querySelectorAll('.filter-option').forEach(el => {
                 el.addEventListener('click', function(e) {
                     e.preventDefault();
                     const type = this.getAttribute('data-type');
                     const value = this.getAttribute('data-value');
-                    this.closest('.dropdown').querySelector('.dropdown-toggle').innerHTML =
-                        `<i class="bi bi-funnel"></i> ${this.textContent}`;
+                    const dropdownToggle = this.closest('.dropdown').querySelector('.dropdown-toggle');
+                    dropdownToggle.innerHTML = `<i class="bi bi-funnel"></i> ${this.textContent} <i class="bi bi-chevron-right arrow-icon"></i>`;
+                    
                     if (type === 'bagian') filterBagian(value);
                     else filterPengeluaran(value);
                 });
@@ -507,8 +531,7 @@
 
             // set awal -> badge "Semua Data"
             setRangeHint(document.getElementById('rangeHintBagian'), 'Semua Data', 'Semua Data');
-            setRangeHint(document.getElementById('rangeHintTahun'), 'Semua Data',
-            'Semua Data'); // [OPSIONAL-HILANGKAN BADGE TAHUN]
+            setRangeHint(document.getElementById('rangeHintTahun'), 'Semua Data', 'Semua Data'); // [OPSIONAL-HILANGKAN BADGE TAHUN]
         });
     </script>
 </x-layouts.app>
