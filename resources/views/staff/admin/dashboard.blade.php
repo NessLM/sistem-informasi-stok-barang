@@ -13,10 +13,10 @@
         <div class="summary-header">
           <h2>Ringkasan</h2>
           <div class="summary-filter">
-            <button class="summary-filter-btn" type="button" id="summaryFilterBtn">
-              <span id="summaryFilterText">Semua</span>
-              <i class="bi bi-chevron-down"></i>
-            </button>
+          <button class="summary-filter-btn" type="button" id="summaryFilterBtn">
+            <i class="bi bi-funnel"></i> <span id="summaryFilterText">Semua</span>
+            <i class="bi bi-chevron-down"></i>
+          </button>
             <div class="summary-dropdown-menu" id="summaryDropdownMenu">
               <button class="summary-dropdown-item" data-value="all">Semua</button>
               @foreach($gudangs as $gudang)
