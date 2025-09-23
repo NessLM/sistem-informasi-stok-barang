@@ -1,8 +1,8 @@
 @props([
-    'title' => 'Stokita', // <title> tab & judul default
+    'title' => 'Stokita', // <title> tab & default heading
     'menu' => [], // menu untuk sidebar
-    'heading' => null, // override judul (opsional)
-    'showCrest' => true, // tampilkan lambang kanan
+    'heading' => null, // override heading (opsional)
+    'showCrest' => true, // crest kanan
 ])
 
 <!doctype html>
@@ -13,98 +13,109 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>{{ $title }}</title>
 
-    {{-- 🔧 PRELOAD STATE COLLAPSE SIDEBAR (Mencegah Flash)
-         - Baca localStorage sb-collapsed seawal mungkin (di <head>)
-         - Jika '1' → tambahkan class 'sb-collapsed' ke <html>
-         - CSS dan offset konten akan langsung menggunakan state ini sebelum render --}}
+    {{-- 🔧 PRELOAD COLLAPSE STATE (ANTI FLASH / “kedip balik besar”)
+         - BACA localStorage sb-collapsed seawal mungkin (di <head>)
+         - Kalau '1' → pasang class 'sb-collapsed' di <html>
+         - CSS dan offset konten akan langsung pakai state ini sebelum render --}}
     <script>
-        (function() {
+        (function () {
             try {
                 if (localStorage.getItem('sb-collapsed') === '1') {
                     document.documentElement.classList.add('sb-collapsed');
                 }
-            } catch (e) {
-                /* Abaikan error */
-            }
+            } catch (e) { /* abaikan */ }
         })();
     </script>
 
-    {{-- Font & Ikon --}}
+    {{-- Font & ikon --}}
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    {{-- CSS Kustom --}}
+    {{-- CSS sidebar milikmu --}}
     <link rel="stylesheet" href="{{ asset('assets/css/components/sidebar.css') }}">
+
     <link rel="stylesheet" href="{{ asset('assets/css/staff/admin/data_pengguna.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/staff/admin/riwayat.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/staff/admin/data_keseluruhan.css') }}">
+    {{-- halaman tertentu boleh push CSS sendiri dari slot --}}
 
     <style>
-        /* ===== VARIABEL & DASAR ===== */
-        :root {
-            --header-height: 70px;
-            --sidebar-width: 270px;
-            --sidebar-collapsed-width: 80px;
-            --transition-duration: .3s;
-            --primary-bg: #EFF0EE;
-            --card-bg: #fff;
-            --text-color: #111827;
-            --border-color: #e5e7eb;
-            --shadow-color: rgba(0, 0, 0, .06);
-            --header-shadow: 0 12px 16px -12px #CBCCCB;
-        }
-
         body {
             margin: 0;
-            background: var(--primary-bg);
-            font-family: 'Poppins', sans-serif;
+            background: #EFF0EE;
         }
 
-        /* ===== LAYOUT UTAMA ===== */
+        /* ====== Sidebar width variable (sinkron dengan state collapsed) ====== */
         .layout {
-            --sb-w: var(--sidebar-width);
+            --sb-w: 270px;
         }
 
-        /* State collapsed via JS */
+        /* Runtime toggle via JS (class di .layout) */
         .layout.is-collapsed {
-            --sb-w: var(--sidebar-collapsed-width);
+            --sb-w: 80px;
         }
 
-        /* Anti-flash: jika <html> memiliki class .sb-collapsed */
+        /* 🔧 Anti-flash: kalau <html> punya .sb-collapsed, pakai lebar kecil sejak awal */
         html.sb-collapsed .layout {
-            --sb-w: var(--sidebar-collapsed-width);
+            --sb-w: 80px;
         }
 
-        /* ===== HEADER RESPONSIF ===== */
+        .modal-footer .btn {
+            min-height: 42px;
+            /* samain tinggi */
+        }
+
+        /* ====== Konten: offset & lebar mengikuti sidebar (tanpa overflow) ====== */
+        main.content {
+            margin-left: var(--sb-w) !important;
+            width: calc(100% - var(--sb-w)) !important;
+            padding: 20px !important;
+            /* Kembalikan padding */
+            transition: margin-left .3s ease, width .3s ease;
+            margin-top: 70px;
+            /* Sesuaikan dengan tinggi header */
+            min-height: calc(100vh - 70px);
+            box-sizing: border-box;
+        }
+
+        /* Kartu fallback */
+        .card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 18px;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, .06)
+        }
+
+        /* ===== Header Global (flat, nempel kiri/kanan/atas) ===== */
         .page-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 12px;
-            background: var(--card-bg);
+            background: #fff;
             padding: 14px 18px;
             margin: 0;
             border: 0;
-            border-bottom: 1px solid var(--border-color);
-            box-shadow: var(--header-shadow);
+            border-radius: 0;
+            border-bottom: 1px solid #e5e7eb;
+            box-shadow: 0 12px 16px -12px #CBCCCB;
             position: fixed;
             top: 0;
             left: var(--sb-w);
             width: calc(100% - var(--sb-w));
             z-index: 1000;
-            transition: left var(--transition-duration) ease, width var(--transition-duration) ease;
-            height: var(--header-height);
+            transition: left .3s ease, width .3s ease;
+            height: 70px;
+            /* Tambahkan tinggi tetap */
             box-sizing: border-box;
+            /* Pastikan padding termasuk dalam tinggi */
         }
 
         .ph-left {
             display: flex;
             align-items: center;
-            gap: 10px;
-            flex: 1;
-            min-width: 0;
-            /* Memungkinkan text-overflow */
+            gap: 10px
         }
 
         .ph-title {
@@ -113,23 +124,21 @@
             letter-spacing: -.01em;
             line-height: 1.2;
             font-size: clamp(18px, 2.2vw, 26px);
-            color: var(--text-color);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            color: #111827;
         }
 
         .ph-badge {
             width: 40px;
             height: 40px;
+            /* Tambahkan tinggi yang sama dengan lebar agar tidak gepeng */
             object-fit: contain;
+            /* Efek tebal: tambahkan shadow dan stroke */
             filter: drop-shadow(0px 1px 1px rgba(0, 0, 0, 0.5));
+            /* Animasi logo bupati dengan jeda 5 detik */
             animation: logoAnimation 5s infinite;
-            flex-shrink: 0;
-            /* Mencegah penyusutan pada layar kecil */
         }
 
-        /* Fallback untuk browser yang tidak mendukung filter */
+        /* Untuk browser yang tidak support filter, gunakan alternatif */
         @supports not (filter: drop-shadow(0px 0px 0px)) {
             .ph-badge {
                 border: 1.5px solid rgba(0, 0, 0, 0.3);
@@ -137,89 +146,19 @@
             }
         }
 
-        /* ===== KONTEN UTAMA ===== */
-        main.content {
-            margin-left: var(--sb-w) !important;
-            width: calc(100% - var(--sb-w)) !important;
-            padding: 20px !important;
-            transition: margin-left var(--transition-duration) ease, width var(--transition-duration) ease;
-            margin-top: var(--header-height);
-            min-height: calc(100vh - var(--header-height));
-            box-sizing: border-box;
-        }
-
-        /* Kartu dasar */
-        .card {
-            background: var(--card-bg);
-            border-radius: 14px;
-            padding: 18px;
-            box-shadow: 0 10px 24px var(--shadow-color);
-        }
-
-        /* ===== MEDIA QUERIES UNTUK RESPONSIVITAS ===== */
-
-        /* Tablet (768px ke bawah) */
-        @media (max-width: 768px) {
-            .page-header {
-                padding: 12px 15px;
-            }
-
-            .ph-title {
-                font-size: clamp(16px, 4vw, 22px);
-            }
-
+        @media (max-width:640px) {
             .ph-badge {
-                width: 35px;
-                height: 35px;
+                width: 34px
             }
         }
 
-        /* Mobile (640px ke bawah) */
-        @media (max-width: 640px) {
-            .page-header {
-                padding: 10px 12px;
-                flex-wrap: wrap;
-            }
-
-            .ph-left {
-                order: 1;
-                width: 100%;
-                justify-content: center;
-                margin-bottom: 5px;
-            }
-
-            .ph-title {
-                font-size: 18px;
-                text-align: center;
-            }
-
-            .ph-badge {
-                width: 30px;
-                height: 30px;
-                order: 2;
-                margin-left: auto;
-            }
-
-            /* Pada mobile sangat kecil, sembunyikan lambang jika perlu */
-            @media (max-width: 400px) {
-                .ph-badge {
-                    display: none;
-                }
-            }
+        /* 🔑 Hanya tampilkan loader jika <html> TIDAK punya class no-loader */
+        html.no-loader #page-loader {
+            display: none !important;
         }
 
-        /* Mobile sangat kecil (360px ke bawah) */
-        @media (max-width: 360px) {
-            .page-header {
-                padding: 8px 10px;
-            }
-
-            .ph-title {
-                font-size: 16px;
-            }
-        }
-
-        /* ===== ANIMASI LOGO ===== */
+        /* Animasi untuk logo bupati */
+        /* Animasi untuk logo bupati */
         @keyframes logoAnimation {
 
             0%,
@@ -229,6 +168,7 @@
 
             67.5% {
                 transform: translateY(-4px) rotateY(0) scale(1.05);
+                /* Sedikit membesar */
             }
 
             77.5% {
@@ -252,16 +192,12 @@
             }
         }
 
-        /* ===== LOADER ===== */
-        /* Sembunyikan loader jika <html> memiliki class no-loader */
-        html.no-loader #page-loader {
-            display: none !important;
-        }
-
-        /* ===== TOMBOL MODAL ===== */
-        .modal-footer .btn {
-            min-height: 42px;
-            /* Menyamakan tinggi tombol */
+        @media (max-width:640px) {
+            .ph-badge {
+                width: 34px;
+                height: 34px;
+                /* Jaga proporsi di mobile */
+            }
         }
 
         /* ✅ Safety override header & konten saat mobile */
@@ -302,21 +238,21 @@
         })();
     </script>
 
-    {{-- Loader global --}}
+    {{-- Loader global (akan auto-hidden jika <html> punya class no-loader) --}}
     <x-page-loader variant="a" />
 
     <div class="layout">
-        {{-- Sidebar --}}
+        {{-- Sidebar (tetap) --}}
         <x-sidebar :items="$menu" :user="auth()->user()" brand="Stokita" />
 
-        {{-- ===== AREA KONTEN ===== --}}
+        {{-- ===== Area konten ===== --}}
         <main class="content">
             @php
-                $logo = asset('assets/banner/logo_bupati.png'); // lambang kanan
+                $logo = asset('assets/banner/logo_bupati.png'); // crest kanan
                 $pageHeading = $heading ?? $title; // judul header
             @endphp
 
-            {{-- Header responsif --}}
+            {{-- Header nempel kiri/kanan/atas + shadow bawah --}}
             <header class="page-header" aria-label="Judul Halaman">
                 <div class="ph-left">
                   <!-- tombol pemanggil: style sama dengan sidebar -->
@@ -337,34 +273,73 @@
         </main>
     </div>
 
-    {{-- Toggle collapse sidebar
+    {{-- Toggle collapse sidebar (Sumber tunggal)
        - Simpan state ke localStorage 'sb-collapsed'
-       - Pasang/lepaskan class di <html> (anti flash) dan .layout (runtime) --}}
+       - Pasang/lepaskan class di <html> (anti flash) dan .layout (runtime)
+       - Tidak ada simpan “active link” apapun --}}
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const btn = document.querySelector("[data-toggle='sidebar']");
-            const layout = document.querySelector(".layout");
+document.addEventListener("DOMContentLoaded", () => {
+  const buttons = document.querySelectorAll("[data-toggle='sidebar']"); // ✅ semua tombol
+  const layout  = document.querySelector(".layout");
+  const backdrop = document.getElementById("sb-backdrop");
+  const isMobile = () => window.matchMedia("(max-width: 992px)").matches;
 
-            // Sinkronkan class .layout.is-collapsed dengan class preload <html>.sb-collapsed
-            if (document.documentElement.classList.contains('sb-collapsed')) {
-                layout.classList.add('is-collapsed');
-            }
+  // state awal desktop (hormati localStorage), mobile abaikan collapsed
+  try {
+    const collapsed = localStorage.getItem('sb-collapsed') === '1';
+    if (!isMobile() && collapsed) {
+      layout.classList.add('is-collapsed');
+      document.documentElement.classList.add('sb-collapsed');
+    } else {
+      layout.classList.remove('is-collapsed');
+      document.documentElement.classList.remove('sb-collapsed');
+    }
+  } catch(e){}
 
-            if (btn) {
-                btn.addEventListener("click", () => {
-                    const willCollapse = !layout.classList.contains("is-collapsed");
+  const openMobile = () => {
+    layout.classList.add('is-mobile-open');
+    document.documentElement.classList.add('mobile-sidebar-open');
+    document.body.classList.add('mobile-sidebar-open');
+  };
+  const closeMobile = () => {
+    layout.classList.remove('is-mobile-open');
+    document.documentElement.classList.remove('mobile-sidebar-open');
+    document.body.classList.remove('mobile-sidebar-open');
+  };
 
-                    layout.classList.toggle("is-collapsed", willCollapse);
+  // ✅ bind ke SEMUA tombol
+  buttons.forEach(btn => {
+    btn.addEventListener("click", (ev) => {
+      if (isMobile()) {
+        ev.preventDefault();
+        layout.classList.contains('is-mobile-open') ? closeMobile() : openMobile();
+      } else {
+        const willCollapse = !layout.classList.contains("is-collapsed");
+        layout.classList.toggle("is-collapsed", willCollapse);
+        document.documentElement.classList.toggle('sb-collapsed', willCollapse);
+        try { localStorage.setItem('sb-collapsed', willCollapse ? '1' : '0'); } catch(e){}
+      }
+    });
+  });
 
-                    // Persist ke localStorage
-                    try { localStorage.setItem('sb-collapsed', willCollapse ? '1' : '0'); } catch (e) {}
+  // backdrop, ESC, resize, click menu → tutup mobile
+  if (backdrop) backdrop.addEventListener('click', () => { if (isMobile()) closeMobile(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && isMobile()) closeMobile(); });
+  window.addEventListener('resize', () => {
+    if (!isMobile()) { closeMobile();
+      try {
+        const collapsed = localStorage.getItem('sb-collapsed') === '1';
+        layout.classList.toggle('is-collapsed', collapsed);
+        document.documentElement.classList.toggle('sb-collapsed', collapsed);
+      } catch(e){}
+    }
+  });
+  document.addEventListener('click', e => {
+    if (isMobile() && e.target.closest('aside.sb a')) closeMobile();
+  });
+});
+</script>
 
-                    // Juga toggle class di <html> agar page berikutnya langsung benar tanpa flash
-                    document.documentElement.classList.toggle('sb-collapsed', willCollapse);
-                });
-            }
-        });
-    </script>
 
     {{-- ✅ LOGOUT HOOK: paksa loader muncul SEKALI di halaman tujuan (login)
         saat user logout. Tidak menampilkan overlay di halaman saat ini. --}}
