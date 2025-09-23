@@ -17,6 +17,11 @@ main.content {
     width: 100%;
 }
 
+/* 🔧 tambahkan dukungan html.sb-collapsed agar anti flash sejak awal */
+html.sb-collapsed main.content {
+    margin-left: 80px;
+}
+
 .layout.is-collapsed aside.sb {
     width: 80px;
     display: flex;
@@ -41,6 +46,11 @@ main.content {
     /* sesuaikan dengan lebar sidebar */
 }
 
+/* 🔧 ketika collapsed via html.sb-collapsed, sembunyikan label & children juga */
+html.sb-collapsed .sb-link span,
+html.sb-collapsed summary span,
+html.sb-collapsed .sb-user .meta,
+html.sb-collapsed .sb-children,
 .layout.is-collapsed .sb-link span,
 .layout.is-collapsed summary span,
 .layout.is-collapsed .sb-user .meta,
@@ -98,6 +108,15 @@ aside.sb {
     height: 100svh;
     z-index: 1005;
     /* Pastikan lebih rendah dari modal */
+}
+
+/* 🔧 ketika <html> sudah sb-collapsed sejak awal, kecilkan width sidebar */
+html.sb-collapsed aside.sb {
+    width: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 /* ── Brand: fixed height & compact logo ─────────────────────────── */
@@ -283,11 +302,13 @@ aside.sb {
 }
 
 /* Collapsed: logo tampil, teks sembunyi */
-.layout.is-collapsed .sb-footer .org-logo {
+.layout.is-collapsed .sb-footer .org-logo,
+html.sb-collapsed .sb-footer .org-logo {
     display: block;
 }
 
-.layout.is-collapsed .sb-footer .org-name {
+.layout.is-collapsed .sb-footer .org-name,
+html.sb-collapsed .sb-footer .org-name {
     display: none;
 }
 
@@ -345,14 +366,16 @@ aside.sb {
 }
 
 /* ===== Collapsed state ===== */
-.layout.is-collapsed .sb-footer {
+.layout.is-collapsed .sb-footer,
+html.sb-collapsed .sb-footer {
     padding: 10px 8px;
     /* rapat */
     align-items: center;
 }
 
 /* Collapsed: logout ikon-only KECIL */
-.layout.is-collapsed .sb-footer .sb-logout {
+.layout.is-collapsed .sb-footer .sb-logout,
+html.sb-collapsed .sb-footer .sb-logout {
     width: 44px;
     /* compact */
     height: 44px;
@@ -366,11 +389,13 @@ aside.sb {
 }
 
 /* Collapsed: sembunyikan TEKS, tampilkan IKON */
-.layout.is-collapsed .sb-footer .sb-logout span {
+.layout.is-collapsed .sb-footer .sb-logout span,
+html.sb-collapsed .sb-footer .sb-logout span {
     display: none;
 }
 
-.layout.is-collapsed .sb-footer .sb-logout i {
+.layout.is-collapsed .sb-footer .sb-logout i,
+html.sb-collapsed .sb-footer .sb-logout i {
     display: inline-block;
     /* <- show icon khusus collapsed */
     font-size: 17px;
@@ -448,7 +473,8 @@ aside.sb {
 }
 
 /* Sembunyikan toggle button dropdown ketika sidebar collapsed */
-.layout.is-collapsed .sb-toggle {
+.layout.is-collapsed .sb-toggle,
+html.sb-collapsed .sb-toggle {
     display: none !important;
 }
 
@@ -474,24 +500,28 @@ aside.sb {
 }
 
 /* Penyesuaian untuk state collapsed */
-.layout.is-collapsed .sb-parent-item {
+.layout.is-collapsed .sb-parent-item,
+html.sb-collapsed .sb-parent-item {
     justify-content: center;
     flex-direction: column;
     gap: 4px;
 }
 
-.layout.is-collapsed .sb-parent-item .sb-main-link {
+.layout.is-collapsed .sb-parent-item .sb-main-link,
+html.sb-collapsed .sb-parent-item .sb-main-link {
     padding: 8px;
     justify-content: center;
 }
 
-.layout.is-collapsed .sb-parent-item .sb-toggle {
+.layout.is-collapsed .sb-parent-item .sb-toggle,
+html.sb-collapsed .sb-parent-item .sb-toggle {
     margin-left: 0;
     width: 30px;
     height: 30px;
 }
 
-.layout.is-collapsed .sb-parent-item .sb-main-link span {
+.layout.is-collapsed .sb-parent-item .sb-main-link span,
+html.sb-collapsed .sb-parent-item .sb-main-link span {
     display: none;
 }
 
