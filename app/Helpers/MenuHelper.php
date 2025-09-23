@@ -58,22 +58,41 @@ class MenuHelper
     //     ];
     // }
 
-    public static function pbMenu()
+public static function pbMenu()
 {
+    // ambil semua gudang dari database
+    $gudangs = Gudang::all();
+
+    // mapping data gudang jadi children menu
+    $gudangMenus = $gudangs->map(function ($g) {
+        // Buat slug dari nama gudang secara otomatis
+        $slug = self::createSlugFromGudangName($g->nama);
+        
+        return [
+            'label'  => $g->nama,
+            'icon'   => 'bi-grid',
+            'route'  => 'pb.datakeseluruhan.gudang', // route ke DataKeseluruhan
+            'params' => ['slug' => $slug],
+            'gudang_id' => $g->id
+        ];
+    })->toArray();
+
     return [
-        ['label' => 'Dashboard', 'icon' => 'bi-grid', 'route' => 'staff.pb.dashboard'],
+        ['label' => 'Dashboard', 'icon' => 'bi-grid', 'route' => 'pb.dashboard'],
 
-        ['label' => 'Kelola Barang', 'icon' => 'bi-card-list', 'children' => [
-            ['label' => 'Gudang ATK',         'icon' => 'bi-archive', 'route' => 'staff.pb.gudang.atk'],
-            ['label' => 'Gudang Listrik',     'icon' => 'bi-archive', 'route' => 'staff.pb.gudang.listrik'],
-            ['label' => 'Gudang Kebersihan',  'icon' => 'bi-archive', 'route' => 'staff.pb.gudang.kebersihan'],
-            ['label' => 'Gudang B Komputer',  'icon' => 'bi-archive', 'route' => 'staff.pb.gudang.komputer'],
-        ]],
+        [
+            'label' => 'Data Keseluruhan',
+            'icon'  => 'bi-card-list',
+            'route' => 'pb.datakeseluruhan.index', // route utama ke DataKeseluruhan@index
+            'children' => $gudangMenus
+        ],
 
-        ['label' => 'Riwayat', 'icon' => 'bi-clock-history', 'route' => 'staff.pb.riwayat'],
-        ['label' => 'Laporan', 'icon' => 'bi-file-earmark-bar-graph-fill', 'route' => 'staff.pb.laporan'],
+        ['label' => 'Riwayat', 'icon' => 'bi-clock-history', 'route' => 'pb.riwayat.index'],
+        ['label' => 'Laporan', 'icon' => 'bi-file-earmark-bar-graph-fill', 'route' => 'pb.laporan'],
     ];
 }
+
+
 
 
     public static function pjMenu()

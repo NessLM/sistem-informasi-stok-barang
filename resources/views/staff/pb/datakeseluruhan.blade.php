@@ -1,839 +1,177 @@
 <x-layouts.app title="Data Keseluruhan" :menu="$menu">
 
-    @php
-        $barang = $barang ?? collect();
-        $kategori = $kategori ?? collect();
-        $gudang = $gudang ?? collect();
-    @endphp
+@php
+    $barang   = $barang   ?? collect();
+    $kategori = $kategori ?? collect();
+    $gudang   = $gudang   ?? collect();
+    $role     = auth()->check() ? auth()->user()->role->nama : null;
+@endphp
 
-    <head>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-    </head>
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
 
-    <main class="page-wrap container py-4">
+<div class="container mt-4">
+    <h3>Data Barang</h3>
 
-        {{-- Toast sukses --}}
-        @if (session('success'))
-            <div class="toast-container">
-                <div class="toast align-items-center text-bg-success border-0 show" id="successToast">
-                    <div class="d-flex">
-                        <div class="toast-body">
-                            <strong>Berhasil!</strong> {{ session('success') }}
-                        </div>
-                        <button type="button" class="btn-close btn-close-white me-2 m-auto"
-                            data-bs-dismiss="toast"></button>
-                    </div>
-                </div>
-            </div>
-        @endif
-
-        {{-- Pesan error global --}}
-        @if ($errors->any())
-            <div class="alert alert-danger">
-                <ul class="mb-0">
-                    @foreach ($errors->all() as $err)
-                        <li>{{ $err }}</li>
+    <!-- Filter Gudang -->
+    <form method="GET" class="mb-3">
+        <div class="row g-2">
+            <div class="col-md-3">
+                <select name="gudang_id" class="form-select">
+                    <option value="">-- Semua Gudang --</option>
+                    @foreach($gudang as $gd)
+                        <option value="{{ $gd->id }}" {{ request('gudang_id') == $gd->id ? 'selected' : '' }}>
+                            {{ $gd->nama }}
+                        </option>
                     @endforeach
-                </ul>
+                </select>
             </div>
-        @endif
-
-        <section class="card shadow-sm p-3">
-            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-                @php
-                    $title = 'Data Keseluruhan'; // default
-                    
-                    // Jika ada kategori dan semua kategori dari gudang yang sama
-                    if($kategori->isNotEmpty()) {
-                        $firstGudang = $kategori->first()->gudang->nama ?? null;
-                        $allSameGudang = $kategori->every(function($k) use ($firstGudang) {
-                            return ($k->gudang->nama ?? null) === $firstGudang;
-                        });
-                        
-                        if($allSameGudang && $firstGudang) {
-                            // Hindari duplikasi kata "Gudang"
-                            if(str_starts_with($firstGudang, 'Gudang')) {
-                                $title = 'Data ' . $firstGudang;
-                            } else {
-                                $title = 'Data Gudang ' . $firstGudang;
-                            }
-                        }
-                    }
-                    
-                    // Override berdasarkan filter gudang jika ada
-                    if(request()->filled('gudang_id') && isset($selectedGudang)) {
-                        $gudangNama = $selectedGudang->nama;
-                        if(str_starts_with($gudangNama, 'Gudang')) {
-                            $title = 'Data ' . $gudangNama;
-                        } else {
-                            $title = 'Data Gudang ' . $gudangNama;
-                        }
-                    }
-                    
-                    // Override berdasarkan URL path
-                    $currentPath = request()->path();
-                    if (str_contains($currentPath, '/atk')) {
-                        $title = 'Data Gudang ATK';
-                    } elseif (str_contains($currentPath, '/listrik')) {
-                        $title = 'Data Gudang Listrik';
-                    } elseif (str_contains($currentPath, '/kebersihan')) {
-                        $title = 'Data Gudang Kebersihan';
-                    } elseif (str_contains($currentPath, '/komputer')) {
-                        $title = 'Data Gudang Komputer';
-                    }
-                @endphp
-                <h4>{{ $title }}</h4>
-                <div class="d-flex flex-wrap gap-2">
-                    <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#modalTambahKategori">
-                        <div class="btn-text">+ Tambah Kategori</div>
-                    </button>
-                    <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#modalTambahBarang">
-                        <div class="btn-text">+ Tambah Barang</div>
-                    </button>
-                    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalFilterBarang">
-                        <i class="bi bi-funnel"></i> Filter
-                    </button>
-                </div>
+            <div class="col-md-3">
+                <input type="text" name="search" value="{{ request('search') }}" class="form-control"
+                       placeholder="Cari barang...">
             </div>
-
-            {{-- Search Form dengan Autocomplete --}}
-            <div class="position-relative mb-3">
-                <form action="{{ route('admin.datakeseluruhan.index') }}" method="GET" class="input-group" id="searchForm">
-                    <span class="input-group-text"><i class="bi bi-search"></i></span>
-                    <input type="text" name="search" id="searchInput" class="form-control"
-                        placeholder="Telusuri barang (nama atau kode)" value="{{ request('search') }}"
-                        autocomplete="off">
-                    <button class="btn btn-outline-secondary" type="submit">Cari</button>
-                </form>
-
-                {{-- Dropdown Suggestions --}}
-                <div id="searchSuggestions" class="dropdown-menu w-100 position-absolute"
-                    style="z-index: 1050; max-height: 300px; overflow-y: auto; display: none;">
-                </div>
-            </div>
-
-            {{-- Jika ada filter/search --}}
-            @if (request()->filled('search') ||
-                    request()->filled('kode') ||
-                    request()->filled('stok_min') ||
-                    request()->filled('stok_max') ||
-                    request()->filled('kategori_id') ||
-                    request()->filled('gudang_id') ||
-                    request()->filled('satuan') ||
-                    request()->filled('nomor_awal') ||
-                    request()->filled('nomor_akhir') ||
-                    request()->filled('harga_min') ||
-                    request()->filled('harga_max'))
-                <h5 class="mt-3">Hasil Pencarian</h5>
-                @if ($barang->count() > 0)
-                    <div class="table-responsive">
-                        <table class="table table-bordered mt-2">
-                            <thead class="table-secondary">
-                                <tr>
-                                    <th>No</th>
-                                    <th>Nama</th>
-                                    <th>Kode</th>
-                                    <th>Harga</th>
-                                    <th>Stok</th>
-                                    <th>Satuan</th>
-                                    <th>Kategori</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($barang as $i => $b)
-                                    <tr @if ($b->stok == 0) class="table-danger" @endif>
-                                        <td>{{ $i + 1 }}</td>
-                                        <td>{{ $b->nama }}</td>
-                                        <td>{{ $b->kode }}</td>
-                                        <td>Rp {{ number_format($b->harga ?? 0, 0, ',', '.') }}</td>
-                                        <td>{{ $b->stok }}</td>
-                                        <td>{{ $b->satuan }}</td>
-                                        <td>{{ $b->kategori->nama ?? '-' }}</td>
-                                        <td>
-                                            <button class="btn btn-sm btn-warning" data-bs-toggle="modal"
-                                                data-bs-target="#modalEditBarang-{{ $b->id }}">
-                                                <i class="bi bi-pencil"></i>
-                                            </button>
-                                            <form action="{{ route('admin.barang.destroy', $b->id) }}" method="POST"
-                                                class="d-inline" onsubmit="return confirm('Hapus barang ini?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button class="btn btn-sm btn-danger"><i
-                                                        class="bi bi-trash"></i></button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @else
-                    <div class="alert alert-warning">Tidak ada data ditemukan untuk kriteria pencarian Anda</div>
-                @endif
-            @endif
-
-            {{-- Jika tidak ada filter/search --}}
-            @if (
-                !request()->filled('search') &&
-                    !request()->filled('kode') &&
-                    !request()->filled('stok_min') &&
-                    !request()->filled('stok_max') &&
-                    !request()->filled('kategori_id') &&
-                    !request()->filled('gudang_id') &&
-                    !request()->filled('satuan') &&
-                    !request()->filled('nomor_awal') &&
-                    !request()->filled('nomor_akhir') &&
-                    !request()->filled('harga_min') &&
-                    !request()->filled('harga_max'))
-                <div class="table-responsive mt-3">
-                    <table class="table table-bordered">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>KATEGORI</th>
-                                <th>GUDANG</th>
-                                <th style="width:180px" class="text-center">AKSI</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($kategori as $k)
-                                <tr>
-                                    <td>{{ $k->nama }}</td>
-                                    <td>{{ $k->gudang->nama ?? '-' }}</td>
-                                    <td class="text-center">
-                                        <div class="d-flex flex-wrap justify-content-center gap-2">
-                                            <button class="btn btn-sm btn-success"
-                                                onclick="toggleDetail({{ $k->id }})"><i
-                                                    class="bi bi-eye"></i></button>
-                                            <button type="button" class="btn btn-sm btn-danger"
-    onclick="confirmDelete('{{ route('admin.kategori.destroy', $k->id) }}', 'Kategori {{ $k->nama }}')">
-    <i class="bi bi-trash"></i>
-</button>
-
-                                        </div>
-                                    </td>
-                                </tr>
-
-                                <tr id="detail-{{ $k->id }}" style="display:none;">
-                                    <td colspan="3">
-                                        @if ($k->barang->count())
-                                            <div class="table-responsive">
-                                                <table class="table table-striped">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>No</th>
-                                                            <th>Nama</th>
-                                                            <th>Kode</th>
-                                                            <th>Harga</th>
-                                                            <th>Stok</th>
-                                                            <th>Satuan</th>
-                                                            <th>Aksi</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        @foreach ($k->barang as $i => $b)
-                                                            <tr @if ($b->stok == 0) class="table-danger" @endif>
-                                                                <td>{{ $i + 1 }}</td>
-                                                                <td>{{ $b->nama }}</td>
-                                                                <td>{{ $b->kode }}</td>
-                                                                <td>Rp {{ number_format($b->harga ?? 0, 0, ',', '.') }}</td>
-                                                                <td>{{ $b->stok }}</td>
-                                                                <td>{{ $b->satuan }}</td>
-                                                                <td class="d-flex gap-2">
-                                                                    <button class="btn btn-sm btn-warning"
-                                                                        data-bs-toggle="modal"
-                                                                        data-bs-target="#modalEditBarang-{{ $b->id }}">
-                                                                        <i class="bi bi-pencil"></i>
-                                                                    </button>
-                                                                    <button type="button" class="btn btn-sm btn-danger"
-                                                                        onclick="confirmDelete('{{ route('admin.barang.destroy', $b->id) }}', 'Barang {{ $b->nama }}')">
-                                                                        <i class="bi bi-trash"></i>
-                                                                    </button>
-                                                                </td>
-                                                            </tr>
-                                                        @endforeach
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        @else
-                                            <p class="text-muted">Belum ada barang pada kategori ini.</p>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @endif
-        </section>
-    </main>
-
-    <!-- Modal Tambah Kategori -->
-    <div class="modal fade" id="modalTambahKategori" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Tambah Kategori</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form action="{{ route('admin.kategori.store') }}" method="POST">
-                    @csrf
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="nama" class="form-label">Nama Kategori</label>
-                            <input type="text" class="form-control" name="nama" id="nama" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="gudang_id" class="form-label">Pilih Gudang</label>
-                            <select name="gudang_id" id="gudang_id" class="form-select" required>
-                                <option value="">-- Pilih Gudang --</option>
-                                @foreach ($gudang as $item)
-                                    <option value="{{ $item->id }}">{{ $item->nama }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-primary">Simpan</button>
-                    </div>
-                </form>
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100">Filter</button>
             </div>
         </div>
-    </div>  
+    </form>
 
-    {{-- Modal Tambah Barang --}}
-    <div class="modal fade" id="modalTambahBarang" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <form action="{{ route('admin.barang.store') }}" method="POST" class="modal-content" id="formTambahBarang">
-                @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title">Tambah Barang</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label>Nama</label>
-                            <input type="text" name="nama"
-                                class="form-control @error('nama') is-invalid @enderror" value="{{ old('nama') }}"
-                                required>
-                            @error('nama')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        <div class="col-md-6">
-                            <label>Kode</label>
-                            <input type="text" name="kode"
-                                class="form-control @error('kode') is-invalid @enderror" value="{{ old('kode') }}"
-                                required>
-                            @error('kode')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        <div class="col-md-6">
-                            <label>Kategori</label>
-                            <select name="kategori_id" class="form-select @error('kategori_id') is-invalid @enderror"
-                                required>
-                                <option value="">-- Pilih Kategori --</option>
-                                @foreach ($kategori as $k)
-                                    <option value="{{ $k->id }}"
-                                        @if (old('kategori_id') == $k->id) selected @endif>{{ $k->nama }}</option>
-                                @endforeach
-                            </select>
-                            @error('kategori_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                       <div class="col-md-6">
-    <label>Harga / Satuan</label>
-    <div class="input-group">
-        <span class="input-group-text">Rp</span>
-        <input type="text" name="harga_display" id="hargaTambah"
-            class="form-control @error('harga') is-invalid @enderror"
-            value="{{ old('harga') }}" placeholder="Harga">
-        <input type="hidden" name="harga" id="hargaTambahHidden">
-        <select name="satuan" class="form-select">
-            <option value="Pcs" @if (old('satuan') == 'Pcs') selected @endif>Pcs</option>
-            <option value="Box" @if (old('satuan') == 'Box') selected @endif>Box</option>
-            <option value="Pack" @if (old('satuan') == 'Pack') selected @endif>Pack</option>
-            <option value="Rim" @if (old('satuan') == 'Rim') selected @endif>Rim</option>
-            <option value="Unit" @if (old('satuan') == 'Unit') selected @endif>Unit</option>
-        </select>
-    </div>
-    @error('harga')
-        <div class="invalid-feedback">{{ $message }}</div>
-    @enderror
-</div>
-
-                        <input type="hidden" name="stok" value="0">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Batal</button>
-                    <button class="btn btn-primary" type="submit">Simpan</button>
-                </div>
-            </form>
+    <!-- Hanya admin bisa tambah kategori & barang -->
+    @if($role === 'admin')
+        <div class="mb-3">
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#tambahKategori">Tambah Kategori</button>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tambahBarang">Tambah Barang</button>
         </div>
-    </div>
+    @endif
 
-    {{-- Modal Edit Barang --}}
-    @foreach ($kategori as $k)
-        @foreach ($k->barang as $b)
-            <div class="modal fade" id="modalEditBarang-{{ $b->id }}" tabindex="-1"aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered modal-lg">
-                    <form action="{{ route('admin.barang.update', $b->id) }}" method="POST" class="modal-content" id="formEditBarang-{{ $b->id }}">
-                        @csrf
-                        @method('PUT')
-                        <div class="modal-header">
-                            <h5 class="modal-title">Edit Barang: {{ $b->nama }}</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label>Nama</label>
-                                    <input type="text" name="nama" class="form-control"
-                                        value="{{ $b->nama }}" required>
+    <!-- Tabel Data Barang -->
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Kode</th>
+                    <th>Nama</th>
+                    <th>Kategori</th>
+                    <th>Gudang</th>
+                    <th>Stok</th>
+                    <th>Satuan</th>
+                    <th>Harga</th>
+                    <th width="240">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($barang as $item)
+                    <tr>
+                        <td>{{ $item->kode }}</td>
+                        <td>{{ $item->nama }}</td>
+                        <td>{{ $item->kategori->nama ?? '-' }}</td>
+                        <td>{{ $item->kategori->gudang->nama ?? '-' }}</td>
+                        <td>{{ $item->stok }}</td>
+                        <td>{{ $item->satuan }}</td>
+                        <td>Rp {{ number_format($item->harga,0,',','.') }}</td>
+                        <td>
+                            @if($role === 'admin')
+                                <!-- Admin bisa edit & hapus -->
+                                <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
+                                    data-bs-target="#editBarang{{ $item->id }}">Edit</button>
+                                <form action="{{ route('admin.barang.destroy', $item->kode) }}" method="POST" style="display:inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger btn-sm"
+                                        onclick="return confirm('Yakin hapus barang ini?')">Hapus</button>
+                                </form>
+                            @elseif($role === 'pb')
+                                <!-- PB bisa barang masuk & distribusi -->
+                                <button class="btn btn-success btn-sm" data-bs-toggle="modal"
+                                    data-bs-target="#barangMasuk{{ $item->id }}">Barang Masuk</button>
+                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                    data-bs-target="#distribusiBarang{{ $item->id }}">Distribusi</button>
+                            @endif
+                        </td>
+                    </tr>
+
+                    <!-- Modal Barang Masuk (PB) -->
+                    <div class="modal fade" id="barangMasuk{{ $item->id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <form action="{{ route('pb.barangmasuk.store') }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="barang_id" value="{{ $item->id }}">
+                                <div class="modal-content">
+                                    <div class="modal-header"><h5>Barang Masuk - {{ $item->nama }}</h5></div>
+                                    <div class="modal-body">
+                                        <label>Jumlah Masuk</label>
+                                        <input type="number" class="form-control" name="jumlah" min="1" required>
+                                        <label class="mt-2">Keterangan</label>
+                                        <textarea class="form-control" name="keterangan"></textarea>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="submit" class="btn btn-success">Simpan</button>
+                                    </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <label>Kode</label>
-                                    <input type="text" name="kode" class="form-control"
-                                        value="{{ $b->kode }}" required>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Modal Distribusi (PB) -->
+                    <div class="modal fade" id="distribusiBarang{{ $item->id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <form action="{{ route('pb.distribusi.store') }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="barang_id" value="{{ $item->id }}">
+                                <div class="modal-content">
+                                    <div class="modal-header"><h5>Distribusi - {{ $item->nama }}</h5></div>
+                                    <div class="modal-body">
+                                        <label>Tujuan Gudang</label>
+                                        <select name="tujuan_gudang_id" class="form-control" required>
+                                            @foreach($gudang as $gd)
+                                                @if($gd->id !== $item->kategori->gudang_id)
+                                                    <option value="{{ $gd->id }}">{{ $gd->nama }}</option>
+                                                @endif
+                                            @endforeach
+                                        </select>
+                                        <label class="mt-2">Jumlah Distribusi</label>
+                                        <input type="number" class="form-control" name="jumlah" min="1" required>
+                                        <label class="mt-2">Keterangan</label>
+                                        <textarea class="form-control" name="keterangan"></textarea>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="submit" class="btn btn-primary">Distribusi</button>
+                                    </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <label>Kategori</label>
-                                    <select name="kategori_id" class="form-select" required>
-                                        @foreach ($kategori as $kat)
-                                            <option value="{{ $kat->id }}"
-                                                @if ($b->kategori_id == $kat->id) selected @endif>
-                                                {{ $kat->nama }}
-                                            </option>
-                                        @endforeach
-                                    </select>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Modal Edit Barang (Admin) -->
+                    <div class="modal fade" id="editBarang{{ $item->id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <form action="{{ route('admin.barang.update', $item->kode) }}" method="POST">
+                                @csrf
+                                @method('PUT')
+                                <div class="modal-content">
+                                    <div class="modal-header"><h5>Edit Barang</h5></div>
+                                    <div class="modal-body">
+                                        <label>Nama Barang</label>
+                                        <input type="text" name="nama" value="{{ $item->nama }}" class="form-control" required>
+                                        <label class="mt-2">Harga</label>
+                                        <input type="number" name="harga" value="{{ $item->harga }}" class="form-control">
+                                        <label class="mt-2">Satuan</label>
+                                        <input type="text" name="satuan" value="{{ $item->satuan }}" class="form-control">
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="submit" class="btn btn-warning">Update</button>
+                                    </div>
                                 </div>
-                               <div class="col-md-6">
-    <label>Harga / Satuan</label>
-    <div class="input-group">
-        <span class="input-group-text">Rp</span>
-        <input type="text" name="harga_display" id="hargaEdit-{{ $b->id }}"
-            class="form-control" value="{{ number_format($b->harga ?? 0, 0, ',', '.') }}">
-        <input type="hidden" name="harga" id="hargaEditHidden-{{ $b->id }}" value="{{ $b->harga }}">
-        <select name="satuan" class="form-select">
-            <option value="Pcs" @if ($b->satuan == 'Pcs') selected @endif>Pcs</option>
-            <option value="Box" @if ($b->satuan == 'Box') selected @endif>Box</option>
-            <option value="Pack" @if ($b->satuan == 'Pack') selected @endif>Pack</option>
-            <option value="Rim" @if ($b->satuan == 'Rim') selected @endif>Rim</option>
-            <option value="Unit" @if ($b->satuan == 'Unit') selected @endif>Unit</option>
-        </select>
+                            </form>
+                        </div>
+                    </div>
+                @empty
+                    <tr><td colspan="8" class="text-center">Tidak ada barang ditemukan</td></tr>
+                @endforelse
+            </tbody>
+        </table>
     </div>
 </div>
 
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Batal</button>
-                            <button class="btn btn-primary" type="submit">Simpan Perubahan</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        @endforeach
-    @endforeach
-
-    {{-- Modal Filter --}}
-    <div class="modal fade" id="modalFilterBarang" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <form action="{{ route('admin.datakeseluruhan.index') }}" method="GET" class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Filter Barang</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-    <div class="row g-3">
-        <!-- Satuan -->
-        <div class="col-md-6">
-            <label class="form-label">Satuan</label>
-            <select name="satuan" class="form-select">
-                <option value="">-- Semua Satuan --</option>
-                <option value="Pcs" @if (request('satuan') == 'Pcs') selected @endif>Pcs</option>
-                <option value="Box" @if (request('satuan') == 'Box') selected @endif>Box</option>
-                <option value="Pack" @if (request('satuan') == 'Pack') selected @endif>Pack</option>
-                <option value="Rim" @if (request('satuan') == 'Rim') selected @endif>Rim</option>
-                <option value="Unit" @if (request('satuan') == 'Unit') selected @endif>Unit</option>
-            </select>
-        </div>
-
-        <!-- Rentang Harga -->
-        <div class="col-md-6">
-            <label class="form-label">Rentang Harga</label>
-            <div class="d-flex gap-2">
-                <input type="number" name="harga_min" class="form-control"
-                    placeholder="Min Harga" value="{{ request('harga_min') }}" step="0.01" min="0">
-                <input type="number" name="harga_max" class="form-control"
-                    placeholder="Max Harga" value="{{ request('harga_max') }}" step="0.01" min="0">
-            </div>
-        </div>
-
-        <!-- Kategori -->
-        <div class="col-md-6">
-            <label class="form-label">Kategori</label>
-            <select name="kategori_id" class="form-select">
-                <option value="">-- Semua Kategori --</option>
-                @foreach ($kategori as $k)
-                    <option value="{{ $k->id }}" @if (request('kategori_id') == $k->id) selected @endif>
-                        {{ $k->nama }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-
-        <!-- Stok -->
-        <div class="col-md-6">
-            <label class="form-label">Stok</label>
-            <div class="d-flex gap-2">
-                <input type="number" name="stok_min" class="form-control"
-                    placeholder="Stok Minimum" value="{{ request('stok_min') }}" min="0">
-                <input type="number" name="stok_max" class="form-control"
-                    placeholder="Stok Maksimal" value="{{ request('stok_max') }}" min="0">
-            </div>
-        </div>
-
-        <!-- Gudang -->
-        <div class="col-md-12">
-            <label class="form-label">Gudang</label>
-            <select name="gudang_id" class="form-select">
-                <option value="">-- Semua Gudang --</option>
-                @foreach ($gudang as $g)
-                    <option value="{{ $g->id }}" @if (request('gudang_id') == $g->id) selected @endif>
-                        {{ $g->nama }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-    </div>
-</div>
-
-                <div class="modal-footer">
-                    <a href="{{ route('admin.datakeseluruhan.index') }}" class="btn btn-secondary">Reset Filter</a>
-                    <button class="btn btn-primary" type="submit">Terapkan Filter</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal Konfirmasi Hapus -->
-<div class="modal fade" id="modalConfirmDelete" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <form method="POST" id="deleteForm" class="modal-content">
-            @csrf
-            @method('DELETE')
-            <div class="modal-header">
-                <h5 class="modal-title">Konfirmasi Hapus</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p id="deleteMessage">Apakah Anda yakin ingin menghapus data ini?</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-danger">Hapus</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-    {{-- JavaScript yang sudah diperbaiki --}}
-    <script>
-        // Toggle detail function
-        function toggleDetail(id) {
-            let el = document.getElementById('detail-' + id);
-            if (el.style.display === 'none') {
-                el.style.display = 'table-row';
-            } else {
-                el.style.display = 'none';
-            }
-        }
-
-        // Autocomplete search functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const searchInput = document.getElementById('searchInput');
-            const suggestionsContainer = document.getElementById('searchSuggestions');
-            let currentSuggestions = [];
-            let activeSuggestionIndex = -1;
-            let searchTimeout;
-
-            if (!searchInput || !suggestionsContainer) {
-                return;
-            }
-
-            function getActiveGudangId() {
-                const modalGudangSelect = document.querySelector('#modalFilterBarang select[name="gudang_id"]');
-                if (modalGudangSelect && modalGudangSelect.value) {
-                    return modalGudangSelect.value;
-                }
-
-                const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.get('gudang_id')) {
-                    return urlParams.get('gudang_id');
-                }
-
-                const currentPath = window.location.pathname;
-                if (currentPath.includes('/atk')) {
-                    return getGudangIdByName('ATK');
-                } else if (currentPath.includes('/listrik')) {
-                    return getGudangIdByName('Listrik');
-                } else if (currentPath.includes('/kebersihan')) {
-                    return getGudangIdByName('Kebersihan');
-                } else if (currentPath.includes('/komputer')) {
-                    return getGudangIdByName('Komputer');
-                }
-
-                return null;
-            }
-
-            function getGudangIdByName(namaGudang) {
-                const gudangSelect = document.querySelector('select[name="gudang_id"]');
-                if (!gudangSelect) return null;
-
-                for (let option of gudangSelect.options) {
-                    if (option.text.toLowerCase().includes(namaGudang.toLowerCase())) {
-                        return option.value;
-                    }
-                }
-                return null;
-            }
-
-            function fetchSuggestions(query) {
-                if (query.length < 2) {
-                    hideSuggestions();
-                    return;
-                }
-
-                showLoading();
-                clearTimeout(searchTimeout);
-
-                searchTimeout = setTimeout(() => {
-                    const activeGudangId = getActiveGudangId();
-                    let searchUrl = `{{ route('admin.api.search.barang') }}?q=${encodeURIComponent(query)}`;
-                    
-                    if (activeGudangId) {
-                        searchUrl += `&gudang_id=${activeGudangId}`;
-                    }
-
-                    fetch(searchUrl)
-                        .then(response => response.json())
-                        .then(data => {
-                            currentSuggestions = data;
-                            displaySuggestions(data);
-                        })
-                        .catch(error => {
-                            console.error('Search error:', error);
-                            hideSuggestions();
-                        });
-                }, 300);
-            }
-
-            function showLoading() {
-                suggestionsContainer.innerHTML = '<div class="loading-suggestion">Mencari...</div>';
-                suggestionsContainer.style.display = 'block';
-            }
-
-            function displaySuggestions(suggestions) {
-                if (suggestions.length === 0) {
-                    suggestionsContainer.innerHTML = 
-                        '<div class="loading-suggestion">Tidak ada barang ditemukan</div>';
-                    return;
-                }
-
-                let html = '';
-                suggestions.forEach((item, index) => {
-                    const stockStatusClass = `stock-${item.stock_status}`;
-                    const stockText = item.stock_status === 'empty' ? 'Habis' :
-                        item.stock_status === 'low' ? 'Sedikit' : 'Tersedia';
-
-                    html += `
-                        <div class="search-suggestion-item" data-index="${index}">
-                            <div class="suggestion-name">${item.nama}</div>
-                            <div class="suggestion-code">Kode: ${item.kode}</div>
-                            <div class="suggestion-meta">
-                                <small>Kategori: ${item.kategori} | Gudang: ${item.gudang} | Stok: ${item.stok} | 
-                                <span class="stock-status ${stockStatusClass}">${stockText}</span></small>
-                            </div>
-                        </div>
-                    `;
-                });
-
-                suggestionsContainer.innerHTML = html;
-                suggestionsContainer.style.display = 'block';
-
-                suggestionsContainer.querySelectorAll('.search-suggestion-item').forEach(item => {
-                    item.addEventListener('click', function() {
-                        const index = parseInt(this.dataset.index);
-                        selectSuggestion(index);
-                    });
-                });
-            }
-
-            function hideSuggestions() {
-                suggestionsContainer.style.display = 'none';
-                activeSuggestionIndex = -1;
-            }
-
-            function selectSuggestion(index) {
-                if (currentSuggestions[index]) {
-                    const suggestion = currentSuggestions[index];
-                    searchInput.value = suggestion.nama;
-                    hideSuggestions();
-
-                    const form = document.getElementById('searchForm');
-                    const activeGudangId = getActiveGudangId();
-                    
-                    if (activeGudangId) {
-                        let hiddenGudangInput = form.querySelector('input[name="gudang_id"]');
-                        if (!hiddenGudangInput) {
-                            hiddenGudangInput = document.createElement('input');
-                            hiddenGudangInput.type = 'hidden';
-                            hiddenGudangInput.name = 'gudang_id';
-                            form.appendChild(hiddenGudangInput);
-                        }
-                        hiddenGudangInput.value = activeGudangId;
-                    }
-                    
-                    form.submit();
-                }
-            }
-
-            function updateActiveSuggestion(suggestions) {
-                suggestions.forEach((item, index) => {
-                    if (index === activeSuggestionIndex) {
-                        item.classList.add('active');
-                    } else {
-                        item.classList.remove('active');
-                    }
-                });
-            }
-
-            // Event listeners
-            searchInput.addEventListener('input', function() {
-                fetchSuggestions(this.value.trim());
-            });
-
-            searchInput.addEventListener('keydown', function(e) {
-                const suggestions = suggestionsContainer.querySelectorAll('.search-suggestion-item');
-
-                if (e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    activeSuggestionIndex = Math.min(activeSuggestionIndex + 1, suggestions.length - 1);
-                    updateActiveSuggestion(suggestions);
-                } else if (e.key === 'ArrowUp') {
-                    e.preventDefault();
-                    activeSuggestionIndex = Math.max(activeSuggestionIndex - 1, -1);
-                    updateActiveSuggestion(suggestions);
-                } else if (e.key === 'Enter') {
-                    if (activeSuggestionIndex >= 0) {
-                        e.preventDefault();
-                        selectSuggestion(activeSuggestionIndex);
-                    }
-                } else if (e.key === 'Escape') {
-                    hideSuggestions();
-                }
-            });
-
-            searchInput.addEventListener('focus', function() {
-                if (this.value.trim().length >= 2) {
-                    fetchSuggestions(this.value.trim());
-                }
-            });
-
-            document.addEventListener('click', function(e) {
-                if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
-                    hideSuggestions();
-                }
-            });
-
-            const gudangSelects = document.querySelectorAll('select[name="gudang_id"]');
-            gudangSelects.forEach(select => {
-                select.addEventListener('change', function() {
-                    if (searchInput.value.trim().length >= 2) {
-                        fetchSuggestions(searchInput.value.trim());
-                    }
-                });
-            });
-        });
-
-        // Confirm delete function
-        function confirmDelete(actionUrl, itemName) {
-            document.getElementById('deleteForm').setAttribute('action', actionUrl);
-            document.getElementById('deleteMessage').innerText =
-                "Apakah Anda yakin ingin menghapus " + itemName + "?";
-            let modal = new bootstrap.Modal(document.getElementById('modalConfirmDelete'));
-            modal.show();
-        }
-
-        // Format Rupiah function - DIPERBAIKI
-        function formatRupiah(angka) {
-            return angka.replace(/\D/g, "")
-                .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-        }
-
-        function unformatRupiah(formatted) {
-            return formatted.replace(/\./g, "");
-        }
-
-        // Handle Tambah Barang Price Format
-        const hargaTambahInput = document.getElementById('hargaTambah');
-        const hargaTambahHidden = document.getElementById('hargaTambahHidden');
-        
-        if (hargaTambahInput && hargaTambahHidden) {
-            hargaTambahInput.addEventListener('input', function() {
-                const formatted = formatRupiah(this.value);
-                this.value = formatted;
-                hargaTambahHidden.value = unformatRupiah(formatted);
-            });
-
-            // Set initial value if exists
-            if (hargaTambahInput.value) {
-                const initialValue = unformatRupiah(hargaTambahInput.value);
-                hargaTambahHidden.value = initialValue;
-                hargaTambahInput.value = formatRupiah(initialValue);
-            }
-        }
-
-        // Handle Edit Barang Price Format
-        document.querySelectorAll('[id^="hargaEdit-"]').forEach(input => {
-            const id = input.id.replace('hargaEdit-', '');
-            const hiddenInput = document.getElementById('hargaEditHidden-' + id);
-            
-            if (hiddenInput) {
-                input.addEventListener('input', function() {
-                    const formatted = formatRupiah(this.value);
-                    this.value = formatted;
-                    hiddenInput.value = unformatRupiah(formatted);
-                });
-
-                // Set initial formatted value
-                if (hiddenInput.value) {
-                    input.value = formatRupiah(hiddenInput.value.toString());
-                }
-            }
-        });
-
-        // Auto-clean form before submit (backup solution)
-        document.querySelectorAll('form').forEach(form => {
-            form.addEventListener('submit', function() {
-                // Clean any remaining display price inputs
-                const displayInputs = form.querySelectorAll('input[name="harga_display"]');
-                displayInputs.forEach(input => {
-                    const hiddenInput = form.querySelector('input[name="harga"]');
-                    if (hiddenInput) {
-                        hiddenInput.value = unformatRupiah(input.value);
-                    }
-                });
-            });
-        });
-    </script>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </x-layouts.app>
