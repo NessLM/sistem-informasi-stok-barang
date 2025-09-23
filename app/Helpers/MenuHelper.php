@@ -41,22 +41,40 @@ class MenuHelper
         ];
     }
 
+    // public static function pbMenu()
+    // {
+    //     return [
+    //         ['label' => 'Dashboard', 'icon' => 'bi-grid', 'route' => 'staff.admin.dashboard'],
+
+    //         ['label' => 'Kelola Barang', 'icon' => 'bi-card-list', 'children' => [
+    //             ['label' => 'Gudang ATK',         'icon' => 'bi-archive', 'route' => 'staff.admin.gudang.atk'],
+    //             ['label' => 'Gudang Listrik',     'icon' => 'bi-archive', 'route' => 'staff.admin.gudang.listrik'],
+    //             ['label' => 'Gudang Kebersihan',  'icon' => 'bi-archive', 'route' => 'staff.admin.gudang.kebersihan'],
+    //             ['label' => 'Gudang B Komputer',  'icon' => 'bi-archive', 'route' => 'staff.admin.gudang.komputer'],
+    //         ]],
+
+    //         ['label' => 'Riwayat',        'icon' => 'bi-clock-history', 'route' => 'staff.admin.riwayat'],
+    //         ['label' => 'Laporan',        'icon' => 'bi-file-earmark-bar-graph-fill', 'route' => 'staff.admin.laporan'],
+    //     ];
+    // }
+
     public static function pbMenu()
-    {
-        return [
-            ['label' => 'Dashboard', 'icon' => 'bi-grid', 'route' => 'staff.admin.dashboard'],
+{
+    return [
+        ['label' => 'Dashboard', 'icon' => 'bi-grid', 'route' => 'staff.pb.dashboard'],
 
-            ['label' => 'Kelola Barang', 'icon' => 'bi-card-list', 'children' => [
-                ['label' => 'Gudang ATK',         'icon' => 'bi-archive', 'route' => 'staff.admin.gudang.atk'],
-                ['label' => 'Gudang Listrik',     'icon' => 'bi-archive', 'route' => 'staff.admin.gudang.listrik'],
-                ['label' => 'Gudang Kebersihan',  'icon' => 'bi-archive', 'route' => 'staff.admin.gudang.kebersihan'],
-                ['label' => 'Gudang B Komputer',  'icon' => 'bi-archive', 'route' => 'staff.admin.gudang.komputer'],
-            ]],
+        ['label' => 'Kelola Barang', 'icon' => 'bi-card-list', 'children' => [
+            ['label' => 'Gudang ATK',         'icon' => 'bi-archive', 'route' => 'staff.pb.gudang.atk'],
+            ['label' => 'Gudang Listrik',     'icon' => 'bi-archive', 'route' => 'staff.pb.gudang.listrik'],
+            ['label' => 'Gudang Kebersihan',  'icon' => 'bi-archive', 'route' => 'staff.pb.gudang.kebersihan'],
+            ['label' => 'Gudang B Komputer',  'icon' => 'bi-archive', 'route' => 'staff.pb.gudang.komputer'],
+        ]],
 
-            ['label' => 'Riwayat',        'icon' => 'bi-clock-history', 'route' => 'staff.admin.riwayat'],
-            ['label' => 'Laporan',        'icon' => 'bi-file-earmark-bar-graph-fill', 'route' => 'staff.admin.laporan'],
-        ];
-    }
+        ['label' => 'Riwayat', 'icon' => 'bi-clock-history', 'route' => 'staff.pb.riwayat'],
+        ['label' => 'Laporan', 'icon' => 'bi-file-earmark-bar-graph-fill', 'route' => 'staff.pb.laporan'],
+    ];
+}
+
 
     public static function pjMenu()
     {
