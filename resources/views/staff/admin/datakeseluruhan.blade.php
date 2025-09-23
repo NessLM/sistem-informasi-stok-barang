@@ -42,7 +42,7 @@
         <section class="card shadow-sm p-3">
             <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
                 @php
-                    $title = 'Data Gudang ATK'; // default
+                    $title = 'Data Keseluruhan'; // default
                     
                     // Jika ada kategori dan semua kategori dari gudang yang sama
                     if($kategori->isNotEmpty()) {
