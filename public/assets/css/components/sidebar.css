@@ -17,6 +17,11 @@ main.content {
     width: 100%;
 }
 
+/* 🔧 tambahkan dukungan html.sb-collapsed agar anti flash sejak awal */
+html.sb-collapsed main.content {
+    margin-left: 80px;
+}
+
 .layout.is-collapsed aside.sb {
     width: 80px;
     display: flex;
@@ -41,6 +46,11 @@ main.content {
     /* sesuaikan dengan lebar sidebar */
 }
 
+/* 🔧 ketika collapsed via html.sb-collapsed, sembunyikan label & children juga */
+html.sb-collapsed .sb-link span,
+html.sb-collapsed summary span,
+html.sb-collapsed .sb-user .meta,
+html.sb-collapsed .sb-children,
 .layout.is-collapsed .sb-link span,
 .layout.is-collapsed summary span,
 .layout.is-collapsed .sb-user .meta,
@@ -52,7 +62,7 @@ main.content {
 .sb-nav .sb-item summary span,
 .sb-nav .sb-item summary .caret,
 .sb-nav .sb-link span,
-.sb-nav  {
+.sb-nav {
     display: inline-block;
 }
 
@@ -98,6 +108,15 @@ aside.sb {
     height: 100svh;
     z-index: 1005;
     /* Pastikan lebih rendah dari modal */
+}
+
+/* 🔧 ketika <html> sudah sb-collapsed sejak awal, kecilkan width sidebar */
+html.sb-collapsed aside.sb {
+    width: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 /* ── Brand: fixed height & compact logo ─────────────────────────── */
@@ -168,8 +187,6 @@ aside.sb {
     overflow: auto;
 }
 
-
-
 .sb-item .sb-link,
 .sb-item summary {
     display: flex;
@@ -198,12 +215,9 @@ aside.sb {
     font-weight: 100;
     margin-top: 1%;
     box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.1),
-        /* atas */
-        inset 0 -2px 6px rgba(0, 0, 0, 0.1),
-        /* bawah */
-        inset 2px 0 6px rgba(0, 0, 0, 0.1),
-        /* kanan */
-        inset -2px 0 6px rgba(0, 0, 0, 0.1);
+        /* atas */ inset 0 -2px 6px rgba(0, 0, 0, 0.1),
+        /* bawah */ inset 2px 0 6px rgba(0, 0, 0, 0.1),
+        /* kanan */ inset -2px 0 6px rgba(0, 0, 0, 0.1);
     /* kiri */
     transition: all 0.3s ease;
     /* biar smooth */
@@ -267,7 +281,7 @@ aside.sb {
 .sb-footer .org-name {
     font-size: 12px;
     /* sedikit lebih kecil */
-    letter-spacing: .2px;
+    letter-spacing: 0.2px;
     color: #eaf2ff;
 }
 
@@ -283,11 +297,13 @@ aside.sb {
 }
 
 /* Collapsed: logo tampil, teks sembunyi */
-.layout.is-collapsed .sb-footer .org-logo {
+.layout.is-collapsed .sb-footer .org-logo,
+html.sb-collapsed .sb-footer .org-logo {
     display: block;
 }
 
-.layout.is-collapsed .sb-footer .org-name {
+.layout.is-collapsed .sb-footer .org-name,
+html.sb-collapsed .sb-footer .org-name {
     display: none;
 }
 
@@ -296,13 +312,13 @@ aside.sb {
     height: 40px;
     display: block;
     margin: 0 auto;
-    opacity: .95;
+    opacity: 0.95;
 }
 
 .sb-footer .sb-org hr {
     border: 0;
     height: 1px;
-    background: rgba(255, 255, 255, .35);
+    background: rgba(255, 255, 255, 0.35);
     margin: 6px auto 0;
     width: 90%;
 }
@@ -322,8 +338,8 @@ aside.sb {
     justify-content: center;
     gap: 10px;
     cursor: pointer;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, .12);
-    transition: transform .15s ease, filter .15s ease;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+    transition: transform 0.15s ease, filter 0.15s ease;
     margin-inline: 0;
 }
 
@@ -340,19 +356,21 @@ aside.sb {
 }
 
 .sb-footer .sb-logout:hover {
-    filter: brightness(.98);
+    filter: brightness(0.98);
     transform: translateY(-1px);
 }
 
 /* ===== Collapsed state ===== */
-.layout.is-collapsed .sb-footer {
+.layout.is-collapsed .sb-footer,
+html.sb-collapsed .sb-footer {
     padding: 10px 8px;
     /* rapat */
     align-items: center;
 }
 
 /* Collapsed: logout ikon-only KECIL */
-.layout.is-collapsed .sb-footer .sb-logout {
+.layout.is-collapsed .sb-footer .sb-logout,
+html.sb-collapsed .sb-footer .sb-logout {
     width: 44px;
     /* compact */
     height: 44px;
@@ -362,20 +380,22 @@ aside.sb {
     gap: 0;
     margin-inline: auto;
     /* center */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, .10);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 /* Collapsed: sembunyikan TEKS, tampilkan IKON */
-.layout.is-collapsed .sb-footer .sb-logout span {
+.layout.is-collapsed .sb-footer .sb-logout span,
+html.sb-collapsed .sb-footer .sb-logout span {
     display: none;
 }
 
-.layout.is-collapsed .sb-footer .sb-logout i {
+.layout.is-collapsed .sb-footer .sb-logout i,
+html.sb-collapsed .sb-footer .sb-logout i {
     display: inline-block;
     /* <- show icon khusus collapsed */
     font-size: 17px;
     /* ikon kecil & ramping */
-    transform: scale(.92);
+    transform: scale(0.92);
     line-height: 1;
     color: #1c4a66;
 }
@@ -448,7 +468,8 @@ aside.sb {
 }
 
 /* Sembunyikan toggle button dropdown ketika sidebar collapsed */
-.layout.is-collapsed .sb-toggle {
+.layout.is-collapsed .sb-toggle,
+html.sb-collapsed .sb-toggle {
     display: none !important;
 }
 
@@ -456,7 +477,7 @@ aside.sb {
 .sb-parent-item.is-active {
     background: #ffffff;
     color: #0d5ba3;
-    box-shadow: 0 6px 14px rgba(0, 0, 0, .12);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
 }
 
 .sb-parent-item.is-active .sb-main-link,
@@ -474,24 +495,28 @@ aside.sb {
 }
 
 /* Penyesuaian untuk state collapsed */
-.layout.is-collapsed .sb-parent-item {
+.layout.is-collapsed .sb-parent-item,
+html.sb-collapsed .sb-parent-item {
     justify-content: center;
     flex-direction: column;
     gap: 4px;
 }
 
-.layout.is-collapsed .sb-parent-item .sb-main-link {
+.layout.is-collapsed .sb-parent-item .sb-main-link,
+html.sb-collapsed .sb-parent-item .sb-main-link {
     padding: 8px;
     justify-content: center;
 }
 
-.layout.is-collapsed .sb-parent-item .sb-toggle {
+.layout.is-collapsed .sb-parent-item .sb-toggle,
+html.sb-collapsed .sb-parent-item .sb-toggle {
     margin-left: 0;
     width: 30px;
     height: 30px;
 }
 
-.layout.is-collapsed .sb-parent-item .sb-main-link span {
+.layout.is-collapsed .sb-parent-item .sb-main-link span,
+html.sb-collapsed .sb-parent-item .sb-main-link span {
     display: none;
 }
 
@@ -499,20 +524,20 @@ aside.sb {
     background: #ffffff;
     color: #0d5ba3;
     /* teks/ikon biru gelap */
-    box-shadow: 0 6px 14px rgba(0, 0, 0, .12);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
 }
 
 .sb-item.is-active summary {
     background: #ffffff;
     color: #0d5ba3;
-    box-shadow: 0 6px 14px rgba(0, 0, 0, .12);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
     border-radius: 10px;
 }
 
 .sb-children .sb-link.is-active {
     background: #ffffff;
     color: #0d5ba3;
-    box-shadow: 0 6px 14px rgba(0, 0, 0, .12);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
 }
 
 /* Saat open, caret sudah rotate 90deg (rule di atas).
@@ -589,7 +614,9 @@ aside.sb {
     position: absolute;
     top: 15px;
     right: 20px;
-    background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e") center/1em auto no-repeat;
+    background: transparent
+        url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e")
+        center/1em auto no-repeat;
     border: 0;
     border-radius: 0.375rem;
     opacity: 0.8;
@@ -773,7 +800,7 @@ aside.sb {
 .sb-item .sb-link.is-active {
     background: #ffffff;
     color: #0d5ba3;
-    box-shadow: 0 6px 14px rgba(0, 0, 0, .12);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
 }
 
 /* Responsiveness untuk modal */
@@ -788,7 +815,6 @@ aside.sb {
 }
 
 @media (max-width: 768px) {
-
     .developers-grid,
     .developers-bottom {
         grid-template-columns: 1fr;
@@ -846,3 +872,52 @@ aside.sb {
 .modal-body-s::-webkit-scrollbar-thumb:hover {
     background: #a8a8a8;
 }
+
+/* =========================================================
+   MOBILE OVERLAY SIDEBAR (<= 992px)
+   - Default: sidebar off-canvas (tidak kelihatan)
+   - Saat .layout.is-mobile-open: sidebar geser masuk, backdrop tampil
+   ========================================================= */
+   @media (max-width: 992px) {
+    /* Konten & header full width (sidebar tidak menggeser layout) */
+    .layout { --sb-w: 0px !important; }
+    .page-header { left:0 !important; width:100% !important; }
+    main.content { margin-left:0 !important; width:100% !important; }
+  
+    /* ✅ Sidebar FULLSCREEN saat terbuka: tutup semua konten putih */
+    aside.sb{
+      width:100vw;                 /* dari 240/280px -> penuh layar */
+      transform:translateX(-100%); /* posisi tertutup */
+      z-index:1100;
+      box-shadow:none;             /* hilangkan bayangan yg bikin tepi tampak buram */
+    }
+    .layout.is-mobile-open aside.sb{ transform:translateX(0); }
+  
+    /* ✅ Backdrop tetap ada, tapi karena sidebar full, tak terlihat.
+       Biarkan untuk konsistensi dan lock focus. */
+    #sb-backdrop{
+      position:fixed; inset:0;
+      background:rgba(0,0,0,.40);
+      opacity:0; visibility:hidden;
+      transition:opacity .2s ease, visibility .2s ease;
+      z-index:1090; /* di bawah sidebar, jadi tidak "melapisi" biru */
+    }
+    .layout.is-mobile-open #sb-backdrop{ opacity:1; visibility:visible; }
+  
+    /* ✅ Kunci interaksi konten saat sidebar terbuka */
+    .layout.is-mobile-open main.content{ pointer-events:none; user-select:none; }
+  
+    /* ❌ JANGAN sembunyikan tombol di dalam sidebar — kita butuh buat nutup */
+    /* (hapus rule lama .sb-brand .brand-action{display:none}) */
+  
+    /* Abaikan state collapsed di HP */
+    html.sb-collapsed aside.sb,
+    .layout.is-collapsed aside.sb{
+      width:100vw;
+      transform:translateX(-100%);
+    }
+  }
+  
+  /* Saat sidebar mobile terbuka: nonaktifkan scroll body */
+  html.mobile-sidebar-open, body.mobile-sidebar-open{ overflow:hidden; }
+  

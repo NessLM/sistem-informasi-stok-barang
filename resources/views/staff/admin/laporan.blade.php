@@ -17,38 +17,40 @@
       <div class="card">
         <h3>Laporan</h3>
   
-        <table class="table table-bordered table-laporan">
-          <thead>
-            <tr>
-              <th class="text-start">LAPORAN</th>
-              <th class="col-aksi">AKSI</th>
-            </tr>
-          </thead>
-          <tbody>
-            @foreach ($reports as $r)
-              @php
-                $title = is_array($r) ? ($r['title'] ?? '') : ($r->title ?? '');
-                $url   = is_array($r) ? ($r['preview_url'] ?? '') : ($r->preview_url ?? ($r->file_url ?? ''));
-              @endphp
+        <div class="table-responsive">
+          <table class="table table-bordered table-laporan">
+            <thead>
               <tr>
-                <td class="text-start">{{ $title }}</td>
-                <td>
-                  @if ($url)
-                    {{-- 👁️ ikon & hover persis halaman Riwayat, tapi trigger modal custom lap-modal --}}
-                    <span class="riwayat-bukti-icon"
-                          data-url="{{ $url }}"
-                          data-title="{{ $title }}"
-                          title="Pratinjau">
-                      <i class="bi bi-eye-fill"></i>
-                    </span>
-                  @else
-                    <span class="text-muted">-</span>
-                  @endif
-                </td>
+                <th class="text-start">LAPORAN</th>
+                <th class="col-aksi">AKSI</th>
               </tr>
-            @endforeach
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              @foreach ($reports as $r)
+                @php
+                  $title = is_array($r) ? ($r['title'] ?? '') : ($r->title ?? '');
+                  $url   = is_array($r) ? ($r['preview_url'] ?? '') : ($r->preview_url ?? ($r->file_url ?? ''));
+                @endphp
+                <tr>
+                  <td class="text-start">{{ $title }}</td>
+                  <td>
+                    @if ($url)
+                      {{-- 👁️ ikon & hover persis halaman Riwayat, tapi trigger modal custom lap-modal --}}
+                      <span class="riwayat-bukti-icon"
+                            data-url="{{ $url }}"
+                            data-title="{{ $title }}"
+                            title="Pratinjau">
+                        <i class="bi bi-eye-fill"></i>
+                      </span>
+                    @else
+                      <span class="text-muted">-</span>
+                    @endif
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   
@@ -93,12 +95,20 @@
         }
         lapModal.classList.add('is-open');
         lapModal.setAttribute('aria-hidden','false');
+        
+        // Tambahkan kelas untuk mobile
+        if (window.innerWidth <= 768) {
+          document.body.classList.add('modal-open-mobile');
+        }
       }
   
       function closeLapModal(){
         lapModal.classList.remove('is-open');
         lapModal.setAttribute('aria-hidden','true');
         lapImg.src = ''; lapPdf.src = '';
+        
+        // Hapus kelas untuk mobile
+        document.body.classList.remove('modal-open-mobile');
       }
   
       // Trigger dari ikon 👁️ (class sama seperti Riwayat)
@@ -117,7 +127,17 @@
       document.addEventListener('keydown', (e)=>{
         if (e.key === 'Escape' && lapModal.classList.contains('is-open')) closeLapModal();
       });
+      
+      // Responsif saat resize window
+      window.addEventListener('resize', function() {
+        if (lapModal.classList.contains('is-open')) {
+          if (window.innerWidth <= 768) {
+            document.body.classList.add('modal-open-mobile');
+          } else {
+            document.body.classList.remove('modal-open-mobile');
+          }
+        }
+      });
     </script>
     @endpush
   </x-layouts.app>
-  

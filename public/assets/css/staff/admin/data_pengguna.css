@@ -21,7 +21,6 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     border: 1px solid #e5e9f2;
     margin-top: 20px;
-    overflow-x: auto; /* Untuk tabel yang lebar */
 }
 
 /* ==== Page body khusus Data Pengguna ==== */
@@ -44,7 +43,6 @@
     width: 100%;
     border-radius: 8px;
     overflow: hidden;
-    min-width: 600px; /* Minimum width untuk tablet */
 }
 
 .table thead th {
@@ -266,10 +264,18 @@
         font-size: 13px;
     }
     
-    /* Tombol aksi tetap horizontal di tablet */
+    /* TAMBAHKAN: Scroll horizontal hanya untuk tablet/mobile */
+    .card {
+        overflow-x: auto;
+    }
+    
+    .table {
+        min-width: 800px; /* Lebar minimum untuk tablet */
+    }
+    
     .table .action-buttons {
-        flex-wrap: nowrap; /* ← Pastikan tetap horizontal */
-        gap: 6px; /* ← Sedikit lebih rapat di tablet */
+        flex-wrap: nowrap;
+        gap: 6px;
     }
     
     .table .btn-action {
