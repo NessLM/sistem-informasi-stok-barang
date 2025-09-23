@@ -199,6 +199,23 @@
                 /* Jaga proporsi di mobile */
             }
         }
+
+        /* ✅ Safety override header & konten saat mobile */
+        @media (max-width: 992px) {
+            .layout { --sb-w: 0px !important; }
+            .page-header { left: 0 !important; width: 100% !important; }
+            main.content { margin-left: 0 !important; width: 100% !important; }
+        }
+
+                /* ===== Hamburger di header (copy gaya brand-action) ===== */
+        .ph-hamburger{display:none}
+        @media (max-width:992px){
+        .ph-hamburger{display:grid;width:36px;height:36px;place-items:center;border:0;background:transparent;border-radius:10px;margin-right:4px}
+        .page-header{height:56px;padding:10px 14px}
+        main.content{margin-top:56px !important}
+        }
+
+
     </style>
 </head>
 
@@ -238,12 +255,18 @@
             {{-- Header nempel kiri/kanan/atas + shadow bawah --}}
             <header class="page-header" aria-label="Judul Halaman">
                 <div class="ph-left">
-                    <h1 class="ph-title">{{ $pageHeading }}</h1>
+                  <!-- tombol pemanggil: style sama dengan sidebar -->
+                  <button class="brand-action ph-hamburger" type="button" aria-label="Menu" data-toggle="sidebar">
+                    <i class="bi bi-list"></i>
+                  </button>
+                  <h1 class="ph-title">{{ $pageHeading }}</h1>
                 </div>
                 @if ($showCrest)
-                    <img class="ph-badge" src="{{ $logo }}" alt="Lambang">
+                  <img class="ph-badge" src="{{ $logo }}" alt="Lambang">
                 @endif
             </header>
+              
+              
 
             {{-- Slot konten halaman --}}
             {{ $slot }}
@@ -255,30 +278,68 @@
        - Pasang/lepaskan class di <html> (anti flash) dan .layout (runtime)
        - Tidak ada simpan “active link” apapun --}}
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const btn = document.querySelector("[data-toggle='sidebar']");
-            const layout = document.querySelector(".layout");
+document.addEventListener("DOMContentLoaded", () => {
+  const buttons = document.querySelectorAll("[data-toggle='sidebar']"); // ✅ semua tombol
+  const layout  = document.querySelector(".layout");
+  const backdrop = document.getElementById("sb-backdrop");
+  const isMobile = () => window.matchMedia("(max-width: 992px)").matches;
 
-            // Sinkronkan class .layout.is-collapsed dengan class preload <html>.sb-collapsed
-            if (document.documentElement.classList.contains('sb-collapsed')) {
-                layout.classList.add('is-collapsed');
-            }
+  // state awal desktop (hormati localStorage), mobile abaikan collapsed
+  try {
+    const collapsed = localStorage.getItem('sb-collapsed') === '1';
+    if (!isMobile() && collapsed) {
+      layout.classList.add('is-collapsed');
+      document.documentElement.classList.add('sb-collapsed');
+    } else {
+      layout.classList.remove('is-collapsed');
+      document.documentElement.classList.remove('sb-collapsed');
+    }
+  } catch(e){}
 
-            if (btn) {
-                btn.addEventListener("click", () => {
-                    const willCollapse = !layout.classList.contains("is-collapsed");
+  const openMobile = () => {
+    layout.classList.add('is-mobile-open');
+    document.documentElement.classList.add('mobile-sidebar-open');
+    document.body.classList.add('mobile-sidebar-open');
+  };
+  const closeMobile = () => {
+    layout.classList.remove('is-mobile-open');
+    document.documentElement.classList.remove('mobile-sidebar-open');
+    document.body.classList.remove('mobile-sidebar-open');
+  };
 
-                    layout.classList.toggle("is-collapsed", willCollapse);
+  // ✅ bind ke SEMUA tombol
+  buttons.forEach(btn => {
+    btn.addEventListener("click", (ev) => {
+      if (isMobile()) {
+        ev.preventDefault();
+        layout.classList.contains('is-mobile-open') ? closeMobile() : openMobile();
+      } else {
+        const willCollapse = !layout.classList.contains("is-collapsed");
+        layout.classList.toggle("is-collapsed", willCollapse);
+        document.documentElement.classList.toggle('sb-collapsed', willCollapse);
+        try { localStorage.setItem('sb-collapsed', willCollapse ? '1' : '0'); } catch(e){}
+      }
+    });
+  });
 
-                    // Persist ke localStorage
-                    try { localStorage.setItem('sb-collapsed', willCollapse ? '1' : '0'); } catch (e) {}
+  // backdrop, ESC, resize, click menu → tutup mobile
+  if (backdrop) backdrop.addEventListener('click', () => { if (isMobile()) closeMobile(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && isMobile()) closeMobile(); });
+  window.addEventListener('resize', () => {
+    if (!isMobile()) { closeMobile();
+      try {
+        const collapsed = localStorage.getItem('sb-collapsed') === '1';
+        layout.classList.toggle('is-collapsed', collapsed);
+        document.documentElement.classList.toggle('sb-collapsed', collapsed);
+      } catch(e){}
+    }
+  });
+  document.addEventListener('click', e => {
+    if (isMobile() && e.target.closest('aside.sb a')) closeMobile();
+  });
+});
+</script>
 
-                    // Juga toggle class di <html> agar page berikutnya langsung benar tanpa flash
-                    document.documentElement.classList.toggle('sb-collapsed', willCollapse);
-                });
-            }
-        });
-    </script>
 
     {{-- ✅ LOGOUT HOOK: paksa loader muncul SEKALI di halaman tujuan (login)
         saat user logout. Tidak menampilkan overlay di halaman saat ini. --}}
