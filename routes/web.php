@@ -93,27 +93,41 @@ Route::prefix('pb')->name('pb.')->middleware(['auth', 'role:Pengelola Barang'])-
     /* ===== Dashboard PB ===== */
     Route::get('/dashboard', PbDashboard::class)->name('dashboard');
     Route::get('/dashboard/filter', [PbDashboard::class, 'filterData'])->name('dashboard.filter');
-    
+
+
+    /* ===== Data Keseluruhan PB ===== */
+    Route::get('/datakeseluruhan', [\App\Http\Controllers\Pb\DataKeseluruhan::class, 'index'])
+        ->name('datakeseluruhan.index');
+
+        // Tambah stok barang
+    Route::post('/stokuser/store', [StokUserController::class, 'store'])
+        ->name('stokuser.store');
+
+    // Distribusi barang
+    Route::post('/distribusi/store', [DistribusiController::class, 'store'])
+        ->name('distribusi.store');
+
+    Route::get('/datakeseluruhan/{slug}', [\App\Http\Controllers\Pb\DataKeseluruhan::class, 'gudang'])
+        ->name('datakeseluruhan.gudang');
+
+    Route::get('/riwayat', [\App\Http\Controllers\Pb\RiwayatController::class, 'index'])->name('riwayat.index');
+Route::get('/laporan', [\App\Http\Controllers\Pb\LaporanController::class, 'index'])
+    ->name('laporan');
+
 });
 
-Route::prefix('staff/pb')->name('staff.pb.')->middleware(['auth'])->group(function () {
-    // Dashboard
-    Route::get('/dashboard', [PbDashboardController::class, 'index'])->name('dashboard');
+use App\Http\Controllers\Pb\StokUserController;
 
-    // Gudang
-    Route::prefix('gudang')->name('gudang.')->group(function () {
-        Route::get('/atk', [PbGudangController::class, 'atk'])->name('atk');
-        Route::get('/listrik', [PbGudangController::class, 'listrik'])->name('listrik');
-        Route::get('/kebersihan', [PbGudangController::class, 'kebersihan'])->name('kebersihan');
-        Route::get('/komputer', [PbGudangController::class, 'komputer'])->name('komputer');
-    });
+Route::prefix('pb')->name('pb.')->middleware(['auth', 'role:Pengelola Barang'])->group(function () {
+    /* ===== Dashboard PB ===== */
+    Route::get('/dashboard', PbDashboard::class)->name('dashboard');
+    Route::get('/dashboard/filter', [PbDashboard::class, 'filterData'])->name('dashboard.filter');
 
-    // Riwayat
-    Route::get('/riwayat', [PbRiwayatController::class, 'index'])->name('riwayat');
-
-    // Laporan
-    Route::get('/laporan', [PbLaporanController::class, 'index'])->name('laporan');
+    /* ===== Stok User (Tambah Stok) ===== */
+    Route::resource('stokuser', StokUserController::class);
 });
+
+
 
 /* =========================================================================
  |  BACKWARD COMPATIBILITY - PB & PJ ROUTES

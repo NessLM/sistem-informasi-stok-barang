@@ -24,4 +24,19 @@ class User extends Authenticatable
     return $this->belongsTo(Role::class);
 }
 
+public function stokBarang()
+    {
+        return $this->hasMany(StokUser::class);
+    }
+
+    public function distribusiDikirim()
+    {
+        return $this->hasMany(Distribusi::class, 'pengirim_id');
+    }
+
+    public function distribusiDiterima()
+    {
+        return $this->hasMany(Distribusi::class, 'penerima_id');
+    }
+
 }
