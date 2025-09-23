@@ -85,6 +85,7 @@
     .ttd {
         margin-top: 60px;
         width: 100%;
+        font-size: 17px; /* samain sama info surat */
     }
     .ttd td {
         text-align: center;
@@ -137,14 +138,14 @@
     $nomorSurat = "LAPORAN-RIWAYAT-KELOLABARANG/SETDA-BANGKA/{$bulanRomawi}/{$tahun}";
 @endphp
 
-<div style="text-align:center; margin:20px 0;">
+<div style="margin:20px 0;">
     <br>
-    <h2 style="margin:0; font-weight:bold; text-decoration:underline;">
+    <h2 style="margin:0; font-weight:bold; text-decoration:underline; text-align:center;">
         BERITA ACARA LAPORAN RIWAYAT PENGELOLAAN BARANG
     </h2>
 
-    <!-- Info Surat (polosan tanpa border) -->
-    <div style="margin:40px 5px; font-size:16px; text-align:left; display:inline-block;">
+    <!-- Info Surat (polosan tanpa border, kiri) -->
+    <div style="margin:40px 5px; font-size:16px; text-align:left;">
         <table style="border-collapse:collapse; font-size:17px;">
             <tr>
                 <td style="width:80px;">Dari</td>
