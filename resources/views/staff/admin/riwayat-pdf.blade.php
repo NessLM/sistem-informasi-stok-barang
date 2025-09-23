@@ -80,19 +80,39 @@
     ];
     $bulanRomawi = $bulan[now()->month];
     $tahun = now()->year;
-    $nomorSurat = "LAPORAN-RIWAYAT/Kab-Bangka/{$bulanRomawi}/{$tahun}";
+    $nomorSurat = "LAPORAN-RIWAYAT-KELOLABARANG/SETDA-BANGKA/{$bulanRomawi}/{$tahun}";
 @endphp
 
 <div style="text-align:center; margin:20px 0;">
+    <br>
     <h2 style="margin:0; font-weight:bold; text-decoration:underline;">
         BERITA ACARA LAPORAN KELUAR MASUK BARANG
     </h2>
-    <p style="margin-top:5px; font-size:13px;">
-        Nomor Surat : {{ $nomorSurat }}
-    </p>
-    <p style="margin-top:10px; font-size:13px;">
-        Tanggal Cetak : {{ now()->timezone('Asia/Jakarta')->format('d/m/Y H:i') }} WIB
-    </p>
+<div style="margin:40px 5px; font-size:16px;">
+   <table style="border-collapse: collapse; font-size:14px;">
+    <tr>
+        <td style="width:80px;">Dari</td>
+        <td style="width:40px;">:</td>
+        <td>Plt. Kepala Bagian Umum dan Rumah Tangga</td>
+    </tr>
+    <tr>
+        <td>Tanggal</td>
+        <td>:</td>
+        <td>{{ now()->format('d F Y') }}</td>
+    </tr>
+    <tr>
+        <td>Sifat</td>
+        <td>:</td>
+        <td>Laporan</td>
+    </tr>
+    <tr>
+        <td>Hal</td>
+        <td>:</td>
+        <td>Laporan Pengelolaan Barang</td>
+    </tr>
+</table>
+
+</div>
 </div>
 </body>
 </html>
