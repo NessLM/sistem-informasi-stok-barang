@@ -1,7 +1,6 @@
 /* ==== CONTENT AREA ==== */
 .content {
     margin-left: 20px;
-    /* biar ga ketutup sidebar */
     background: #f5f7fb;
     min-height: 100vh;
 }
@@ -22,17 +21,15 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     border: 1px solid #e5e9f2;
     margin-top: 20px;
+    overflow-x: auto; /* Untuk tabel yang lebar */
 }
 
 /* ==== Page body khusus Data Pengguna ==== */
 .page-body {
-    padding: 5px 5px 15px 15px;
-    /* top right bottom left - margin kanan cuma 10px */
-    width: calc(101% - 25px);
-    /* full width minus padding kiri (15px) + margin kanan (10px) */
+    padding: 5px 15px 15px 15px;
+    width: 100%;
     margin: 0;
     box-sizing: border-box;
-    /* pastikan width calculation benar */
 }
 
 .page-body h2 {
@@ -47,6 +44,7 @@
     width: 100%;
     border-radius: 8px;
     overflow: hidden;
+    min-width: 600px; /* Minimum width untuk tablet */
 }
 
 .table thead th {
@@ -78,7 +76,6 @@
 /* ==== BUTTON STYLE ==== */
 .btn-primary {
     background: #2072b7;
-    /* biru sesuai tombol Tambah Pengguna */
     border: none;
     font-weight: 500;
     border-radius: 8px;
@@ -107,7 +104,6 @@
     padding: 6px 12px;
 }
 
-/* ==== TITLE DALAM CARD (Data Pengguna) ==== */
 /* ==== HEADER DENGAN TOMBOL DI SEBELAH KANAN ==== */
 .card-header-container {
     display: flex;
@@ -119,6 +115,8 @@
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     border: 1px solid #e5e9f2;
+    flex-wrap: wrap; /* Untuk responsif */
+    gap: 15px;
 }
 
 .card-title {
@@ -131,29 +129,7 @@
 .button-group {
     display: flex;
     gap: 10px;
-}
-
-/* Responsif untuk tampilan mobile */
-@media (max-width: 768px) {
-    .card-header-container {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 15px;
-    }
-
-    .button-group {
-        width: 100%;
-        justify-content: flex-end;
-    }
-}
-
-.card h4 {
-    font-size: 18px;
-    font-weight: 600;
-    color: #1d2433;
-    margin-bottom: 16px;
-    border-bottom: 2px solid #e5e9f2;
-    padding-bottom: 6px;
+    flex-wrap: wrap; /* Untuk tombol yang banyak */
 }
 
 .btn-add-user {
@@ -163,11 +139,11 @@
     font-weight: 300;
     border-radius: 8px;
     padding: 8px 18px;
-    margin-top: 5px;
     transition: background 0.2s;
     text-decoration: none;
     display: inline-block;
     font-size: 14px;
+    white-space: nowrap; /* Mencegah teks tombol terpotong */
 }
 
 .btn-add-user:hover {
@@ -185,44 +161,40 @@
     padding: 6px 12px;
     font-size: 13px;
     border-radius: 6px;
+    white-space: nowrap;
 }
 
 .btn-warning.btn-action {
     background: #ffc107;
     border: none;
     color: #000;
-    font-size: 13px;
-    padding: 6px 12px;
-    border-radius: 6px;
 }
 
 .btn-danger.btn-action {
     background: #dc3545;
     border: none;
     color: #fff;
-    font-size: 13px;
-    padding: 6px 12px;
-    border-radius: 6px;
 }
 
+/* ==== TOMBOL AKSI - PERBAIKAN UTAMA ==== */
 .table .action-buttons {
     display: flex;
     gap: 8px;
     justify-content: center;
+    flex-wrap: nowrap; /* ← Ubah dari wrap ke nowrap untuk desktop/tablet */
 }
 
 .modal .modal-content {
-    font-size: 15px; /* ubah sesuai kebutuhan */
+    font-size: 15px;
 }
 
 .modal .form-control,
 .modal .form-select {
-    font-size: 14px;   /* ukuran teks */
-    padding: 8px 10px; /* tinggi field */
+    font-size: 14px;
+    padding: 8px 10px;
 }
 
-
-/* ==== Password Baru: eye toggle di dalam input (modal Edit User) ==== */
+/* ==== Password Toggle Styles ==== */
 #modalEditUser .field-pass {
     position: relative;
 }
@@ -262,25 +234,239 @@
     box-shadow: none;
 }
 
-.field-pass .toggle-pass:hover {
-    color: #3a4654;
+/* ==== RESPONSIVE DESIGN ==== */
+
+/* Tablet (768px - 1024px) */
+@media (max-width: 1024px) {
+    .content {
+        margin-left: 0;
+        padding: 10px;
+    }
+    
+    .page-body {
+        padding: 5px 10px 15px 10px;
+    }
+    
+    .card-header-container {
+        padding: 12px 15px;
+    }
+    
+    .card-title {
+        font-size: 18px;
+    }
+    
+    .table thead th,
+    .table tbody td {
+        padding: 8px 10px;
+        font-size: 13px;
+    }
+    
+    .btn-add-user {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+    
+    /* Tombol aksi tetap horizontal di tablet */
+    .table .action-buttons {
+        flex-wrap: nowrap; /* ← Pastikan tetap horizontal */
+        gap: 6px; /* ← Sedikit lebih rapat di tablet */
+    }
+    
+    .table .btn-action {
+        padding: 5px 10px;
+        font-size: 12px;
+    }
 }
 
-.field-pass .toggle-pass:focus {
-    outline: none;
-    box-shadow: none;
+/* Mobile (576px - 768px) */
+@media (max-width: 768px) {
+    .card-header-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .button-group {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    
+    .card {
+        padding: 15px;
+        margin-top: 15px;
+    }
+    
+    .table {
+        font-size: 12px;
+    }
+    
+    .table thead th,
+    .table tbody td {
+        padding: 6px 8px;
+        font-size: 12px;
+    }
+    
+    /* Hanya di mobile tombol aksi menjadi vertikal */
+    .action-buttons {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .btn-action {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    /* Modal adjustments for mobile */
+    .modal-dialog {
+        margin: 10px;
+    }
+    
+    .modal-content {
+        border-radius: 10px;
+    }
+    
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 15px;
+    }
 }
 
-input[type="password"]::-ms-reveal,
-input[type="password"]::-ms-clear {
-    display: none;
+/* Small Mobile (max-width: 576px) */
+@media (max-width: 576px) {
+    .page-body {
+        padding: 5px;
+    }
+    
+    .card {
+        padding: 10px;
+        border-radius: 8px;
+        margin-top: 10px;
+    }
+    
+    .card-header-container {
+        padding: 10px;
+        border-radius: 8px;
+    }
+    
+    .card-title {
+        font-size: 16px;
+    }
+    
+    .button-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .btn-add-user {
+        width: 100%;
+        text-align: center;
+        padding: 8px 12px;
+    }
+    
+    .table {
+        min-width: 500px;
+    }
+    
+    .table thead th,
+    .table tbody td {
+        padding: 4px 6px;
+        font-size: 11px;
+    }
+    
+    /* Tombol aksi tetap vertikal di small mobile */
+    .action-buttons {
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .btn-action {
+        padding: 4px 8px;
+        font-size: 11px;
+    }
+    
+    /* Toast notification mobile adjustment */
+    #toast-notif {
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        transform: none;
+        max-width: none;
+    }
+    
+    .toast-message {
+        min-width: auto;
+        max-width: none;
+        width: 100%;
+    }
 }
 
-input[type="password"]::-webkit-contacts-auto-fill-button,
-input[type="password"]::-webkit-credentials-auto-fill-button {
-    display: none;
-    visibility: hidden;
-    pointer-events: none;
-    position: absolute;
-    right: 0;
+/* Very Small Mobile (max-width: 400px) */
+@media (max-width: 400px) {
+    .modal-dialog {
+        margin: 5px;
+    }
+    
+    .modal-header h5 {
+        font-size: 16px;
+    }
+    
+    .modal-body .form-label {
+        font-size: 13px;
+    }
+    
+    .modal-body .form-control,
+    .modal-body .form-select {
+        font-size: 13px;
+        padding: 6px 8px;
+    }
+    
+    .modal-footer .btn {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+    
+    .action-buttons .btn {
+        font-size: 12px;
+        padding: 4px 8px;
+    }
+}
+
+/* Landscape mode for mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+    .modal-dialog {
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    
+    .modal-body {
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+}
+
+/* High resolution screens */
+@media (min-width: 1400px) {
+    .container {
+        max-width: 1320px;
+    }
+}
+
+/* Print styles */
+@media print {
+    .button-group,
+    .action-buttons,
+    .modal {
+        display: none !important;
+    }
+    
+    .card {
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+    
+    .table {
+        border: 1px solid #000;
+    }
 }
