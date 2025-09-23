@@ -86,10 +86,10 @@
 <div style="text-align:center; margin:20px 0;">
     <br>
     <h2 style="margin:0; font-weight:bold; text-decoration:underline;">
-        BERITA ACARA LAPORAN KELUAR MASUK BARANG
+        BERITA ACARA LAPORAN RIWAYAT PENGELOLAAN BARANG
     </h2>
 <div style="margin:40px 5px; font-size:16px;">
-   <table style="border-collapse: collapse; font-size:14px;">
+   <table style="border-collapse: collapse; font-size:17px;">
     <tr>
         <td style="width:80px;">Dari</td>
         <td style="width:40px;">:</td>
@@ -108,7 +108,7 @@
     <tr>
         <td>Hal</td>
         <td>:</td>
-        <td>Laporan Pengelolaan Barang</td>
+        <td>Laporan Riwayat Pengelolaan Barang</td>
     </tr>
 </table>
 

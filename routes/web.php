@@ -96,6 +96,25 @@ Route::prefix('pb')->name('pb.')->middleware(['auth', 'role:Pengelola Barang'])-
     
 });
 
+Route::prefix('staff/pb')->name('staff.pb.')->middleware(['auth'])->group(function () {
+    // Dashboard
+    Route::get('/dashboard', [PbDashboardController::class, 'index'])->name('dashboard');
+
+    // Gudang
+    Route::prefix('gudang')->name('gudang.')->group(function () {
+        Route::get('/atk', [PbGudangController::class, 'atk'])->name('atk');
+        Route::get('/listrik', [PbGudangController::class, 'listrik'])->name('listrik');
+        Route::get('/kebersihan', [PbGudangController::class, 'kebersihan'])->name('kebersihan');
+        Route::get('/komputer', [PbGudangController::class, 'komputer'])->name('komputer');
+    });
+
+    // Riwayat
+    Route::get('/riwayat', [PbRiwayatController::class, 'index'])->name('riwayat');
+
+    // Laporan
+    Route::get('/laporan', [PbLaporanController::class, 'index'])->name('laporan');
+});
+
 /* =========================================================================
  |  BACKWARD COMPATIBILITY - PB & PJ ROUTES
  * ========================================================================= */
@@ -106,3 +125,7 @@ Route::middleware(['auth', 'role:Pengelola Barang'])
 Route::middleware(['auth', 'role:Penanggung Jawab'])
     ->get('/pj', PjDashboard::class)
     ->name('staff.pj.dashboard');
+
+    Route::prefix('staff/admin/gudang')->name('staff.admin.gudang.')->group(function () {
+    Route::get('/atk', [AtkController::class, 'index'])->name('atk');
+});
