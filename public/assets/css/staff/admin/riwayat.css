@@ -438,6 +438,58 @@
     transform-origin: top center;
 }
 
+
+/* CUSTOM PERIODE */
+.custom-period-item {
+    color: #3498db;
+    font-weight: 500;
+}
+
+.custom-period-item:hover {
+    background-color: #f8f9fa;
+    color: #2c3e50;
+}
+
+.custom-period-item.active {
+    background-color: #3498db !important;
+    color: white !important;
+}
+
+#customPeriodModal .modal-content {
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+#customPeriodModal .modal-header {
+    background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+    color: white;
+    border-bottom: none;
+}
+
+#customPeriodModal .btn-close {
+    filter: invert(1);
+}
+
+#customPeriodModal .form-label {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+#customPeriodModal .form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 6px;
+    padding: 10px;
+    transition: all 0.3s ease;
+}
+
+#customPeriodModal .form-control:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+
+
+
+
 /* ===== RESPONSIVE STYLES ===== */
 
 /* Large screens (desktops) */
@@ -445,11 +497,11 @@
     .riwayat-container {
         padding: 20px;
     }
-    
+
     .riwayat-filter-form {
         justify-content: flex-start;
     }
-    
+
     .riwayat-filter-group {
         max-width: 220px;
     }
@@ -460,11 +512,11 @@
     .riwayat-filter-form {
         gap: 12px;
     }
-    
+
     .riwayat-filter-group {
         min-width: 160px;
     }
-    
+
     .riwayat-btn-filter,
     .riwayat-btn-download,
     .riwayat-btn-reset {
@@ -478,7 +530,7 @@
     .riwayat-container {
         padding: 15px;
     }
-    
+
     .riwayat-filter-form {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -486,38 +538,38 @@
         gap: 15px;
         align-items: stretch;
     }
-    
+
     .riwayat-filter-group {
         min-width: 100%;
         max-width: none;
     }
-    
+
     .riwayat-filter-group-reset {
         grid-column: 1;
         grid-row: 3;
     }
-    
+
     .riwayat-action-buttons {
         grid-column: 2;
         grid-row: 3;
         margin-left: 0;
     }
-    
+
     .riwayat-btn-filter,
     .riwayat-btn-download,
     .riwayat-btn-reset {
         justify-content: center;
     }
-    
+
     .table {
         font-size: 0.9rem;
     }
-    
+
     .table th,
     .table td {
         padding: 10px 6px;
     }
-    
+
     .btn-keluar,
     .btn-masuk {
         font-size: 16px;
@@ -531,44 +583,44 @@
         padding: 10px;
         overflow-x: hidden;
     }
-    
+
     .riwayat-filter-card {
         margin-bottom: 20px;
         margin-left: 0;
         margin-right: 0;
     }
-    
+
     .riwayat-filter-body {
         padding: 15px;
     }
-    
+
     .riwayat-filter-body h3 {
         font-size: 20px;
         margin-bottom: 20px;
         text-align: center;
     }
-    
+
     .riwayat-filter-form {
         display: flex;
         flex-direction: column;
         gap: 15px;
         align-items: stretch;
     }
-    
+
     .riwayat-filter-group,
     .riwayat-filter-group-reset {
         width: 100%;
         min-width: 100%;
         margin-bottom: 0;
     }
-    
+
     .riwayat-action-buttons {
         flex-direction: column;
         width: 100%;
         margin-left: 0;
         gap: 10px;
     }
-    
+
     .riwayat-btn-filter,
     .riwayat-btn-download,
     .riwayat-btn-reset {
@@ -577,15 +629,15 @@
         padding: 12px 20px;
         font-size: 14px;
     }
-    
+
     .riwayat-btn-filter {
         min-width: 100%;
     }
-    
+
     .riwayat-download-dropdown {
         width: 100%;
     }
-    
+
     /* Dropdown positioning for mobile */
     .riwayat-filter-dropdown .dropdown-menu,
     .riwayat-download-dropdown .dropdown-menu {
@@ -599,60 +651,60 @@
         margin-top: 5px;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     }
-    
+
     .riwayat-filter-dropdown,
     .riwayat-download-dropdown {
         position: relative !important;
     }
-    
+
     .dropdown-menu {
         transition: opacity 0.3s ease, transform 0.3s ease;
     }
-    
+
     /* Table improvements */
     .table-responsive {
         border: 1px solid #dee2e6;
         border-radius: 8px;
         margin: 0 -5px;
     }
-    
+
     .table {
         min-width: 700px;
         font-size: 0.8rem;
     }
-    
+
     .table th,
     .table td {
         padding: 8px 4px;
         font-size: 0.8rem;
     }
-    
+
     .table th {
         font-size: 0.75rem;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
-    
+
     .btn-keluar,
     .btn-masuk {
         font-size: 12px;
         padding: 3px 6px;
     }
-    
+
     .riwayat-bukti-icon {
         font-size: 1rem;
         padding: 3px;
     }
-    
+
     /* Card adjustments */
     .riwayat-table-card .card-header {
         padding: 10px 15px;
     }
-    
+
     .riwayat-table-card .card-header h5 {
         font-size: 1rem;
     }
-    
+
     /* Pagination adjustments */
     .pagination-controls {
         flex-direction: row;
@@ -663,11 +715,11 @@
         width: 100%;
         align-items: center;
     }
-    
+
     .pagination-text {
         display: none !important;
     }
-    
+
     .pagination-info {
         display: inline !important;
         font-size: 0.8rem;
@@ -675,7 +727,7 @@
         white-space: nowrap;
         order: 2;
     }
-    
+
     .pagination-btn {
         width: 100%;
         max-width: 200px;
@@ -683,30 +735,30 @@
         min-width: 40px;
         justify-content: center;
     }
-    
+
     .pagination-prev {
         order: 1;
     }
-    
+
     .pagination-next {
         order: 3;
     }
-    
+
     .pagination-btn .bi {
         font-size: 1rem;
         margin: 0;
     }
-    
+
     /* Modal adjustments */
     #buktiModal .modal-content {
         margin: 20px 10px;
         margin-top: 60px;
     }
-    
+
     #buktiModal .modal-body {
         padding: 15px;
     }
-    
+
     #buktiModal .modal-body img {
         max-height: 50vh;
         width: 100%;
@@ -719,58 +771,58 @@
     .riwayat-container {
         padding: 8px;
     }
-    
+
     .riwayat-filter-body {
         padding: 10px;
     }
-    
+
     .riwayat-filter-body h3 {
         font-size: 18px;
     }
-    
+
     .table {
         min-width: 650px;
         font-size: 0.75rem;
     }
-    
+
     .table th,
     .table td {
         padding: 6px 3px;
         font-size: 0.75rem;
     }
-    
+
     .btn-keluar,
     .btn-masuk {
         font-size: 10px;
         padding: 2px 4px;
     }
-    
+
     .riwayat-empty-state {
         padding: 40px 15px;
     }
-    
+
     .riwayat-empty-state i {
         font-size: 3rem;
     }
-    
+
     .riwayat-empty-state p {
         font-size: 1rem;
     }
-    
+
     .pagination-btn {
         padding: 0.3rem 0.4rem;
         min-width: 35px;
     }
-    
+
     .pagination-btn .bi {
         font-size: 0.9rem;
     }
-    
+
     .pagination-info {
         font-size: 0.75rem;
         margin: 0 5px;
     }
-    
+
     .pagination-controls {
         gap: 3px;
     }
@@ -782,35 +834,35 @@
         font-size: 18px;
         margin-bottom: 15px;
     }
-    
+
     .riwayat-filter-form {
         gap: 10px;
     }
-    
+
     .riwayat-btn-filter,
     .riwayat-btn-download,
     .riwayat-btn-reset {
         padding: 8px 16px;
         font-size: 13px;
     }
-    
+
     .riwayat-filter-dropdown .dropdown-menu,
     .riwayat-download-dropdown .dropdown-menu {
         max-height: 150px;
     }
-    
+
     #buktiModal .modal-content {
         margin-top: 30px;
     }
-    
+
     #buktiModal .modal-body img {
         max-height: 70vh;
     }
-    
+
     .pagination-controls {
         gap: 8px;
     }
-    
+
     .pagination-info {
         font-size: 0.75rem;
     }
@@ -822,7 +874,7 @@
         font-size: 0.7rem;
         margin: 0 3px;
     }
-    
+
     .pagination-btn {
         min-width: 30px;
         padding: 0.25rem 0.3rem;
@@ -830,7 +882,9 @@
 }
 
 /* High DPI screens */
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+@media (-webkit-min-device-pixel-ratio: 2),
+(min-resolution: 192dpi) {
+
     .riwayat-bukti-icon,
     .riwayat-status-icon {
         transform: translateZ(0);
@@ -842,15 +896,15 @@
     .pagination-text {
         display: inline !important;
     }
-    
+
     .pagination-info {
         display: inline !important;
     }
-    
+
     .pagination-btn {
         padding: 0.35rem 0.75rem;
     }
-    
+
     .pagination-controls {
         justify-content: center;
         gap: 10px;
@@ -859,27 +913,28 @@
 
 /* Print styles */
 @media print {
+
     .riwayat-filter-card,
     .riwayat-action-buttons,
     .pagination-controls,
     .card-footer {
         display: none !important;
     }
-    
+
     .riwayat-container {
         padding: 0;
         background: white;
     }
-    
+
     .riwayat-table-card {
         box-shadow: none;
         border: 1px solid #000;
     }
-    
+
     .table {
         font-size: 10px;
     }
-    
+
     .table th,
     .table td {
         padding: 4px;
