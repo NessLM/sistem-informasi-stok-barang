@@ -8,9 +8,23 @@
 
     {{-- Row pertama: Ringkasan dan Grafik Barang Keluar --}}
     <div class="dashboard-row">
-      {{-- ========================= RINGKASAN (SAMA DENGAN ADMIN) ========================= --}}
+      {{-- ========================= RINGKASAN (DITAMBAH DROPDOWN SEPERTI ADMIN) ========================= --}}
       <div class="summary-section">
-        <h2>Ringkasan</h2>
+        {{-- [NEW] Header dengan judul dan filter dropdown seperti admin --}}
+        <div class="summary-header">
+          <h2>Ringkasan</h2>
+          {{-- [NEW] Filter gudang pada ringkasan seperti admin --}}
+          <div class="summary-filter">
+            <button class="summary-filter-btn" type="button" id="summaryFilterBtn" aria-expanded="false">
+              <i class="bi bi-funnel"></i> <span id="summaryFilterText">Semua</span>
+              <i class="bi bi-chevron-right arrow-icon"></i>
+            </button>
+            <div class="summary-dropdown-menu" id="summaryDropdownMenu">
+              <button class="summary-dropdown-item" data-value="all">Semua</button>
+              {{-- [NOTE] Jika PB perlu filter gudang, tambahkan di sini --}}
+            </div>
+          </div>
+        </div>
 
         {{-- KLASIK: ikon bulat di kiri, angka & label di kanan (match CSS admin) --}}
         <div class="summary-cards summary-cards--classic">
@@ -40,19 +54,23 @@
 
       {{-- ======================= GRAFIK BARANG KELUAR ======================= --}}
       <div class="chart-section">
-        {{-- Header dengan badge tanggal --}}
-        <div class="chart-header chart-header--wrap">
-          <div class="chart-header-left">
+        {{-- [NEW] Layout horizontal sejajar seperti admin --}}
+        <div class="chart-header chart-header--horizontal">
+          <div class="chart-header-horizontal-item">
             <h2>Barang Keluar</h2>
-            {{-- Badge keterangan rentang (diisi via JS) --}}
+          </div>
+          
+          <div class="chart-header-horizontal-item">
+            {{-- Badge keterangan rentang --}}
             <span id="rangeHintKategori" class="range-hint" title="Semua Data">Semua Data</span>
           </div>
 
-          <div class="chart-filter">
-            {{-- Filter waktu --}}
+          <div class="chart-header-horizontal-item">
+            {{-- Filter waktu dengan arrow icon seperti admin --}}
             <div class="dropdown">
               <button class="filter-btn dropdown-toggle" type="button" id="kategoriFilterDropdown" aria-expanded="false">
                 <i class="bi bi-funnel"></i> Semua
+                <i class="bi bi-chevron-right arrow-icon"></i>
               </button>
               <ul class="dropdown-menu" aria-labelledby="kategoriFilterDropdown">
                 <li><a class="dropdown-item filter-option" href="#" data-type="kategori" data-value="all">Semua</a></li>
@@ -92,12 +110,18 @@
     {{-- Row kedua: Grafik Barang Masuk dan Keluar --}}
     <div class="dashboard-row">
       <div class="wide-chart-section">
-        <div class="chart-header">
-          <h2>Grafik Barang Masuk dan Keluar</h2>
-          <div class="chart-controls">
+        {{-- [NEW] Layout horizontal sejajar seperti admin --}}
+        <div class="chart-header chart-header--horizontal">
+          <div class="chart-header-horizontal-item">
+            <h2>Grafik Barang Masuk dan Keluar</h2>
+          </div>
+
+          <div class="chart-header-horizontal-item">
+            {{-- Filter dengan arrow icon seperti admin --}}
             <div class="dropdown">
               <button class="filter-btn dropdown-toggle" type="button" id="masukKeluarFilterDropdown" aria-expanded="false">
                 <i class="bi bi-funnel"></i> 5 Tahun
+                <i class="bi bi-chevron-right arrow-icon"></i>
               </button>
               <ul class="dropdown-menu" aria-labelledby="masukKeluarFilterDropdown">
                 <li><a class="dropdown-item filter-option" href="#" data-type="masukkeluar" data-value="3y">3 Tahun Terakhir</a></li>
@@ -132,7 +156,47 @@
     document.addEventListener('DOMContentLoaded', function() {
       const FILTER_URL = "{{ route('pb.dashboard.filter') }}";
 
-      /* ====================== Helper Functions (harus di atas) ====================== */
+      /* ====================== [NEW] Atur Arrow Dropdown seperti admin ====================== */
+      // Untuk custom dropdown Ringkasan (jika diperlukan)
+      const summaryFilterBtn = document.getElementById('summaryFilterBtn');
+      const summaryDropdownMenu = document.getElementById('summaryDropdownMenu');
+      const summaryFilterText = document.getElementById('summaryFilterText');
+
+      if (summaryFilterBtn) {
+        // Toggle dropdown visibility dan atur arrow
+        summaryFilterBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const isExpanded = this.getAttribute('aria-expanded') === 'true';
+          this.setAttribute('aria-expanded', !isExpanded);
+          summaryDropdownMenu.classList.toggle('show');
+        });
+
+        // Close dropdown ketika klik di luar
+        document.addEventListener('click', function(e) {
+          if (!summaryFilterBtn.contains(e.target) && !summaryDropdownMenu.contains(e.target)) {
+            summaryDropdownMenu.classList.remove('show');
+            summaryFilterBtn.setAttribute('aria-expanded', 'false');
+          }
+        });
+
+        // Handle filter selection untuk Ringkasan
+        summaryDropdownMenu.addEventListener('click', function(e) {
+          if (e.target.classList.contains('summary-dropdown-item')) {
+            e.preventDefault();
+            const selectedValue = e.target.getAttribute('data-value');
+            const selectedText = e.target.textContent;
+
+            summaryFilterText.textContent = selectedText;
+            summaryDropdownMenu.classList.remove('show');
+            summaryFilterBtn.setAttribute('aria-expanded', 'false');
+
+            // [NOTE] Tambahkan fungsi filter ringkasan jika diperlukan
+            // filterRingkasan(selectedValue);
+          }
+        });
+      }
+
+      /* ====================== Helper Functions ====================== */
       function fmt(d){ 
         const z=n=>String(n).padStart(2,'0'); 
         return `${z(d.getDate())}/${z(d.getMonth()+1)}/${d.getFullYear()}`;
@@ -282,36 +346,45 @@
         }
       });
 
-      /* ====================== Dropdown Toggle Functionality ====================== */
-      // Handle dropdown toggle
-      document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
-        toggle.addEventListener('click', function(e) {
-          e.preventDefault();
-          e.stopPropagation();
-          
-          console.log('Dropdown clicked'); // Debug log
-          
-          // Close other dropdowns first
-          document.querySelectorAll('.dropdown-menu').forEach(menu => {
-            if (menu !== this.nextElementSibling) {
-              menu.classList.remove('show');
-            }
-          });
-          
-          // Toggle current dropdown
-          const menu = this.nextElementSibling;
-          if (menu) {
-            menu.classList.toggle('show');
-            console.log('Menu toggled, show class:', menu.classList.contains('show')); // Debug log
-          }
+      /* ====================== [FIXED] Bootstrap Dropdown Events untuk Arrow Rotation ====================== */
+      // Handle untuk semua dropdown Bootstrap seperti di admin
+      document.querySelectorAll('[data-bs-toggle="dropdown"]').forEach(dropdown => {
+        dropdown.addEventListener('show.bs.dropdown', function () {
+          this.setAttribute('aria-expanded', 'true');
+        });
+
+        dropdown.addEventListener('hide.bs.dropdown', function () {
+          this.setAttribute('aria-expanded', 'false');
         });
       });
 
-      // Close dropdown when clicking outside
+      // [NEW] Custom dropdown handling untuk arrow rotation (fallback)
+      document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+        if (!toggle.hasAttribute('data-bs-toggle')) {
+          toggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const isExpanded = this.getAttribute('aria-expanded') === 'true';
+            this.setAttribute('aria-expanded', !isExpanded);
+            
+            // Toggle dropdown menu
+            const menu = this.nextElementSibling;
+            if (menu && menu.classList.contains('dropdown-menu')) {
+              menu.classList.toggle('show');
+            }
+          });
+        }
+      });
+
+      // Close dropdown ketika klik di luar
       document.addEventListener('click', function(e) {
         if (!e.target.closest('.dropdown')) {
           document.querySelectorAll('.dropdown-menu').forEach(menu => {
             menu.classList.remove('show');
+          });
+          document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+            toggle.setAttribute('aria-expanded', 'false');
           });
         }
       });
@@ -387,12 +460,13 @@
           const type  = this.getAttribute('data-type');
           const value = this.getAttribute('data-value');
           
-          // Update teks pada tombol dropdown
+          // Update teks pada tombol dropdown dengan arrow icon seperti admin
           const dropdownButton = this.closest('.dropdown').querySelector('.dropdown-toggle');
-          dropdownButton.innerHTML = `<i class="bi bi-funnel"></i> ${this.textContent}`;
+          dropdownButton.innerHTML = `<i class="bi bi-funnel"></i> ${this.textContent} <i class="bi bi-chevron-right arrow-icon"></i>`;
           
           // Close dropdown
           this.closest('.dropdown-menu').classList.remove('show');
+          dropdownButton.setAttribute('aria-expanded', 'false');
           
           if (type === 'kategori') {
             filterKategori(value);
