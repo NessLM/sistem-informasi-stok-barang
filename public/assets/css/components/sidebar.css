@@ -708,73 +708,75 @@ html.sb-collapsed .sb-parent-item .sb-main-link span {
     }
 }
 
-/* ===========================
-   MOBILE (<= 992px) — FULL OVERLAY
-   =========================== */
-   @media (max-width: 992px) {
-    /* variabel ukuran untuk HP (tetap ada, tapi kita pakai full screen) */
-    .layout { --sb-mobile-width: 100vw; }
-  
-    /* konten jadi full width & TIDAK digeser saat sidebar buka */
+@media (max-width: 992px) {
+    .developers-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .developers-bottom {
+        grid-template-columns: 1fr;
+    }
+    
+    /* Mobile sidebar - tidak full layar */
+    .layout {
+        --sb-mobile-width: 280px;
+    }
+    
     main.content {
-      margin-left: 0 !important;
-      width: 100% !important;
-      transition: none;                  /* jangan translate konten */
+        margin-left: 0 !important;
+        width: 100%;
+        transition: transform 0.3s ease;
     }
-  
-    /* header tetap full */
-    .page-header {
-      left: 0 !important;
-      width: 100% !important;
-    }
-  
-    /* === SIDEBAR JADI FULL-SCREEN OVERLAY === */
+    
     aside.sb {
-      width: 100vw;                      /* kunci: penuh layar */
-      max-width: 100vw;
-      transform: translateX(-100%);      /* sembunyikan di kiri */
-      z-index: 1100;                     /* di atas backdrop */
-      /* pastikan tidak “buram” */
-      opacity: 1;
-      filter: none;
+        width: var(--sb-mobile-width);
+        transform: translateX(-100%);
+        z-index: 1100;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
     }
+    
     .layout.is-mobile-open aside.sb {
-      transform: translateX(0);          /* masuk full */
+        transform: translateX(0);
     }
-  
-    /* === BACKDROP (di bawah sidebar) === */
+    
+    /* Backdrop untuk mobile */
     #sb-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,.45);       /* gelap di belakang */
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity .2s ease, visibility .2s ease;
-      z-index: 1090;                      /* DI BAWAH sidebar */
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+        z-index: 1090;
     }
+    
     .layout.is-mobile-open #sb-backdrop {
-      opacity: 1;
-      visibility: visible;
+        opacity: 1;
+        visibility: visible;
     }
-  
-    /* kunci interaksi & scroll konten saat sidebar buka */
+    
+    /* Geser konten utama saat sidebar terbuka */
     .layout.is-mobile-open main.content {
-      pointer-events: none;
-      user-select: none;
+        transform: translateX(var(--sb-mobile-width));
     }
-  
-    /* tombol hamburger (punyamu) tetap tampil di mobile */
-    .sb-brand .brand-action { display: grid !important; }
-  
-    /* abaikan state collapsed di HP (jangan jadi rail 80px) */
+    
+    /* Pastikan tombol menu tetap visible di mobile */
+    .sb-brand .brand-action {
+        display: grid !important;
+    }
+    
+    /* Abaikan state collapsed di mobile */
     html.sb-collapsed aside.sb,
     .layout.is-collapsed aside.sb {
-      width: 100vw;
-      max-width: 100vw;
-      transform: translateX(-100%);
+        width: var(--sb-mobile-width);
+        transform: translateX(-100%);
     }
-  }
-  
+    
+    .layout.is-mobile-open html.sb-collapsed aside.sb,
+    .layout.is-mobile-open .layout.is-collapsed aside.sb {
+        transform: translateX(0);
+    }
+}
 
 @media (max-width: 768px) {
     .developers-grid,
