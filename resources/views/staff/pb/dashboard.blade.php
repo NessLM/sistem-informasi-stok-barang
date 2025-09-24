@@ -21,7 +21,11 @@
             </button>
             <div class="summary-dropdown-menu" id="summaryDropdownMenu">
               <button class="summary-dropdown-item" data-value="all">Semua</button>
-              {{-- [NOTE] Jika PB perlu filter gudang, tambahkan di sini --}}
+              <button class="summary-dropdown-item" data-value="gudang-utama">Gudang Utama</button>
+              <button class="summary-dropdown-item" data-value="gudang-atk">Gudang ATK</button>
+              <button class="summary-dropdown-item" data-value="gudang-listrik">Gudang Listrik</button>
+              <button class="summary-dropdown-item" data-value="gudang-kebersihan">Gudang Kebersihan</button>
+              <button class="summary-dropdown-item" data-value="gudang-b-komputer">Gudang B Komputer</button>
             </div>
           </div>
         </div>
@@ -34,7 +38,7 @@
               <i class="bi bi-box"></i>
             </div>
             <div class="summary-card__body">
-              <div class="summary-card__number">{{ $totalJenisBarang }}</div>
+              <div class="summary-card__number" id="totalJenisBarang">{{ $totalJenisBarang }}</div>
               <div class="summary-card__label">Total Jenis Barang</div>
             </div>
           </div>
@@ -45,7 +49,7 @@
               <i class="bi bi-box-seam"></i>
             </div>
             <div class="summary-card__body">
-              <div class="summary-card__number">{{ $totalBarang }}</div>
+              <div class="summary-card__number" id="totalBarang">{{ $totalBarang }}</div>
               <div class="summary-card__label">Total Barang</div>
             </div>
           </div>
@@ -54,7 +58,7 @@
 
       {{-- ======================= GRAFIK BARANG KELUAR ======================= --}}
       <div class="chart-section">
-        {{-- [NEW] Layout horizontal sejajar seperti admin --}}
+        {{-- [MODIFIED] Layout horizontal sejajar dengan dropdown di ujung kanan --}}
         <div class="chart-header chart-header--horizontal">
           <div class="chart-header-horizontal-item">
             <h2>Barang Keluar</h2>
@@ -65,7 +69,8 @@
             <span id="rangeHintKategori" class="range-hint" title="Semua Data">Semua Data</span>
           </div>
 
-          <div class="chart-header-horizontal-item">
+          {{-- [MODIFIED] Pindahkan dropdown ke ujung kanan dengan margin auto --}}
+          <div class="chart-header-horizontal-item" style="margin-left: auto;">
             {{-- Filter waktu dengan arrow icon seperti admin --}}
             <div class="dropdown">
               <button class="filter-btn dropdown-toggle" type="button" id="kategoriFilterDropdown" aria-expanded="false">
@@ -190,10 +195,53 @@
             summaryDropdownMenu.classList.remove('show');
             summaryFilterBtn.setAttribute('aria-expanded', 'false');
 
-            // [NOTE] Tambahkan fungsi filter ringkasan jika diperlukan
-            // filterRingkasan(selectedValue);
+            // [NEW] Panggil fungsi filter ringkasan
+            filterRingkasan(selectedValue);
           }
         });
+      }
+
+      /* ====================== [NEW] Filter Function untuk Ringkasan ====================== */
+      function filterRingkasan(filterType) {
+        fetch(`${FILTER_URL}?type=ringkasan&filter=${filterType}`)
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            return response.json();
+          })
+          .then(data => {
+            // Update nilai pada card ringkasan dengan animasi
+            updateCardNumber('totalJenisBarang', data.totalJenisBarang);
+            updateCardNumber('totalBarang', data.totalBarang);
+          })
+          .catch(error => {
+            console.error('Error filtering ringkasan data:', error);
+          });
+      }
+
+      /* ====================== [NEW] Helper Function untuk Update Angka dengan Animasi ====================== */
+      function updateCardNumber(elementId, newValue) {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+
+        const currentValue = parseInt(element.textContent) || 0;
+        const duration = 500; // ms
+        const steps = 30;
+        const stepValue = (newValue - currentValue) / steps;
+        const stepDuration = duration / steps;
+
+        let currentStep = 0;
+        const timer = setInterval(() => {
+          currentStep++;
+          const displayValue = Math.round(currentValue + (stepValue * currentStep));
+          element.textContent = displayValue;
+
+          if (currentStep >= steps) {
+            element.textContent = newValue;
+            clearInterval(timer);
+          }
+        }, stepDuration);
       }
 
       /* ====================== Helper Functions ====================== */
