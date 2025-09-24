@@ -19,10 +19,10 @@
                             <ul class="dropdown-menu" aria-labelledby="alurDropdown">
                                 <li><a class="dropdown-item {{ request('alur_barang', 'Semua') == 'Semua' ? 'active' : '' }}"
                                         href="#" data-value="Semua">Semua</a></li>
-                                <li><a class="dropdown-item {{ request('alur_barang') == 'Keluar' ? 'active' : '' }}"
-                                        href="#" data-value="Keluar">Keluar</a></li>
                                 <li><a class="dropdown-item {{ request('alur_barang') == 'Masuk' ? 'active' : '' }}"
                                         href="#" data-value="Masuk">Masuk</a></li>
+                                <li><a class="dropdown-item {{ request('alur_barang') == 'Keluar' ? 'active' : '' }}"
+                                        href="#" data-value="Keluar">Keluar</a></li>
                             </ul>
                             <input type="hidden" name="alur_barang" value="{{ request('alur_barang', 'Semua') }}">
                         </div>
@@ -50,13 +50,16 @@
                         <div class="riwayat-filter-group riwayat-filter-dropdown">
                             <button class="btn riwayat-btn-filter dropdown-toggle" type="button" id="periodeDropdown"
                                 data-bs-toggle="dropdown" aria-expanded="false">
-                                <span>
+                                <span id="periodeText">
                                     @if (request('periode') == '1_minggu_terakhir')
                                         1 Minggu Terakhir
                                     @elseif(request('periode') == '1_bulan_terakhir')
                                         1 Bulan Terakhir
                                     @elseif(request('periode') == '1_tahun_terakhir')
                                         1 Tahun Terakhir
+                                    @elseif(request('periode') == 'custom' && request('dari_tanggal') && request('sampai_tanggal'))
+                                        {{ \Carbon\Carbon::parse(request('dari_tanggal'))->format('d/m/Y') }} -
+                                        {{ \Carbon\Carbon::parse(request('sampai_tanggal'))->format('d/m/Y') }}
                                     @else
                                         Pilih Periode
                                     @endif
@@ -72,8 +75,19 @@
                                         href="#" data-value="1_bulan_terakhir">1 Bulan Terakhir</a></li>
                                 <li><a class="dropdown-item {{ request('periode') == '1_tahun_terakhir' ? 'active' : '' }}"
                                         href="#" data-value="1_tahun_terakhir">1 Tahun Terakhir</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item {{ request('periode') == 'custom' ? 'active' : '' }} custom-period-item"
+                                        href="#" data-bs-toggle="modal" data-bs-target="#customPeriodModal">
+                                        <i class="bi bi-calendar-range me-2"></i>Custom Periode
+                                    </a></li>
                             </ul>
-                            <input type="hidden" name="periode" value="{{ request('periode') }}">
+                            <input type="hidden" name="periode" id="periodeInput" value="{{ request('periode') }}">
+                            <input type="hidden" name="dari_tanggal" id="dariTanggalInput"
+                                value="{{ request('dari_tanggal') }}">
+                            <input type="hidden" name="sampai_tanggal" id="sampaiTanggalInput"
+                                value="{{ request('sampai_tanggal') }}">
                         </div>
 
                         <!-- Tombol Reset -->
@@ -193,25 +207,26 @@
                         </div>
 
                         <!-- Pagination untuk Barang Masuk -->
-@if ($totalPagesMasuk > 1)
-    <div class="card-footer d-flex justify-content-center align-items-center">
-        <div class="pagination-controls">
-            <button class="btn btn-sm btn-outline-primary pagination-btn pagination-prev"
-                    onclick="changePage('masuk', {{ max(1, $currentPageMasuk - 1) }})"
-                    {{ $currentPageMasuk <= 1 ? 'disabled' : '' }}>
-                <i class="bi bi-chevron-left"></i> 
-                <span class="pagination-text">Sebelumnya</span>
-            </button>
-            <span class="mx-2 pagination-info">Halaman {{ $currentPageMasuk }} dari {{ $totalPagesMasuk }}</span>
-            <button class="btn btn-sm btn-outline-primary pagination-btn pagination-next"
-                    onclick="changePage('masuk', {{ min($totalPagesMasuk, $currentPageMasuk + 1) }})"
-                    {{ $currentPageMasuk >= $totalPagesMasuk ? 'disabled' : '' }}>
-                <span class="pagination-text">Selanjutnya</span>
-                <i class="bi bi-chevron-right"></i>
-            </button>
-        </div>
-    </div>
-@endif
+                        @if ($totalPagesMasuk > 1)
+                            <div class="card-footer d-flex justify-content-center align-items-center">
+                                <div class="pagination-controls">
+                                    <button class="btn btn-sm btn-outline-primary pagination-btn pagination-prev"
+                                        onclick="changePage('masuk', {{ max(1, $currentPageMasuk - 1) }})"
+                                        {{ $currentPageMasuk <= 1 ? 'disabled' : '' }}>
+                                        <i class="bi bi-chevron-left"></i>
+                                        <span class="pagination-text">Sebelumnya</span>
+                                    </button>
+                                    <span class="mx-2 pagination-info">Halaman {{ $currentPageMasuk }} dari
+                                        {{ $totalPagesMasuk }}</span>
+                                    <button class="btn btn-sm btn-outline-primary pagination-btn pagination-next"
+                                        onclick="changePage('masuk', {{ min($totalPagesMasuk, $currentPageMasuk + 1) }})"
+                                        {{ $currentPageMasuk >= $totalPagesMasuk ? 'disabled' : '' }}>
+                                        <span class="pagination-text">Selanjutnya</span>
+                                        <i class="bi bi-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
             @endif
@@ -281,29 +296,64 @@
                         </div>
 
                         <!-- Pagination untuk Barang Keluar -->
-@if ($totalPagesKeluar > 1)
-    <div class="card-footer d-flex justify-content-center align-items-center">
-        <div class="pagination-controls">
-            <button class="btn btn-sm btn-outline-primary pagination-btn pagination-prev"
-                    onclick="changePage('keluar', {{ max(1, $currentPageKeluar - 1) }})"
-                    {{ $currentPageKeluar <= 1 ? 'disabled' : '' }}>
-                <i class="bi bi-chevron-left"></i> 
-                <span class="pagination-text">Sebelumnya</span>
-            </button>
-            <span class="mx-2 pagination-info">Halaman {{ $currentPageKeluar }} dari {{ $totalPagesKeluar }}</span>
-            <button class="btn btn-sm btn-outline-primary pagination-btn pagination-next"
-                    onclick="changePage('keluar', {{ min($totalPagesKeluar, $currentPageKeluar + 1) }})"
-                    {{ $currentPageKeluar >= $totalPagesKeluar ? 'disabled' : '' }}>
-                <span class="pagination-text">Selanjutnya</span>
-                <i class="bi bi-chevron-right"></i>
-            </button>
-        </div>
-    </div>
-@endif
+                        @if ($totalPagesKeluar > 1)
+                            <div class="card-footer d-flex justify-content-center align-items-center">
+                                <div class="pagination-controls">
+                                    <button class="btn btn-sm btn-outline-primary pagination-btn pagination-prev"
+                                        onclick="changePage('keluar', {{ max(1, $currentPageKeluar - 1) }})"
+                                        {{ $currentPageKeluar <= 1 ? 'disabled' : '' }}>
+                                        <i class="bi bi-chevron-left"></i>
+                                        <span class="pagination-text">Sebelumnya</span>
+                                    </button>
+                                    <span class="mx-2 pagination-info">Halaman {{ $currentPageKeluar }} dari
+                                        {{ $totalPagesKeluar }}</span>
+                                    <button class="btn btn-sm btn-outline-primary pagination-btn pagination-next"
+                                        onclick="changePage('keluar', {{ min($totalPagesKeluar, $currentPageKeluar + 1) }})"
+                                        {{ $currentPageKeluar >= $totalPagesKeluar ? 'disabled' : '' }}>
+                                        <span class="pagination-text">Selanjutnya</span>
+                                        <i class="bi bi-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
             @endif
         </div>
+
+
+        <!-- Modal untuk Custom Periode -->
+        <div class="modal fade" id="customPeriodModal" tabindex="-1" aria-labelledby="customPeriodModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="customPeriodModalLabel">Pilih Periode Custom</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="customPeriodForm">
+                            <div class="mb-3">
+                                <label for="dariTanggal" class="form-label">Dari Tanggal</label>
+                                <input type="date" class="form-control" id="dariTanggal"
+                                    value="{{ request('dari_tanggal') }}" max="{{ date('Y-m-d') }}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="sampaiTanggal" class="form-label">Sampai Tanggal</label>
+                                <input type="date" class="form-control" id="sampaiTanggal"
+                                    value="{{ request('sampai_tanggal') }}" max="{{ date('Y-m-d') }}">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="button" class="btn btn-primary" id="applyCustomPeriod">Terapkan</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
         <!-- Modal untuk menampilkan bukti -->
         <div class="modal fade" id="buktiModal" tabindex="-1" aria-labelledby="buktiModalLabel"
@@ -326,44 +376,239 @@
         @push('scripts')
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
-                    // Tangani pemilihan filter dropdown
-                    document.querySelectorAll('.riwayat-filter-dropdown .dropdown-item').forEach(item => {
-                        item.addEventListener('click', function(e) {
-                            e.preventDefault();
-                            const value = this.getAttribute('data-value');
-                            const dropdown = this.closest('.riwayat-filter-dropdown');
-                            const button = dropdown.querySelector('.riwayat-btn-filter');
-                            const hiddenInput = dropdown.querySelector('input[type="hidden"]');
+                    initEventListeners();
 
-                            // Perbarui teks tombol
-                            button.querySelector('span').textContent = this.textContent;
-
-                            // Perbarui nilai input tersembunyi
-                            hiddenInput.value = value;
-
-                            // Hapus kelas active dari semua item
-                            dropdown.querySelectorAll('.dropdown-item').forEach(i => {
-                                i.classList.remove('active');
-                            });
-
-                            // Tambahkan kelas active ke item yang dipilih
-                            this.classList.add('active');
-
-                            // Submit form
-                            document.getElementById('filterForm').submit();
+                    function initEventListeners() {
+                        // Filter untuk alur barang dan gudang
+                        document.querySelectorAll('.riwayat-filter-dropdown .dropdown-item').forEach(item => {
+                            // Hapus event listener lama dan tambahkan yang baru
+                            item.removeEventListener('click', handleFilterClick);
+                            item.addEventListener('click', handleFilterClick);
                         });
-                    });
 
-                    // Inisialisasi modal bukti
-                    const buktiModal = document.getElementById('buktiModal');
-                    if (buktiModal) {
-                        buktiModal.addEventListener('show.bs.modal', function(event) {
-                            const button = event.relatedTarget;
-                            const imageUrl = button.getAttribute('data-image');
-                            const modalImage = buktiModal.querySelector('#buktiImage');
-                            modalImage.src = imageUrl;
+                        // Handle custom period modal - khusus untuk item custom period
+                        const customPeriodItem = document.querySelector('.custom-period-item');
+                        if (customPeriodItem) {
+                            customPeriodItem.removeEventListener('click', handleCustomPeriodClick);
+                            customPeriodItem.addEventListener('click', handleCustomPeriodClick);
+                        }
+
+                        // Handle apply button di modal custom period
+                        const applyCustomPeriodBtn = document.getElementById('applyCustomPeriod');
+                        if (applyCustomPeriodBtn) {
+                            applyCustomPeriodBtn.removeEventListener('click', applyCustomPeriod);
+                            applyCustomPeriodBtn.addEventListener('click', applyCustomPeriod);
+                        }
+
+                        // Inisialisasi modal bukti
+                        document.querySelectorAll('.riwayat-bukti-icon').forEach(icon => {
+                            icon.removeEventListener('click', handleBuktiClick);
+                            icon.addEventListener('click', handleBuktiClick);
+                        });
+
+                        // Inisialisasi pagination buttons
+                        document.querySelectorAll('.pagination-btn').forEach(btn => {
+                            btn.removeEventListener('click', handlePaginationClick);
+                            btn.addEventListener('click', handlePaginationClick);
                         });
                     }
+
+                    // Fungsi khusus untuk menangani klik pada custom period item
+                    function handleCustomPeriodClick(e) {
+                        e.preventDefault();
+                        // Hanya buka modal, jangan submit form
+                        // Biarkan modal Bootstrap menangani pembukaan modal
+                    }
+
+                    // Fungsi untuk menangani klik filter regular (bukan custom period)
+                    function handleFilterClick(e) {
+                        e.preventDefault();
+
+                        // Jika ini adalah custom period item, biarkan handleCustomPeriodClick yang menanganinya
+                        if (this.classList.contains('custom-period-item')) {
+                            return;
+                        }
+
+                        const value = this.getAttribute('data-value');
+                        const dropdown = this.closest('.riwayat-filter-dropdown');
+                        const button = dropdown.querySelector('.riwayat-btn-filter');
+                        const hiddenInput = dropdown.querySelector('input[type="hidden"]');
+
+                        // Perbarui teks tombol
+                        button.querySelector('span').textContent = this.textContent;
+
+                        // Perbarui nilai input tersembunyi
+                        if (hiddenInput) {
+                            hiddenInput.value = value;
+
+                            // Jika ini dropdown periode dan bukan custom, reset tanggal custom
+                            if (dropdown.id === 'periodeDropdown' && value !== 'custom') {
+                                document.getElementById('dariTanggalInput').value = '';
+                                document.getElementById('sampaiTanggalInput').value = '';
+                            }
+                        }
+
+                        // Hapus kelas active dari semua item dalam dropdown yang sama
+                        dropdown.querySelectorAll('.dropdown-item').forEach(i => {
+                            i.classList.remove('active');
+                        });
+
+                        // Tambahkan kelas active ke item yang dipilih
+                        this.classList.add('active');
+
+                        // Submit form
+                        submitFilterForm();
+                    }
+
+                    // Fungsi untuk menerapkan periode custom
+                    function applyCustomPeriod() {
+                        const dariTanggal = document.getElementById('dariTanggal').value;
+                        const sampaiTanggal = document.getElementById('sampaiTanggal').value;
+
+                        if (!dariTanggal || !sampaiTanggal) {
+                            alert('Harap pilih kedua tanggal!');
+                            return;
+                        }
+
+                        if (new Date(dariTanggal) > new Date(sampaiTanggal)) {
+                            alert('Tanggal "Dari" tidak boleh lebih besar dari tanggal "Sampai"!');
+                            return;
+                        }
+
+                        // Update hidden inputs
+                        document.getElementById('periodeInput').value = 'custom';
+                        document.getElementById('dariTanggalInput').value = dariTanggal;
+                        document.getElementById('sampaiTanggalInput').value = sampaiTanggal;
+
+                        // Update button text
+                        const dariFormatted = formatDate(dariTanggal);
+                        const sampaiFormatted = formatDate(sampaiTanggal);
+                        document.getElementById('periodeText').textContent = `${dariFormatted} - ${sampaiFormatted}`;
+
+                        // Update active class di dropdown periode
+                        document.querySelectorAll('#periodeDropdown + .dropdown-menu .dropdown-item').forEach(i => {
+                            i.classList.remove('active');
+                        });
+                        document.querySelector('#periodeDropdown + .dropdown-menu .custom-period-item').classList.add(
+                            'active');
+
+                        // Close modal dengan getOrCreateInstance
+                        const modalEl = document.getElementById('customPeriodModal');
+                        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                        modal.hide();
+
+                        // Submit form
+                        submitFilterForm();
+                    }
+
+
+                    // Fungsi untuk menangani klik bukti
+                    function handleBuktiClick() {
+                        const imageUrl = this.getAttribute('data-image');
+                        const modalImage = document.querySelector('#buktiImage');
+                        if (modalImage) {
+                            modalImage.src = imageUrl;
+                        }
+                    }
+
+                    // Fungsi untuk menangani klik pagination
+                    function handlePaginationClick() {
+                        const onclickAttr = this.getAttribute('onclick');
+                        if (onclickAttr) {
+                            const match = onclickAttr.match(/changePage\('(\w+)',\s*(\d+)\)/);
+                            if (match) {
+                                const type = match[1];
+                                const page = parseInt(match[2]);
+                                changePage(type, page);
+                            }
+                        }
+                    }
+
+                    // Fungsi untuk submit form filter
+                    function submitFilterForm() {
+                        // Reset pagination saat filter berubah
+                        resetPagination();
+
+                        // Submit form
+                        document.getElementById('filterForm').submit();
+                    }
+
+                    // Fungsi untuk reset pagination
+                    function resetPagination() {
+                        const url = new URL(window.location.href);
+                        url.searchParams.delete('page_masuk');
+                        url.searchParams.delete('page_keluar');
+                        window.history.replaceState({}, '', url);
+                    }
+
+                    // Fungsi untuk mengubah halaman
+                    function changePage(type, page) {
+                        const url = new URL(window.location.href);
+                        url.searchParams.set(`page_${type}`, page);
+
+                        // Scroll ke bagian atas tabel
+                        const tableElement = document.querySelector(`.riwayat-header-${type}`)?.closest('.card');
+                        if (tableElement) {
+                            tableElement.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start'
+                            });
+                        }
+
+                        // AJAX request
+                        fetch(url, {
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'text/html'
+                                }
+                            })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Network response was not ok');
+                                }
+                                return response.text();
+                            })
+                            .then(html => {
+                                const parser = new DOMParser();
+                                const doc = parser.parseFromString(html, 'text/html');
+                                const newTable = doc.querySelector(`.riwayat-header-${type}`)?.closest('.card');
+
+                                if (newTable) {
+                                    const oldTable = document.querySelector(`.riwayat-header-${type}`)?.closest(
+                                    '.card');
+                                    if (oldTable) {
+                                        oldTable.replaceWith(newTable);
+                                    }
+
+                                    window.history.pushState({}, '', url);
+                                    initEventListeners();
+                                } else {
+                                    window.location.href = url;
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                window.location.href = url;
+                            });
+                    }
+
+                    // Fungsi utilitas untuk memformat tanggal
+                    function formatDate(dateString) {
+                        const date = new Date(dateString);
+                        return date.toLocaleDateString('id-ID', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric'
+                        });
+                    }
+
+                    // Set max date for date inputs to today
+                    const today = new Date().toISOString().split('T')[0];
+                    const dariTanggalInput = document.getElementById('dariTanggal');
+                    const sampaiTanggalInput = document.getElementById('sampaiTanggal');
+
+                    if (dariTanggalInput) dariTanggalInput.max = today;
+                    if (sampaiTanggalInput) sampaiTanggalInput.max = today;
                 });
 
                 function downloadReport(format) {
@@ -374,72 +619,6 @@
                     input.value = format;
                     form.appendChild(input);
                     form.submit();
-                    form.removeChild(input);
-                }
-
-                function changePage(type, page) {
-                    // Update URL tanpa reload halaman
-                    const url = new URL(window.location.href);
-                    url.searchParams.set(`page_${type}`, page);
-
-                    // Scroll ke bagian atas tabel
-                    const tableElement = document.querySelector(`.riwayat-header-${type}`).closest('.card');
-                    if (tableElement) {
-                        tableElement.scrollIntoView({
-                            behavior: 'smooth'
-                        });
-                    }
-
-                    // Lakukan request AJAX untuk mendapatkan data baru
-                    fetch(url, {
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest'
-                            }
-                        })
-                        .then(response => response.text())
-                        .then(html => {
-                            // Parse HTML response
-                            const parser = new DOMParser();
-                            const doc = parser.parseFromString(html, 'text/html');
-
-                            // Temukan tabel yang sesuai
-                            const newTable = doc.querySelector(`.riwayat-header-${type}`).closest('.card');
-
-                            // Ganti tabel lama dengan yang baru
-                            const oldTable = document.querySelector(`.riwayat-header-${type}`).closest('.card');
-                            if (oldTable && newTable) {
-                                oldTable.outerHTML = newTable.outerHTML;
-                            }
-
-                            // Re-init event listeners untuk elemen yang baru dibuat
-                            initEventListeners();
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            // Fallback: reload halaman jika AJAX gagal
-                            window.location.href = url;
-                        });
-                }
-
-                function initEventListeners() {
-                    // Inisialisasi ulang event listeners untuk bukti icon
-                    document.querySelectorAll('.riwayat-bukti-icon').forEach(icon => {
-                        icon.addEventListener('click', function() {
-                            const imageUrl = this.getAttribute('data-image');
-                            const modalImage = document.querySelector('#buktiImage');
-                            modalImage.src = imageUrl;
-                        });
-                    });
-
-                    // Inisialisasi ulang event listeners untuk pagination buttons
-                    document.querySelectorAll('.pagination-btn').forEach(btn => {
-                        const onclick = btn.getAttribute('onclick');
-                        if (onclick) {
-                            btn.onclick = function() {
-                                eval(onclick);
-                            };
-                        }
-                    });
                 }
             </script>
         @endpush
