@@ -7,6 +7,7 @@ use App\Helpers\MenuHelper;
 use App\Models\Riwayat;
 use App\Models\Barang;
 use App\Models\JenisBarang;
+use App\Models\Gudang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -17,9 +18,9 @@ class DashboardController extends Controller
     {
         $menu = MenuHelper::pbMenu();
 
-        // Ringkasan
+        // Ringkasan (default: semua data)
         $totalJenisBarang = JenisBarang::count();
-        $totalBarang      = Barang::sum('stok');
+        $totalBarang = Barang::sum('stok');
 
         /* =========================================================
          * GRAFIK BARANG KELUAR PER KATEGORI (default: semua data)
@@ -91,12 +92,63 @@ class DashboardController extends Controller
     
     public function filterData(Request $request)
     {
-        $type   = $request->query('type', 'kategori');
+        $type = $request->query('type', 'kategori');
         $filter = $request->query('filter', 'all');
 
-        return $type === 'kategori'
-            ? $this->filterKategoriData($filter)
-            : $this->filterMasukKeluarData($filter);
+        if ($type === 'ringkasan') {
+            return $this->filterRingkasanData($filter);
+        } elseif ($type === 'kategori') {
+            return $this->filterKategoriData($filter);
+        } else {
+            return $this->filterMasukKeluarData($filter);
+        }
+    }
+
+    // Filter data ringkasan berdasarkan gudang
+    private function filterRingkasanData($filter)
+    {
+        if ($filter === 'all') {
+            $totalJenisBarang = JenisBarang::count();
+            $totalBarang = Barang::sum('stok');
+        } else {
+            // Map filter ke ID gudang berdasarkan nama gudang
+            $gudangMap = [
+                'gudang-utama' => 'Gudang Utama',
+                'gudang-atk' => 'Gudang ATK', 
+                'gudang-listrik' => 'Gudang Listrik',
+                'gudang-kebersihan' => 'Gudang Kebersihan',
+                'gudang-b-komputer' => 'Gudang B Komputer'
+            ];
+
+            $gudangNama = $gudangMap[$filter] ?? null;
+            
+            if ($gudangNama) {
+                // Ambil ID gudang berdasarkan nama
+                $gudang = Gudang::where('nama', $gudangNama)->first();
+                
+                if ($gudang) {
+                    // Hitung berdasarkan kategori yang berada di gudang tersebut
+                    $totalJenisBarang = JenisBarang::whereHas('kategori', function ($query) use ($gudang) {
+                        $query->where('gudang_id', $gudang->id);
+                    })->count();
+
+                    $totalBarang = Barang::whereHas('kategori', function ($query) use ($gudang) {
+                        $query->where('gudang_id', $gudang->id);
+                    })->sum('stok');
+                } else {
+                    $totalJenisBarang = 0;
+                    $totalBarang = 0;
+                }
+            } else {
+                $totalJenisBarang = 0;
+                $totalBarang = 0;
+            }
+        }
+
+        return response()->json([
+            'totalJenisBarang' => $totalJenisBarang,
+            'totalBarang' => $totalBarang
+        ]);
     }
 
     // Filter data kategori berdasarkan rentang waktu

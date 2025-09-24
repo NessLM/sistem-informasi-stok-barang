@@ -258,6 +258,11 @@
   flex-shrink: 0;
 }
 
+/* [ENHANCED] Untuk memastikan dropdown di ujung kanan */
+.chart-header-horizontal-item:last-child {
+  margin-left: auto;
+}
+
 .chart-header h2 {
   color: #374151;
   font-size: 1.1rem;
@@ -325,6 +330,12 @@
   border: 1px solid #e5e7eb; 
   border-radius: .5rem;
   box-shadow: 0 4px 12px rgba(0,0,0,.08);
+}
+
+/* [ENHANCED] Dropdown untuk chart Barang Keluar - posisi kanan */
+.chart-section .dropdown-menu {
+  right: 0;
+  left: auto; /* Override default left: 0 */
 }
 
 .dropdown-menu.show { 
@@ -421,6 +432,37 @@
   flex-shrink: 0; /* NEW: Mencegah badge mengecil */
 }
 
+/* ===== [NEW] Animation untuk angka yang berubah ===== */
+.number-counting {
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.number-counting::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+  border: 2px solid #f3f4f6;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.number-counting.loading::after {
+  opacity: 1;
+}
+
+@keyframes spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
 /* ==================== Responsiveness ==================== */
 
 /* Tablet Landscape dan Desktop Kecil */
@@ -497,6 +539,12 @@
     gap: 10px;
     justify-content: flex-start;
   }
+  
+  /* [ENHANCED] Dropdown positioning untuk tablet */
+  .chart-header-horizontal-item:last-child {
+    margin-left: 0; /* Reset margin pada tablet */
+    align-self: flex-end;
+  }
 }
 
 /* Mobile Landscape dan Tablet Kecil */
@@ -535,6 +583,13 @@
   .chart-filter,
   .chart-controls {
     justify-content: center; /* NEW: Tengahkan filter di mobile */
+  }
+  
+  /* [ENHANCED] Dropdown positioning untuk mobile */
+  .chart-header-horizontal-item:last-child {
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-end;
   }
   
   .chart-container { 
@@ -597,6 +652,12 @@
   
   .chart-header-horizontal-item {
     justify-content: space-between;
+  }
+  
+  /* [ENHANCED] Dropdown positioning untuk mobile portrait */
+  .chart-header-horizontal-item:last-child {
+    justify-content: center;
+    margin-left: 0;
   }
   
   .chart-container { 
@@ -704,6 +765,11 @@
     gap: 8px;
   }
   
+  .chart-header-horizontal-item:last-child {
+    margin-left: 0;
+    justify-content: center;
+  }
+  
   .range-hint {
     max-width: 100%;
     text-align: center;
@@ -720,10 +786,6 @@
 .chart-loading {
   opacity: 0.6;
   pointer-events: none;
-}
-
-.number-counting {
-  transition: all 0.3s ease;
 }
 
 .summary-card--classic,
