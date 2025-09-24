@@ -48,6 +48,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:Admin'])->grou
     // Route utama untuk overview semua gudang
     Route::get('/datakeseluruhan', [DataKeseluruhan::class, 'index'])->name('datakeseluruhan.index');
     
+    
     // Route untuk gudang spesifik berdasarkan slug
     Route::get('/datakeseluruhan/gudang/{slug}', [DataKeseluruhan::class, 'gudang'])->name('datakeseluruhan.gudang');
     
@@ -70,7 +71,15 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:Admin'])->grou
 
     /* ===== Barang ===== */
     Route::post('/barang', [DataKeseluruhan::class, 'storeBarang'])->name('barang.store');
-    Route::resource('barang', BarangController::class)->except(['store']);
+
+// DELETE khusus pakai DataKeseluruhan
+Route::delete('/barang/{id}', [DataKeseluruhan::class, 'destroyBarang'])
+    ->name('barang.destroy');
+
+// Resource barang lain tanpa store & destroy
+Route::resource('barang', BarangController::class)->except(['store', 'destroy']);
+
+
 
     /* ===== Riwayat ===== */
     Route::get('/riwayat', [RiwayatController::class, 'index'])->name('riwayat.index');

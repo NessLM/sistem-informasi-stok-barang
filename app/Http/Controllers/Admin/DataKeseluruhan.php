@@ -193,7 +193,11 @@ if ($request->filled('gudang_id')) {
         Kategori::create($request->only(['nama', 'gudang_id']));
 
         return redirect()->route('admin.datakeseluruhan.index')
-                         ->with('success', 'Kategori berhasil ditambahkan!');
+                         ->with('toast', [
+        'type' => 'success',
+        'title' => 'Berhasil!',
+        'message' => 'Kategori berhasil ditambahkan.'
+    ]);
     }
 
     public function storeBarang(Request $request)
@@ -217,7 +221,11 @@ if ($request->filled('gudang_id')) {
         ]);
 
         return redirect()->route('admin.datakeseluruhan.index')
-                         ->with('success', 'Barang berhasil ditambahkan!');
+                        ->with('toast', [
+        'type' => 'success',
+        'title' => 'Berhasil!',
+        'message' => 'Barang berhasil ditambahkan.'
+    ]);
     }
 
     public function updateBarang(Request $request, $kode)
@@ -234,16 +242,24 @@ if ($request->filled('gudang_id')) {
         $barang->update($request->only(['nama', 'harga', 'stok', 'satuan', 'kategori_id']));
 
         return redirect()->route('admin.datakeseluruhan.index')
-                         ->with('success', 'Barang berhasil diperbarui!');
+                         ->with('toast', [
+        'type' => 'success',
+        'title' => 'Update Sukses!',
+        'message' => 'Barang berhasil diperbarui.'
+    ]);
     }
 
-    public function destroyBarang($kode)
+    public function destroyBarang($id)
     {
-        $barang = Barang::where('kode', $kode)->firstOrFail();
+        $barang = Barang::where('id', $id)->firstOrFail();
         $barang->delete();
 
         return redirect()->route('admin.datakeseluruhan.index')
-                         ->with('success', 'Barang berhasil dihapus!');
+                        ->with('toast', [
+        'type' => 'success',
+        'title' => 'Berhasil!',
+        'message' => "Barang {$barang->nama} berhasil dihapus."
+    ]);
     }
 
     public function destroyKategori($id)
@@ -255,7 +271,11 @@ if ($request->filled('gudang_id')) {
         $kategori->delete();
 
         return redirect()->route('admin.datakeseluruhan.index')
-                         ->with('success', 'Kategori berhasil dihapus!');
+                         ->with('toast', [
+        'type' => 'success',
+        'title' => 'Berhasil!',
+        'message' => 'Kategori Berhasil Dihapus.'
+    ]);
     }
 
     /**

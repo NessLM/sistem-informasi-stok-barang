@@ -13,31 +13,39 @@
 
     <main class="page-wrap container py-4">
 
-        {{-- Toast sukses --}}
-        @if (session('success'))
-            <div class="toast-container">
-                <div class="toast align-items-center text-bg-success border-0 show" id="successToast">
-                    <div class="d-flex">
-                        <div class="toast-body">
-                            <strong>Berhasil!</strong> {{ session('success') }}
-                        </div>
-                        <button type="button" class="btn-close btn-close-white me-2 m-auto"
-                            data-bs-dismiss="toast"></button>
-                    </div>
+      <!-- Kode toast notification tetap sama -->
+    @if (session('toast'))
+        <div id="toast-notif"
+            style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+              z-index: 2000; display: flex; justify-content: center; pointer-events: none;">
+
+            <div class="toast-message"
+                style="background: #fff; border-radius: 12px; padding: 14px 22px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;
+                min-width: 280px; max-width: 360px; transition: opacity .5s ease;">
+
+                {{-- Judul (Hijau kalau success, Merah kalau error) --}}
+                <div
+                    style="font-weight: 600; font-size: 16px; margin-bottom: 4px;
+                  color: {{ session('toast.type') === 'success' ? '#28a745' : '#dc3545' }};">
+                    {{ session('toast.title') }}
+                </div>
+
+                {{-- Pesan kecil --}}
+                <div style="color:#333; font-size: 14px; line-height: 1.4;">
+                    {{ session('toast.message') }}
                 </div>
             </div>
-        @endif
+        </div>
 
-        {{-- Pesan error global --}}
-        @if ($errors->any())
-            <div class="alert alert-danger">
-                <ul class="mb-0">
-                    @foreach ($errors->all() as $err)
-                        <li>{{ $err }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
+        <script>
+            setTimeout(() => {
+                const toast = document.getElementById('toast-notif');
+                if (toast) toast.style.opacity = '0';
+                setTimeout(() => toast?.remove(), 500);
+            }, 3000);
+        </script>
+    @endif
 
         <section class="card shadow-sm p-3">
             <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
@@ -156,13 +164,10 @@
                                                 data-bs-target="#modalEditBarang-{{ $b->id }}">
                                                 <i class="bi bi-pencil"></i>
                                             </button>
-                                            <form action="{{ route('admin.barang.destroy', $b->id) }}" method="POST"
-                                                class="d-inline" onsubmit="return confirm('Hapus barang ini?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button class="btn btn-sm btn-danger"><i
-                                                        class="bi bi-trash"></i></button>
-                                            </form>
+                                             <button type="button" class="btn btn-sm btn-danger"
+                                                                        onclick="confirmDelete('{{ route('admin.barang.destroy', $b->id) }}', 'Barang {{ $b->nama }}')">
+                                                                        <i class="bi bi-trash"></i>
+                                                                    </button>
                                         </td>
                                     </tr>
                                 @endforeach
