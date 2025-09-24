@@ -14,6 +14,11 @@
   box-sizing: border-box;
 }
 
+.dropdown-toggle::after {
+    display: none !important;
+}
+
+
 /* --- Baris layout 2 kolom (Ringkasan | Grafik Per Bagian) --- */
 .dashboard-row {
   display: flex;
@@ -563,7 +568,7 @@
   .chart-header--horizontal {
     gap: 12px; /* Sedikit mengurangi gap */
   }
-}
+
 
 /* Tablet Portrait */
 @media (max-width: 992px) {
