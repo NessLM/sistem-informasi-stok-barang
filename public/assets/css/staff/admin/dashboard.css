@@ -221,6 +221,10 @@
   padding: 18px;
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
 }
+.chart-header-horizontal-item:last-child {
+    margin-left: auto;
+}
+
 
 /* Header di atas chart (judul + filter/controls) */
 .chart-header {

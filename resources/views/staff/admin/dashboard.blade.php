@@ -78,7 +78,7 @@
                         </div>
                     </div>
 
-                    <div class="chart-header-horizontal-item">
+                    <div class="chart-header-horizontal-item" style="margin-left:auto;">
                         {{-- Filter waktu --}}
                         <div class="dropdown">
                             <button class="filter-btn dropdown-toggle" type="button" id="bagianFilterDropdown"
