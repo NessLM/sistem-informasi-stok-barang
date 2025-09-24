@@ -301,7 +301,27 @@
                 </form>
             </div>
         </div>
-    </div>  
+    </div> 
+    {{-- Simple nya ini itu untuk Pilih kategori yang berada di Navbar bagian Data Keseluruhan --}}
+    @php
+    // Kita cek: ini konteks “satu gudang” atau “multi gudang”?
+    $isSingleGudang = false;
+
+    if ($kategori->isNotEmpty()) {
+        $firstGudang = optional($kategori->first()->gudang)->nama;
+        $isSingleGudang = $firstGudang && $kategori->every(fn($k) => optional($k->gudang)->nama === $firstGudang);
+    }
+
+    // kalau ada filter gudang/halaman khusus gudang → paksa single
+    if (isset($selectedGudang) && $selectedGudang) {
+        $isSingleGudang = true;
+    }
+    $path = request()->path();
+    if (str_contains($path, '/atk') || str_contains($path, '/listrik')
+        || str_contains($path, '/kebersihan') || str_contains($path, '/komputer')) {
+        $isSingleGudang = true;
+    }
+    @endphp
 
     {{-- Modal Tambah Barang --}}
     <div class="modal fade" id="modalTambahBarang" tabindex="-1" aria-hidden="true">
@@ -334,17 +354,18 @@
                         </div>
                         <div class="col-md-6">
                             <label>Kategori</label>
-                            <select name="kategori_id" class="form-select @error('kategori_id') is-invalid @enderror"
-                                required>
+                            <select name="kategori_id" class="form-select @error('kategori_id') is-invalid @enderror" required>
                                 <option value="">-- Pilih Kategori --</option>
                                 @foreach ($kategori as $k)
-                                    <option value="{{ $k->id }}"
-                                        @if (old('kategori_id') == $k->id) selected @endif>{{ $k->nama }}</option>
+                                    <option value="{{ $k->id }}" @selected(old('kategori_id') == $k->id)>
+                                        {{ $k->nama }}@unless($isSingleGudang) — {{ $k->gudang->nama ?? '-' }} @endunless
+                                    </option>
                                 @endforeach
                             </select>
                             @error('kategori_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
+
                         </div>
                        <div class="col-md-6">
     <label>Harga / Satuan</label>
