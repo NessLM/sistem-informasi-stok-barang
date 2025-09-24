@@ -38,6 +38,14 @@ class RiwayatController extends Controller
                 case '1_tahun_terakhir':
                     $query->where('tanggal', '>=', Carbon::now()->subYear()->format('Y-m-d'));
                     break;
+                case 'custom':
+                    if ($request->filled('dari_tanggal') && $request->filled('sampai_tanggal')) {
+                        $query->whereBetween('tanggal', [
+                            $request->dari_tanggal,
+                            $request->sampai_tanggal
+                        ]);
+                    }
+                    break;
             }
         }
 
@@ -55,14 +63,16 @@ class RiwayatController extends Controller
             $filter = [
                 'alur_barang' => $request->alur_barang,
                 'gudang' => $request->gudang,
-                'periode' => $request->periode
+                'periode' => $request->periode,
+                'dari_tanggal' => $request->dari_tanggal,
+                'sampai_tanggal' => $request->sampai_tanggal
             ];
-            
+
             if ($request->download == 'excel') {
-                return Excel::download(new RiwayatExport($riwayat, $filter), 'riwayat-barang-'.date('Y-m-d').'.xlsx');
+                return Excel::download(new RiwayatExport($riwayat, $filter), 'riwayat-barang-' . date('Y-m-d') . '.xlsx');
             } elseif ($request->download == 'pdf') {
                 $pdf = PDF::loadView('staff.admin.riwayat-pdf', compact('riwayat', 'filter'));
-                return $pdf->download('riwayat-barang-'.date('Y-m-d').'.pdf');
+                return $pdf->download('riwayat-barang-' . date('Y-m-d') . '.pdf');
             }
         }
 
