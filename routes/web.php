@@ -56,6 +56,12 @@ Route::middleware(['auth', 'role:Penanggung Jawab'])
     ->get('/pj', fn () => to_route('pj.dashboard'))
     ->name('staff.pj.dashboard');
 
+// Legacy: staff/admin/gudang/atk → arahkan ke filter ATK admin
+Route::prefix('staff/admin/gudang')->name('staff.admin.gudang.')->middleware(['auth','role:Admin'])->group(function () {
+    Route::get('/atk', [AdminBarangController::class, 'index'])->name('atk');
+});
+
+
 /* =========================================================================
  | ADMIN AREA
  * ========================================================================= */
