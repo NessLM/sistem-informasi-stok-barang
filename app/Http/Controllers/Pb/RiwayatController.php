@@ -59,22 +59,22 @@ class RiwayatController extends Controller
         $gudangList = Riwayat::select('gudang')->distinct()->orderBy('gudang')->get();
 
         // Jika request untuk download
-        // if ($request->has('download')) {
-        //     $filter = [
-        //         'alur_barang' => $request->alur_barang,
-        //         'gudang' => $request->gudang,
-        //         'periode' => $request->periode,
-        //         'dari_tanggal' => $request->dari_tanggal,
-        //         'sampai_tanggal' => $request->sampai_tanggal
-        //     ];
+        if ($request->has('download')) {
+            $filter = [
+                'alur_barang' => $request->alur_barang,
+                'gudang' => $request->gudang,
+                'periode' => $request->periode,
+                'dari_tanggal' => $request->dari_tanggal,
+                'sampai_tanggal' => $request->sampai_tanggal
+            ];
 
-        //     if ($request->download == 'excel') {
-        //         return Excel::download(new RiwayatExport($riwayat, $filter), 'riwayat-barang-' . date('Y-m-d') . '.xlsx');
-        //     } elseif ($request->download == 'pdf') {
-        //         $pdf = PDF::loadView('staff.pb.riwayat-pdf', compact('riwayat', 'filter'));
-        //         return $pdf->download('riwayat-barang-' . date('Y-m-d') . '.pdf');
-        //     }
-        // }
+            if ($request->download == 'excel') {
+                return Excel::download(new RiwayatExport($riwayat, $filter), 'riwayat-barang-' . date('Y-m-d') . '.xlsx');
+            } elseif ($request->download == 'pdf') {
+                $pdf = PDF::loadView('staff.pb.riwayat-pdf', compact('riwayat', 'filter'));
+                return $pdf->download('riwayat-barang-' . date('Y-m-d') . '.pdf');
+            }
+        }
 
         return view('staff.pb.riwayat', compact('riwayat', 'menu', 'gudangList'));
     }
