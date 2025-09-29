@@ -10,22 +10,6 @@
                 <h3>Filter Data</h3>
                 <form id="filterForm" class="riwayat-filter-form" method="GET">
                     <!-- Filter Alur Barang -->
-                    <div class="riwayat-filter-group riwayat-filter-dropdown">
-                        <button class="btn riwayat-btn-filter dropdown-toggle" type="button" id="alurDropdown"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            <span>{{ request('alur_barang', 'Semua') == 'Semua' ? 'Pilih Alur Barang' : request('alur_barang') }}</span>
-                            <i class="bi bi-chevron-right dropdown-arrow"></i>
-                        </button>
-                        <ul class="dropdown-menu" aria-labelledby="alurDropdown">
-                            <li><a class="dropdown-item {{ request('alur_barang', 'Semua') == 'Semua' ? 'active' : '' }}"
-                                    href="#" data-value="Semua">Semua</a></li>
-                            <li><a class="dropdown-item {{ request('alur_barang') == 'Masuk' ? 'active' : '' }}"
-                                    href="#" data-value="Masuk">Masuk</a></li>
-                            <li><a class="dropdown-item {{ request('alur_barang') == 'Keluar' ? 'active' : '' }}"
-                                    href="#" data-value="Keluar">Keluar</a></li>
-                        </ul>
-                        <input type="hidden" name="alur_barang" value="{{ request('alur_barang', 'Semua') }}">
-                    </div>
 
                     <!-- Filter Gudang -->
                     <div class="riwayat-filter-group riwayat-filter-dropdown">
@@ -92,7 +76,7 @@
 
                     <!-- Tombol Reset -->
                     <div class="riwayat-filter-group-reset">
-                        <a href="{{ route('admin.riwayat.index') }}" class="btn riwayat-btn-reset">
+                        <a href="{{ route('pb.riwayat.index') }}" class="btn riwayat-btn-reset">
                             <i class="bi bi-arrow-clockwise me-2"></i>Reset
                         </a>
                     </div>
@@ -148,7 +132,7 @@
             <!-- Tabel Barang Masuk -->
             <div class="card riwayat-table-card mb-4">
                 <div class="card-header riwayat-header-masuk">
-                    <h5 class="mb-0">Barang Masuk</h5>
+                    <h5 class="mb-0">Barang Keluar</h5>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -162,7 +146,6 @@
                                     <th>Nama Barang</th>
                                     <th>Jumlah</th>
                                     <th>Bukti</th>
-                                    <th>Alur Barang</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -186,16 +169,11 @@
                                                 <span class="text-muted">-</span>
                                             @endif
                                         </td>
-                                        <td>
-                                            <span class="btn-masuk btn-sm btn-action">
-                                                {{ $item->alur_barang }}
-                                            </span>
-                                        </td>
                                     </tr>
                                 @empty
                                     {{-- PERBAIKAN DI SINI: Hapus kondisi $alurFilter == 'Masuk' --}}
                                     <tr>
-                                        <td colspan="8" class="riwayat-empty-state text-center py-4">
+                                        <td colspan="7" class="riwayat-empty-state text-center py-4">
                                             <i class="bi bi-inbox"></i>
                                             <p>Tidak ada data barang masuk ditemukan</p>
                                         </td>
@@ -230,94 +208,6 @@
             </div>
         @endif
 
-        @if ($alurFilter == 'Semua' || $alurFilter == 'Keluar')
-            <!-- Tabel Barang Keluar -->
-            <div class="card riwayat-table-card mb-4">
-                <div class="card-header riwayat-header-keluar">
-                    <h5 class="mb-0">Barang Keluar</h5>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-bordered mb-0">
-                            <thead>
-                                <tr>
-                                    <th>No</th>
-                                    <th>Tanggal</th>
-                                    <th>Waktu</th>
-                                    <th>Gudang</th>
-                                    <th>Nama Barang</th>
-                                    <th>Jumlah</th>
-                                    <th>Bagian</th>
-                                    <th>Bukti</th>
-                                    <th>Alur Barang</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($keluarPaginated as $item)
-                                    <tr>
-                                        <td class="fw-semibold">
-                                            {{ ($currentPageKeluar - 1) * $itemsPerPage + $loop->iteration }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }} WIB</td>
-                                        <td class="fw-medium">{{ $item->gudang }}</td>
-                                        <td class="fw-medium">{{ $item->nama_barang }}</td>
-                                        <td><span>{{ $item->jumlah }}</span></td>
-                                        <td>{{ $item->bagian }}</td>
-                                        <td>
-                                            @if ($item->bukti)
-                                                <span class="riwayat-bukti-icon" data-bs-toggle="modal"
-                                                    data-bs-target="#buktiModal"
-                                                    data-image="{{ asset('storage/bukti/' . $item->bukti) }}">
-                                                    <i class="bi bi-eye-fill"></i>
-                                                </span>
-                                            @else
-                                                <span class="text-muted">-</span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            <span class="btn-keluar btn-sm btn-action">
-                                                {{ $item->alur_barang }}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    {{-- PERBAIKAN DI SINI: Hapus kondisi $alurFilter == 'Keluar' --}}
-                                    <tr>
-                                        <td colspan="9" class="riwayat-empty-state text-center py-4">
-                                            <i class="bi bi-inbox"></i>
-                                            <p>Tidak ada data barang keluar ditemukan</p>
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Pagination untuk Barang Keluar -->
-                    @if ($totalPagesKeluar > 1)
-                        <div class="card-footer d-flex justify-content-center align-items-center">
-                            <div class="pagination-controls">
-                                <button class="btn btn-sm btn-outline-primary pagination-btn pagination-prev"
-                                    onclick="changePage('keluar', {{ max(1, $currentPageKeluar - 1) }})"
-                                    {{ $currentPageKeluar <= 1 ? 'disabled' : '' }}>
-                                    <i class="bi bi-chevron-left"></i>
-                                    <span class="pagination-text">Sebelumnya</span>
-                                </button>
-                                <span class="mx-2 pagination-info">Halaman {{ $currentPageKeluar }} dari
-                                    {{ $totalPagesKeluar }}</span>
-                                <button class="btn btn-sm btn-outline-primary pagination-btn pagination-next"
-                                    onclick="changePage('keluar', {{ min($totalPagesKeluar, $currentPageKeluar + 1) }})"
-                                    {{ $currentPageKeluar >= $totalPagesKeluar ? 'disabled' : '' }}>
-                                    <span class="pagination-text">Selanjutnya</span>
-                                    <i class="bi bi-chevron-right"></i>
-                                </button>
-                            </div>
-                        </div>
-                    @endif
-                </div>
-            </div>
-        @endif
-
     </div>
 
     <!-- Modal untuk Custom Periode -->
@@ -327,7 +217,8 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="customPeriodModalLabel">Pilih Periode Custom</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="customPeriodForm">
@@ -352,15 +243,18 @@
     </div>
 
     <!-- Modal untuk menampilkan bukti -->
-    <div class="modal fade" id="buktiModal" tabindex="-1" aria-labelledby="buktiModalLabel" aria-hidden="true">
+    <div class="modal fade" id="buktiModal" tabindex="-1" aria-labelledby="buktiModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="buktiModalLabel">Bukti Foto</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-center">
-                    <img id="buktiImage" src="" alt="Bukti" class="img-fluid" style="max-height: 70vh;">
+                    <img id="buktiImage" src="" alt="Bukti" class="img-fluid"
+                        style="max-height: 70vh;">
                 </div>
             </div>
         </div>
@@ -567,7 +461,7 @@
 
                             if (newTable) {
                                 const oldTable = document.querySelector(`.riwayat-header-${type}`)?.closest(
-                                    '.card');
+                                '.card');
                                 if (oldTable) {
                                     oldTable.replaceWith(newTable);
                                 }

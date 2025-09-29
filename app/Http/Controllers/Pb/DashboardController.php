@@ -47,35 +47,29 @@ class DashboardController extends Controller
         }
 
         /* =========================================================
-         * GRAFIK BARANG MASUK DAN KELUAR (2021-2025)  
+         * GRAFIK PENGELUARAN PER TAHUN (DIUBAH SEPERTI ADMIN)
          * =========================================================
          */
-        $years = [2021, 2022, 2023, 2024, 2025];
-        $masukData = [];
-        $keluarData = [];
-        
-        foreach ($years as $year) {
-            $masukData[] = (int) Riwayat::where('alur_barang', 'Masuk')
-                ->whereYear('tanggal', $year)->sum('jumlah');
-            
-            $keluarData[] = (int) Riwayat::where('alur_barang', 'Keluar')
-                ->whereYear('tanggal', $year)->sum('jumlah');
-        }
+        $currentYear        = (int) date('Y');
+        $years              = range($currentYear - 9, $currentYear);
+        $pengeluaranLabels  = $years;
 
-        $masukKeluarData = [
-            [
-                'label' => 'Barang Masuk',
-                'data' => $masukData,
-                'backgroundColor' => '#22C55E',
-                'borderRadius' => 4,
-            ],
-            [
-                'label' => 'Barang Keluar', 
-                'data' => $keluarData,
-                'backgroundColor' => '#EF4444',
-                'borderRadius' => 4,
-            ]
-        ];
+        $colorsForYears        = [];
+        $colorsForYearsOrdered = [];
+        $totalsPerYear         = [];
+        foreach ($years as $y) {
+            $totalsPerYear[] = (int) Riwayat::where('alur_barang', 'Keluar')
+                ->whereYear('tanggal', $y)->sum('jumlah');
+            $c = $this->getColorForYear($y);
+            $colorsForYears[$y]      = $c;
+            $colorsForYearsOrdered[] = $c;
+        }
+        $pengeluaranData = [[
+            'label'           => 'Keluar',
+            'data'            => $totalsPerYear,
+            'backgroundColor' => $colorsForYearsOrdered,
+            'borderRadius'    => 4,
+        ]];
 
         return view('staff.pb.dashboard', compact(
             'menu',
@@ -83,8 +77,10 @@ class DashboardController extends Controller
             'totalBarang',
             'keluarPerKategoriLabels',
             'keluarPerKategoriData',
+            'pengeluaranLabels',
+            'pengeluaranData',
             'years',
-            'masukKeluarData'
+            'colorsForYears'
         ));
     }
 
@@ -100,7 +96,7 @@ class DashboardController extends Controller
         } elseif ($type === 'kategori') {
             return $this->filterKategoriData($filter);
         } else {
-            return $this->filterMasukKeluarData($filter);
+            return $this->filterPengeluaranData($filter);
         }
     }
 
@@ -205,45 +201,28 @@ class DashboardController extends Controller
         ]);
     }
 
-    // Filter data masuk keluar berdasarkan rentang tahun
-    private function filterMasukKeluarData($filter)
+    // [DIUBAH] Filter data pengeluaran per tahun seperti admin
+    private function filterPengeluaranData($filter)
     {
         $currentYear = (int) date('Y');
 
-        if ($filter === '3y')      $years = range($currentYear - 2, $currentYear);
-        elseif ($filter === '5y')  $years = [2021, 2022, 2023, 2024, 2025];
-        elseif ($filter === '7y')  $years = range($currentYear - 6, $currentYear);
-        else                       $years = [2021, 2022, 2023, 2024, 2025]; // default
+        if ($filter === '5y')      $years = range($currentYear - 4,  $currentYear);
+        elseif ($filter === '7y')  $years = range($currentYear - 6,  $currentYear);
+        elseif ($filter === '10y') $years = range($currentYear - 9,  $currentYear);
+        else                       $years = range($currentYear - 9,  $currentYear);
 
-        $masukData = [];
-        $keluarData = [];
-        
-        foreach ($years as $year) {
-            $masukData[] = (int) Riwayat::where('alur_barang', 'Masuk')
-                ->whereYear('tanggal', $year)->sum('jumlah');
-            
-            $keluarData[] = (int) Riwayat::where('alur_barang', 'Keluar')
-                ->whereYear('tanggal', $year)->sum('jumlah');
+        $totals = [];
+        $colors = [];
+        foreach ($years as $y) {
+            $totals[]   = (int) Riwayat::where('alur_barang', 'Keluar')
+                ->whereYear('tanggal', $y)->sum('jumlah');
+            $colors[$y] = $this->getColorForYear($y);
         }
-
-        $datasets = [
-            [
-                'label' => 'Barang Masuk',
-                'data' => $masukData,
-                'backgroundColor' => '#22C55E',
-                'borderRadius' => 4,
-            ],
-            [
-                'label' => 'Barang Keluar',
-                'data' => $keluarData,
-                'backgroundColor' => '#EF4444', 
-                'borderRadius' => 4,
-            ]
-        ];
 
         return response()->json([
             'labels' => $years,
-            'datasets' => $datasets,
+            'data'   => $totals,
+            'colors' => $colors,
         ]);
     }
 
@@ -258,5 +237,16 @@ class DashboardController extends Controller
         ];
         
         return $colors[$kategori] ?? '#6B7280';
+    }
+
+    // [DITAMBAH] Method untuk warna tahun seperti admin
+    private function getColorForYear($year)
+    {
+        // palet stabil; otomatis berulang
+        $palette = ['#8B5CF6', '#F87171', '#06B6D4', '#10B981', '#F59E0B'];
+        $currentYear = (int) date('Y');
+        $idx = ($currentYear - (int)$year) % count($palette);
+        if ($idx < 0) $idx += count($palette);
+        return $palette[$idx];
     }
 }

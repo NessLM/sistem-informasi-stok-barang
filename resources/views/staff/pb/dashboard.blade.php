@@ -112,47 +112,44 @@
       </div>
     </div>
 
-    {{-- Row kedua: Grafik Barang Masuk dan Keluar --}}
+    {{-- =================== GRAFIK PENGELUARAN PER TAHUN (DIUBAH SEPERTI ADMIN) =================== --}}
     <div class="dashboard-row">
       <div class="wide-chart-section">
-        {{-- [NEW] Layout horizontal sejajar seperti admin --}}
-        <div class="chart-header chart-header--horizontal">
-          <div class="chart-header-horizontal-item">
-            <h2>Grafik Barang Masuk dan Keluar</h2>
+        <div class="chart-header chart-header--wrap">
+          <div class="chart-header-left">
+            <h2>Grafik Pengeluaran per Tahun</h2>
+            {{-- [OPSIONAL-HILANGKAN BADGE TAHUN] --}}
+            {{-- <span id="rangeHintTahun" class="range-hint" title="Semua Data">Semua Data</span> --}}
           </div>
 
-          <div class="chart-header-horizontal-item">
-            {{-- Filter dengan arrow icon seperti admin --}}
+          <div class="chart-controls">
             <div class="dropdown">
-              <button class="filter-btn dropdown-toggle" type="button" id="masukKeluarFilterDropdown" aria-expanded="false">
-                <i class="bi bi-funnel"></i> 5 Tahun
+              <button class="filter-btn dropdown-toggle" type="button" id="pengeluaranFilterDropdown"
+                data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-funnel"></i> Semua
                 <i class="bi bi-chevron-right arrow-icon"></i>
               </button>
-              <ul class="dropdown-menu" aria-labelledby="masukKeluarFilterDropdown">
-                <li><a class="dropdown-item filter-option" href="#" data-type="masukkeluar" data-value="3y">3 Tahun Terakhir</a></li>
-                <li><a class="dropdown-item filter-option" href="#" data-type="masukkeluar" data-value="5y">5 Tahun (2021-2025)</a></li>
-                <li><a class="dropdown-item filter-option" href="#" data-type="masukkeluar" data-value="7y">7 Tahun Terakhir</a></li>
+              <ul class="dropdown-menu" aria-labelledby="pengeluaranFilterDropdown">
+                <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran"
+                    data-value="all">Semua</a></li>
+                <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran"
+                    data-value="5y">5 Tahun Terakhir</a></li>
+                <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran"
+                    data-value="7y">7 Tahun Terakhir</a></li>
+                <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran"
+                    data-value="10y">10 Tahun Terakhir</a></li>
               </ul>
             </div>
           </div>
         </div>
-        
+
         <div class="chart-container">
-          <canvas id="masukKeluarChart"></canvas>
+          <canvas id="pengeluaranChart"></canvas>
         </div>
-        
-        <div class="chart-legend">
-          <div class="legend-item">
-            <span class="legend-color masuk"></span>
-            <span>Barang Masuk</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-color keluar"></span>
-            <span>Barang Keluar</span>
-          </div>
-        </div>
+        <div class="chart-legend yearly" id="legendYears"></div>
       </div>
     </div>
+
   </div>
 
   {{-- Chart.js Library --}}
@@ -166,6 +163,8 @@
       const summaryFilterBtn = document.getElementById('summaryFilterBtn');
       const summaryDropdownMenu = document.getElementById('summaryDropdownMenu');
       const summaryFilterText = document.getElementById('summaryFilterText');
+      const totalJenisBarangEl = document.getElementById('totalJenisBarang');
+      const totalBarangEl = document.getElementById('totalBarang');
 
       if (summaryFilterBtn) {
         // Toggle dropdown visibility dan atur arrow
@@ -212,36 +211,32 @@
           })
           .then(data => {
             // Update nilai pada card ringkasan dengan animasi
-            updateCardNumber('totalJenisBarang', data.totalJenisBarang);
-            updateCardNumber('totalBarang', data.totalBarang);
+            animateNumber(totalJenisBarangEl, data.totalJenisBarang);
+            animateNumber(totalBarangEl, data.totalBarang);
           })
           .catch(error => {
             console.error('Error filtering ringkasan data:', error);
           });
       }
 
-      /* ====================== [NEW] Helper Function untuk Update Angka dengan Animasi ====================== */
-      function updateCardNumber(elementId, newValue) {
-        const element = document.getElementById(elementId);
-        if (!element) return;
-
-        const currentValue = parseInt(element.textContent) || 0;
-        const duration = 500; // ms
-        const steps = 30;
-        const stepValue = (newValue - currentValue) / steps;
-        const stepDuration = duration / steps;
-
+      function animateNumber(element, targetValue) {
+        const startValue = parseInt(element.textContent) || 0;
+        const difference = targetValue - startValue;
+        const duration = 800; // milliseconds
+        const steps = 60;
+        const stepValue = difference / steps;
         let currentStep = 0;
-        const timer = setInterval(() => {
+
+        const interval = setInterval(() => {
           currentStep++;
-          const displayValue = Math.round(currentValue + (stepValue * currentStep));
-          element.textContent = displayValue;
+          const currentValue = Math.round(startValue + (stepValue * currentStep));
+          element.textContent = currentValue;
 
           if (currentStep >= steps) {
-            element.textContent = newValue;
-            clearInterval(timer);
+            element.textContent = targetValue;
+            clearInterval(interval);
           }
-        }, stepDuration);
+        }, duration / steps);
       }
 
       /* ====================== Helper Functions ====================== */
@@ -275,124 +270,78 @@
           responsive: true,
           maintainAspectRatio: false,
           plugins: { 
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                title: function(context) {
-                  return context[0].label;
-                },
-                label: function(context) {
-                  return context.dataset.label + ': ' + context.parsed.y + ' barang';
-                }
-              }
-            }
+            legend: { display: false }
           },
           scales: {
             y: { 
               beginAtZero: true, 
-              ticks: { 
-                color: '#6B7280',
-                callback: function(value) {
-                  return value + ' barang';
-                }
-              }, 
-              grid: { color: '#F3F4F6' },
-              title: {
-                display: true,
-                text: 'Jumlah Barang',
-                color: '#374151',
-                font: {
-                  size: 12,
-                  weight: 'bold'
-                }
-              }
+              ticks: { color: '#6B7280' }, 
+              grid: { color: '#F3F4F6' }
             },
             x: { 
               ticks: { color: '#6B7280', maxRotation: 45, minRotation: 45 }, 
-              grid: { display: false },
-              title: {
-                display: true,
-                text: 'Kategori',
-                color: '#374151',
-                font: {
-                  size: 12,
-                  weight: 'bold'
-                }
-              }
+              grid: { display: false }
             }
-          },
-          interaction: {
-            mode: 'index',
-            intersect: false,
           }
         }
       });
 
-      /* ====================== Grafik Barang Masuk dan Keluar ====================== */
-      const masukKeluarData = {
-        labels: {!! json_encode($years) !!},
-        datasets: {!! json_encode($masukKeluarData) !!}
+      /* ====================== [DIUBAH] Grafik Pengeluaran per Tahun seperti admin ====================== */
+      const pengeluaranData = {
+        labels: {!! json_encode($pengeluaranLabels) !!},
+        datasets: {!! json_encode($pengeluaranData) !!} // label 'Keluar' + colors sudah dari controller
       };
-
-      const masukKeluarChart = new Chart(document.getElementById('masukKeluarChart').getContext('2d'), {
+      
+      const pengeluaranChart = new Chart(document.getElementById('pengeluaranChart').getContext('2d'), {
         type: 'bar',
-        data: masukKeluarData,
+        data: pengeluaranData,
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { 
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                title: function(context) {
-                  return 'Tahun ' + context[0].label;
-                },
-                label: function(context) {
-                  return context.dataset.label + ': ' + context.parsed.y + ' barang';
-                }
-              }
+          plugins: {
+            legend: {
+              display: false
             }
           },
           scales: {
-            y: { 
-              beginAtZero: true, 
-              ticks: { 
-                color: '#6B7280',
-                callback: function(value) {
-                  return value + ' barang';
-                }
-              }, 
-              grid: { color: '#F3F4F6' },
-              title: {
-                display: true,
-                text: 'Jumlah Barang',
-                color: '#374151',
-                font: {
-                  size: 12,
-                  weight: 'bold'
-                }
+            y: {
+              beginAtZero: true,
+              ticks: {
+                color: '#6B7280'
+              },
+              grid: {
+                color: '#F3F4F6'
               }
             },
-            x: { 
-              ticks: { color: '#6B7280' }, 
-              grid: { display: false },
-              title: {
-                display: true,
-                text: 'Tahun',
-                color: '#374151',
-                font: {
-                  size: 12,
-                  weight: 'bold'
-                }
+            x: {
+              ticks: {
+                color: '#6B7280'
+              },
+              grid: {
+                display: false
               }
             }
-          },
-          interaction: {
-            mode: 'index',
-            intersect: false,
           }
         }
       });
+
+      function renderYearLegend(years, colorsMap) {
+        const box = document.getElementById('legendYears');
+        box.innerHTML = '';
+        years.forEach(y => {
+          const item = document.createElement('div');
+          item.className = 'legend-item';
+          const color = document.createElement('span');
+          color.className = 'legend-color';
+          color.style.backgroundColor = colorsMap[y] || '#8B5CF6';
+          const text = document.createElement('span');
+          text.textContent = y;
+          item.appendChild(color);
+          item.appendChild(text);
+          box.appendChild(item);
+        });
+      }
+      renderYearLegend({!! json_encode($years) !!}, {!! json_encode($colorsForYears) !!});
 
       /* ====================== [FIXED] Bootstrap Dropdown Events untuk Arrow Rotation ====================== */
       // Handle untuk semua dropdown Bootstrap seperti di admin
@@ -474,31 +423,37 @@
           });
       }
 
-      // Fungsi untuk filter data grafik masuk keluar
-      function filterMasukKeluar(filterType) {
-        // Show loading state
-        masukKeluarChart.data.datasets = [];
-        masukKeluarChart.update();
-        
-        fetch(`${FILTER_URL}?type=masukkeluar&filter=${filterType}`)
-          .then(response => {
-            if (!response.ok) {
-              throw new Error('Network response was not ok');
+      // [DIUBAH] Fungsi untuk filter data grafik pengeluaran per tahun
+      function filterPengeluaran(filterType) {
+        fetch(`${FILTER_URL}?type=pengeluaran&filter=${filterType}`)
+          .then(r => r.json())
+          .then(d => {
+            pengeluaranChart.data.labels = d.labels;
+            if (pengeluaranChart.data.datasets.length === 0) {
+              pengeluaranChart.data.datasets.push({
+                label: 'Keluar',
+                data: d.data,
+                backgroundColor: d.labels.map(y => d.colors[y] || '#8B5CF6'),
+                borderRadius: 4
+              });
+            } else {
+              pengeluaranChart.data.datasets[0].data = d.data;
+              pengeluaranChart.data.datasets[0].backgroundColor =
+                d.labels.map(y => d.colors[y] || '#8B5CF6');
             }
-            return response.json();
+            pengeluaranChart.update();
+            renderYearLegend(d.labels, d.colors);
+
+            // [OPSIONAL-HILANGKAN BADGE TAHUN] -> kalau kamu hide span di HTML, baris di bawah juga bisa dihapus
+            const hintT = document.getElementById('rangeHintTahun');
+            if (hintT) {
+              if (d.labels && d.labels.length) {
+                const txt = `${d.labels[0]} – ${d.labels[d.labels.length-1]}`;
+                setRangeHint(hintT, txt, txt);
+              } else setRangeHint(hintT, 'Semua Data', 'Semua Data');
+            }
           })
-          .then(data => {
-            masukKeluarChart.data.labels = data.labels;
-            masukKeluarChart.data.datasets = data.datasets;
-            masukKeluarChart.update('active');
-          })
-          .catch(error => {
-            console.error('Error filtering masuk keluar data:', error);
-            // Restore original data on error
-            masukKeluarChart.data.labels = {!! json_encode($years) !!};
-            masukKeluarChart.data.datasets = {!! json_encode($masukKeluarData) !!};
-            masukKeluarChart.update();
-          });
+          .catch(console.error);
       }
 
       /* ====================== Filter Dropdown Functionality ====================== */
@@ -513,13 +468,16 @@
           dropdownButton.innerHTML = `<i class="bi bi-funnel"></i> ${this.textContent} <i class="bi bi-chevron-right arrow-icon"></i>`;
           
           // Close dropdown
-          this.closest('.dropdown-menu').classList.remove('show');
+          const dropdownMenu = this.closest('.dropdown-menu');
+          if (dropdownMenu) {
+            dropdownMenu.classList.remove('show');
+          }
           dropdownButton.setAttribute('aria-expanded', 'false');
           
           if (type === 'kategori') {
             filterKategori(value);
-          } else if (type === 'masukkeluar') {
-            filterMasukKeluar(value);
+          } else if (type === 'pengeluaran') {
+            filterPengeluaran(value);
           }
         });
       });
@@ -527,11 +485,12 @@
       /* ====================== Chart Resize Handler ====================== */
       window.addEventListener('resize', function() {
         kategoriChart.resize();
-        masukKeluarChart.resize();
+        pengeluaranChart.resize();
       });
 
       // Set awal badge "Semua Data"
       setRangeHint(document.getElementById('rangeHintKategori'), 'Semua Data', 'Semua Data');
+      // setRangeHint(document.getElementById('rangeHintTahun'), 'Semua Data', 'Semua Data'); // [OPSIONAL-HILANGKAN BADGE TAHUN]
     });
   </script>
 
