@@ -13,7 +13,7 @@ class DataKeseluruhan extends Controller
 {
     public function index(Request $request)
     {
-        $menu   = MenuHelper::pbMenu(); // ✅ menu khusus PB
+        $menu   = MenuHelper::pbMenu();
         $search = $request->input('search');
 
         $kategoriQuery = Kategori::with([
@@ -63,8 +63,25 @@ class DataKeseluruhan extends Controller
         ));
     }
 
-    // ... sisanya sama persis seperti versi admin
-    // tinggal ganti semua route/view ke prefix pb
+    /**
+     * API: Get kategori by gudang ID
+     */
+    public function getKategoriByGudang($gudangId)
+    {
+        try {
+            $kategori = Kategori::where('gudang_id', $gudangId)
+                ->orderBy('nama', 'asc')
+                ->get(['id', 'nama']);
+            
+            return response()->json($kategori);
+        } catch (\Exception $e) {
+            \Log::error('Error fetching kategori by gudang: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Gagal memuat kategori',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 
     private function getFilteredBarang(Request $request, $gudangId = null)
     {
@@ -123,109 +140,4 @@ class DataKeseluruhan extends Controller
 
         return $query->get();
     }
-
-    public function distribusiBarang(Request $request)
-{
-    $request->validate([
-        'barang_id' => 'required|exists:barang,id',
-        'gudang_asal_id' => 'required|exists:gudang,id',
-        'gudang_tujuan_id' => 'required|exists:gudang,id|different:gudang_asal_id',
-        'jumlah' => 'required|integer|min:1',
-    ]);
-
-    $barang = Barang::with('kategori')->findOrFail($request->barang_id);
-
-    // pastikan barang ada di gudang asal
-    if ($barang->kategori->gudang_id != $request->gudang_asal_id) {
-        return back()->withErrors(['barang' => 'Barang tidak ada di gudang asal']);
-    }
-
-    if ($barang->stok < $request->jumlah) {
-        return back()->withErrors(['stok' => 'Stok tidak mencukupi di gudang asal']);
-    }
-
-    // kurangi stok gudang asal
-    $barang->decrement('stok', $request->jumlah);
-
-    // tambah stok di gudang tujuan
-    $barangTujuan = Barang::where('kode', $barang->kode)
-        ->whereHas('kategori', function($q) use ($request) {
-            $q->where('gudang_id', $request->gudang_tujuan_id);
-        })
-        ->first();
-
-    if ($barangTujuan) {
-        $barangTujuan->increment('stok', $request->jumlah);
-    } else {
-        // jika belum ada barang tsb di gudang tujuan, buat baru
-        $newKategori = Kategori::firstOrCreate([
-            'nama' => $barang->kategori->nama,
-            'gudang_id' => $request->gudang_tujuan_id,
-        ]);
-
-        Barang::create([
-            'kode' => $barang->kode,
-            'nama' => $barang->nama,
-            'harga' => $barang->harga,
-            'stok' => $request->jumlah,
-            'satuan' => $barang->satuan,
-            'kategori_id' => $newKategori->id,
-            'jenis_barang_id' => $barang->jenis_barang_id,
-        ]);
-    }
-
-    // catat distribusi
-    \App\Models\Distribusi::create([
-        'barang_id' => $barang->id,
-        'user_asal_id' => auth()->id(),
-        'user_tujuan_id' => null, // kalau gudang tujuan bukan user, bisa null
-        'jumlah' => $request->jumlah,
-        'tanggal' => now(),
-    ]);
-
-    return back()->with('success', 'Distribusi berhasil dilakukan');
-}
-
-public function barangMasuk(Request $request)
-{
-    $request->validate([
-        'barang_id' => 'required|exists:barang,id',
-        'gudang_id' => 'required|exists:gudang,id',
-        'jumlah' => 'required|integer|min:1',
-    ]);
-
-    $barang = Barang::with('kategori')->findOrFail($request->barang_id);
-
-    // tambah stok ke gudang penerima
-    if ($barang->kategori->gudang_id == $request->gudang_id) {
-        $barang->increment('stok', $request->jumlah);
-    } else {
-        $kategori = Kategori::firstOrCreate([
-            'nama' => $barang->kategori->nama,
-            'gudang_id' => $request->gudang_id,
-        ]);
-
-        Barang::create([
-            'kode' => $barang->kode,
-            'nama' => $barang->nama,
-            'harga' => $barang->harga,
-            'stok' => $request->jumlah,
-            'satuan' => $barang->satuan,
-            'kategori_id' => $kategori->id,
-            'jenis_barang_id' => $barang->jenis_barang_id,
-        ]);
-    }
-
-    // catat log barang masuk
-    \App\Models\Distribusi::create([
-        'barang_id' => $barang->id,
-        'user_asal_id' => null,
-        'user_tujuan_id' => auth()->id(),
-        'jumlah' => $request->jumlah,
-        'tanggal' => now(),
-    ]);
-
-    return back()->with('success', 'Barang masuk berhasil dicatat');
-}
-
 }

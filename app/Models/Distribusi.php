@@ -11,20 +11,39 @@ class Distribusi extends Model
 
     protected $table = 'distribusi';
 
-    protected $fillable = ['barang_id', 'pengirim_id', 'penerima_id', 'jumlah', 'tanggal'];
+    protected $fillable = [
+        'barang_id',
+        'user_asal_id',
+        'user_tujuan_id',
+        'gudang_tujuan',
+        'jumlah',
+        'tanggal',
+        'keterangan',
+        'status',
+    ];
+
+    protected $casts = [
+        'tanggal' => 'datetime',
+        'jumlah' => 'integer',
+    ];
 
     public function barang()
     {
-        return $this->belongsTo(Barang::class);
+        return $this->belongsTo(Barang::class, 'barang_id');
     }
 
-    public function pengirim()
+    public function userAsal()
     {
-        return $this->belongsTo(User::class, 'pengirim_id');
+        return $this->belongsTo(User::class, 'user_asal_id');
     }
 
-    public function penerima()
+    public function userTujuan()
     {
-        return $this->belongsTo(User::class, 'penerima_id');
+        return $this->belongsTo(User::class, 'user_tujuan_id');
+    }
+
+    public function gudangTujuan()
+    {
+        return $this->belongsTo(Gudang::class, 'gudang_tujuan');
     }
 }
