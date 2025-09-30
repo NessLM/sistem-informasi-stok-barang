@@ -93,12 +93,6 @@
                 @endphp
                 <h4>{{ $title }}</h4>
                 <div class="d-flex flex-wrap gap-2">
-                    <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#modalTambahKategori">
-                        <div class="btn-text">+ Tambah Kategori</div>
-                    </button>
-                    <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#modalTambahBarang">
-                        <div class="btn-text">+ Tambah Barang</div>
-                    </button>
                     <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalFilterBarang">
                         <i class="bi bi-funnel"></i> Filter
                     </button>
@@ -211,10 +205,12 @@
                                             <button class="btn btn-sm btn-success"
                                                 onclick="toggleDetail({{ $k->id }})"><i
                                                     class="bi bi-eye"></i></button>
+                                            {{--
                                             <button type="button" class="btn btn-sm btn-danger"
                                                 onclick="confirmDelete('{{ route('admin.kategori.destroy', $k->id) }}', 'Kategori {{ $k->nama }}')">
                                                 <i class="bi bi-trash"></i>
                                             </button>
+                                            --}}
                                         </div>
                                     </td>
                                 </tr>
