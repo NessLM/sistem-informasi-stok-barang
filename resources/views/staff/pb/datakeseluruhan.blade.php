@@ -394,40 +394,6 @@
         </div>
     </div>
 
-    <!-- Modal Tambah Kategori -->
-    <div class="modal fade" id="modalTambahKategori" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Tambah Kategori</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form action="{{ route('admin.kategori.store') }}" method="POST">
-                    @csrf
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="nama" class="form-label">Nama Kategori</label>
-                            <input type="text" class="form-control" name="nama" id="nama" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="gudang_id" class="form-label">Pilih Gudang</label>
-                            <select name="gudang_id" id="gudang_id" class="form-select" required>
-                                <option value="">-- Pilih Gudang --</option>
-                                @foreach ($gudang as $item)
-                                    <option value="{{ $item->id }}">{{ $item->nama }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-primary">Simpan</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div> 
-    
     @php
     // Kita cek: ini konteks "satu gudang" atau "multi gudang"?
     $isSingleGudang = false;
