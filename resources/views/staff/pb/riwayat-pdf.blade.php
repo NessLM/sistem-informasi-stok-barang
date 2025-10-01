@@ -57,25 +57,23 @@
         /* styling tabel data barang */
         table.data {
             border-collapse: collapse;
-            font-size: 14px;
+            font-size: 12px;
             margin: auto;
-            /* center tabel */
+            width: 100%;
         }
 
         table.data th,
         table.data td {
             border: 0.5px solid #000;
-            padding: 6px 10px;
+            padding: 6px 8px;
             text-align: center;
             vertical-align: middle;
             word-wrap: break-word;
             word-break: break-word;
         }
 
-        /* biar header tidak diulang */
         table.data thead {
             display: table-row-group;
-            /* biar dianggap bagian biasa, tidak diulang */
         }
 
         table.data tfoot {
@@ -100,42 +98,30 @@
         }
 
         .col-no {
-            width: 40px;
+            width: 30px;
         }
 
         .col-tanggal {
-            width: 100px;
+            width: 80px;
         }
 
         .col-gudang {
-            width: 90px;
-        }
-
-        .col-nama {
             width: 100px;
         }
 
+        .col-nama {
+            width: 120px;
+        }
+
         .col-jumlah {
-            width: 60px;
-        }
-
-        .col-bukti {
-            width: 200px;
-        }
-
-        .col-bukti img {
-            max-width: 120px;
-            height: auto;
-            border: 0.5px solid #ccc;
-            border-radius: 4px;
+            width: 50px;
         }
 
         /* tanda tangan */
         .ttd {
             margin-top: 60px;
             width: 100%;
-            font-size: 17px;
-            /* samain sama info surat */
+            font-size: 14px;
         }
 
         .ttd td {
@@ -171,7 +157,7 @@
 <body>
     <div class="kop-surat">
         <div class="kop-logo">
-            <img src="assets/banner/logo_bupati.png" alt="Logo Bupati">
+            <img src="{{ public_path('assets/banner/logo_bupati.png') }}" alt="Logo Bupati">
         </div>
         <div class="kop-text">
             <h1>PEMERINTAH KABUPATEN BANGKA</h1>
@@ -209,8 +195,8 @@
         </h2>
 
         <!-- Info Surat (polosan tanpa border, kiri) -->
-        <div style="margin:40px 5px; font-size:16px; text-align:left;">
-            <table style="border-collapse:collapse; font-size:17px;">
+        <div style="margin:40px 5px; font-size:14px; text-align:left;">
+            <table style="border-collapse:collapse; font-size:14px;">
                 <tr>
                     <td style="width:80px;">Dari</td>
                     <td style="width:40px;">:</td>
@@ -235,8 +221,9 @@
         </div>
     </div>
 
-    <!-- TABEL BARANG KELUAR -->
-    <h3 style="margin-top:40px; text-align:center;">Barang Keluar</h3>
+    <!-- TABEL BARANG MASUK -->
+    @if($riwayat->where('alur_barang', 'Masuk')->count() > 0)
+    <h3 style="margin-top:30px; text-align:center;">Barang Masuk</h3>
     <table class="data">
         <thead>
             <tr>
@@ -245,7 +232,6 @@
                 <th class="col-gudang">Gudang</th>
                 <th class="col-nama">Nama Barang</th>
                 <th class="col-jumlah">Jumlah</th>
-                <th class="col-bukti">Bukti</th>
             </tr>
         </thead>
         <tbody>
@@ -259,25 +245,70 @@
                     <td>{{ $no++ }}</td>
                     <td>
                         {{ \Carbon\Carbon::parse($r->tanggal)->format('d/m/Y') }}<br>
-                        {{ \Carbon\Carbon::parse($r->waktu)->format('H:i') }} WIB
+                        {{ $r->waktu }} WIB
                     </td>
                     <td>{{ $r->gudang }}</td>
                     <td>{{ $r->nama_barang }}</td>
                     <td>{{ $r->jumlah }}</td>
-                    <td>
-                        @if ($r->bukti)
-                            <img src="{{ asset('storage/bukti/' . $r->bukti) }}" alt="Bukti">
-                        @endif
-                    </td>
                 </tr>
             @endforeach
             <tr>
-                <td colspan="4" style="text-align:right; font-weight:bold;">Total Barang Keluar</td>
+                <td colspan="4" style="text-align:right; font-weight:bold;">Total Barang Masuk</td>
                 <td style="font-weight:bold;">{{ $totalMasuk }}</td>
-                <td></td>
             </tr>
         </tbody>
     </table>
+    @endif
+
+    <!-- TABEL BARANG KELUAR -->
+    @if($riwayat->where('alur_barang', 'Keluar')->count() > 0)
+    <div class="barang-keluar">
+        <h3 style="margin-top:30px; text-align:center;">Barang Keluar (Distribusi)</h3>
+        <table class="data">
+            <thead>
+                <tr>
+                    <th class="col-no">No</th>
+                    <th class="col-tanggal">Tanggal, Waktu</th>
+                    <th class="col-gudang">Gudang Asal</th>
+                    <th class="col-nama">Nama Barang</th>
+                    <th class="col-jumlah">Jumlah</th>
+                    <th class="col-gudang">Gudang Tujuan</th>
+                </tr>
+            </thead>
+            <tbody>
+                @php
+                    $no = 1;
+                    $totalKeluar = 0;
+                @endphp
+                @foreach ($riwayat->where('alur_barang', 'Keluar') as $r)
+                    @php $totalKeluar += $r->jumlah; @endphp
+                    <tr>
+                        <td>{{ $no++ }}</td>
+                        <td>
+                            {{ \Carbon\Carbon::parse($r->tanggal)->format('d/m/Y') }}<br>
+                            {{ $r->waktu }} WIB
+                        </td>
+                        <td>
+                            {{ $r->gudang }}<br>
+                            <small style="font-size:10px;">{{ $r->kategori_asal }}</small>
+                        </td>
+                        <td>{{ $r->nama_barang }}</td>
+                        <td>{{ $r->jumlah }}</td>
+                        <td>
+                            {{ $r->gudang_tujuan }}<br>
+                            <small style="font-size:10px;">{{ $r->kategori_tujuan }}</small>
+                        </td>
+                    </tr>
+                @endforeach
+                <tr>
+                    <td colspan="4" style="text-align:right; font-weight:bold;">Total Barang Keluar</td>
+                    <td style="font-weight:bold;">{{ $totalKeluar }}</td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    @endif
 
     <!-- TANDA TANGAN -->
     <table class="ttd">

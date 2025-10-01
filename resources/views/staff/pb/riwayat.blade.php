@@ -107,12 +107,12 @@
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="downloadDropdown">
                                 <li>
-                                    <a class="dropdown-item" href="#" onclick="downloadReport('excel')">
+                                    <a class="dropdown-item" href="#" onclick="event.preventDefault(); downloadReport('excel')">
                                         <i class="bi bi-file-earmark-excel me-2"></i>Excel
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" href="#" onclick="downloadReport('pdf')">
+                                    <a class="dropdown-item" href="#" onclick="event.preventDefault(); downloadReport('pdf')">
                                         <i class="bi bi-file-earmark-pdf me-2"></i>PDF
                                     </a>
                                 </li>
@@ -514,26 +514,36 @@
 
             function downloadReport(format) {
                 const form = document.getElementById('filterForm');
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'download';
-                input.value = format;
-                form.appendChild(input);
-                form.submit();
+                const formData = new FormData(form);
+                
+                // Buat URL dengan semua parameter filter
+                const params = new URLSearchParams();
+                for (let [key, value] of formData.entries()) {
+                    if (value && value !== 'Semua' && value !== '') {
+                        params.append(key, value);
+                    }
+                }
+                
+                // Tambahkan parameter download
+                params.append('download', format);
+                
+                // Redirect untuk download
+                window.location.href = `{{ route('pb.riwayat.index') }}?${params.toString()}`;
             }
-        </script>
-    @endpush
+            </script>
+@endpush
 
-    @push('styles')
-        <style>
-            .riwayat-bukti-icon {
-                cursor: pointer;
-                color: #0d6efd;
-                font-size: 1.2rem;
-            }
-            .riwayat-bukti-icon:hover {
-                color: #0a58ca;
-            }
-        </style>
-    @endpush
-</x-layouts.app>
+@push('styles')
+    <style>
+        .riwayat-bukti-icon {
+            cursor: pointer;
+            color: #0d6efd;
+            font-size: 1.2rem;
+        }
+        .riwayat-bukti-icon:hover {
+            color: #0a58ca;
+        }
+    </style>
+@endpush
+</x-layouts.app></parameter>
+</invoke>
