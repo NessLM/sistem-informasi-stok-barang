@@ -24,7 +24,7 @@ class DistribusiController extends Controller
         try {
             DB::beginTransaction();
 
-            $barang = Barang::findOrFail($id);
+            $barang = Barang::with('kategori.gudang')->findOrFail($id);
 
             // Cek stok mencukupi
             if ($barang->stok < $request->jumlah) {
@@ -32,6 +32,19 @@ class DistribusiController extends Controller
                     'type' => 'error',
                     'title' => 'Gagal!',
                     'message' => 'Stok tidak mencukupi. Stok tersedia: ' . $barang->stok
+                ]);
+            }
+
+            // Validasi kategori tujuan ada di gudang tujuan
+            $kategoriTujuan = Kategori::where('id', $request->kategori_tujuan_id)
+                ->where('gudang_id', $request->gudang_tujuan_id)
+                ->first();
+
+            if (!$kategoriTujuan) {
+                return back()->with('toast', [
+                    'type' => 'error',
+                    'title' => 'Gagal!',
+                    'message' => 'Kategori yang dipilih tidak sesuai dengan gudang tujuan'
                 ]);
             }
 
@@ -44,42 +57,61 @@ class DistribusiController extends Controller
                 ]);
             }
 
-            // Kurangi stok barang asal
-            $barang->stok -= $request->jumlah;
-            $barang->save();
-
             // Upload bukti jika ada
             $buktiPath = null;
             if ($request->hasFile('bukti')) {
                 $buktiPath = $request->file('bukti')->store('bukti-distribusi', 'public');
             }
 
-            // Cari barang dengan nama DAN kode yang sama di kategori tujuan
-            $barangTujuan = Barang::where('nama', $barang->nama)
-                ->where('kode', $barang->kode)
+            // ✅ PERBAIKAN: Cari barang berdasarkan KODE saja (karena kode UNIQUE)
+            $barangTujuan = Barang::where('kode', $barang->kode)
                 ->where('kategori_id', $request->kategori_tujuan_id)
                 ->first();
 
             if ($barangTujuan) {
-                // Jika barang sudah ada, tambah stoknya
+                // Jika barang dengan kode yang sama sudah ada di kategori tujuan
                 $barangTujuan->stok += $request->jumlah;
                 $barangTujuan->save();
                 
                 $message = 'Barang berhasil didistribusikan. Stok di kategori tujuan bertambah: ' . $request->jumlah;
             } else {
-                // Jika belum ada, buat barang baru di kategori tujuan
-                Barang::create([
-                    'nama' => $barang->nama,
-                    'kode' => $barang->kode,
-                    'kategori_id' => $request->kategori_tujuan_id,
-                    'jenis_barang_id' => $barang->jenis_barang_id ?? null,
-                    'stok' => $request->jumlah,
-                    'satuan' => $barang->satuan,
-                    'harga' => $barang->harga,
-                ]);
+                // ✅ Cek apakah kode sudah ada di tabel barang (di kategori lain)
+                $kodeExists = Barang::where('kode', $barang->kode)->exists();
                 
-                $message = 'Barang berhasil didistribusikan dan dibuat di kategori tujuan dengan stok: ' . $request->jumlah;
+                if ($kodeExists) {
+                    // Jika kode sudah ada di kategori lain, buat kode baru
+                    $newKode = $this->generateUniqueKode($barang->kode);
+                    
+                    Barang::create([
+                        'nama' => $barang->nama,
+                        'kode' => $newKode,
+                        'kategori_id' => $request->kategori_tujuan_id,
+                        'jenis_barang_id' => $barang->jenis_barang_id ?? null,
+                        'stok' => $request->jumlah,
+                        'satuan' => $barang->satuan,
+                        'harga' => $barang->harga,
+                    ]);
+                    
+                    $message = "Barang berhasil didistribusikan dengan kode baru: {$newKode} (stok: {$request->jumlah})";
+                } else {
+                    // Jika kode belum ada sama sekali, gunakan kode asli
+                    Barang::create([
+                        'nama' => $barang->nama,
+                        'kode' => $barang->kode,
+                        'kategori_id' => $request->kategori_tujuan_id,
+                        'jenis_barang_id' => $barang->jenis_barang_id ?? null,
+                        'stok' => $request->jumlah,
+                        'satuan' => $barang->satuan,
+                        'harga' => $barang->harga,
+                    ]);
+                    
+                    $message = 'Barang berhasil didistribusikan dan dibuat di kategori tujuan dengan stok: ' . $request->jumlah;
+                }
             }
+
+            // Kurangi stok barang asal
+            $barang->stok -= $request->jumlah;
+            $barang->save();
 
             DB::commit();
 
@@ -92,19 +124,36 @@ class DistribusiController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             
-            // Hapus file bukti jika upload gagal
             if (isset($buktiPath) && $buktiPath) {
                 Storage::disk('public')->delete($buktiPath);
             }
 
             \Log::error('Error distribusi: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
 
             return back()->with('toast', [
                 'type' => 'error',
                 'title' => 'Gagal!',
-                'message' => 'Terjadi kesalahan saat distribusi barang'
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
             ]);
         }
+    }
+
+    /**
+     * Generate unique code by adding suffix
+     */
+    private function generateUniqueKode($originalKode)
+    {
+        $counter = 1;
+        $newKode = $originalKode;
+        
+        // Cek apakah kode sudah ada, jika ya tambahkan suffix
+        while (Barang::where('kode', $newKode)->exists()) {
+            $newKode = $originalKode . '-' . $counter;
+            $counter++;
+        }
+        
+        return $newKode;
     }
 
     public function store(Request $request)
