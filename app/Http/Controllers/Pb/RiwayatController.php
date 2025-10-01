@@ -14,6 +14,9 @@ class RiwayatController extends Controller
 {
     public function index(Request $request)
     {
+
+        $menu = MenuHelper::pbMenu();
+
         // Check if download requested
         if ($request->has('download')) {
             return $this->downloadReport($request);
@@ -95,35 +98,11 @@ class RiwayatController extends Controller
             })
             ->values();
 
-        // Menu untuk sidebar/navigation
-        $menu = $this->getMenu();
 
         return view('staff.pb.riwayat', compact('riwayat', 'gudangList', 'menu'));
     }
 
-    /**
-     * Get menu items untuk navigation
-     */
-    private function getMenu()
-    {
-        return [
-            [
-                'label' => 'Dashboard',
-                'route' => 'pb.dashboard',
-                'icon' => 'bi-speedometer2'
-            ],
-            [
-                'label' => 'Riwayat',
-                'route' => 'pb.riwayat.index',
-                'icon' => 'bi-clock-history'
-            ],
-            [
-                'label' => 'Data Keseluruhan',
-                'route' => 'pb.datakeseluruhan.index',
-                'icon' => 'bi-box-seam'
-            ],
-        ];
-    }
+    
 
     public function downloadReport(Request $request)
     {
