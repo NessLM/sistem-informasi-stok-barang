@@ -159,4 +159,6 @@ Route::prefix('pb')->name('pb.')->middleware(['auth', 'role:Pengelola Barang'])-
  * ========================================================================= */
 Route::prefix('pj')->name('pj.')->middleware(['auth', 'role:Penanggung Jawab'])->group(function () {
     Route::get('/dashboard', PjDashboardController::class)->name('dashboard');
+    // [TAMBAHAN] Route filter untuk dashboard PJ
+    Route::get('/dashboard/filter', [PjDashboardController::class, 'filterData'])->name('dashboard.filter');
 });
