@@ -109,31 +109,31 @@
 
         /* Perbaikan lebar kolom - No sangat kecil */
         .col-no {
-            width: 20px;
+            width: 5%;
         }
 
         .col-tanggal {
-            width: 100px;
+            width: 15%;
         }
 
         .col-gudang {
-            width: 80px;
+            width: 12%;
         }
 
         .col-nama {
-            width: 90px;
+            width: 20%;
         }
 
         .col-jumlah {
-            width: 60px;
+            width: 8%;
         }
 
         .col-bagian {
-            width: 90px;
+            width: 15%;
         }
 
         .col-bukti {
-            width: 110px;
+            width: 20%;
         }
 
         .col-bukti img {
