@@ -283,7 +283,7 @@
 
     <!-- Modal Barang Masuk -->
     <div class="modal fade" id="modalBarangMasuk" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <form method="POST" id="formBarangMasuk" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" name="barang_id" id="barangMasukId">
@@ -334,7 +334,7 @@
 
     <!-- Modal Distribusi Barang -->
     <div class="modal fade" id="modalDistribusiBarang" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <form method="POST" id="formDistribusi" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" name="barang_id" id="distribusiBarangId">
