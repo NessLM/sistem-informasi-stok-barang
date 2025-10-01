@@ -17,7 +17,7 @@ class DistribusiController extends Controller
     {
         $request->validate([
             'jumlah' => 'required|integer|min:1',
-            'tanggal' => 'required|date',
+            'tanggal' => 'nullable|date',
             'gudang_tujuan_id' => 'required|exists:gudang,id',
             'kategori_tujuan_id' => 'required|exists:kategori,id',
             'bukti' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
@@ -25,6 +25,9 @@ class DistribusiController extends Controller
 
         try {
             DB::beginTransaction();
+
+            // Jika tanggal tidak diisi, gunakan tanggal hari ini
+            $tanggal = $request->tanggal ?: now()->format('Y-m-d');
 
             $barang = Barang::with('kategori.gudang')->findOrFail($id);
             $stokSebelum = $barang->stok;
@@ -111,7 +114,7 @@ class DistribusiController extends Controller
                 'gudang_tujuan_id' => $request->gudang_tujuan_id,
                 'barang_tujuan_id' => $barangTujuanId,
                 'bukti' => $buktiPath,
-                'tanggal' => $request->tanggal,
+                'tanggal' => $tanggal,
                 'user_id' => auth()->id(),
             ]);
 
@@ -123,6 +126,7 @@ class DistribusiController extends Controller
                 'barang_tujuan' => $barangTujuan->nama,
                 'kode_tujuan' => $barangTujuan->kode,
                 'jumlah' => $request->jumlah,
+                'tanggal' => $tanggal
             ]);
 
             DB::commit();

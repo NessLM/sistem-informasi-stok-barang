@@ -16,13 +16,16 @@ class BarangMasukController extends Controller
     {
         $request->validate([
             'jumlah' => 'required|integer|min:1',
-            'tanggal' => 'required|date',
+            'tanggal' => 'nullable|date',
             'keterangan' => 'nullable|string|max:255',
             'bukti' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
 
         try {
             DB::beginTransaction();
+
+            // Jika tanggal tidak diisi, gunakan tanggal hari ini
+            $tanggal = $request->tanggal ?: now()->format('Y-m-d');
 
             $barang = Barang::findOrFail($id);
             $stokSebelum = $barang->stok;
@@ -46,7 +49,7 @@ class BarangMasukController extends Controller
                 'stok_sesudah' => $barang->stok,
                 'keterangan' => $request->keterangan,
                 'bukti' => $buktiPath,
-                'tanggal' => $request->tanggal,
+                'tanggal' => $tanggal,
                 'user_id' => auth()->id(),
             ]);
 
@@ -54,7 +57,8 @@ class BarangMasukController extends Controller
             Log::info('Riwayat Barang Masuk Tersimpan', [
                 'riwayat_id' => $riwayat->id,
                 'barang' => $barang->nama,
-                'jumlah' => $request->jumlah
+                'jumlah' => $request->jumlah,
+                'tanggal' => $tanggal
             ]);
 
             DB::commit();

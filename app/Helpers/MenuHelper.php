@@ -41,59 +41,19 @@ class MenuHelper
         ];
     }
 
-    // public static function pbMenu()
-    // {
-    //     return [
-    //         ['label' => 'Dashboard', 'icon' => 'bi-grid', 'route' => 'staff.admin.dashboard'],
-
-    //         ['label' => 'Kelola Barang', 'icon' => 'bi-card-list', 'children' => [
-    //             ['label' => 'Gudang ATK',         'icon' => 'bi-archive', 'route' => 'staff.admin.gudang.atk'],
-    //             ['label' => 'Gudang Listrik',     'icon' => 'bi-archive', 'route' => 'staff.admin.gudang.listrik'],
-    //             ['label' => 'Gudang Kebersihan',  'icon' => 'bi-archive', 'route' => 'staff.admin.gudang.kebersihan'],
-    //             ['label' => 'Gudang B Komputer',  'icon' => 'bi-archive', 'route' => 'staff.admin.gudang.komputer'],
-    //         ]],
-
-    //         ['label' => 'Riwayat',        'icon' => 'bi-clock-history', 'route' => 'staff.admin.riwayat'],
-    //         ['label' => 'Laporan',        'icon' => 'bi-file-earmark-bar-graph-fill', 'route' => 'staff.admin.laporan'],
-    //     ];
-    // }
-
-public static function pbMenu()
-{
-    // ambil semua gudang dari database
-    $gudangs = Gudang::all();
-
-    // mapping data gudang jadi children menu
-    $gudangMenus = $gudangs->map(function ($g) {
-        // Buat slug dari nama gudang secara otomatis
-        $slug = self::createSlugFromGudangName($g->nama);
-        
+    /**
+     * Menu untuk Pengelola Barang (PB)
+     * Hanya menampilkan Data Keseluruhan tanpa submenu gudang
+     */
+    public static function pbMenu()
+    {
         return [
-            'label'  => $g->nama,
-            'icon'   => 'bi-grid',
-            'route'  => 'pb.datakeseluruhan.gudang', // route ke DataKeseluruhan
-            'params' => ['slug' => $slug],
-            'gudang_id' => $g->id
+            ['label' => 'Dashboard', 'icon' => 'bi-grid', 'route' => 'pb.dashboard'],
+            ['label' => 'Data Gudang', 'icon' => 'bi-card-list', 'route' => 'pb.datakeseluruhan.index'],
+            ['label' => 'Riwayat', 'icon' => 'bi-clock-history', 'route' => 'pb.riwayat.index'],
+            ['label' => 'Laporan', 'icon' => 'bi-file-earmark-bar-graph-fill', 'route' => 'pb.laporan'],
         ];
-    })->toArray();
-
-    return [
-        ['label' => 'Dashboard', 'icon' => 'bi-grid', 'route' => 'pb.dashboard'],
-
-        [
-            'label' => 'Data Keseluruhan',
-            'icon'  => 'bi-card-list',
-            'route' => 'pb.datakeseluruhan.index', // route utama ke DataKeseluruhan@index
-            'children' => $gudangMenus
-        ],
-
-        ['label' => 'Riwayat', 'icon' => 'bi-clock-history', 'route' => 'pb.riwayat.index'],
-        ['label' => 'Laporan', 'icon' => 'bi-file-earmark-bar-graph-fill', 'route' => 'pb.laporan'],
-    ];
-}
-
-
-
+    }
 
     public static function pjMenu()
     {

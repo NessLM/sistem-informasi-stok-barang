@@ -16,6 +16,20 @@ class DataKeseluruhan extends Controller
         $menu   = MenuHelper::pbMenu();
         $search = $request->input('search');
 
+        // Ambil Gudang Utama
+        $gudangUtama = Gudang::where('nama', 'Gudang Utama')
+            ->orWhere('nama', 'LIKE', '%Utama%')
+            ->first();
+
+        if (!$gudangUtama) {
+            return back()->with('toast', [
+                'type' => 'error',
+                'title' => 'Error!',
+                'message' => 'Gudang Utama tidak ditemukan. Pastikan ada gudang dengan nama "Gudang Utama" di database.'
+            ]);
+        }
+
+        // Filter kategori hanya dari Gudang Utama
         $kategoriQuery = Kategori::with([
             'barang' => function ($q) use ($search) {
                 if ($search) {
@@ -24,18 +38,14 @@ class DataKeseluruhan extends Controller
                 }
             },
             'gudang'
-        ]);
-
-        if ($request->filled('gudang_id')) {
-            $kategoriQuery->where('gudang_id', $request->gudang_id);
-        }
+        ])->where('gudang_id', $gudangUtama->id);
 
         $kategori = $kategoriQuery->get();
-        $gudang   = Gudang::all();
-
-        $selectedGudang = $request->filled('gudang_id')
-            ? Gudang::find($request->gudang_id)
-            : null;
+        
+        // Ambil semua gudang untuk dropdown distribusi
+        $gudang = Gudang::all();
+        
+        $selectedGudang = $gudangUtama;
 
         $request->validate([
             'harga_min' => 'nullable|numeric|min:0',
@@ -52,7 +62,8 @@ class DataKeseluruhan extends Controller
             ]);
         }
 
-        $barang = $this->getFilteredBarang($request, $request->gudang_id);
+        // Filter barang hanya dari Gudang Utama
+        $barang = $this->getFilteredBarang($request, $gudangUtama->id);
 
         return view('staff.pb.datakeseluruhan', compact(
             'kategori',
@@ -87,6 +98,7 @@ class DataKeseluruhan extends Controller
     {
         $query = Barang::with(['kategori.gudang']);
         
+        // Paksa filter ke gudang tertentu (Gudang Utama)
         if ($gudangId) {
             $query->whereHas('kategori', function($q) use ($gudangId) {
                 $q->where('gudang_id', $gudangId);

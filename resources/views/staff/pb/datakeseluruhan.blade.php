@@ -281,118 +281,118 @@
         </section>
     </main>
 
-    <!-- Modal Barang Masuk -->
-    <div class="modal fade" id="modalBarangMasuk" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <form method="POST" id="formBarangMasuk" enctype="multipart/form-data">
-                @csrf
-                <input type="hidden" name="barang_id" id="barangMasukId">
-                <div class="modal-content">
-                    <div class="modal-header border-0 pb-0">
-                        <h5 class="modal-title fw-semibold">Form Barang Masuk</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body pt-3">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Kode Barang</label>
-                                <input type="text" id="barangMasukKode" class="form-control" placeholder="Masukkan Kode Barang" readonly>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Jumlah Masuk</label>
-                                <input type="number" name="jumlah" class="form-control" placeholder="Masukkan Jumlah" required min="1">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Tanggal Masuk</label>
-                                <input type="date" name="tanggal" class="form-control" placeholder="Masukkan Tanggal Masuk Barang" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Keterangan</label>
-                                <input type="text" name="keterangan" class="form-control" placeholder="Masukkan keterangan barang">
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">Bukti Barang Masuk</label>
-                                <div class="border rounded p-4 text-center" style="background-color: #f8f9fa;">
-                                    <input type="file" name="bukti" id="buktiBrgMasuk" class="d-none" accept="image/*,.pdf">
-                                    <label for="buktiBrgMasuk" class="d-block" style="cursor: pointer;">
-                                        <i class="bi bi-cloud-upload" style="font-size: 2rem; color: #6c757d;"></i>
-                                        <div class="mt-2" style="color: #6c757d; font-size: 0.875rem;">Klik untuk Upload atau tarik dan seret</div>
-                                    </label>
-                                    <div id="fileNameMasuk" class="mt-2 text-primary small"></div>
-                                </div>
+<!-- Modal Barang Masuk -->
+<div class="modal fade" id="modalBarangMasuk" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <form method="POST" id="formBarangMasuk" enctype="multipart/form-data">
+            @csrf
+            <input type="hidden" name="barang_id" id="barangMasukId">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-semibold">Form Barang Masuk</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body pt-3">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nama Barang</label>
+                            <input type="text" id="barangMasukNama" class="form-control" placeholder="Nama Barang" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Jumlah Masuk</label>
+                            <input type="number" name="jumlah" class="form-control" placeholder="Masukkan Jumlah" required min="1">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tanggal Masuk <small class="text-muted">(Opsional)</small></label>
+                            <input type="date" name="tanggal" id="tanggalMasuk" class="form-control" placeholder="Kosongkan untuk tanggal hari ini">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Keterangan</label>
+                            <input type="text" name="keterangan" class="form-control" placeholder="Masukkan keterangan barang">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Bukti Barang Masuk</label>
+                            <div class="border rounded p-4 text-center" style="background-color: #f8f9fa;">
+                                <input type="file" name="bukti" id="buktiBrgMasuk" class="d-none" accept="image/*,.pdf">
+                                <label for="buktiBrgMasuk" class="d-block" style="cursor: pointer;">
+                                    <i class="bi bi-cloud-upload" style="font-size: 2rem; color: #6c757d;"></i>
+                                    <div class="mt-2" style="color: #6c757d; font-size: 0.875rem;">Klik untuk Upload atau tarik dan seret</div>
+                                </label>
+                                <div id="fileNameMasuk" class="mt-2 text-primary small"></div>
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer border-0 pt-0">
-                        <button type="button" class="btn btn-danger px-4" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-primary px-4">Simpan</button>
-                    </div>
                 </div>
-            </form>
-        </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-danger px-4" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary px-4">Simpan</button>
+                </div>
+            </div>
+        </form>
     </div>
+</div>
 
-    <!-- Modal Distribusi Barang -->
-    <div class="modal fade" id="modalDistribusiBarang" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <form method="POST" id="formDistribusi" enctype="multipart/form-data">
-                @csrf
-                <input type="hidden" name="barang_id" id="distribusiBarangId">
-                <div class="modal-content">
-                    <div class="modal-header border-0 pb-0">
-                        <h5 class="modal-title fw-semibold">Form Distribusi Barang</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body pt-3">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Kode Barang</label>
-                                <input type="text" id="distribusiBarangKode" class="form-control" placeholder="Masukkan Kode Barang" readonly>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Jumlah Keluar</label>
-                                <input type="number" name="jumlah" class="form-control" placeholder="Masukkan Jumlah" required min="1">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Tanggal Distribusi</label>
-                                <input type="date" name="tanggal" class="form-control" placeholder="Masukkan Tanggal Distribusi" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Gudang Tujuan</label>
-                                <select name="gudang_tujuan_id" id="distribusiGudangTujuan" class="form-select" required>
-                                    <option value="">-- Pilih Gudang --</option>
-                                    @foreach($gudang as $g)
-                                        <option value="{{ $g->id }}">{{ $g->nama }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-12">
-                                <label class="form-label">Kategori Tujuan</label>
-                                <select name="kategori_tujuan_id" id="distribusiKategoriTujuan" class="form-select" required disabled>
-                                    <option value="">-- Pilih Gudang Terlebih Dahulu --</option>
-                                </select>
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">Bukti Barang Distribusi</label>
-                                <div class="border rounded p-4 text-center" style="background-color: #f8f9fa;">
-                                    <input type="file" name="bukti" id="buktiBrgDistribusi" class="d-none" accept="image/*,.pdf">
-                                    <label for="buktiBrgDistribusi" class="d-block" style="cursor: pointer;">
-                                        <i class="bi bi-cloud-upload" style="font-size: 2rem; color: #6c757d;"></i>
-                                        <div class="mt-2" style="color: #6c757d; font-size: 0.875rem;">Klik untuk Upload atau tarik dan seret</div>
-                                    </label>
-                                    <div id="fileNameDistribusi" class="mt-2 text-primary small"></div>
-                                </div>
+<!-- Modal Distribusi Barang -->
+<div class="modal fade" id="modalDistribusiBarang" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <form method="POST" id="formDistribusi" enctype="multipart/form-data">
+            @csrf
+            <input type="hidden" name="barang_id" id="distribusiBarangId">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-semibold">Form Distribusi Barang</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body pt-3">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nama Barang</label>
+                            <input type="text" id="distribusiBarangNama" class="form-control" placeholder="Nama Barang" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Jumlah Keluar</label>
+                            <input type="number" name="jumlah" class="form-control" placeholder="Masukkan Jumlah" required min="1">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tanggal Distribusi <small class="text-muted">(Opsional)</small></label>
+                            <input type="date" name="tanggal" id="tanggalDistribusi" class="form-control" placeholder="Kosongkan untuk tanggal hari ini">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Gudang Tujuan</label>
+                            <select name="gudang_tujuan_id" id="distribusiGudangTujuan" class="form-select" required>
+                                <option value="">-- Pilih Gudang --</option>
+                                @foreach($gudang as $g)
+                                    <option value="{{ $g->id }}">{{ $g->nama }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Kategori Tujuan</label>
+                            <select name="kategori_tujuan_id" id="distribusiKategoriTujuan" class="form-select" required disabled>
+                                <option value="">-- Pilih Gudang Terlebih Dahulu --</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Bukti Barang Distribusi</label>
+                            <div class="border rounded p-4 text-center" style="background-color: #f8f9fa;">
+                                <input type="file" name="bukti" id="buktiBrgDistribusi" class="d-none" accept="image/*,.pdf">
+                                <label for="buktiBrgDistribusi" class="d-block" style="cursor: pointer;">
+                                    <i class="bi bi-cloud-upload" style="font-size: 2rem; color: #6c757d;"></i>
+                                    <div class="mt-2" style="color: #6c757d; font-size: 0.875rem;">Klik untuk Upload atau tarik dan seret</div>
+                                </label>
+                                <div id="fileNameDistribusi" class="mt-2 text-primary small"></div>
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer border-0 pt-0">
-                        <button type="button" class="btn btn-danger px-4" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-primary px-4">Simpan</button>
-                    </div>
                 </div>
-            </form>
-        </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-danger px-4" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary px-4">Simpan</button>
+                </div>
+            </div>
+        </form>
     </div>
+</div>
 
     @php
     // Kita cek: ini konteks "satu gudang" atau "multi gudang"?
@@ -743,7 +743,7 @@
                     const barangKode = button.getAttribute("data-kode") || '';
                     
                     document.getElementById("barangMasukId").value = barangId;
-                    document.getElementById("barangMasukKode").value = barangKode;
+                    document.getElementById("barangMasukNama").value = barangNama;
                 });
             }
 
