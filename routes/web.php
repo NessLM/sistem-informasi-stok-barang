@@ -22,6 +22,7 @@ use App\Http\Controllers\Pb\StokUserController       as PbStokUserController;
 use App\Http\Controllers\Pb\DistribusiController     as PbDistribusiController;
 use App\Http\Controllers\Pb\RiwayatController        as PbRiwayatController;
 use App\Http\Controllers\Pb\LaporanController        as PbLaporanController;
+use App\Http\Controllers\Pb\BarangMasukController    as PbBarangMasukController;
 
 // PJ
 use App\Http\Controllers\Pj\DashboardController      as PjDashboardController;
@@ -129,16 +130,25 @@ Route::prefix('pb')->name('pb.')->middleware(['auth', 'role:Pengelola Barang'])-
     Route::get('/datakeseluruhan/{slug}', [PbDataKeseluruhanController::class, 'gudang'])
         ->name('datakeseluruhan.gudang');
 
+    // API Kategori by Gudang
+    Route::get('/api/kategori-by-gudang/{gudangId}', [PbDataKeseluruhanController::class, 'getKategoriByGudang'])
+        ->name('api.kategori.by.gudang');
+
     // Stok User (resource)
     Route::resource('stokuser', PbStokUserController::class);
 
-    // Tambah stok via post khusus (jika masih dipakai langsung)
-    Route::post('/stokuser/store', [PbStokUserController::class, 'store'])->name('stokuser.store');
+    // Barang Masuk - MENGGUNAKAN BarangMasukController
+    Route::post('/barang-masuk/{id}', [PbBarangMasukController::class, 'store'])
+        ->name('barang.masuk');
 
-    // Distribusi barang (kalau ada)
-    Route::post('/distribusi/store', [PbDistribusiController::class, 'store'])->name('distribusi.store');
+    // Distribusi barang
+    Route::post('/distribusi/{id}', [PbDistribusiController::class, 'distribusi'])
+        ->name('barang.distribusi');
+    
+    Route::post('/distribusi/store', [PbDistribusiController::class, 'store'])
+        ->name('distribusi.store');
 
-    // Riwayat & Laporan PB (INI YANG HILANG KEMARIN)
+    // Riwayat & Laporan PB
     Route::get('/riwayat', [PbRiwayatController::class, 'index'])->name('riwayat.index');
     Route::get('/laporan', [PbLaporanController::class, 'index'])->name('laporan');
 });

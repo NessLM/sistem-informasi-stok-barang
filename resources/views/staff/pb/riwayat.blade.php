@@ -10,6 +10,22 @@
                 <h3>Filter Data</h3>
                 <form id="filterForm" class="riwayat-filter-form" method="GET">
                     <!-- Filter Alur Barang -->
+                    <div class="riwayat-filter-group riwayat-filter-dropdown">
+                        <button class="btn riwayat-btn-filter dropdown-toggle" type="button" id="alurDropdown"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <span>{{ request('alur_barang', 'Semua') == 'Semua' ? 'Pilih Alur' : request('alur_barang') }}</span>
+                            <i class="bi bi-chevron-right dropdown-arrow"></i>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="alurDropdown">
+                            <li><a class="dropdown-item {{ request('alur_barang', 'Semua') == 'Semua' ? 'active' : '' }}"
+                                    href="#" data-value="Semua">Semua</a></li>
+                            <li><a class="dropdown-item {{ request('alur_barang') == 'Masuk' ? 'active' : '' }}"
+                                    href="#" data-value="Masuk">Barang Masuk</a></li>
+                            <li><a class="dropdown-item {{ request('alur_barang') == 'Keluar' ? 'active' : '' }}"
+                                    href="#" data-value="Keluar">Barang Keluar</a></li>
+                        </ul>
+                        <input type="hidden" name="alur_barang" value="{{ request('alur_barang', 'Semua') }}">
+                    </div>
 
                     <!-- Filter Gudang -->
                     <div class="riwayat-filter-group riwayat-filter-dropdown">
@@ -132,7 +148,7 @@
             <!-- Tabel Barang Masuk -->
             <div class="card riwayat-table-card mb-4">
                 <div class="card-header riwayat-header-masuk">
-                    <h5 class="mb-0">Barang Keluar</h5>
+                    <h5 class="mb-0">Barang Masuk</h5>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -157,12 +173,14 @@
                                         <td>{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }} WIB</td>
                                         <td class="fw-medium">{{ $item->gudang }}</td>
                                         <td class="fw-medium">{{ $item->nama_barang }}</td>
-                                        <td><span>{{ $item->jumlah }}</span></td>
-                                        <td>
-                                            @if ($item->bukti)
-                                                <span class="riwayat-bukti-icon" data-bs-toggle="modal"
-                                                    data-bs-target="#buktiModal"
-                                                    data-image="{{ asset('storage/bukti/' . $item->bukti) }}">
+                                        <td><span class="badge bg-success">+{{ $item->jumlah }}</span></td>
+                                        <td class="text-center">
+                                            @if ($item->bukti_path)
+                                                <span class="riwayat-bukti-icon" 
+                                                      style="cursor: pointer;"
+                                                      data-bs-toggle="modal"
+                                                      data-bs-target="#buktiModal"
+                                                      data-image="{{ asset('storage/' . $item->bukti_path) }}">
                                                     <i class="bi bi-eye-fill"></i>
                                                 </span>
                                             @else
@@ -171,7 +189,6 @@
                                         </td>
                                     </tr>
                                 @empty
-                                    {{-- PERBAIKAN DI SINI: Hapus kondisi $alurFilter == 'Masuk' --}}
                                     <tr>
                                         <td colspan="7" class="riwayat-empty-state text-center py-4">
                                             <i class="bi bi-inbox"></i>
@@ -198,6 +215,95 @@
                                 <button class="btn btn-sm btn-outline-primary pagination-btn pagination-next"
                                     onclick="changePage('masuk', {{ min($totalPagesMasuk, $currentPageMasuk + 1) }})"
                                     {{ $currentPageMasuk >= $totalPagesMasuk ? 'disabled' : '' }}>
+                                    <span class="pagination-text">Selanjutnya</span>
+                                    <i class="bi bi-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        @endif
+
+        @if ($alurFilter == 'Semua' || $alurFilter == 'Keluar')
+            <!-- Tabel Barang Keluar -->
+            <div class="card riwayat-table-card mb-4">
+                <div class="card-header riwayat-header-keluar">
+                    <h5 class="mb-0">Barang Keluar (Distribusi)</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-bordered mb-0">
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Tanggal</th>
+                                    <th>Waktu</th>
+                                    <th>Gudang Asal</th>
+                                    <th>Nama Barang</th>
+                                    <th>Jumlah</th>
+                                    <th>Gudang Tujuan</th>
+                                    <th>Bukti</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($keluarPaginated as $item)
+                                    <tr>
+                                        <td class="fw-semibold">
+                                            {{ ($currentPageKeluar - 1) * $itemsPerPage + $loop->iteration }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }} WIB</td>
+                                        <td class="fw-medium">
+                                            {{ $item->gudang }}<br>
+                                            <small class="text-muted">{{ $item->kategori_asal }}</small>
+                                        </td>
+                                        <td class="fw-medium">{{ $item->nama_barang }}</td>
+                                        <td><span class="badge bg-danger">-{{ $item->jumlah }}</span></td>
+                                        <td class="fw-medium">
+                                            {{ $item->gudang_tujuan }}<br>
+                                            <small class="text-muted">{{ $item->kategori_tujuan }}</small>
+                                        </td>
+                                        <td class="text-center">
+                                            @if ($item->bukti_path)
+                                                <span class="riwayat-bukti-icon" 
+                                                      style="cursor: pointer;"
+                                                      data-bs-toggle="modal"
+                                                      data-bs-target="#buktiModal"
+                                                      data-image="{{ asset('storage/' . $item->bukti_path) }}">
+                                                    <i class="bi bi-eye-fill"></i>
+                                                </span>
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="8" class="riwayat-empty-state text-center py-4">
+                                            <i class="bi bi-inbox"></i>
+                                            <p>Tidak ada data barang keluar ditemukan</p>
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination untuk Barang Keluar -->
+                    @if ($totalPagesKeluar > 1)
+                        <div class="card-footer d-flex justify-content-center align-items-center">
+                            <div class="pagination-controls">
+                                <button class="btn btn-sm btn-outline-primary pagination-btn pagination-prev"
+                                    onclick="changePage('keluar', {{ max(1, $currentPageKeluar - 1) }})"
+                                    {{ $currentPageKeluar <= 1 ? 'disabled' : '' }}>
+                                    <i class="bi bi-chevron-left"></i>
+                                    <span class="pagination-text">Sebelumnya</span>
+                                </button>
+                                <span class="mx-2 pagination-info">Halaman {{ $currentPageKeluar }} dari
+                                    {{ $totalPagesKeluar }}</span>
+                                <button class="btn btn-sm btn-outline-primary pagination-btn pagination-next"
+                                    onclick="changePage('keluar', {{ min($totalPagesKeluar, $currentPageKeluar + 1) }})"
+                                    {{ $currentPageKeluar >= $totalPagesKeluar ? 'disabled' : '' }}>
                                     <span class="pagination-text">Selanjutnya</span>
                                     <i class="bi bi-chevron-right"></i>
                                 </button>
@@ -245,7 +351,7 @@
     <!-- Modal untuk menampilkan bukti -->
     <div class="modal fade" id="buktiModal" tabindex="-1" aria-labelledby="buktiModalLabel"
         aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="buktiModalLabel">Bukti Foto</h5>
@@ -268,12 +374,11 @@
                 function initEventListeners() {
                     // Filter untuk alur barang dan gudang
                     document.querySelectorAll('.riwayat-filter-dropdown .dropdown-item').forEach(item => {
-                        // Hapus event listener lama dan tambahkan yang baru
                         item.removeEventListener('click', handleFilterClick);
                         item.addEventListener('click', handleFilterClick);
                     });
 
-                    // Handle custom period modal - khusus untuk item custom period
+                    // Handle custom period modal
                     const customPeriodItem = document.querySelector('.custom-period-item');
                     if (customPeriodItem) {
                         customPeriodItem.removeEventListener('click', handleCustomPeriodClick);
@@ -292,26 +397,15 @@
                         icon.removeEventListener('click', handleBuktiClick);
                         icon.addEventListener('click', handleBuktiClick);
                     });
-
-                    // Inisialisasi pagination buttons
-                    document.querySelectorAll('.pagination-btn').forEach(btn => {
-                        btn.removeEventListener('click', handlePaginationClick);
-                        btn.addEventListener('click', handlePaginationClick);
-                    });
                 }
 
-                // Fungsi khusus untuk menangani klik pada custom period item
                 function handleCustomPeriodClick(e) {
                     e.preventDefault();
-                    // Hanya buka modal, jangan submit form
-                    // Biarkan modal Bootstrap menangani pembukaan modal
                 }
 
-                // Fungsi untuk menangani klik filter regular (bukan custom period)
                 function handleFilterClick(e) {
                     e.preventDefault();
 
-                    // Jika ini adalah custom period item, biarkan handleCustomPeriodClick yang menanganinya
                     if (this.classList.contains('custom-period-item')) {
                         return;
                     }
@@ -321,33 +415,26 @@
                     const button = dropdown.querySelector('.riwayat-btn-filter');
                     const hiddenInput = dropdown.querySelector('input[type="hidden"]');
 
-                    // Perbarui teks tombol
                     button.querySelector('span').textContent = this.textContent;
 
-                    // Perbarui nilai input tersembunyi
                     if (hiddenInput) {
                         hiddenInput.value = value;
 
-                        // Jika ini dropdown periode dan bukan custom, reset tanggal custom
-                        if (dropdown.id === 'periodeDropdown' && value !== 'custom') {
+                        if (hiddenInput.name === 'periode' && value !== 'custom') {
                             document.getElementById('dariTanggalInput').value = '';
                             document.getElementById('sampaiTanggalInput').value = '';
                         }
                     }
 
-                    // Hapus kelas active dari semua item dalam dropdown yang sama
                     dropdown.querySelectorAll('.dropdown-item').forEach(i => {
                         i.classList.remove('active');
                     });
 
-                    // Tambahkan kelas active ke item yang dipilih
                     this.classList.add('active');
 
-                    // Submit form
                     submitFilterForm();
                 }
 
-                // Fungsi untuk menerapkan periode custom
                 function applyCustomPeriod() {
                     const dariTanggal = document.getElementById('dariTanggal').value;
                     const sampaiTanggal = document.getElementById('sampaiTanggal').value;
@@ -362,33 +449,26 @@
                         return;
                     }
 
-                    // Update hidden inputs
                     document.getElementById('periodeInput').value = 'custom';
                     document.getElementById('dariTanggalInput').value = dariTanggal;
                     document.getElementById('sampaiTanggalInput').value = sampaiTanggal;
 
-                    // Update button text
                     const dariFormatted = formatDate(dariTanggal);
                     const sampaiFormatted = formatDate(sampaiTanggal);
                     document.getElementById('periodeText').textContent = `${dariFormatted} - ${sampaiFormatted}`;
 
-                    // Update active class di dropdown periode
                     document.querySelectorAll('#periodeDropdown + .dropdown-menu .dropdown-item').forEach(i => {
                         i.classList.remove('active');
                     });
-                    document.querySelector('#periodeDropdown + .dropdown-menu .custom-period-item').classList.add(
-                        'active');
+                    document.querySelector('#periodeDropdown + .dropdown-menu .custom-period-item').classList.add('active');
 
-                    // Close modal dengan getOrCreateInstance
                     const modalEl = document.getElementById('customPeriodModal');
                     const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
                     modal.hide();
 
-                    // Submit form
                     submitFilterForm();
                 }
 
-                // Fungsi untuk menangani klik bukti
                 function handleBuktiClick() {
                     const imageUrl = this.getAttribute('data-image');
                     const modalImage = document.querySelector('#buktiImage');
@@ -397,29 +477,11 @@
                     }
                 }
 
-                // Fungsi untuk menangani klik pagination
-                function handlePaginationClick() {
-                    const onclickAttr = this.getAttribute('onclick');
-                    if (onclickAttr) {
-                        const match = onclickAttr.match(/changePage\('(\w+)',\s*(\d+)\)/);
-                        if (match) {
-                            const type = match[1];
-                            const page = parseInt(match[2]);
-                            changePage(type, page);
-                        }
-                    }
-                }
-
-                // Fungsi untuk submit form filter
                 function submitFilterForm() {
-                    // Reset pagination saat filter berubah
                     resetPagination();
-
-                    // Submit form
                     document.getElementById('filterForm').submit();
                 }
 
-                // Fungsi untuk reset pagination
                 function resetPagination() {
                     const url = new URL(window.location.href);
                     url.searchParams.delete('page_masuk');
@@ -427,58 +489,6 @@
                     window.history.replaceState({}, '', url);
                 }
 
-                // Fungsi untuk mengubah halaman
-                function changePage(type, page) {
-                    const url = new URL(window.location.href);
-                    url.searchParams.set(`page_${type}`, page);
-
-                    // Scroll ke bagian atas tabel
-                    const tableElement = document.querySelector(`.riwayat-header-${type}`)?.closest('.card');
-                    if (tableElement) {
-                        tableElement.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start'
-                        });
-                    }
-
-                    // AJAX request
-                    fetch(url, {
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest',
-                                'Accept': 'text/html'
-                            }
-                        })
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Network response was not ok');
-                            }
-                            return response.text();
-                        })
-                        .then(html => {
-                            const parser = new DOMParser();
-                            const doc = parser.parseFromString(html, 'text/html');
-                            const newTable = doc.querySelector(`.riwayat-header-${type}`)?.closest('.card');
-
-                            if (newTable) {
-                                const oldTable = document.querySelector(`.riwayat-header-${type}`)?.closest(
-                                '.card');
-                                if (oldTable) {
-                                    oldTable.replaceWith(newTable);
-                                }
-
-                                window.history.pushState({}, '', url);
-                                initEventListeners();
-                            } else {
-                                window.location.href = url;
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            window.location.href = url;
-                        });
-                }
-
-                // Fungsi utilitas untuk memformat tanggal
                 function formatDate(dateString) {
                     const date = new Date(dateString);
                     return date.toLocaleDateString('id-ID', {
@@ -488,7 +498,6 @@
                     });
                 }
 
-                // Set max date for date inputs to today
                 const today = new Date().toISOString().split('T')[0];
                 const dariTanggalInput = document.getElementById('dariTanggal');
                 const sampaiTanggalInput = document.getElementById('sampaiTanggal');
@@ -496,6 +505,12 @@
                 if (dariTanggalInput) dariTanggalInput.max = today;
                 if (sampaiTanggalInput) sampaiTanggalInput.max = today;
             });
+
+            function changePage(type, page) {
+                const url = new URL(window.location.href);
+                url.searchParams.set(`page_${type}`, page);
+                window.location.href = url.toString();
+            }
 
             function downloadReport(format) {
                 const form = document.getElementById('filterForm');
@@ -510,5 +525,15 @@
     @endpush
 
     @push('styles')
+        <style>
+            .riwayat-bukti-icon {
+                cursor: pointer;
+                color: #0d6efd;
+                font-size: 1.2rem;
+            }
+            .riwayat-bukti-icon:hover {
+                color: #0a58ca;
+            }
+        </style>
     @endpush
 </x-layouts.app>

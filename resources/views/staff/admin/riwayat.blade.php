@@ -193,7 +193,6 @@
                                         </td>
                                     </tr>
                                 @empty
-                                    {{-- PERBAIKAN DI SINI: Hapus kondisi $alurFilter == 'Masuk' --}}
                                     <tr>
                                         <td colspan="8" class="riwayat-empty-state text-center py-4">
                                             <i class="bi bi-inbox"></i>
@@ -281,7 +280,6 @@
                                         </td>
                                     </tr>
                                 @empty
-                                    {{-- PERBAIKAN DI SINI: Hapus kondisi $alurFilter == 'Keluar' --}}
                                     <tr>
                                         <td colspan="9" class="riwayat-empty-state text-center py-4">
                                             <i class="bi bi-inbox"></i>
@@ -603,13 +601,45 @@
                 if (sampaiTanggalInput) sampaiTanggalInput.max = today;
             });
 
+            // PERBAIKAN: Fungsi downloadReport yang baru
             function downloadReport(format) {
+                // Ambil semua parameter filter yang aktif
                 const form = document.getElementById('filterForm');
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'download';
-                input.value = format;
-                form.appendChild(input);
+                const formData = new FormData(form);
+                
+                // Buat URL dengan parameter filter yang aktif
+                const params = new URLSearchParams();
+                
+                // Tambahkan semua parameter filter
+                for (let [key, value] of formData) {
+                    if (value && value !== 'Semua' && value !== '') {
+                        params.append(key, value);
+                    }
+                }
+                
+                // Tambahkan parameter download
+                params.append('download', format);
+                
+                // Redirect ke URL dengan parameter yang sudah difilter
+                const url = `{{ route('admin.riwayat.index') }}?${params.toString()}`;
+                window.location.href = url;
+            }
+
+            // Alternatif: Jika ingin menggunakan form submission
+            function downloadReportAlternative(format) {
+                const form = document.getElementById('filterForm');
+                const downloadInput = document.createElement('input');
+                downloadInput.type = 'hidden';
+                downloadInput.name = 'download';
+                downloadInput.value = format;
+                
+                // Hapus input download lama jika ada
+                const oldDownloadInput = form.querySelector('input[name="download"]');
+                if (oldDownloadInput) {
+                    oldDownloadInput.remove();
+                }
+                
+                form.appendChild(downloadInput);
                 form.submit();
             }
         </script>
