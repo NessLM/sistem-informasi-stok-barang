@@ -22,6 +22,7 @@ use App\Http\Controllers\Pb\StokUserController       as PbStokUserController;
 use App\Http\Controllers\Pb\DistribusiController     as PbDistribusiController;
 use App\Http\Controllers\Pb\RiwayatController        as PbRiwayatController;
 use App\Http\Controllers\Pb\LaporanController        as PbLaporanController;
+use App\Http\Controllers\Pb\BarangMasukController    as PbBarangMasukController;
 
 // PJ
 use App\Http\Controllers\Pj\DashboardController      as PjDashboardController;
@@ -136,8 +137,8 @@ Route::prefix('pb')->name('pb.')->middleware(['auth', 'role:Pengelola Barang'])-
     // Stok User (resource)
     Route::resource('stokuser', PbStokUserController::class);
 
-    // Barang Masuk
-    Route::post('/barang-masuk/{id}', [PbStokUserController::class, 'barangMasuk'])
+    // Barang Masuk - MENGGUNAKAN BarangMasukController
+    Route::post('/barang-masuk/{id}', [PbBarangMasukController::class, 'store'])
         ->name('barang.masuk');
 
     // Distribusi barang

@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Pb;
 use App\Http\Controllers\Controller;
 use App\Models\Barang;
 use App\Models\Kategori;
+use App\Models\RiwayatBarang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class DistribusiController extends Controller
 {
@@ -25,8 +27,9 @@ class DistribusiController extends Controller
             DB::beginTransaction();
 
             $barang = Barang::with('kategori.gudang')->findOrFail($id);
+            $stokSebelum = $barang->stok;
 
-            // Cek stok mencukupi
+            // Validasi stok
             if ($barang->stok < $request->jumlah) {
                 return back()->with('toast', [
                     'type' => 'error',
@@ -35,7 +38,7 @@ class DistribusiController extends Controller
                 ]);
             }
 
-            // Validasi kategori tujuan ada di gudang tujuan
+            // Validasi kategori tujuan
             $kategoriTujuan = Kategori::where('id', $request->kategori_tujuan_id)
                 ->where('gudang_id', $request->gudang_tujuan_id)
                 ->first();
@@ -48,7 +51,6 @@ class DistribusiController extends Controller
                 ]);
             }
 
-            // Validasi: tidak bisa distribusi ke kategori yang sama
             if ($barang->kategori_id == $request->kategori_tujuan_id) {
                 return back()->with('toast', [
                     'type' => 'error',
@@ -57,61 +59,71 @@ class DistribusiController extends Controller
                 ]);
             }
 
-            // Upload bukti jika ada
+            // Upload bukti
             $buktiPath = null;
             if ($request->hasFile('bukti')) {
                 $buktiPath = $request->file('bukti')->store('bukti-distribusi', 'public');
             }
 
-            // ✅ PERBAIKAN: Cari barang berdasarkan KODE saja (karena kode UNIQUE)
-            $barangTujuan = Barang::where('kode', $barang->kode)
+            // Cari barang dengan nama dan kategori yang sama di tujuan
+            $barangTujuan = Barang::where('nama', $barang->nama)
                 ->where('kategori_id', $request->kategori_tujuan_id)
                 ->first();
 
             if ($barangTujuan) {
-                // Jika barang dengan kode yang sama sudah ada di kategori tujuan
+                // Jika barang sudah ada di kategori tujuan, tambahkan stoknya
                 $barangTujuan->stok += $request->jumlah;
                 $barangTujuan->save();
                 
                 $message = 'Barang berhasil didistribusikan. Stok di kategori tujuan bertambah: ' . $request->jumlah;
+                $barangTujuanId = $barangTujuan->id;
             } else {
-                // ✅ Cek apakah kode sudah ada di tabel barang (di kategori lain)
-                $kodeExists = Barang::where('kode', $barang->kode)->exists();
+                // Jika barang belum ada, buat barang baru dengan kode unik
+                $newKode = $this->generateUniqueKode($barang->kode);
                 
-                if ($kodeExists) {
-                    // Jika kode sudah ada di kategori lain, buat kode baru
-                    $newKode = $this->generateUniqueKode($barang->kode);
-                    
-                    Barang::create([
-                        'nama' => $barang->nama,
-                        'kode' => $newKode,
-                        'kategori_id' => $request->kategori_tujuan_id,
-                        'jenis_barang_id' => $barang->jenis_barang_id ?? null,
-                        'stok' => $request->jumlah,
-                        'satuan' => $barang->satuan,
-                        'harga' => $barang->harga,
-                    ]);
-                    
-                    $message = "Barang berhasil didistribusikan dengan kode baru: {$newKode} (stok: {$request->jumlah})";
-                } else {
-                    // Jika kode belum ada sama sekali, gunakan kode asli
-                    Barang::create([
-                        'nama' => $barang->nama,
-                        'kode' => $barang->kode,
-                        'kategori_id' => $request->kategori_tujuan_id,
-                        'jenis_barang_id' => $barang->jenis_barang_id ?? null,
-                        'stok' => $request->jumlah,
-                        'satuan' => $barang->satuan,
-                        'harga' => $barang->harga,
-                    ]);
-                    
-                    $message = 'Barang berhasil didistribusikan dan dibuat di kategori tujuan dengan stok: ' . $request->jumlah;
-                }
+                $barangTujuan = Barang::create([
+                    'nama' => $barang->nama,
+                    'kode' => $newKode,
+                    'kategori_id' => $request->kategori_tujuan_id,
+                    'jenis_barang_id' => $barang->jenis_barang_id ?? null,
+                    'stok' => $request->jumlah,
+                    'satuan' => $barang->satuan,
+                    'harga' => $barang->harga,
+                ]);
+                
+                $message = "Barang berhasil didistribusikan dengan kode baru: {$newKode}";
+                $barangTujuanId = $barangTujuan->id;
             }
 
             // Kurangi stok barang asal
             $barang->stok -= $request->jumlah;
             $barang->save();
+
+            // SIMPAN KE RIWAYAT
+            $riwayat = RiwayatBarang::create([
+                'barang_id' => $barang->id,
+                'jenis_transaksi' => 'distribusi',
+                'jumlah' => $request->jumlah,
+                'stok_sebelum' => $stokSebelum,
+                'stok_sesudah' => $barang->stok,
+                'kategori_asal_id' => $barang->kategori_id,
+                'kategori_tujuan_id' => $request->kategori_tujuan_id,
+                'gudang_tujuan_id' => $request->gudang_tujuan_id,
+                'barang_tujuan_id' => $barangTujuanId,
+                'bukti' => $buktiPath,
+                'tanggal' => $request->tanggal,
+                'user_id' => auth()->id(),
+            ]);
+
+            // Log untuk debugging
+            Log::info('Riwayat Distribusi Tersimpan', [
+                'riwayat_id' => $riwayat->id,
+                'barang_asal' => $barang->nama,
+                'kode_asal' => $barang->kode,
+                'barang_tujuan' => $barangTujuan->nama,
+                'kode_tujuan' => $barangTujuan->kode,
+                'jumlah' => $request->jumlah,
+            ]);
 
             DB::commit();
 
@@ -128,8 +140,8 @@ class DistribusiController extends Controller
                 Storage::disk('public')->delete($buktiPath);
             }
 
-            \Log::error('Error distribusi: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            Log::error('Error distribusi: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
 
             return back()->with('toast', [
                 'type' => 'error',
@@ -139,18 +151,23 @@ class DistribusiController extends Controller
         }
     }
 
-    /**
-     * Generate unique code by adding suffix
-     */
     private function generateUniqueKode($originalKode)
     {
-        $counter = 1;
-        $newKode = $originalKode;
+        // Cek apakah kode sudah ada
+        $existingBarang = Barang::where('kode', $originalKode)->first();
         
-        // Cek apakah kode sudah ada, jika ya tambahkan suffix
+        if (!$existingBarang) {
+            // Jika belum ada, gunakan kode asli
+            return $originalKode;
+        }
+        
+        // Jika sudah ada, generate kode baru dengan suffix
+        $counter = 1;
+        $newKode = $originalKode . '-' . $counter;
+        
         while (Barang::where('kode', $newKode)->exists()) {
-            $newKode = $originalKode . '-' . $counter;
             $counter++;
+            $newKode = $originalKode . '-' . $counter;
         }
         
         return $newKode;
