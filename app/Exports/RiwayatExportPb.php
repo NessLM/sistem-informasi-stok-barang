@@ -28,61 +28,14 @@ class RiwayatExportPb implements WithMultipleSheets
     {
         $sheets = [];
         
-        // Debug detail
-        Log::info('=== DEBUG RIWAYAT EXPORT ===');
-        Log::info('Tipe data riwayat: ' . gettype($this->riwayat));
-        Log::info('Is collection? ' . ($this->riwayat instanceof Collection ? 'Ya' : 'Tidak'));
-        Log::info('Jumlah total data: ' . (is_countable($this->riwayat) ? count($this->riwayat) : 'N/A'));
-        
         // Pastikan $this->riwayat adalah collection
         if (!$this->riwayat instanceof Collection) {
             $this->riwayat = collect($this->riwayat);
         }
         
-        // Debug data pertama untuk melihat struktur
-        if ($this->riwayat->count() > 0) {
-            $firstItem = $this->riwayat->first();
-            Log::info('Struktur data pertama:', is_array($firstItem) ? $firstItem : $firstItem->toArray());
-            Log::info('Jenis transaksi pertama: ' . ($firstItem->jenis_transaksi ?? 'Tidak ada'));
-        }
-        
         // Pisahkan data berdasarkan jenis transaksi
-        $barangMasuk = $this->riwayat->filter(function($item) {
-            $jenis = $item->jenis_transaksi ?? null;
-            Log::info("Filter masuk - jenis: " . $jenis);
-            return $jenis === 'masuk';
-        })->values();
-        
-        $barangKeluar = $this->riwayat->filter(function($item) {
-            $jenis = $item->jenis_transaksi ?? null;
-            Log::info("Filter keluar - jenis: " . $jenis);
-            return $jenis === 'keluar';
-        })->values();
-        
-        Log::info('Jumlah barang masuk: ' . $barangMasuk->count());
-        Log::info('Jumlah barang keluar: ' . $barangKeluar->count());
-        
-        // Jika tidak ada data keluar, buat sheet kosong untuk debugging
-        if ($barangKeluar->count() === 0) {
-            Log::warning('TIDAK ADA DATA BARANG KELUAR YANG DITEMUKAN!');
-            
-            // Tambahkan data dummy untuk testing
-            $barangKeluar = collect([
-                (object)[
-                    'created_at' => now(),
-                    'tanggal' => now()->format('d/m/Y'),
-                    'barang' => (object)[
-                        'nama' => 'DATA TEST - Periksa Filter',
-                        'kategori' => (object)[
-                            'gudang' => (object)['nama' => 'Gudang Test']
-                        ]
-                    ],
-                    'jumlah' => 0,
-                    'gudangTujuan' => (object)['nama' => 'Tujuan Test'],
-                    'jenis_transaksi' => 'keluar'
-                ]
-            ]);
-        }
+        $barangMasuk = $this->riwayat->where('jenis_transaksi', 'masuk')->values();
+        $barangKeluar = $this->riwayat->where('jenis_transaksi', 'keluar')->values();
         
         $sheets[] = new BarangMasukSheet($barangMasuk);
         $sheets[] = new BarangKeluarSheet($barangKeluar);
@@ -98,17 +51,10 @@ class BarangMasukSheet implements FromCollection, WithHeadings, WithMapping, Wit
     public function __construct($riwayat)
     {
         $this->riwayat = $riwayat;
-        Log::info('BarangMasukSheet Constructor - Jumlah data: ' . $riwayat->count());
     }
 
     public function collection()
     {
-        Log::info('Barang Masuk Sheet - collection() - Data Count: ' . $this->riwayat->count());
-        
-        if ($this->riwayat->count() > 0) {
-            Log::info('Sample data barang masuk:', [$this->riwayat->first()]);
-        }
-        
         return $this->riwayat;
     }
 
@@ -128,11 +74,10 @@ class BarangMasukSheet implements FromCollection, WithHeadings, WithMapping, Wit
         static $rowNumber = 0;
         $rowNumber++;
         
-        Log::info("Mapping barang masuk row {$rowNumber}", ['data' => $riwayat]);
-        
-        // Format tanggal dan waktu sesuai gambar
+        // Format tanggal dan waktu - PASTIKAN TIDAK ADA | (pipe)
         $tanggalWaktu = '';
         if (isset($riwayat->created_at)) {
+            // Format: "06/10/2024, 14:30:25" (tanpa pipe)
             $tanggalWaktu = $riwayat->created_at->format('d/m/Y, H:i:s');
         } elseif (isset($riwayat->tanggal)) {
             $tanggalWaktu = $riwayat->tanggal;
@@ -140,17 +85,22 @@ class BarangMasukSheet implements FromCollection, WithHeadings, WithMapping, Wit
             $tanggalWaktu = '-';
         }
         
-        $mappedData = [
+        // Bersihkan data dari karakter yang tidak diinginkan
+        $gudangAsal = optional(optional($riwayat->barang)->kategori->gudang)->nama ?? '-';
+        $namaBarang = optional($riwayat->barang)->nama ?? '-';
+        $jumlah = $riwayat->jumlah ?? '0';
+        
+        // Hapus karakter pipe jika ada
+        $gudangAsal = str_replace('|', '', $gudangAsal);
+        $namaBarang = str_replace('|', '', $namaBarang);
+        
+        return [
             $rowNumber,
-            $tanggalWaktu,
-            optional(optional($riwayat->barang)->kategori->gudang)->nama ?? 'Tidak ada gudang',
-            optional($riwayat->barang)->nama ?? 'Tidak ada nama barang',
-            $riwayat->jumlah ?? '0'
+            $tanggalWaktu, // Sudah format benar tanpa pipe
+            $gudangAsal,
+            $namaBarang,
+            $jumlah
         ];
-        
-        Log::info("Mapped data barang masuk: ", $mappedData);
-        
-        return $mappedData;
     }
 
     public function styles(Worksheet $sheet)
@@ -158,6 +108,7 @@ class BarangMasukSheet implements FromCollection, WithHeadings, WithMapping, Wit
         $lastRow = max(1, $this->riwayat->count() + 1);
         $dataRange = 'A1:E' . $lastRow;
         
+        // Terapkan border ke semua sel
         $sheet->getStyle($dataRange)->applyFromArray([
             'borders' => [
                 'allBorders' => [
@@ -175,10 +126,10 @@ class BarangMasukSheet implements FromCollection, WithHeadings, WithMapping, Wit
                 ]
             ],
             'A' => ['width' => 8, 'alignment' => ['horizontal' => 'center']],
-            'B' => ['width' => 20],
+            'B' => ['width' => 25],
             'C' => ['width' => 20],
-            'D' => ['width' => 25],
-            'E' => ['width' => 12, 'alignment' => ['horizontal' => 'center']],
+            'D' => ['width' => 30],
+            'E' => ['width' => 15, 'alignment' => ['horizontal' => 'center']],
         ];
     }
 
@@ -195,19 +146,10 @@ class BarangKeluarSheet implements FromCollection, WithHeadings, WithMapping, Wi
     public function __construct($riwayat)
     {
         $this->riwayat = $riwayat;
-        Log::info('BarangKeluarSheet Constructor - Jumlah data: ' . $riwayat->count());
     }
 
     public function collection()
     {
-        Log::info('Barang Keluar Sheet - collection() - Data Count: ' . $this->riwayat->count());
-        
-        if ($this->riwayat->count() > 0) {
-            Log::info('Sample data barang keluar:', [$this->riwayat->first()]);
-        } else {
-            Log::warning('TIDAK ADA DATA DI BARANG KELUAR SHEET!');
-        }
-        
         return $this->riwayat;
     }
 
@@ -217,7 +159,7 @@ class BarangKeluarSheet implements FromCollection, WithHeadings, WithMapping, Wi
             'No',
             'Tanggal, Waktu',
             'Gudang Asal',
-            'Nama Barang',
+            'Nama Barang', 
             'Jumlah',
             'Gudang Tujuan'
         ];
@@ -228,11 +170,10 @@ class BarangKeluarSheet implements FromCollection, WithHeadings, WithMapping, Wi
         static $rowNumber = 0;
         $rowNumber++;
         
-        Log::info("Mapping barang keluar row {$rowNumber}", ['data' => $riwayat]);
-        
-        // Format tanggal dan waktu sesuai gambar
+        // Format tanggal dan waktu - PASTIKAN TIDAK ADA | (pipe)
         $tanggalWaktu = '';
         if (isset($riwayat->created_at)) {
+            // Format: "06/10/2024, 14:30:25" (tanpa pipe, hanya koma sebagai pemisah)
             $tanggalWaktu = $riwayat->created_at->format('d/m/Y, H:i:s');
         } elseif (isset($riwayat->tanggal)) {
             $tanggalWaktu = $riwayat->tanggal;
@@ -240,18 +181,25 @@ class BarangKeluarSheet implements FromCollection, WithHeadings, WithMapping, Wi
             $tanggalWaktu = '-';
         }
         
-        $mappedData = [
+        // Bersihkan data dari karakter yang tidak diinginkan
+        $gudangAsal = optional(optional($riwayat->barang)->kategori->gudang)->nama ?? '-';
+        $namaBarang = optional($riwayat->barang)->nama ?? '-';
+        $jumlah = $riwayat->jumlah ?? '0';
+        $gudangTujuan = optional($riwayat->gudangTujuan)->nama ?? '-';
+        
+        // Hapus karakter pipe jika ada di semua field
+        $gudangAsal = str_replace('|', '', $gudangAsal);
+        $namaBarang = str_replace('|', '', $namaBarang);
+        $gudangTujuan = str_replace('|', '', $gudangTujuan);
+        
+        return [
             $rowNumber,
-            $tanggalWaktu,
-            optional(optional($riwayat->barang)->kategori->gudang)->nama ?? 'Tidak ada gudang asal',
-            optional($riwayat->barang)->nama ?? 'Tidak ada nama barang',
-            $riwayat->jumlah ?? '0',
-            optional($riwayat->gudangTujuan)->nama ?? 'Tidak ada gudang tujuan'
+            $tanggalWaktu, // Format sudah benar: "06/10/2024, 14:30:25"
+            $gudangAsal,
+            $namaBarang,
+            $jumlah,
+            $gudangTujuan
         ];
-        
-        Log::info("Mapped data barang keluar: ", $mappedData);
-        
-        return $mappedData;
     }
 
     public function styles(Worksheet $sheet)
@@ -259,6 +207,7 @@ class BarangKeluarSheet implements FromCollection, WithHeadings, WithMapping, Wi
         $lastRow = max(1, $this->riwayat->count() + 1);
         $dataRange = 'A1:F' . $lastRow;
         
+        // Terapkan border ke semua sel
         $sheet->getStyle($dataRange)->applyFromArray([
             'borders' => [
                 'allBorders' => [
@@ -276,10 +225,10 @@ class BarangKeluarSheet implements FromCollection, WithHeadings, WithMapping, Wi
                 ]
             ],
             'A' => ['width' => 8, 'alignment' => ['horizontal' => 'center']],
-            'B' => ['width' => 20],
+            'B' => ['width' => 25],
             'C' => ['width' => 20],
-            'D' => ['width' => 25],
-            'E' => ['width' => 12, 'alignment' => ['horizontal' => 'center']],
+            'D' => ['width' => 30],
+            'E' => ['width' => 15, 'alignment' => ['horizontal' => 'center']],
             'F' => ['width' => 20],
         ];
     }
