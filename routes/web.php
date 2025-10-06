@@ -134,24 +134,35 @@ Route::prefix('pb')->name('pb.')->middleware(['auth', 'role:Pengelola Barang'])-
     Route::get('/api/kategori-by-gudang/{gudangId}', [PbDataKeseluruhanController::class, 'getKategoriByGudang'])
         ->name('api.kategori.by.gudang');
 
+    // API Search
+    Route::get('/api/search-barang', [PbDataKeseluruhanController::class, 'searchSuggestions'])
+        ->name('api.search.barang');
+
     // Stok User (resource)
     Route::resource('stokuser', PbStokUserController::class);
 
-    // Barang Masuk - MENGGUNAKAN BarangMasukController
-    Route::post('/barang-masuk/{id}', [PbBarangMasukController::class, 'store'])
+    // Barang Masuk - PILIH SALAH SATU:
+    // Opsi 1: Pakai StokUserController (seperti yang saya jelaskan sebelumnya)
+    Route::post('/barang-masuk/{id}', [PbStokUserController::class, 'barangMasuk'])
         ->name('barang.masuk');
+    
+    // ATAU Opsi 2: Pakai BarangMasukController (jika Anda punya controller terpisah)
+    // Route::post('/barang-masuk/{id}', [PbBarangMasukController::class, 'store'])
+    //     ->name('barang.masuk');
 
-    // Distribusi barang
+    // Distribusi barang - HANYA PERLU SATU ROUTE INI
     Route::post('/distribusi/{id}', [PbDistribusiController::class, 'distribusi'])
         ->name('barang.distribusi');
     
-    Route::post('/distribusi/store', [PbDistribusiController::class, 'store'])
-        ->name('distribusi.store');
+    // HAPUS route ini karena duplikat dan tidak perlu:
+    // Route::post('/distribusi/store', [PbDistribusiController::class, 'store'])
+    //     ->name('distribusi.store');
 
     // Riwayat & Laporan PB
     Route::get('/riwayat', [PbRiwayatController::class, 'index'])->name('riwayat.index');
     Route::get('/laporan', [PbLaporanController::class, 'index'])->name('laporan');
 });
+
 
 
 /* =========================================================================

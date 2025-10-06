@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Kategori;
 use App\Models\Barang;
 use App\Models\Gudang;
+use App\Models\StokGudang;
 use Illuminate\Http\Request;
 use App\Helpers\MenuHelper;
 
@@ -75,6 +76,64 @@ class DataKeseluruhan extends Controller
     }
 
     /**
+     * API: Search suggestions untuk autocomplete
+     */
+    public function searchSuggestions(Request $request)
+    {
+        $query = $request->get('q', '');
+        $gudangId = $request->get('gudang_id');
+        
+        if (strlen($query) < 2) {
+            return response()->json([]);
+        }
+        
+        $barangQuery = Barang::with(['kategori.gudang'])
+            ->where(function($q) use ($query) {
+                $q->where('nama', 'like', "%{$query}%")
+                  ->orWhere('kode', 'like', "%{$query}%");
+            });
+        
+        // Filter by gudang jika ada
+        if ($gudangId) {
+            $barangQuery->whereHas('kategori', function($q) use ($gudangId) {
+                $q->where('gudang_id', $gudangId);
+            });
+        }
+        
+        $barang = $barangQuery->limit(10)->get();
+        
+        $results = $barang->map(function($item) {
+            // Ambil stok dari stok_gudang
+            $gudangId = $item->kategori->gudang_id ?? null;
+            $stokGudang = StokGudang::where('barang_id', $item->id)
+                ->where('gudang_id', $gudangId)
+                ->first();
+            
+            $stok = $stokGudang ? $stokGudang->stok : 0;
+            
+            // Tentukan status stok
+            $stockStatus = 'available';
+            if ($stok == 0) {
+                $stockStatus = 'empty';
+            } elseif ($stok <= 10) {
+                $stockStatus = 'low';
+            }
+            
+            return [
+                'id' => $item->id,
+                'nama' => $item->nama,
+                'kode' => $item->kode,
+                'stok' => $stok,
+                'kategori' => $item->kategori->nama ?? '-',
+                'gudang' => $item->kategori->gudang->nama ?? '-',
+                'stock_status' => $stockStatus
+            ];
+        });
+        
+        return response()->json($results);
+    }
+
+    /**
      * API: Get kategori by gudang ID
      */
     public function getKategoriByGudang($gudangId)
@@ -98,7 +157,7 @@ class DataKeseluruhan extends Controller
     {
         $query = Barang::with(['kategori.gudang']);
         
-        // Paksa filter ke gudang tertentu (Gudang Utama)
+        // Filter berdasarkan gudang
         if ($gudangId) {
             $query->whereHas('kategori', function($q) use ($gudangId) {
                 $q->where('gudang_id', $gudangId);

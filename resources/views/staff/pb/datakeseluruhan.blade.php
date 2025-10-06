@@ -7,13 +7,84 @@
     @endphp
 
     <head>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-    </head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <style>
+        .search-suggestion-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s;
+        }
+        
+        .search-suggestion-item:hover,
+        .search-suggestion-item.active {
+            background-color: #f8f9fa;
+        }
+        
+        .search-suggestion-item:last-child {
+            border-bottom: none;
+        }
+        
+        .suggestion-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 4px;
+        }
+        
+        .suggestion-code {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-bottom: 4px;
+        }
+        
+        .suggestion-meta {
+            font-size: 0.8rem;
+            color: #95a5a6;
+        }
+        
+        .stock-status {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+            font-size: 0.75rem;
+        }
+        
+        .stock-available {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .stock-low {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .stock-empty {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .loading-suggestion {
+            padding: 12px 16px;
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+        }
+        
+        #searchSuggestions {
+            max-height: 400px;
+            overflow-y: auto;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-radius: 0 0 0.375rem 0.375rem;
+        }
+    </style>
+</head>
 
     <main class="page-wrap container py-4">
 
-      <!-- Kode toast notification tetap sama -->
+      <!-- Toast notification -->
     @if (session('toast'))
         <div id="toast-notif"
             style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
@@ -24,14 +95,12 @@
                 box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;
                 min-width: 280px; max-width: 360px; transition: opacity .5s ease;">
 
-                {{-- Judul (Hijau kalau success, Merah kalau error) --}}
                 <div
                     style="font-weight: 600; font-size: 16px; margin-bottom: 4px;
                   color: {{ session('toast.type') === 'success' ? '#28a745' : '#dc3545' }};">
                     {{ session('toast.title') }}
                 </div>
 
-                {{-- Pesan kecil --}}
                 <div style="color:#333; font-size: 14px; line-height: 1.4;">
                     {{ session('toast.message') }}
                 </div>
@@ -50,9 +119,8 @@
         <section class="card shadow-sm p-3">
             <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
                 @php
-                    $title = 'Data Keseluruhan'; // default
+                    $title = 'Data Keseluruhan';
                     
-                    // Jika ada kategori dan semua kategori dari gudang yang sama
                     if($kategori->isNotEmpty()) {
                         $firstGudang = $kategori->first()->gudang->nama ?? null;
                         $allSameGudang = $kategori->every(function($k) use ($firstGudang) {
@@ -60,7 +128,6 @@
                         });
                         
                         if($allSameGudang && $firstGudang) {
-                            // Hindari duplikasi kata "Gudang"
                             if(str_starts_with($firstGudang, 'Gudang')) {
                                 $title = 'Data ' . $firstGudang;
                             } else {
@@ -69,7 +136,6 @@
                         }
                     }
                     
-                    // Override berdasarkan filter gudang jika ada
                     if(request()->filled('gudang_id') && isset($selectedGudang)) {
                         $gudangNama = $selectedGudang->nama;
                         if(str_starts_with($gudangNama, 'Gudang')) {
@@ -79,7 +145,6 @@
                         }
                     }
                     
-                    // Override berdasarkan URL path
                     $currentPath = request()->path();
                     if (str_contains($currentPath, '/atk')) {
                         $title = 'Data Gudang ATK';
@@ -101,7 +166,7 @@
 
             {{-- Search Form dengan Autocomplete --}}
             <div class="position-relative mb-3">
-                <form action="{{ route('admin.datakeseluruhan.index') }}" method="GET" class="input-group" id="searchForm">
+                <form action="{{ route('pb.datakeseluruhan.index') }}" method="GET" class="input-group" id="searchForm">
                     <span class="input-group-text"><i class="bi bi-search"></i></span>
                     <input type="text" name="search" id="searchInput" class="form-control"
                         placeholder="Telusuri barang (nama atau kode)" value="{{ request('search') }}"
@@ -109,7 +174,6 @@
                     <button class="btn btn-outline-secondary" type="submit">Cari</button>
                 </form>
 
-                {{-- Dropdown Suggestions --}}
                 <div id="searchSuggestions" class="dropdown-menu w-100 position-absolute"
                     style="z-index: 1050; max-height: 300px; overflow-y: auto; display: none;">
                 </div>
@@ -136,7 +200,6 @@
                                     <th>No</th>
                                     <th>Nama</th>
                                     <th>Kode</th>
-                                    <th>Harga</th>
                                     <th>Stok</th>
                                     <th>Satuan</th>
                                     <th>Kategori</th>
@@ -149,18 +212,17 @@
                                         <td>{{ $i + 1 }}</td>
                                         <td>{{ $b->nama }}</td>
                                         <td>{{ $b->kode }}</td>
-                                        <td>Rp {{ number_format($b->harga ?? 0, 0, ',', '.') }}</td>
                                         <td>{{ $b->stok }}</td>
                                         <td>{{ $b->satuan }}</td>
                                         <td>{{ $b->kategori->nama ?? '-' }}</td>
                                         <td>
-                                            <button class="btn btn-sm btn-warning" data-bs-toggle="modal"
-                                                data-bs-target="#modalEditBarang-{{ $b->id }}">
-                                                <i class="bi bi-pencil"></i>
-                                            </button>
-                                             <button type="button" class="btn btn-sm btn-danger"
-                                                onclick="confirmDelete('{{ route('admin.barang.destroy', $b->id) }}', 'Barang {{ $b->nama }}')">
-                                                <i class="bi bi-trash"></i>
+                                            <button type="button" class="btn btn-primary btn-sm"
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#modalKelolaBarang"
+                                                data-id="{{ $b->id }}"
+                                                data-nama="{{ $b->nama }}"
+                                                data-kode="{{ $b->kode }}">
+                                                <i class="bi bi-box-seam"></i> Kelola
                                             </button>
                                         </td>
                                     </tr>
@@ -205,12 +267,6 @@
                                             <button class="btn btn-sm btn-success"
                                                 onclick="toggleDetail({{ $k->id }})"><i
                                                     class="bi bi-eye"></i></button>
-                                            {{--
-                                            <button type="button" class="btn btn-sm btn-danger"
-                                                onclick="confirmDelete('{{ route('admin.kategori.destroy', $k->id) }}', 'Kategori {{ $k->nama }}')">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                            --}}
                                         </div>
                                     </td>
                                 </tr>
@@ -233,34 +289,28 @@
                                                     </thead>
                                                     <tbody>
                                                         @foreach ($k->barang as $item)
+                                                            @php
+                                                                $stokGudang = \App\Models\StokGudang::where('barang_id', $item->id)
+                                                                    ->where('gudang_id', $k->gudang_id)
+                                                                    ->first();
+                                                                $stokTersedia = $stokGudang ? $stokGudang->stok : 0;
+                                                            @endphp
                                                             <tr>
                                                                 <td>{{ $item->kode }}</td>
                                                                 <td>{{ $item->nama }}</td>
-                                                                <td>{{ $item->stok }}</td>
+                                                                <td>{{ $stokTersedia }}</td>
                                                                 <td>{{ $item->satuan }}</td>
                                                                 <td>{{ $item->kategori->nama ?? '-' }}</td>
                                                                 <td>{{ $item->kategori->gudang->nama ?? '-' }}</td>
                                                                 <td>
-                                                                    <!-- Tombol Barang Masuk -->
                                                                     <button type="button"
-                                                                       class="btn btn-success btn-sm"
-                                                                       data-bs-toggle="modal" 
-                                                                       data-bs-target="#modalBarangMasuk"
-                                                                       data-id="{{ $item->id }}"
-                                                                       data-nama="{{ $item->nama }}"
-                                                                       data-kode="{{ $item->kode }}">
-                                                                       Barang Masuk
-                                                                    </button>
-                                                                    
-                                                                    <!-- Tombol Distribusi -->
-                                                                    <button type="button"
-                                                                       class="btn btn-warning btn-sm"
-                                                                       data-bs-toggle="modal" 
-                                                                       data-bs-target="#modalDistribusiBarang"
-                                                                       data-id="{{ $item->id }}"
-                                                                       data-nama="{{ $item->nama }}"
-                                                                       data-kode="{{ $item->kode }}">
-                                                                       Distribusi
+                                                                        class="btn btn-primary btn-sm"
+                                                                        data-bs-toggle="modal" 
+                                                                        data-bs-target="#modalKelolaBarang"
+                                                                        data-id="{{ $item->id }}"
+                                                                        data-nama="{{ $item->nama }}"
+                                                                        data-kode="{{ $item->kode }}">
+                                                                        <i class="bi bi-box-seam"></i> Kelola
                                                                     </button>
                                                                 </td>
                                                             </tr>
@@ -281,150 +331,149 @@
         </section>
     </main>
 
-<!-- Modal Barang Masuk -->
-<div class="modal fade" id="modalBarangMasuk" tabindex="-1">
+<!-- Modal Kelola Barang (menggabungkan Barang Masuk & Distribusi) -->
+<div class="modal fade" id="modalKelolaBarang" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <form method="POST" id="formBarangMasuk" enctype="multipart/form-data">
-            @csrf
-            <input type="hidden" name="barang_id" id="barangMasukId">
-            <div class="modal-content">
-                <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title fw-semibold">Form Barang Masuk</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body pt-3">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Nama Barang</label>
-                            <input type="text" id="barangMasukNama" class="form-control" placeholder="Nama Barang" readonly>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Jumlah Masuk</label>
-                            <input type="number" name="jumlah" class="form-control" placeholder="Masukkan Jumlah" required min="1">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Tanggal Masuk <small class="text-muted">(Opsional)</small></label>
-                            <input type="date" name="tanggal" id="tanggalMasuk" class="form-control" placeholder="Kosongkan untuk tanggal hari ini">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Keterangan</label>
-                            <input type="text" name="keterangan" class="form-control" placeholder="Masukkan keterangan barang">
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label">Bukti Barang Masuk</label>
-                            <div class="border rounded p-4 text-center" style="background-color: #f8f9fa;">
-                                <input type="file" name="bukti" id="buktiBrgMasuk" class="d-none" accept="image/*,.pdf">
-                                <label for="buktiBrgMasuk" class="d-block" style="cursor: pointer;">
-                                    <i class="bi bi-cloud-upload" style="font-size: 2rem; color: #6c757d;"></i>
-                                    <div class="mt-2" style="color: #6c757d; font-size: 0.875rem;">Klik untuk Upload atau tarik dan seret</div>
-                                </label>
-                                <div id="fileNameMasuk" class="mt-2 text-primary small"></div>
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-semibold">Kelola Barang: <span id="kelolaBarangNama" class="text-primary"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-3">
+                <!-- Tab Navigation -->
+                <ul class="nav nav-tabs mb-4" id="kelolaTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="tab-barang-masuk" data-bs-toggle="tab" 
+                                data-bs-target="#content-barang-masuk" type="button" role="tab">
+                            <i class="bi bi-box-arrow-in-down"></i> Barang Masuk
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tab-distribusi" data-bs-toggle="tab" 
+                                data-bs-target="#content-distribusi" type="button" role="tab">
+                            <i class="bi bi-box-arrow-right"></i> Distribusi
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content" id="kelolaTabContent">
+                    <!-- Content: Barang Masuk -->
+                    <div class="tab-pane fade show active" id="content-barang-masuk" role="tabpanel">
+                        <form method="POST" id="formBarangMasuk" enctype="multipart/form-data">
+                            @csrf
+                            <input type="hidden" name="barang_id" id="barangMasukId">
+                            
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Nama Barang</label>
+                                    <input type="text" id="barangMasukNama" class="form-control" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Jumlah Masuk</label>
+                                    <input type="number" name="jumlah" class="form-control" placeholder="Masukkan Jumlah" required min="1">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Tanggal Masuk <small class="text-muted">(Opsional)</small></label>
+                                    <input type="date" name="tanggal" id="tanggalMasuk" class="form-control">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Keterangan</label>
+                                    <input type="text" name="keterangan" class="form-control" placeholder="Masukkan keterangan">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Bukti Barang Masuk</label>
+                                    <div class="border rounded p-4 text-center" style="background-color: #f8f9fa;">
+                                        <input type="file" name="bukti" id="buktiBrgMasuk" class="d-none" accept="image/*,.pdf">
+                                        <label for="buktiBrgMasuk" class="d-block" style="cursor: pointer;">
+                                            <i class="bi bi-cloud-upload" style="font-size: 2rem; color: #6c757d;"></i>
+                                            <div class="mt-2" style="color: #6c757d; font-size: 0.875rem;">Klik untuk Upload</div>
+                                        </label>
+                                        <div id="fileNameMasuk" class="mt-2 text-primary small"></div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+
+                            <div class="d-flex justify-content-end gap-2 mt-4">
+                                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Batal</button>
+                                <button type="submit" class="btn btn-success px-4">
+                                    <i class="bi bi-check-circle"></i> Simpan Barang Masuk
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Content: Distribusi -->
+                    <div class="tab-pane fade" id="content-distribusi" role="tabpanel">
+                        <form method="POST" id="formDistribusi" enctype="multipart/form-data">
+                            @csrf
+                            <input type="hidden" name="barang_id" id="distribusiBarangId">
+                            
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Nama Barang</label>
+                                    <input type="text" id="distribusiBarangNama" class="form-control" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Jumlah Keluar</label>
+                                    <input type="number" name="jumlah" class="form-control" placeholder="Masukkan Jumlah" required min="1">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Tanggal Distribusi <small class="text-muted">(Opsional)</small></label>
+                                    <input type="date" name="tanggal" id="tanggalDistribusi" class="form-control">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Gudang Tujuan</label>
+                                    <select name="gudang_tujuan_id" id="distribusiGudangTujuan" class="form-select" required>
+                                        <option value="">-- Pilih Gudang --</option>
+                                        @foreach($gudang as $g)
+                                            <option value="{{ $g->id }}">{{ $g->nama }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label">Kategori Tujuan</label>
+                                    <select name="kategori_tujuan_id" id="distribusiKategoriTujuan" class="form-select" required disabled>
+                                        <option value="">-- Pilih Gudang Terlebih Dahulu --</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Bukti Distribusi</label>
+                                    <div class="border rounded p-4 text-center" style="background-color: #f8f9fa;">
+                                        <input type="file" name="bukti" id="buktiBrgDistribusi" class="d-none" accept="image/*,.pdf">
+                                        <label for="buktiBrgDistribusi" class="d-block" style="cursor: pointer;">
+                                            <i class="bi bi-cloud-upload" style="font-size: 2rem; color: #6c757d;"></i>
+                                            <div class="mt-2" style="color: #6c757d; font-size: 0.875rem;">Klik untuk Upload</div>
+                                        </label>
+                                        <div id="fileNameDistribusi" class="mt-2 text-primary small"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-end gap-2 mt-4">
+                                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Batal</button>
+                                <button type="submit" class="btn btn-warning px-4">
+                                    <i class="bi bi-send"></i> Simpan Distribusi
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
-                <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn btn-danger px-4" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary px-4">Simpan</button>
-                </div>
             </div>
-        </form>
+        </div>
     </div>
 </div>
-
-<!-- Modal Distribusi Barang -->
-<div class="modal fade" id="modalDistribusiBarang" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <form method="POST" id="formDistribusi" enctype="multipart/form-data">
-            @csrf
-            <input type="hidden" name="barang_id" id="distribusiBarangId">
-            <div class="modal-content">
-                <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title fw-semibold">Form Distribusi Barang</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body pt-3">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Nama Barang</label>
-                            <input type="text" id="distribusiBarangNama" class="form-control" placeholder="Nama Barang" readonly>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Jumlah Keluar</label>
-                            <input type="number" name="jumlah" class="form-control" placeholder="Masukkan Jumlah" required min="1">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Tanggal Distribusi <small class="text-muted">(Opsional)</small></label>
-                            <input type="date" name="tanggal" id="tanggalDistribusi" class="form-control" placeholder="Kosongkan untuk tanggal hari ini">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Gudang Tujuan</label>
-                            <select name="gudang_tujuan_id" id="distribusiGudangTujuan" class="form-select" required>
-                                <option value="">-- Pilih Gudang --</option>
-                                @foreach($gudang as $g)
-                                    <option value="{{ $g->id }}">{{ $g->nama }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-12">
-                            <label class="form-label">Kategori Tujuan</label>
-                            <select name="kategori_tujuan_id" id="distribusiKategoriTujuan" class="form-select" required disabled>
-                                <option value="">-- Pilih Gudang Terlebih Dahulu --</option>
-                            </select>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label">Bukti Barang Distribusi</label>
-                            <div class="border rounded p-4 text-center" style="background-color: #f8f9fa;">
-                                <input type="file" name="bukti" id="buktiBrgDistribusi" class="d-none" accept="image/*,.pdf">
-                                <label for="buktiBrgDistribusi" class="d-block" style="cursor: pointer;">
-                                    <i class="bi bi-cloud-upload" style="font-size: 2rem; color: #6c757d;"></i>
-                                    <div class="mt-2" style="color: #6c757d; font-size: 0.875rem;">Klik untuk Upload atau tarik dan seret</div>
-                                </label>
-                                <div id="fileNameDistribusi" class="mt-2 text-primary small"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn btn-danger px-4" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary px-4">Simpan</button>
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
-
-    @php
-    // Kita cek: ini konteks "satu gudang" atau "multi gudang"?
-    $isSingleGudang = false;
-
-    if ($kategori->isNotEmpty()) {
-        $firstGudang = optional($kategori->first()->gudang)->nama;
-        $isSingleGudang = $firstGudang && $kategori->every(fn($k) => optional($k->gudang)->nama === $firstGudang);
-    }
-
-    // kalau ada filter gudang/halaman khusus gudang → paksa single
-    if (isset($selectedGudang) && $selectedGudang) {
-        $isSingleGudang = true;
-    }
-    $path = request()->path();
-    if (str_contains($path, '/atk') || str_contains($path, '/listrik')
-        || str_contains($path, '/kebersihan') || str_contains($path, '/komputer')) {
-        $isSingleGudang = true;
-    }
-    @endphp
 
     {{-- Modal Filter --}}
     <div class="modal fade" id="modalFilterBarang" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
-            <form action="{{ route('admin.datakeseluruhan.index') }}" method="GET" class="modal-content">
+            <form action="{{ route('pb.datakeseluruhan.index') }}" method="GET" class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Filter Barang</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row g-3">
-                        <!-- Satuan -->
                         <div class="col-md-6">
                             <label class="form-label">Satuan</label>
                             <select name="satuan" class="form-select">
@@ -437,7 +486,6 @@
                             </select>
                         </div>
 
-                        <!-- Rentang Harga -->
                         <div class="col-md-6">
                             <label class="form-label">Rentang Harga</label>
                             <div class="d-flex gap-2">
@@ -448,7 +496,6 @@
                             </div>
                         </div>
 
-                        <!-- Kategori -->
                         <div class="col-md-6">
                             <label class="form-label">Kategori</label>
                             <select name="kategori_id" class="form-select">
@@ -461,7 +508,6 @@
                             </select>
                         </div>
 
-                        <!-- Stok -->
                         <div class="col-md-6">
                             <label class="form-label">Stok</label>
                             <div class="d-flex gap-2">
@@ -472,7 +518,6 @@
                             </div>
                         </div>
 
-                        <!-- Gudang -->
                         <div class="col-md-12">
                             <label class="form-label">Gudang</label>
                             <select name="gudang_id" class="form-select">
@@ -487,29 +532,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <a href="{{ route('admin.datakeseluruhan.index') }}" class="btn btn-secondary">Reset Filter</a>
+                    <a href="{{ route('pb.datakeseluruhan.index') }}" class="btn btn-secondary">Reset Filter</a>
                     <button class="btn btn-primary" type="submit">Terapkan Filter</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal Konfirmasi Hapus -->
-    <div class="modal fade" id="modalConfirmDelete" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <form method="POST" id="deleteForm" class="modal-content">
-                @csrf
-                @method('DELETE')
-                <div class="modal-header">
-                    <h5 class="modal-title">Konfirmasi Hapus</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p id="deleteMessage">Apakah Anda yakin ingin menghapus data ini?</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-danger">Hapus</button>
                 </div>
             </form>
         </div>
@@ -587,7 +611,7 @@
 
                 searchTimeout = setTimeout(() => {
                     const activeGudangId = getActiveGudangId();
-                    let searchUrl = `{{ route('admin.api.search.barang') }}?q=${encodeURIComponent(query)}`;
+                    let searchUrl = `/pb/api/search-barang?q=${encodeURIComponent(query)}`;
                     
                     if (activeGudangId) {
                         searchUrl += `&gudang_id=${activeGudangId}`;
@@ -733,41 +757,56 @@
                 });
             });
 
-            // Handle Modal Barang Masuk
-            const modalBarangMasuk = document.getElementById("modalBarangMasuk");
-            if (modalBarangMasuk) {
-                modalBarangMasuk.addEventListener("show.bs.modal", function (event) {
+            // Handle Modal Kelola Barang
+            const modalKelola = document.getElementById("modalKelolaBarang");
+            if (modalKelola) {
+                modalKelola.addEventListener("show.bs.modal", function (event) {
                     const button = event.relatedTarget;
                     const barangId = button.getAttribute("data-id");
                     const barangNama = button.getAttribute("data-nama");
                     const barangKode = button.getAttribute("data-kode") || '';
                     
+                    // Set data untuk kedua form
+                    document.getElementById("kelolaBarangNama").textContent = barangNama;
                     document.getElementById("barangMasukId").value = barangId;
                     document.getElementById("barangMasukNama").value = barangNama;
-                });
-            }
-
-            // Handle Modal Distribusi
-            const modalDistribusi = document.getElementById("modalDistribusiBarang");
-            if (modalDistribusi) {
-                modalDistribusi.addEventListener("show.bs.modal", function (event) {
-                    const button = event.relatedTarget;
-                    const barangId = button.getAttribute("data-id");
-                    const barangNama = button.getAttribute("data-nama");
-                    const barangKode = button.getAttribute("data-kode") || '';
-                    
                     document.getElementById("distribusiBarangId").value = barangId;
-                    document.getElementById("distribusiBarangKode").value = barangKode;
+                    document.getElementById("distribusiBarangNama").value = barangNama;
                     
-                    // Reset dropdown kategori saat modal dibuka
+                    // Reset ke tab pertama
+                    const firstTab = document.getElementById('tab-barang-masuk');
+                    const firstTabContent = document.getElementById('content-barang-masuk');
+                    const secondTab = document.getElementById('tab-distribusi');
+                    const secondTabContent = document.getElementById('content-distribusi');
+                    
+                    firstTab.classList.add('active');
+                    firstTabContent.classList.add('show', 'active');
+                    secondTab.classList.remove('active');
+                    secondTabContent.classList.remove('show', 'active');
+                    
+                    // Reset forms
+                    document.getElementById('formBarangMasuk').reset();
+                    document.getElementById('formDistribusi').reset();
+                    
+                    // Set kembali nilai barang setelah reset
+                    document.getElementById("barangMasukId").value = barangId;
+                    document.getElementById("barangMasukNama").value = barangNama;
+                    document.getElementById("distribusiBarangId").value = barangId;
+                    document.getElementById("distribusiBarangNama").value = barangNama;
+                    
+                    // Reset kategori dropdown
                     const kategoriSelect = document.getElementById('distribusiKategoriTujuan');
                     kategoriSelect.innerHTML = '<option value="">-- Pilih Gudang Terlebih Dahulu --</option>';
                     kategoriSelect.disabled = true;
                     document.getElementById('distribusiGudangTujuan').value = '';
+                    
+                    // Clear file previews
+                    document.getElementById('fileNameMasuk').textContent = '';
+                    document.getElementById('fileNameDistribusi').textContent = '';
                 });
             }
 
-            // Handle perubahan Gudang Tujuan untuk load kategori
+            // Handle perubahan Gudang Tujuan
             const distribusiGudangTujuan = document.getElementById('distribusiGudangTujuan');
             if (distribusiGudangTujuan) {
                 distribusiGudangTujuan.addEventListener('change', function() {
@@ -780,16 +819,14 @@
                         return;
                     }
                     
-                    // Show loading
                     kategoriSelect.innerHTML = '<option value="">Memuat kategori...</option>';
                     kategoriSelect.disabled = true;
                     
-                    // Fetch kategori berdasarkan gudang
                     fetch(`/pb/api/kategori-by-gudang/${gudangId}`)
                         .then(response => response.json())
                         .then(data => {
                             if (data.length === 0) {
-                                kategoriSelect.innerHTML = '<option value="">Tidak ada kategori di gudang ini</option>';
+                                kategoriSelect.innerHTML = '<option value="">Tidak ada kategori</option>';
                                 kategoriSelect.disabled = true;
                             } else {
                                 let options = '<option value="">-- Pilih Kategori --</option>';
@@ -801,38 +838,31 @@
                             }
                         })
                         .catch(error => {
-                            console.error('Error loading kategori:', error);
+                            console.error('Error:', error);
                             kategoriSelect.innerHTML = '<option value="">Error memuat kategori</option>';
                             kategoriSelect.disabled = true;
                         });
                 });
             }
 
-            // Handle File Upload Preview - Barang Masuk
+            // File preview handlers
             const buktiBrgMasuk = document.getElementById('buktiBrgMasuk');
             if (buktiBrgMasuk) {
                 buktiBrgMasuk.addEventListener('change', function() {
                     const fileName = this.files[0]?.name || '';
-                    const fileNameDisplay = document.getElementById('fileNameMasuk');
-                    if (fileNameDisplay) {
-                        fileNameDisplay.textContent = fileName ? `File: ${fileName}` : '';
-                    }
+                    document.getElementById('fileNameMasuk').textContent = fileName ? `File: ${fileName}` : '';
                 });
             }
 
-            // Handle File Upload Preview - Distribusi
             const buktiBrgDistribusi = document.getElementById('buktiBrgDistribusi');
             if (buktiBrgDistribusi) {
                 buktiBrgDistribusi.addEventListener('change', function() {
                     const fileName = this.files[0]?.name || '';
-                    const fileNameDisplay = document.getElementById('fileNameDistribusi');
-                    if (fileNameDisplay) {
-                        fileNameDisplay.textContent = fileName ? `File: ${fileName}` : '';
-                    }
+                    document.getElementById('fileNameDistribusi').textContent = fileName ? `File: ${fileName}` : '';
                 });
             }
 
-            // Handle Form Submit - Barang Masuk
+            // Form submit handlers
             const formBarangMasuk = document.getElementById('formBarangMasuk');
             if (formBarangMasuk) {
                 formBarangMasuk.addEventListener('submit', function(e) {
@@ -843,7 +873,6 @@
                 });
             }
 
-            // Handle Form Submit - Distribusi
             const formDistribusi = document.getElementById('formDistribusi');
             if (formDistribusi) {
                 formDistribusi.addEventListener('submit', function(e) {
@@ -853,77 +882,6 @@
                     this.submit();
                 });
             }
-        });
-
-        // Confirm delete function
-        function confirmDelete(actionUrl, itemName) {
-            document.getElementById('deleteForm').setAttribute('action', actionUrl);
-            document.getElementById('deleteMessage').innerText =
-                "Apakah Anda yakin ingin menghapus " + itemName + "?";
-            let modal = new bootstrap.Modal(document.getElementById('modalConfirmDelete'));
-            modal.show();
-        }
-
-        // Format Rupiah function
-        function formatRupiah(angka) {
-            return angka.replace(/\D/g, "")
-                .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-        }
-
-        function unformatRupiah(formatted) {
-            return formatted.replace(/\./g, "");
-        }
-
-        // Handle Tambah Barang Price Format
-        const hargaTambahInput = document.getElementById('hargaTambah');
-        const hargaTambahHidden = document.getElementById('hargaTambahHidden');
-        
-        if (hargaTambahInput && hargaTambahHidden) {
-            hargaTambahInput.addEventListener('input', function() {
-                const formatted = formatRupiah(this.value);
-                this.value = formatted;
-                hargaTambahHidden.value = unformatRupiah(formatted);
-            });
-
-            // Set initial value if exists
-            if (hargaTambahInput.value) {
-                const initialValue = unformatRupiah(hargaTambahInput.value);
-                hargaTambahHidden.value = initialValue;
-                hargaTambahInput.value = formatRupiah(initialValue);
-            }
-        }
-
-        // Handle Edit Barang Price Format
-        document.querySelectorAll('[id^="hargaEdit-"]').forEach(input => {
-            const id = input.id.replace('hargaEdit-', '');
-            const hiddenInput = document.getElementById('hargaEditHidden-' + id);
-            
-            if (hiddenInput) {
-                input.addEventListener('input', function() {
-                    const formatted = formatRupiah(this.value);
-                    this.value = formatted;
-                    hiddenInput.value = unformatRupiah(formatted);
-                });
-
-                // Set initial formatted value
-                if (hiddenInput.value) {
-                    input.value = formatRupiah(hiddenInput.value.toString());
-                }
-            }
-        });
-
-        // Auto-clean form before submit (backup solution)
-        document.querySelectorAll('form').forEach(form => {
-            form.addEventListener('submit', function() {
-                // Clean any remaining display price inputs
-                const displayInputs = form.querySelectorAll('input[name="harga_display"]');
-                displayInputs.forEach(input => {
-                    const hiddenInput = form.querySelector('input[name="harga"]');
-                    if (hiddenInput) {
-                        hiddenInput.value = unformatRupiah(input.value);
-                    }
-                });
-            });
         });
     </script>
 

@@ -15,7 +15,7 @@ class Barang extends Model
         'kode',
         'nama',
         'harga',
-        'stok',
+        'stok', // Bisa dijadikan total stok atau dihapus
         'satuan',
         'kategori_id',
         'jenis_barang_id',
@@ -26,70 +26,97 @@ class Barang extends Model
         'stok' => 'integer',
     ];
 
-    /**
-     * Relasi ke kategori
-     */
     public function kategori()
     {
         return $this->belongsTo(Kategori::class, 'kategori_id');
     }
 
-    /**
-     * Relasi ke jenis barang
-     */
     public function jenisBarang()
     {
         return $this->belongsTo(JenisBarang::class, 'jenis_barang_id');
     }
 
-    /**
-     * Relasi ke riwayat barang (sebagai barang asal)
-     */
     public function riwayat()
     {
         return $this->hasMany(RiwayatBarang::class, 'barang_id');
     }
 
-    /**
-     * Relasi ke riwayat barang (sebagai barang tujuan)
-     */
     public function riwayatTujuan()
     {
         return $this->hasMany(RiwayatBarang::class, 'barang_tujuan_id');
     }
 
     /**
-     * Scope untuk filter stok rendah
+     * Relasi ke stok gudang
      */
+    public function stokGudang()
+    {
+        return $this->hasMany(StokGudang::class);
+    }
+
+    /**
+     * Get stok di gudang tertentu
+     */
+    public function stokDiGudang($gudangId)
+    {
+        return $this->stokGudang()->where('gudang_id', $gudangId)->first();
+    }
+
+    /**
+     * Get atau buat stok gudang
+     */
+    public function getOrCreateStokGudang($gudangId)
+    {
+        return StokGudang::firstOrCreate(
+            [
+                'barang_id' => $this->id,
+                'gudang_id' => $gudangId
+            ],
+            ['stok' => 0]
+        );
+    }
+
+    /**
+     * Total stok di semua gudang
+     */
+    public function getTotalStokAttribute()
+    {
+        return $this->stokGudang()->sum('stok');
+    }
+
+    /**
+     * Stok di gudang utama (kategori barang)
+     */
+    public function getStokGudangUtamaAttribute()
+    {
+        if (!$this->kategori || !$this->kategori->gudang_id) {
+            return 0;
+        }
+        $stok = $this->stokDiGudang($this->kategori->gudang_id);
+        return $stok ? $stok->stok : 0;
+    }
+
     public function scopeStokRendah($query, $minimum = 10)
     {
         return $query->where('stok', '<=', $minimum);
     }
 
-    /**
-     * Scope untuk filter stok habis
-     */
     public function scopeStokHabis($query)
     {
         return $query->where('stok', 0);
     }
 
-    /**
-     * Accessor untuk format harga Rupiah
-     */
     public function getHargaFormattedAttribute()
     {
         return 'Rp ' . number_format($this->harga, 0, ',', '.');
     }
 
-    /**
-     * Accessor untuk status stok
-     */
     public function getStatusStokAttribute()
     {
-        if ($this->stok == 0) {
+        $totalStok = $this->total_stok;
+        if ($totalStok == 0) {
             return 'habis';
-        } elseif ($this->stok <= 10) {
+        } elseif ($totalStok <= 10) {
             return 'rendah';
         }
         return 'tersedia';
