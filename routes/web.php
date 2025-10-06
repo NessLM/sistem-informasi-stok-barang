@@ -53,7 +53,7 @@ Route::middleware(['auth', 'role:Pengelola Barang'])
     ->get('/pb', fn () => to_route('pb.dashboard'))
     ->name('staff.pb.dashboard');
 
-Route::middleware(['auth', 'role:Penanggung Jawab'])
+Route::middleware(['auth', 'role:Penanggung Jawab ATK,Penanggung Jawab Kebersihan,Penanggung Jawab Listrik,Penanggung Jawab Bahan Komputer'])
     ->get('/pj', fn () => to_route('pj.dashboard'))
     ->name('staff.pj.dashboard');
 
@@ -81,6 +81,16 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:Admin'])->grou
     Route::get('/datakeseluruhan/listrik',    [AdminBarangController::class, 'index'])->name('datakeseluruhan.listrik');
     Route::get('/datakeseluruhan/kebersihan', [AdminBarangController::class, 'index'])->name('datakeseluruhan.kebersihan');
     Route::get('/datakeseluruhan/komputer',   [AdminBarangController::class, 'index'])->name('datakeseluruhan.komputer');
+
+    // [NEW] Route alias untuk gudang (backward compatibility dengan menu lama)
+    Route::get('/gudang/atk', fn() => redirect()->route('admin.datakeseluruhan.gudang', ['slug' => 'gudang-atk']))
+        ->name('gudang.atk');
+    Route::get('/gudang/listrik', fn() => redirect()->route('admin.datakeseluruhan.gudang', ['slug' => 'gudang-listrik']))
+        ->name('gudang.listrik');
+    Route::get('/gudang/kebersihan', fn() => redirect()->route('admin.datakeseluruhan.gudang', ['slug' => 'gudang-kebersihan']))
+        ->name('gudang.kebersihan');
+    Route::get('/gudang/komputer', fn() => redirect()->route('admin.datakeseluruhan.gudang', ['slug' => 'gudang-b-komputer']))
+        ->name('gudang.komputer');
 
     // API Search
     Route::get('/api/search-barang', [AdminDataKeseluruhanController::class, 'searchSuggestions'])
@@ -111,6 +121,18 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:Admin'])->grou
 
     // Laporan (invokable)
     Route::get('/laporan', AdminLaporanController::class)->name('laporan');
+});
+
+// [NEW] Route alias staff.admin.gudang.* untuk backward compatibility
+Route::middleware(['auth', 'role:Admin'])->group(function () {
+    Route::get('/staff/admin/gudang/atk', fn() => redirect()->route('admin.datakeseluruhan.gudang', ['slug' => 'gudang-atk']))
+        ->name('staff.admin.gudang.atk');
+    Route::get('/staff/admin/gudang/listrik', fn() => redirect()->route('admin.datakeseluruhan.gudang', ['slug' => 'gudang-listrik']))
+        ->name('staff.admin.gudang.listrik');
+    Route::get('/staff/admin/gudang/kebersihan', fn() => redirect()->route('admin.datakeseluruhan.gudang', ['slug' => 'gudang-kebersihan']))
+        ->name('staff.admin.gudang.kebersihan');
+    Route::get('/staff/admin/gudang/komputer', fn() => redirect()->route('admin.datakeseluruhan.gudang', ['slug' => 'gudang-b-komputer']))
+        ->name('staff.admin.gudang.komputer');
 });
 
 
@@ -168,8 +190,8 @@ Route::prefix('pb')->name('pb.')->middleware(['auth', 'role:Pengelola Barang'])-
 /* =========================================================================
  | PJ AREA (Penanggung Jawab)
  * ========================================================================= */
-Route::prefix('pj')->name('pj.')->middleware(['auth', 'role:Penanggung Jawab'])->group(function () {
+Route::prefix('pj')->name('pj.')->middleware(['auth', 'role:Penanggung Jawab ATK,Penanggung Jawab Kebersihan,Penanggung Jawab Listrik,Penanggung Jawab Bahan Komputer'])->group(function () {
     Route::get('/dashboard', PjDashboardController::class)->name('dashboard');
-    // [TAMBAHAN] Route filter untuk dashboard PJ
+    // Route filter untuk dashboard PJ
     Route::get('/dashboard/filter', [PjDashboardController::class, 'filterData'])->name('dashboard.filter');
 });

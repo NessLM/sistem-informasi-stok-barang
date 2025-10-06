@@ -41,11 +41,13 @@ class RiwayatSheet implements FromCollection, WithHeadings, WithMapping, WithSty
 {
     protected $riwayat;
     protected $sheetTitle;
+    protected $counter;
 
     public function __construct($riwayat, $sheetTitle)
     {
         $this->riwayat = $riwayat;
         $this->sheetTitle = $sheetTitle;
+        $this->counter = 0; // Inisialisasi counter untuk setiap sheet
     }
 
     public function collection()
@@ -69,9 +71,10 @@ class RiwayatSheet implements FromCollection, WithHeadings, WithMapping, WithSty
 
     public function map($riwayat): array
     {
-        static $i = 1;
+        $this->counter++;
+        
         return [
-            $i++,
+            $this->counter, // Gunakan counter instance, bukan static
             \Carbon\Carbon::parse($riwayat->tanggal)->format('d/m/Y'),
             \Carbon\Carbon::parse($riwayat->waktu)->format('H:i'),
             $riwayat->gudang,
@@ -85,7 +88,7 @@ class RiwayatSheet implements FromCollection, WithHeadings, WithMapping, WithSty
     public function styles(Worksheet $sheet)
     {
         // Set title for the sheet
-        $sheet->setTitle($this->sheetTitle);
+        $sheet->setTitle(substr($this->sheetTitle, 0, 31)); // Excel sheet title max 31 chars
         
         return [
             // Style the first row as bold text
