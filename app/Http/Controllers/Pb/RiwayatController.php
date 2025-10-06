@@ -155,22 +155,6 @@ class RiwayatController extends Controller
         // Ambil data
         $riwayatData = $query->get();
 
-        // Transform data untuk export
-        $riwayat = $riwayatData->map(function ($item) {
-            return (object) [
-                'tanggal' => $item->tanggal,
-                'waktu' => $item->created_at->format('H:i:s'),
-                'alur_barang' => $item->jenis_transaksi == 'masuk' ? 'Masuk' : 'Keluar',
-                'gudang' => optional(optional($item->barang->kategori)->gudang)->nama ?? '-',
-                'nama_barang' => optional($item->barang)->nama ?? '-',
-                'jumlah' => $item->jumlah,
-                'kategori_asal' => optional($item->kategoriAsal)->nama ?? '-',
-                'kategori_tujuan' => optional($item->kategoriTujuan)->nama ?? '-',
-                'gudang_tujuan' => optional($item->gudangTujuan)->nama ?? '-',
-                'bukti' => $item->bukti,
-            ];
-        });
-
         $format = $request->download;
 
         // Siapkan filter untuk export
@@ -183,7 +167,23 @@ class RiwayatController extends Controller
         ];
 
         if ($format == 'pdf') {
-            // Generate PDF
+            // Transform data untuk PDF (gunakan variabel $riwayat seperti di view)
+            $riwayat = $riwayatData->map(function ($item) {
+                return (object) [
+                    'tanggal' => $item->tanggal,
+                    'waktu' => $item->created_at->format('H:i:s'),
+                    'alur_barang' => $item->jenis_transaksi == 'masuk' ? 'Masuk' : 'Keluar',
+                    'gudang' => optional(optional($item->barang->kategori)->gudang)->nama ?? '-',
+                    'nama_barang' => optional($item->barang)->nama ?? '-',
+                    'jumlah' => $item->jumlah,
+                    'kategori_asal' => optional($item->kategoriAsal)->nama ?? '-',
+                    'kategori_tujuan' => optional($item->kategoriTujuan)->nama ?? '-',
+                    'gudang_tujuan' => optional($item->gudangTujuan)->nama ?? '-',
+                    'bukti' => $item->bukti,
+                ];
+            });
+
+            // Generate PDF menggunakan variabel $riwayat
             $pdf = Pdf::loadView('staff.pb.riwayat-pdf', compact('riwayat', 'filter'))
                 ->setPaper('a4', 'landscape')
                 ->setOption('isHtml5ParserEnabled', true)
@@ -193,7 +193,7 @@ class RiwayatController extends Controller
         }
 
         if ($format == 'excel') {
-            // Download Excel menggunakan RiwayatBarangExport
+            // Download Excel menggunakan data ASLI (model RiwayatBarang)
             return Excel::download(new RiwayatExportPb($riwayatData, $filter), 'Laporan_Riwayat_Barang_' . date('Y-m-d_His') . '.xlsx');
         }
 

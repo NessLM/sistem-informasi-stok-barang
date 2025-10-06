@@ -34,8 +34,9 @@ class RiwayatExportPb implements WithMultipleSheets
         }
         
         // Pisahkan data berdasarkan jenis transaksi
+        // PERBAIKAN: Gunakan 'distribusi' bukan 'keluar'
         $barangMasuk = $this->riwayat->where('jenis_transaksi', 'masuk')->values();
-        $barangKeluar = $this->riwayat->where('jenis_transaksi', 'keluar')->values();
+        $barangKeluar = $this->riwayat->where('jenis_transaksi', 'distribusi')->values();
         
         $sheets[] = new BarangMasukSheet($barangMasuk);
         $sheets[] = new BarangKeluarSheet($barangKeluar);
@@ -74,10 +75,9 @@ class BarangMasukSheet implements FromCollection, WithHeadings, WithMapping, Wit
         static $rowNumber = 0;
         $rowNumber++;
         
-        // Format tanggal dan waktu - PASTIKAN TIDAK ADA | (pipe)
+        // Format tanggal dan waktu
         $tanggalWaktu = '';
         if (isset($riwayat->created_at)) {
-            // Format: "06/10/2024, 14:30:25" (tanpa pipe)
             $tanggalWaktu = $riwayat->created_at->format('d/m/Y, H:i:s');
         } elseif (isset($riwayat->tanggal)) {
             $tanggalWaktu = $riwayat->tanggal;
@@ -85,7 +85,7 @@ class BarangMasukSheet implements FromCollection, WithHeadings, WithMapping, Wit
             $tanggalWaktu = '-';
         }
         
-        // Bersihkan data dari karakter yang tidak diinginkan
+        // Ambil data gudang dan barang
         $gudangAsal = optional(optional($riwayat->barang)->kategori->gudang)->nama ?? '-';
         $namaBarang = optional($riwayat->barang)->nama ?? '-';
         $jumlah = $riwayat->jumlah ?? '0';
@@ -96,7 +96,7 @@ class BarangMasukSheet implements FromCollection, WithHeadings, WithMapping, Wit
         
         return [
             $rowNumber,
-            $tanggalWaktu, // Sudah format benar tanpa pipe
+            $tanggalWaktu,
             $gudangAsal,
             $namaBarang,
             $jumlah
@@ -108,7 +108,6 @@ class BarangMasukSheet implements FromCollection, WithHeadings, WithMapping, Wit
         $lastRow = max(1, $this->riwayat->count() + 1);
         $dataRange = 'A1:E' . $lastRow;
         
-        // Terapkan border ke semua sel
         $sheet->getStyle($dataRange)->applyFromArray([
             'borders' => [
                 'allBorders' => [
@@ -170,10 +169,9 @@ class BarangKeluarSheet implements FromCollection, WithHeadings, WithMapping, Wi
         static $rowNumber = 0;
         $rowNumber++;
         
-        // Format tanggal dan waktu - PASTIKAN TIDAK ADA | (pipe)
+        // Format tanggal dan waktu
         $tanggalWaktu = '';
         if (isset($riwayat->created_at)) {
-            // Format: "06/10/2024, 14:30:25" (tanpa pipe, hanya koma sebagai pemisah)
             $tanggalWaktu = $riwayat->created_at->format('d/m/Y, H:i:s');
         } elseif (isset($riwayat->tanggal)) {
             $tanggalWaktu = $riwayat->tanggal;
@@ -181,20 +179,20 @@ class BarangKeluarSheet implements FromCollection, WithHeadings, WithMapping, Wi
             $tanggalWaktu = '-';
         }
         
-        // Bersihkan data dari karakter yang tidak diinginkan
+        // Ambil data dengan berbagai fallback
         $gudangAsal = optional(optional($riwayat->barang)->kategori->gudang)->nama ?? '-';
         $namaBarang = optional($riwayat->barang)->nama ?? '-';
         $jumlah = $riwayat->jumlah ?? '0';
         $gudangTujuan = optional($riwayat->gudangTujuan)->nama ?? '-';
         
-        // Hapus karakter pipe jika ada di semua field
+        // Hapus karakter pipe jika ada
         $gudangAsal = str_replace('|', '', $gudangAsal);
         $namaBarang = str_replace('|', '', $namaBarang);
         $gudangTujuan = str_replace('|', '', $gudangTujuan);
         
         return [
             $rowNumber,
-            $tanggalWaktu, // Format sudah benar: "06/10/2024, 14:30:25"
+            $tanggalWaktu,
             $gudangAsal,
             $namaBarang,
             $jumlah,
@@ -207,7 +205,6 @@ class BarangKeluarSheet implements FromCollection, WithHeadings, WithMapping, Wi
         $lastRow = max(1, $this->riwayat->count() + 1);
         $dataRange = 'A1:F' . $lastRow;
         
-        // Terapkan border ke semua sel
         $sheet->getStyle($dataRange)->applyFromArray([
             'borders' => [
                 'allBorders' => [
