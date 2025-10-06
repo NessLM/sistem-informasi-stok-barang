@@ -8,13 +8,14 @@ use App\Models\Gudang;
 use App\Helpers\MenuHelper;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\RiwayatExportPb;
 use Carbon\Carbon;
 
 class RiwayatController extends Controller
 {
     public function index(Request $request)
     {
-
         $menu = MenuHelper::pbMenu();
 
         // Check if download requested
@@ -98,11 +99,8 @@ class RiwayatController extends Controller
             })
             ->values();
 
-
         return view('staff.pb.riwayat', compact('riwayat', 'gudangList', 'menu'));
     }
-
-    
 
     public function downloadReport(Request $request)
     {
@@ -154,8 +152,11 @@ class RiwayatController extends Controller
             }
         }
 
-        // Ambil data dan transform
-        $riwayat = $query->get()->map(function ($item) {
+        // Ambil data
+        $riwayatData = $query->get();
+
+        // Transform data untuk export
+        $riwayat = $riwayatData->map(function ($item) {
             return (object) [
                 'tanggal' => $item->tanggal,
                 'waktu' => $item->created_at->format('H:i:s'),
@@ -167,15 +168,23 @@ class RiwayatController extends Controller
                 'kategori_tujuan' => optional($item->kategoriTujuan)->nama ?? '-',
                 'gudang_tujuan' => optional($item->gudangTujuan)->nama ?? '-',
                 'bukti' => $item->bukti,
-                'bukti_path' => $item->bukti ? $item->bukti : null,
             ];
         });
 
         $format = $request->download;
 
+        // Siapkan filter untuk export
+        $filter = [
+            'alur_barang' => $request->alur_barang,
+            'gudang' => $request->gudang,
+            'periode' => $request->periode,
+            'dari_tanggal' => $request->dari_tanggal,
+            'sampai_tanggal' => $request->sampai_tanggal
+        ];
+
         if ($format == 'pdf') {
             // Generate PDF
-            $pdf = Pdf::loadView('staff.pb.riwayat-pdf', compact('riwayat'))
+            $pdf = Pdf::loadView('staff.pb.riwayat-pdf', compact('riwayat', 'filter'))
                 ->setPaper('a4', 'landscape')
                 ->setOption('isHtml5ParserEnabled', true)
                 ->setOption('isRemoteEnabled', true);
@@ -184,18 +193,10 @@ class RiwayatController extends Controller
         }
 
         if ($format == 'excel') {
-            // Implementasi Excel jika diperlukan
-            return $this->downloadExcel($riwayat);
+            // Download Excel menggunakan RiwayatBarangExport
+            return Excel::download(new RiwayatExportPb($riwayatData, $filter), 'Laporan_Riwayat_Barang_' . date('Y-m-d_His') . '.xlsx');
         }
 
         return redirect()->back()->with('error', 'Format tidak valid');
-    }
-
-    private function downloadExcel($riwayat)
-    {
-        // Implementasi download Excel menggunakan Laravel Excel
-        // Jika belum install: composer require maatwebsite/excel
-        
-        return redirect()->back()->with('info', 'Fitur Excel sedang dalam pengembangan');
     }
 }

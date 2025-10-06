@@ -151,6 +151,10 @@
                 background-color: #f9f9f9 !important;
             }
         }
+        @page {
+            size: A4 portrait; /* Pastikan mode portrait */
+            margin: 20mm;
+        }
     </style>
 </head>
 
