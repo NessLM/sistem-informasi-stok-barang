@@ -55,16 +55,14 @@ class MenuHelper
         ];
     }
 
+    /**
+     * Menu untuk Penanggung Jawab (PJ)
+     * Dashboard hanya menampilkan data gudang sesuai role PJ
+     */
     public static function pjMenu()
     {
         return [
-            ['label' => 'Dashboard', 'icon' => 'bi-grid', 'route' => 'staff.admin.dashboard'],
-
-            ['label' => 'Data Keseluruhan', 'icon' => 'bi-card-list', 'children' => [
-                ['label' => 'Gudang ATK',         'icon' => 'bi-archive', 'route' => 'staff.admin.gudang.atk'],
-                ['label' => 'Gudang B Komputer',  'icon' => 'bi-archive', 'route' => 'staff.admin.gudang.komputer'],
-            ]],
-            ['label' => 'Riwayat',        'icon' => 'bi-clock-history', 'route' => 'staff.admin.riwayat'],
+            ['label' => 'Dashboard', 'icon' => 'bi-grid', 'route' => 'pj.dashboard'],
         ];
     }
 
