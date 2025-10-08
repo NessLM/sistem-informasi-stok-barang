@@ -25,6 +25,9 @@ class DashboardController extends Controller
             abort(403, 'Anda tidak memiliki akses ke gudang manapun.');
         }
 
+        // Format judul dashboard berdasarkan gudang
+        $pageTitle = $this->getDashboardTitle($gudang->nama);
+
         // Ringkasan: total jenis barang dan total barang hanya untuk gudang ini
         $totalJenisBarang = JenisBarang::whereHas('kategori', function($query) use ($gudang) {
             $query->where('gudang_id', $gudang->id);
@@ -90,7 +93,8 @@ class DashboardController extends Controller
             'pengeluaranLabels',
             'pengeluaranData',
             'years',
-            'colorsForYears'
+            'colorsForYears',
+            'pageTitle'
         ));
     }
 
@@ -115,6 +119,21 @@ class DashboardController extends Controller
         }
 
         return Gudang::where('nama', $gudangName)->first();
+    }
+
+    private function getDashboardTitle($gudangName)
+    {
+        $mapping = [
+            'Gudang ATK' => 'G. ATK',
+            'Gudang Kebersihan' => 'G. Kebersihan',
+            'Gudang Listrik' => 'G. Listrik',
+            'Gudang B Komputer' => 'G. B. Komputer',
+        ];
+
+        $gudangShort = $mapping[$gudangName] ?? $gudangName;
+
+
+        return "Dashboard Penanggung Jawab {$gudangShort}";
     }
 
     /* ==================== AJAX FILTER ==================== */

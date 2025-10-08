@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Pb;
+namespace App\Http\Controllers\Pj;
 
 use App\Http\Controllers\Controller;
 use App\Models\RiwayatBarang;
@@ -9,14 +9,14 @@ use App\Helpers\MenuHelper;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\RiwayatExportPb;
+use App\Exports\RiwayatExportPj;
 use Carbon\Carbon;
 
 class RiwayatController extends Controller
 {
     public function index(Request $request)
     {
-        $menu = MenuHelper::pbMenu();
+        $menu = MenuHelper::pjMenu();
 
         // Check if download requested
         if ($request->has('download')) {
@@ -99,7 +99,7 @@ class RiwayatController extends Controller
             })
             ->values();
 
-        return view('staff.pb.riwayat', compact('riwayat', 'gudangList', 'menu'));
+        return view('staff.pj.riwayat', compact('riwayat', 'gudangList', 'menu'));
     }
 
     public function downloadReport(Request $request)
@@ -184,7 +184,7 @@ class RiwayatController extends Controller
             });
 
             // Generate PDF menggunakan variabel $riwayat
-            $pdf = Pdf::loadView('staff.pb.riwayat-pdf', compact('riwayat', 'filter'))
+            $pdf = Pdf::loadView('staff.pj.riwayat-pdf', compact('riwayat', 'filter'))
                 ->setPaper('a4', 'landscape')
                 ->setOption('isHtml5ParserEnabled', true)
                 ->setOption('isRemoteEnabled', true);
@@ -194,7 +194,7 @@ class RiwayatController extends Controller
 
         if ($format == 'excel') {
             // Download Excel menggunakan data ASLI (model RiwayatBarang)
-            return Excel::download(new RiwayatExportPb($riwayatData, $filter), 'Laporan_Riwayat_Barang_' . date('Y-m-d_His') . '.xlsx');
+            return Excel::download(new RiwayatExportPj($riwayatData, $filter), 'Laporan_Riwayat_Barang_' . date('Y-m-d_His') . '.xlsx');
         }
 
         return redirect()->back()->with('error', 'Format tidak valid');

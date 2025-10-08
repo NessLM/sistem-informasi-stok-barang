@@ -13,7 +13,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
-class RiwayatExportPb implements WithMultipleSheets
+class RiwayatExportPj implements WithMultipleSheets
 {
     protected $riwayat;
     protected $filter;

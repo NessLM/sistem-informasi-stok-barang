@@ -4,12 +4,13 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Helpers\MenuHelper;
-use App\Models\Riwayat;
+use App\Models\Riwayat;            // biarkan tetap dipakai bagian lain
+use App\Models\RiwayatBarang;      // ⬅️ ditambahkan untuk grafik per tahun (pakai harga)
 use App\Models\Barang;
 use App\Models\JenisBarang;
 use App\Models\Gudang;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;     // [CHANGE] dipakai untuk agregasi
+use Illuminate\Support\Facades\DB; // dipakai untuk agregasi (SUM(jumlah*harga))
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -46,8 +47,11 @@ class DashboardController extends Controller
         $keluarData   = $bagianRows->pluck('total')->map(fn($v) => (int)$v)->values();
 
         /* =========================================================
-         * GRAFIK PENGELUARAN PER TAHUN
-         * ========================================================= */
+         * GRAFIK PENGELUARAN PER TAHUN (VERSI HARGA, MIRIP PB)
+         * =========================================================
+         * Perhitungan: SUM(riwayat_barang.jumlah * barang.harga) per tahun
+         * Sumber data: riwayat_barang (jenis_transaksi = 'distribusi') JOIN barang
+         */
         $currentYear        = (int) date('Y');
         $years              = range($currentYear - 9, $currentYear);
         $pengeluaranLabels  = $years;
@@ -55,13 +59,20 @@ class DashboardController extends Controller
         $colorsForYears        = [];
         $colorsForYearsOrdered = [];
         $totalsPerYear         = [];
+
         foreach ($years as $y) {
-            $totalsPerYear[] = (int) Riwayat::where('alur_barang', 'Keluar')
-                ->whereYear('tanggal', $y)->sum('jumlah');
+            $totalHarga = RiwayatBarang::where('riwayat_barang.jenis_transaksi', 'distribusi')
+                ->join('barang', 'riwayat_barang.barang_id', '=', 'barang.id')
+                ->whereYear('riwayat_barang.tanggal', $y)
+                ->sum(DB::raw('riwayat_barang.jumlah * barang.harga'));
+
+            $totalsPerYear[] = (float) $totalHarga;
+
             $c = $this->getColorForYear($y);
             $colorsForYears[$y]      = $c;
             $colorsForYearsOrdered[] = $c;
         }
+
         $pengeluaranData = [[
             'label'           => 'Keluar',
             'data'            => $totalsPerYear,
@@ -180,7 +191,8 @@ class DashboardController extends Controller
         ]);
     }
 
-    // (tetap) Filter Pengeluaran per Tahun
+    // (tetap) Filter Pengeluaran per Tahun — masih versi jumlah barang
+    // (kalau mau diseragamkan ke "harga", tinggal adapt serupa bagian __invoke)
     private function filterPengeluaranData($filter)
     {
         $currentYear = (int) date('Y');
