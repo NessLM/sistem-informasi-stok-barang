@@ -235,7 +235,7 @@ class DashboardController extends Controller
         elseif ($filter === '7y')
             $years = range($currentYear - 6, $currentYear);
         elseif ($filter === '10y')
-            $years = range($currentYear - 9, $currentYear);
+            $years = range($currentYear - 10, $currentYear);
         else
             $years = range($currentYear - 9, $currentYear);
 
