@@ -1,4 +1,4 @@
-<x-layouts.app title="Dashboard Penanggung Jawab" :menu="$menu">
+<x-layouts.app :title="$pageTitle" :menu="$menu">
     {{-- CSS khusus dashboard --}}
     <link rel="stylesheet" href="{{ asset('assets/css/staff/admin/dashboard.css') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
