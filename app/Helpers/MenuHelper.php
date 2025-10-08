@@ -63,6 +63,7 @@ class MenuHelper
     {
         return [
             ['label' => 'Dashboard', 'icon' => 'bi-grid', 'route' => 'pj.dashboard'],
+            ['label' => 'Riwayat', 'icon' => 'bi-clock-history', 'route' => 'pj.riwayat.index'],
         ];
     }
 

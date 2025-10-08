@@ -26,6 +26,7 @@ use App\Http\Controllers\Pb\BarangMasukController    as PbBarangMasukController;
 
 // PJ
 use App\Http\Controllers\Pj\DashboardController      as PjDashboardController;
+use App\Http\Controllers\Pj\RiwayatController        as PjRiwayatController;
 
 
 /* =========================================================================
@@ -194,4 +195,7 @@ Route::prefix('pj')->name('pj.')->middleware(['auth', 'role:Penanggung Jawab ATK
     Route::get('/dashboard', PjDashboardController::class)->name('dashboard');
     // Route filter untuk dashboard PJ
     Route::get('/dashboard/filter', [PjDashboardController::class, 'filterData'])->name('dashboard.filter');
+
+    // Riwayat PJ
+    Route::get('/riwayat', [PjRiwayatController::class, 'index'])->name('riwayat.index');
 });
