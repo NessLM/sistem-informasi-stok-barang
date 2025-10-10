@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Role;
+use App\Models\Bagian; // TAMBAH INI
 use Illuminate\Http\Request;
 use App\Helpers\MenuHelper;
 use Illuminate\Support\Facades\Hash;
@@ -36,6 +37,7 @@ class UserController extends Controller
             ->get();
 
         $roles = Role::all();
+        $bagians = Bagian::orderBy('nama')->get(); // TAMBAH INI
         $menu  = MenuHelper::adminMenu();
 
         $users->each(function ($u) {
@@ -62,7 +64,7 @@ class UserController extends Controller
             $u->setRawAttributes($attr, true);
         });
 
-        return view('staff.admin.data_pengguna', compact('users', 'roles', 'menu'));
+        return view('staff.admin.data_pengguna', compact('users', 'roles', 'bagians', 'menu')); // UBAH INI
     }
 
     public function store(Request $request)
@@ -72,7 +74,7 @@ class UserController extends Controller
                 'nama'     => 'required|string|max:255',
                 'username' => 'required|string|max:100|unique:users,username',
                 'role_id'  => 'required|exists:roles,id',
-                'bagian'   => 'required|string|max:255',
+                'bagian_id' => 'required|exists:bagian,id', // UBAH dari 'bagian' ke 'bagian_id'
                 'password' => [
                     'required',
                     'string',
@@ -81,13 +83,15 @@ class UserController extends Controller
                 ],
             ], [
                 'password.regex' => 'Password harus mengandung huruf dan angka.',
+                'bagian_id.required' => 'Bagian harus dipilih.',
+                'bagian_id.exists' => 'Bagian tidak valid.',
             ]);
 
             if ($validator->fails()) {
                 return back()->withInput()->withErrors($validator)->with('toast', [
                     'type' => 'error',
                     'title' => 'Gagal!',
-                    'message' => 'Username sudah digunakan.'
+                    'message' => $validator->errors()->first()
                 ]);
             }
 
@@ -97,7 +101,7 @@ class UserController extends Controller
             $user->nama     = $validated['nama'];
             $user->username = $validated['username'];
             $user->role_id  = $validated['role_id'];
-            $user->bagian   = $validated['bagian'] ?? null;
+            $user->bagian_id = $validated['bagian_id']; // UBAH INI
             $user->password = $validated['password'];
             $user->save();
 
@@ -127,7 +131,7 @@ class UserController extends Controller
                 'nama'     => 'required|string|max:255',
                 'username' => 'required|string|max:100|unique:users,username,' . $user->id,
                 'role_id'  => 'required|exists:roles,id',
-                'bagian'   => 'required|string|max:255',
+                'bagian_id' => 'required|exists:bagian,id', // UBAH dari 'bagian' ke 'bagian_id'
                 'password' => [
                     'nullable',
                     'string',
@@ -136,13 +140,15 @@ class UserController extends Controller
                 ],
             ], [
                 'password.regex' => 'Password harus mengandung huruf dan angka',
+                'bagian_id.required' => 'Bagian harus dipilih.',
+                'bagian_id.exists' => 'Bagian tidak valid.',
             ]);
 
             if ($validator->fails()) {
                 return back()->withInput()->withErrors($validator)->with('toast', [
                     'type' => 'error',
                     'title' => 'Gagal',
-                    'message' => 'Username tidak boleh sama.'
+                    'message' => $validator->errors()->first()
                 ]);
             }
 
@@ -151,7 +157,7 @@ class UserController extends Controller
             $user->nama     = $validated['nama'];
             $user->username = $validated['username'];
             $user->role_id  = $validated['role_id'];
-            $user->bagian   = $validated['bagian'] ?? $user->bagian;
+            $user->bagian_id = $validated['bagian_id']; // UBAH INI
 
             if (!empty($validated['password'])) {
                 $user->password = $validated['password'];
@@ -174,7 +180,6 @@ class UserController extends Controller
             ]);
         }
     }
-
 
     public function destroy($id)
     {
