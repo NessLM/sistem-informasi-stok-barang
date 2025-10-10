@@ -261,9 +261,9 @@
                                         <td class="fw-medium">{{ $item->gudang }}</td>
                                         <td class="fw-medium">{{ $item->nama_barang }}</td>
                                         <td><span>{{ $item->jumlah }}</span></td>
-                                        {{-- <td>{{ $item->bagian }}</td> --}}
-                                        <td>
-                                            @if ($item->bukti)
+<td>{{ $item->bagian ?? '-' }}</td>
+<td>
+    @if ($item->bukti)
                                                 <span class="riwayat-bukti-icon" data-bs-toggle="modal"
                                                     data-bs-target="#buktiModal"
                                                     data-image="{{ asset('storage/bukti/' . $item->bukti) }}">
