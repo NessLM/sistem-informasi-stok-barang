@@ -8,6 +8,7 @@ use App\Models\BarangKeluar;
 use App\Models\Barang;
 use App\Models\JenisBarang;
 use App\Models\Gudang;
+use App\Models\Bagian;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -34,32 +35,19 @@ class DashboardController extends Controller
         })->sum('stok');
 
         /* =========================================================
-         * GRAFIK PER BAGIAN - 10 BAGIAN TETAP (TIDAK DARI DATABASE)
+         * GRAFIK PER BAGIAN - AMBIL DARI DATABASE
          * ========================================================= */
 
-        // Daftar 10 bagian yang TETAP (tanpa prefix "Bagian")
-        $bagianLabels = [
-            'Tata Pemerintahan',
-            'Kesejahteraan Rakyat dan Kemasyarakatan',
-            'Hukum dan HAM',
-            'Adm Pembangunan',
-            'Perekonomian',
-            'Adm Pelayanan Pengadaan Barang dan Jasa',
-            'Protokol',
-            'Organisasi',
-            'Umum dan Rumah Tangga',
-            'Perencanaan dan Keuangan'
-        ];
+        // Ambil semua bagian dari database
+        $allBagian = Bagian::orderBy('id')->get();
+        $bagianLabels = $allBagian->pluck('nama')->toArray();
 
         // Hitung data keluar untuk setiap bagian dari tabel barang_keluars
         $keluarData = [];
-        foreach ($bagianLabels as $label) {
-            $total = BarangKeluar::where('gudang_id', $gudang->id)
-                ->where(function ($q) use ($label) {
-                    $q->where('bagian', 'LIKE', "%{$label}%")
-                        ->orWhere('bagian', 'LIKE', "%Bagian {$label}%");
-                })
-                ->sum('jumlah');
+        foreach ($allBagian as $bagian) {
+            $total = BarangKeluar::where('barang_keluars.gudang_id', $gudang->id)
+                ->where('barang_keluars.bagian_id', $bagian->id)
+                ->sum('barang_keluars.jumlah');
 
             $keluarData[] = (int) $total;
         }
@@ -172,7 +160,7 @@ class DashboardController extends Controller
             $query->where('gudang_id', $gudang->id);
         })->count();
 
-        $totalBarang = Barang::whereHas('kategori', function ($query) use ($gudang) {
+        $totalBarang = Barang::whereHas('kategari', function ($query) use ($gudang) {
             $query->where('gudang_id', $gudang->id);
         })->sum('stok');
 
@@ -183,61 +171,49 @@ class DashboardController extends Controller
     }
 
     // Per Bagian → kirim juga rentang tanggal untuk badge
-   private function filterBagianData($filter, $gudang)
-{
-    // Daftar 10 bagian yang TETAP
-    $bagianLabels = [
-        'Tata Pemerintahan',
-        'Kesejahteraan Rakyat dan Kemasyarakatan',
-        'Hukum dan HAM',
-        'Adm Pembangunan',
-        'Perekonomian',
-        'Adm Pelayanan Pengadaan Barang dan Jasa',
-        'Protokol',
-        'Organisasi',
-        'Umum dan Rumah Tangga',
-        'Perencanaan dan Keuangan'
-    ];
+    private function filterBagianData($filter, $gudang)
+    {
+        // Ambil semua bagian dari database
+        $allBagian = Bagian::orderBy('id')->get();
+        $bagianLabels = $allBagian->pluck('nama')->toArray();
 
-    $start = null;
-    $end = null;
-    
-    // Tentukan rentang waktu filter
-    if ($filter === 'week') {
-        $start = Carbon::now()->subWeek();
-        $end = Carbon::now();
-    } elseif ($filter === 'month') {
-        $start = Carbon::now()->subMonth();
-        $end = Carbon::now();
-    } elseif ($filter === 'year') {
-        $start = Carbon::now()->subYear();
-        $end = Carbon::now();
-    }
+        $start = null;
+        $end = null;
 
-    // Hitung data keluar untuk setiap bagian dengan filter waktu
-    $keluarData = [];
-    foreach ($bagianLabels as $label) {
-        $q = BarangKeluar::where('gudang_id', $gudang->id)
-            ->where(function($query) use ($label) {
-                $query->where('bagian', 'LIKE', "%{$label}%")
-                      ->orWhere('bagian', 'LIKE', "%Bagian {$label}%");
-            });
-        
-        // Terapkan filter waktu jika ada
-        if ($start && $end) {
-            $q->whereBetween('tanggal', [$start, $end]);
+        // Tentukan rentang waktu filter
+        if ($filter === 'week') {
+            $start = Carbon::now()->subWeek();
+            $end = Carbon::now();
+        } elseif ($filter === 'month') {
+            $start = Carbon::now()->subMonth();
+            $end = Carbon::now();
+        } elseif ($filter === 'year') {
+            $start = Carbon::now()->subYear();
+            $end = Carbon::now();
         }
-        
-        $total = $q->sum('jumlah');
-        $keluarData[] = (int) $total;
+
+        // Hitung data keluar untuk setiap bagian dengan filter waktu
+        $keluarData = [];
+        foreach ($allBagian as $bagian) {
+            $q = BarangKeluar::where('barang_keluars.gudang_id', $gudang->id)
+                ->where('barang_keluars.bagian_id', $bagian->id);
+
+            // Terapkan filter waktu jika ada
+            if ($start && $end) {
+                $q->whereBetween('barang_keluars.tanggal', [$start, $end]);
+            }
+
+            $total = $q->sum('barang_keluars.jumlah');
+            $keluarData[] = (int) $total;
+        }
+
+        return response()->json([
+            'labels' => $bagianLabels,
+            'keluar' => $keluarData,
+            'range' => $start ? ['start' => $start->toDateString(), 'end' => $end->toDateString()] : null,
+        ]);
     }
 
-    return response()->json([
-        'labels' => $bagianLabels,
-        'keluar' => $keluarData,
-        'range' => $start ? ['start' => $start->toDateString(), 'end' => $end->toDateString()] : null,
-    ]);
-}
     // Filter Pengeluaran per Tahun
     private function filterPengeluaranData($filter, $gudang)
     {
