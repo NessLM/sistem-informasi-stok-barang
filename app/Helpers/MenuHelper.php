@@ -57,13 +57,29 @@ class MenuHelper
 
     /**
      * Menu untuk Penanggung Jawab (PJ)
-     * Dashboard hanya menampilkan data gudang sesuai role PJ
+     * Dashboard menampilkan data gudang sesuai gudang_id dari user
      */
     public static function pjMenu()
     {
         return [
-            ['label' => 'Dashboard', 'icon' => 'bi-grid', 'route' => 'pj.dashboard'],
-            ['label' => 'Riwayat', 'icon' => 'bi-clock-history', 'route' => 'pj.riwayat.index'],
+            [
+                'label' => 'Dashboard',
+                'icon' => 'bi-speedometer2',
+                'route' => 'pj.dashboard',
+                'active' => request()->routeIs('pj.dashboard'),
+            ],
+            [
+                'label' => 'Data Gudang',
+                'icon' => 'bi-box-seam',
+                'route' => 'pj.datakeseluruhan.index',
+                'active' => request()->routeIs('pj.datakeseluruhan.*'),
+            ],
+            [
+                'label' => 'Riwayat',
+                'icon' => 'bi-clock-history',
+                'route' => 'pj.riwayat.index',
+                'active' => request()->routeIs('pj.riwayat.*'),
+            ],
         ];
     }
 

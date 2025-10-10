@@ -26,7 +26,10 @@ use App\Http\Controllers\Pb\BarangMasukController    as PbBarangMasukController;
 
 // PJ
 use App\Http\Controllers\Pj\DashboardController      as PjDashboardController;
+use App\Http\Controllers\Pj\DataKeseluruhan          as PjDataKeseluruhanController;
 use App\Http\Controllers\Pj\RiwayatController        as PjRiwayatController;
+use App\Http\Controllers\Pj\BarangKeluarController   as PjBarangKeluarController;
+use App\Http\Controllers\Pj\LaporanController        as PjLaporanController;
 
 
 /* =========================================================================
@@ -71,10 +74,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:Admin'])->grou
     Route::get('/datakeseluruhan', [AdminDataKeseluruhanController::class, 'index'])
         ->name('datakeseluruhan.index');
 
-    Route::get('/datakeseluruhan/gudang/{slug}', [AdminDataKeseluruhanController::class, 'gudang'])
+    Route::get('/datakeseluruhan/{slug}', [AdminDataKeseluruhanController::class, 'byGudang'])
         ->name('datakeseluruhan.gudang');
 
-    Route::get('/datakeseluruhan/{id}', [AdminDataKeseluruhanController::class, 'show'])
+    Route::get('/datakeseluruhan/id/{id}', [AdminDataKeseluruhanController::class, 'show'])
         ->name('datakeseluruhan.show');
 
     // Filter kategori khusus (pakai BarangController@index)
@@ -150,7 +153,7 @@ Route::prefix('pb')->name('pb.')->middleware(['auth', 'role:Pengelola Barang'])-
     Route::get('/datakeseluruhan', [PbDataKeseluruhanController::class, 'index'])
         ->name('datakeseluruhan.index');
 
-    Route::get('/datakeseluruhan/{slug}', [PbDataKeseluruhanController::class, 'gudang'])
+    Route::get('/datakeseluruhan/{slug}', [PbDataKeseluruhanController::class, 'byGudang'])
         ->name('datakeseluruhan.gudang');
 
     // API Kategori by Gudang
@@ -164,22 +167,13 @@ Route::prefix('pb')->name('pb.')->middleware(['auth', 'role:Pengelola Barang'])-
     // Stok User (resource)
     Route::resource('stokuser', PbStokUserController::class);
 
-    // Barang Masuk - PILIH SALAH SATU:
-    // Opsi 1: Pakai StokUserController (seperti yang saya jelaskan sebelumnya)
+    // Barang Masuk
     Route::post('/barang-masuk/{id}', [PbStokUserController::class, 'barangMasuk'])
         ->name('barang.masuk');
-    
-    // ATAU Opsi 2: Pakai BarangMasukController (jika Anda punya controller terpisah)
-    // Route::post('/barang-masuk/{id}', [PbBarangMasukController::class, 'store'])
-    //     ->name('barang.masuk');
 
-    // Distribusi barang - HANYA PERLU SATU ROUTE INI
+    // Distribusi barang
     Route::post('/distribusi/{id}', [PbDistribusiController::class, 'distribusi'])
         ->name('barang.distribusi');
-    
-    // HAPUS route ini karena duplikat dan tidak perlu:
-    // Route::post('/distribusi/store', [PbDistribusiController::class, 'store'])
-    //     ->name('distribusi.store');
 
     // Riwayat & Laporan PB
     Route::get('/riwayat', [PbRiwayatController::class, 'index'])->name('riwayat.index');
@@ -187,15 +181,53 @@ Route::prefix('pb')->name('pb.')->middleware(['auth', 'role:Pengelola Barang'])-
 });
 
 
-
 /* =========================================================================
- | PJ AREA (Penanggung Jawab)
+ | PJ AREA (Penanggung Jawab) - CLEANED & FIXED
  * ========================================================================= */
-Route::prefix('pj')->name('pj.')->middleware(['auth', 'role:Penanggung Jawab ATK,Penanggung Jawab Kebersihan,Penanggung Jawab Listrik,Penanggung Jawab Bahan Komputer'])->group(function () {
+Route::prefix('pj')->name('pj.')
+    ->middleware(['auth', 'role:Penanggung Jawab ATK,Penanggung Jawab Kebersihan,Penanggung Jawab Listrik,Penanggung Jawab Bahan Komputer'])
+    ->group(function () {
+    
+    // Dashboard
     Route::get('/dashboard', PjDashboardController::class)->name('dashboard');
-    // Route filter untuk dashboard PJ
     Route::get('/dashboard/filter', [PjDashboardController::class, 'filterData'])->name('dashboard.filter');
 
-    // Riwayat PJ
-    Route::get('/riwayat', [PjRiwayatController::class, 'index'])->name('riwayat.index');
+    // Data Keseluruhan / Data Gudang
+    Route::get('/datakeseluruhan', [PjDataKeseluruhanController::class, 'index'])
+        ->name('datakeseluruhan.index');
+
+    // API Search Barang (untuk autocomplete)
+    Route::get('/api/search-barang', [PjDataKeseluruhanController::class, 'searchSuggestions'])
+        ->name('api.search-barang');
+
+    // Barang Keluar - POST untuk submit dari modal
+    Route::post('/barang-keluar/{barang}', [PjDataKeseluruhanController::class, 'barangKeluar'])
+        ->name('barang-keluar.store');
+
+    // Barang Keluar - Index untuk list history (placeholder untuk sekarang)
+    Route::get('/barang-keluar', function() {
+        $menu = \App\Helpers\MenuHelper::pjMenu();
+        $user = \Illuminate\Support\Facades\Auth::user();
+        
+        if (!$user->gudang_id) {
+            return back()->with('toast', [
+                'type' => 'error',
+                'title' => 'Error!',
+                'message' => 'Anda belum memiliki gudang yang ditugaskan.'
+            ]);
+        }
+        
+        // Redirect ke data keseluruhan untuk sementara
+        return redirect()->route('pj.datakeseluruhan.index');
+    })->name('barang-keluar.index');
+
+    // Riwayat
+    Route::get('/riwayat', [PjRiwayatController::class, 'index'])
+        ->name('riwayat.index');
+
+    // Laporan (placeholder)
+    Route::get('/laporan', function() {
+        $menu = \App\Helpers\MenuHelper::pjMenu();
+        return view('staff.pj.laporan.index', compact('menu'));
+    })->name('laporan.index');
 });

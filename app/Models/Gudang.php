@@ -9,7 +9,7 @@ class Gudang extends Model
 {
     use HasFactory;
 
-    // Pakai tabel 'gudang' (bukan plural)
+    // Gunakan tabel 'gudang' (bukan default 'gudangs')
     protected $table = 'gudang';
 
     protected $fillable = ['nama'];
@@ -38,15 +38,23 @@ class Gudang extends Model
         return $this->hasManyThrough(
             Barang::class,
             Kategori::class,
-            'gudang_id',    // Foreign key di tabel kategori
-            'kategori_id',  // Foreign key di tabel barang
-            'id',           // Local key di tabel gudang
-            'id'            // Local key di tabel kategori
+            'gudang_id',   // Foreign key di tabel kategori
+            'kategori_id', // Foreign key di tabel barang
+            'id',          // Local key di tabel gudang
+            'id'           // Local key di tabel kategori
         );
     }
 
     /**
-     * Accessor untuk total barang di gudang
+     * Relasi ke user (Penanggung Jawab Gudang)
+     */
+    public function pj()
+    {
+        return $this->hasOne(User::class, 'gudang_id');
+    }
+
+    /**
+     * Accessor: total barang di gudang
      */
     public function getTotalBarangAttribute()
     {
@@ -54,7 +62,7 @@ class Gudang extends Model
     }
 
     /**
-     * Accessor untuk total stok di gudang
+     * Accessor: total stok di gudang
      */
     public function getTotalStokAttribute()
     {
@@ -62,7 +70,7 @@ class Gudang extends Model
     }
 
     /**
-     * Accessor untuk jumlah kategori di gudang
+     * Accessor: jumlah kategori di gudang
      */
     public function getJumlahKategoriAttribute()
     {

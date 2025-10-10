@@ -5,8 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\Role;
-
-// === [BARU] Import utk cache plaintext permanen ===
+use App\Models\Gudang;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 
@@ -21,10 +20,16 @@ class UserSeeder extends Seeder
         $elecRole   = Role::where('nama', 'Penanggung Jawab Listrik')->first()->id;
         $compRole   = Role::where('nama', 'Penanggung Jawab Bahan Komputer')->first()->id;
 
-        // Helper [DIUBAH]: simpan plaintext ke cache (terenkripsi) PERMANEN
+        // Get Gudang IDs
+        $gudangATK = Gudang::where('nama', 'LIKE', '%ATK%')->first();
+        $gudangKebersihan = Gudang::where('nama', 'LIKE', '%Kebersihan%')->first();
+        $gudangListrik = Gudang::where('nama', 'LIKE', '%Listrik%')->first();
+        $gudangKomputer = Gudang::where('nama', 'LIKE', '%Komputer%')->orWhere('nama', 'LIKE', '%Bahan Komputer%')->first();
+
+        // Helper: simpan plaintext ke cache (terenkripsi) PERMANEN
         $putPlain = function (User $u, string $plain) {
             $key = "user:plainpwd:{$u->id}";
-            Cache::forever($key, Crypt::encryptString($plain)); // ⬅️ permanen
+            Cache::forever($key, Crypt::encryptString($plain));
         };
 
         // Admin
@@ -32,12 +37,13 @@ class UserSeeder extends Seeder
             ['username' => 'admin'],
             [
                 'nama'     => 'Administrator',
-                'password' => 'admin-1234',   // casts 'hashed' → auto-hash saat save
+                'password' => 'admin-1234',
                 'role_id'  => $adminRole,
                 'bagian'   => 'Umum',
+                'gudang_id' => null,
             ]
         );
-        $putPlain($u, 'admin-1234'); // [BARU]
+        $putPlain($u, 'admin-1234');
 
         // Pengelola Barang
         $u = User::updateOrCreate(
@@ -47,9 +53,10 @@ class UserSeeder extends Seeder
                 'password' => 'pb-1234',
                 'role_id'  => $pbRole,
                 'bagian'   => 'Gudang',
+                'gudang_id' => 1, // Gudang Utama
             ]
         );
-        $putPlain($u, 'pb-1234'); // [BARU]
+        $putPlain($u, 'pb-1234');
 
         // PJ ATK
         $u = User::updateOrCreate(
@@ -59,9 +66,10 @@ class UserSeeder extends Seeder
                 'password' => 'atk-1234',
                 'role_id'  => $atkRole,
                 'bagian'   => 'Operasional',
+                'gudang_id' => $gudangATK ? $gudangATK->id : 2,
             ]
         );
-        $putPlain($u, 'atk-1234'); // [BARU]
+        $putPlain($u, 'atk-1234');
 
         // PJ Kebersihan
         $u = User::updateOrCreate(
@@ -71,9 +79,10 @@ class UserSeeder extends Seeder
                 'password' => 'kebersihan-1234',
                 'role_id'  => $cleanRole,
                 'bagian'   => 'Operasional',
+                'gudang_id' => $gudangKebersihan ? $gudangKebersihan->id : 4,
             ]
         );
-        $putPlain($u, 'kebersihan-1234'); // [BARU]
+        $putPlain($u, 'kebersihan-1234');
 
         // PJ Listrik
         $u = User::updateOrCreate(
@@ -83,9 +92,10 @@ class UserSeeder extends Seeder
                 'password' => 'listrik-1234',
                 'role_id'  => $elecRole,
                 'bagian'   => 'Operasional',
+                'gudang_id' => $gudangListrik ? $gudangListrik->id : 5,
             ]
         );
-        $putPlain($u, 'listrik-1234'); // [BARU]
+        $putPlain($u, 'listrik-1234');
 
         // PJ Bahan Komputer
         $u = User::updateOrCreate(
@@ -95,8 +105,9 @@ class UserSeeder extends Seeder
                 'password' => 'komputer-1234',
                 'role_id'  => $compRole,
                 'bagian'   => 'Operasional',
+                'gudang_id' => $gudangKomputer ? $gudangKomputer->id : 6,
             ]
         );
-        $putPlain($u, 'komputer-1234'); // [BARU]
+        $putPlain($u, 'komputer-1234');
     }
 }

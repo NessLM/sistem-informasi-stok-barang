@@ -9,34 +9,61 @@ class User extends Authenticatable
 {
     use Notifiable;
 
-    protected $fillable = ['nama', 'username', 'password', 'role', 'bagian'];
+    protected $fillable = [
+        'nama',
+        'username',
+        'password',
+        'role',
+        'bagian',
+        'gudang_id', // tambahkan ini agar mass assignment bisa dilakukan
+    ];
+
     protected $hidden = ['password', 'remember_token'];
 
-    // Laravel 10/11: cast 'hashed' bikin setiap set string otomatis di-hash
     protected function casts(): array
     {
         return [
             'password' => 'hashed',
         ];
     }
-    public function role()
-{
-    return $this->belongsTo(Role::class);
-}
 
-public function stokBarang()
+    /**
+     * Relasi ke role
+     */
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    /**
+     * Relasi ke gudang (untuk Penanggung Jawab Gudang)
+     */
+    public function gudang()
+    {
+        return $this->belongsTo(Gudang::class, 'gudang_id');
+    }
+
+    /**
+     * Relasi ke stok barang milik user
+     */
+    public function stokBarang()
     {
         return $this->hasMany(StokUser::class);
     }
 
+    /**
+     * Distribusi barang yang dikirim oleh user
+     */
     public function distribusiDikirim()
     {
         return $this->hasMany(Distribusi::class, 'pengirim_id');
     }
 
+    /**
+     * Distribusi barang yang diterima oleh user
+     */
     public function distribusiDiterima()
     {
         return $this->hasMany(Distribusi::class, 'penerima_id');
     }
-
 }
