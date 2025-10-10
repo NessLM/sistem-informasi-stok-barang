@@ -12,24 +12,61 @@ class GudangSeeder extends Seeder
 {
     public function run(): void
     {
-        $daftarGudang = [
-            'Gudang Utama',
-            'Gudang ATK',
-            'Gudang Listrik',
-            'Gudang Kebersihan',
-            'Gudang B Komputer'
+        // Daftar gudang dan kategori yang unik untuk masing-masing
+        $gudangData = [
+            'Gudang Utama' => [
+                'Elektronik',
+                'Peralatan Kantor',
+                'Furnitur',
+            ],
+            'Gudang ATK' => [
+                'Alat Tulis',
+                'Kertas & Buku',
+                'Aksesoris Kantor',
+            ],
+            'Gudang Listrik' => [
+                'Kabel & Stopkontak',
+                'Lampu & Perlengkapan',
+                'Peralatan Instalasi',
+            ],
+            'Gudang Kebersihan' => [
+                'Alat Kebersihan',
+                'Bahan Pembersih',
+                'Perlengkapan Sanitasi',
+            ],
+            'Gudang B Komputer' => [
+                'Perangkat Keras',
+                'Aksesoris Komputer',
+                'Jaringan & Server',
+            ],
         ];
 
-        foreach ($daftarGudang as $namaGudang) {
-            $gudang = Gudang::firstOrCreate(['nama' => $namaGudang]);
+        // Daftar jenis barang contoh per kategori
+        $jenisPerKategori = [
+            'Elektronik' => ['Laptop', 'Printer', 'Monitor'],
+            'Peralatan Kantor' => ['Stapler', 'Gunting', 'Penggaris'],
+            'Furnitur' => ['Meja', 'Kursi', 'Lemari'],
 
-            // beberapa kategori per gudang
-            $kategoriList = [
-                'Elektronik',
-                'Peralatan',
-                'Bahan Habis Pakai',
-                'Furnitur'
-            ];
+            'Alat Tulis' => ['Pulpen', 'Pensil', 'Spidol'],
+            'Kertas & Buku' => ['Kertas A4', 'Buku Catatan', 'Map Dokumen'],
+            'Aksesoris Kantor' => ['Binder', 'Clip', 'Lakban'],
+
+            'Kabel & Stopkontak' => ['Kabel Listrik', 'Stopkontak', 'Colokan'],
+            'Lampu & Perlengkapan' => ['Lampu LED', 'Bohlam', 'Lampu TL'],
+            'Peralatan Instalasi' => ['Obeng', 'Tang', 'Tespen'],
+
+            'Alat Kebersihan' => ['Sapu', 'Pel', 'Lap'],
+            'Bahan Pembersih' => ['Sabun', 'Detergen', 'Cairan Pembersih'],
+            'Perlengkapan Sanitasi' => ['Ember', 'Tempat Sampah', 'Sarung Tangan'],
+
+            'Perangkat Keras' => ['Motherboard', 'Processor', 'RAM'],
+            'Aksesoris Komputer' => ['Mouse', 'Keyboard', 'Headset'],
+            'Jaringan & Server' => ['Router', 'Switch', 'Kabel LAN'],
+        ];
+
+        // Proses seeding
+        foreach ($gudangData as $namaGudang => $kategoriList) {
+            $gudang = Gudang::firstOrCreate(['nama' => $namaGudang]);
 
             foreach ($kategoriList as $kategoriNama) {
                 $kategori = Kategori::firstOrCreate([
@@ -37,14 +74,7 @@ class GudangSeeder extends Seeder
                     'gudang_id' => $gudang->id
                 ]);
 
-                // jenis barang untuk setiap kategori
-                $jenisList = [
-                    'Laptop',
-                    'Printer',
-                    'Kabel',
-                    'Meja',
-                    'Kursi'
-                ];
+                $jenisList = $jenisPerKategori[$kategoriNama] ?? [];
 
                 foreach ($jenisList as $jenisNama) {
                     $jenisBarang = JenisBarang::firstOrCreate([
@@ -52,7 +82,7 @@ class GudangSeeder extends Seeder
                         'kategori_id' => $kategori->id
                     ]);
 
-                    // barang contoh per jenis barang
+                    // Barang contoh per jenis barang
                     for ($i = 1; $i <= 3; $i++) {
                         Barang::firstOrCreate(
                             [
