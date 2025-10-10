@@ -14,7 +14,7 @@ class DataKeseluruhan extends Controller
 {
     public function index(Request $request)
     {
-        $menu   = MenuHelper::pbMenu();
+        $menu = MenuHelper::pbMenu();
         $search = $request->input('search');
 
         // Ambil Gudang Utama
@@ -35,17 +35,17 @@ class DataKeseluruhan extends Controller
             'barang' => function ($q) use ($search) {
                 if ($search) {
                     $q->where('nama', 'like', "%{$search}%")
-                      ->orWhere('kode', 'like', "%{$search}%");
+                        ->orWhere('kode', 'like', "%{$search}%");
                 }
             },
             'gudang'
         ])->where('gudang_id', $gudangUtama->id);
 
         $kategori = $kategoriQuery->get();
-        
+
         // Ambil semua gudang untuk dropdown distribusi
         $gudang = Gudang::all();
-        
+
         $selectedGudang = $gudangUtama;
 
         $request->validate([
@@ -82,35 +82,35 @@ class DataKeseluruhan extends Controller
     {
         $query = $request->get('q', '');
         $gudangId = $request->get('gudang_id');
-        
+
         if (strlen($query) < 2) {
             return response()->json([]);
         }
-        
+
         $barangQuery = Barang::with(['kategori.gudang'])
-            ->where(function($q) use ($query) {
+            ->where(function ($q) use ($query) {
                 $q->where('nama', 'like', "%{$query}%")
-                  ->orWhere('kode', 'like', "%{$query}%");
+                    ->orWhere('kode', 'like', "%{$query}%");
             });
-        
+
         // Filter by gudang jika ada
         if ($gudangId) {
-            $barangQuery->whereHas('kategori', function($q) use ($gudangId) {
+            $barangQuery->whereHas('kategori', function ($q) use ($gudangId) {
                 $q->where('gudang_id', $gudangId);
             });
         }
-        
+
         $barang = $barangQuery->limit(10)->get();
-        
-        $results = $barang->map(function($item) {
+
+        $results = $barang->map(function ($item) {
             // Ambil stok dari stok_gudang
             $gudangId = $item->kategori->gudang_id ?? null;
             $stokGudang = StokGudang::where('barang_id', $item->id)
                 ->where('gudang_id', $gudangId)
                 ->first();
-            
+
             $stok = $stokGudang ? $stokGudang->stok : 0;
-            
+
             // Tentukan status stok
             $stockStatus = 'available';
             if ($stok == 0) {
@@ -118,7 +118,7 @@ class DataKeseluruhan extends Controller
             } elseif ($stok <= 10) {
                 $stockStatus = 'low';
             }
-            
+
             return [
                 'id' => $item->id,
                 'nama' => $item->nama,
@@ -129,7 +129,7 @@ class DataKeseluruhan extends Controller
                 'stock_status' => $stockStatus
             ];
         });
-        
+
         return response()->json($results);
     }
 
@@ -142,7 +142,7 @@ class DataKeseluruhan extends Controller
             $kategori = Kategori::where('gudang_id', $gudangId)
                 ->orderBy('nama', 'asc')
                 ->get(['id', 'nama']);
-            
+
             return response()->json($kategori);
         } catch (\Exception $e) {
             \Log::error('Error fetching kategori by gudang: ' . $e->getMessage());
@@ -156,19 +156,19 @@ class DataKeseluruhan extends Controller
     private function getFilteredBarang(Request $request, $gudangId = null)
     {
         $query = Barang::with(['kategori.gudang']);
-        
+
         // Filter berdasarkan gudang
         if ($gudangId) {
-            $query->whereHas('kategori', function($q) use ($gudangId) {
+            $query->whereHas('kategori', function ($q) use ($gudangId) {
                 $q->where('gudang_id', $gudangId);
             });
         }
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nama', 'like', "%{$search}%")
-                  ->orWhere('kode', 'like', "%{$search}%");
+                    ->orWhere('kode', 'like', "%{$search}%");
             });
         }
 
