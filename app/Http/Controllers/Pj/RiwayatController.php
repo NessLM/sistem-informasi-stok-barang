@@ -12,6 +12,8 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\RiwayatExportPj;
 use Carbon\Carbon;
+use App\Models\Bagian; // tambahkan di atas file controller kamu (jika belum ada)
+
 
 class RiwayatController extends Controller
 {
@@ -100,9 +102,11 @@ class RiwayatController extends Controller
             ->orderBy('created_at', 'desc');
 
         // Filter bagian
+        // Filter bagian
         if ($request->filled('bagian') && $request->bagian != 'Semua') {
-            $riwayatKeluarQuery->where('bagian', $request->bagian);
+            $riwayatKeluarQuery->where('bagian_id', $request->bagian);
         }
+
 
         // Filter periode keluar
         if ($request->filled('periode')) {
@@ -128,7 +132,7 @@ class RiwayatController extends Controller
         }
 
         // Ambil data keluar
-        $riwayatKeluar = $riwayatKeluarQuery->get()->map(function ($item) {
+        $riwayatKeluar = $riwayatKeluarQuery->with('bagian')->get()->map(function ($item) {
             return (object) [
                 'id' => $item->id,
                 'tanggal' => $item->tanggal,
@@ -138,7 +142,7 @@ class RiwayatController extends Controller
                 'nama_barang' => optional($item->barang)->nama ?? '-',
                 'kode_barang' => optional($item->barang)->kode ?? '-',
                 'jumlah' => $item->jumlah,
-                'bagian' => $item->bagian ?? '-',
+                'bagian' => optional($item->bagian)->nama ?? '-', // <--- ambil dari relasi
                 'nama_penerima' => $item->nama_penerima ?? '-',
                 'keterangan' => $item->keterangan ?? '-',
                 'bukti' => $item->bukti,
@@ -147,13 +151,14 @@ class RiwayatController extends Controller
             ];
         });
 
+
         // List bagian untuk filter
-        $bagianList = BarangKeluar::where('gudang_id', $userGudang->id)
-            ->whereNotNull('bagian')
-            ->select('bagian')->distinct()
-            ->orderBy('bagian')
-            ->get()
-            ->map(fn($item) => (object) ['bagian' => $item->bagian]);
+        $bagianList = Bagian::orderBy('nama')->get()
+            ->map(fn($item) => (object) [
+                'id' => $item->id,
+                'nama' => $item->nama
+            ]);
+
 
         $gudangList = collect([(object) ['gudang' => $userGudang->nama]]);
 
