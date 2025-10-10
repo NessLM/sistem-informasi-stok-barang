@@ -105,28 +105,34 @@
         {{-- =================== GRAFIK PENGELUARAN PER TAHUN =================== --}}
         <div class="dashboard-row">
             <div class="wide-chart-section">
-                <div class="chart-header chart-header--wrap">
-                    <div class="chart-header-left">
+                <div class="chart-header chart-header--horizontal">
+                    <div class="chart-header-horizontal-item">
                         <h2>Grafik Pengeluaran per Tahun - {{ $gudang->nama }}</h2>
                     </div>
+                    
+                    <div class="chart-header-horizontal-item">
+                        <span id="rangeHintPengeluaran" class="range-hint" title="Semua Tahun">Semua Tahun</span>
+                    </div>
 
-                    <div class="chart-controls">
-                        <div class="dropdown">
-                            <button class="filter-btn dropdown-toggle" type="button" id="pengeluaranFilterDropdown"
-                                data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-funnel"></i> Semua
-                                <i class="bi bi-chevron-right arrow-icon"></i>
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="pengeluaranFilterDropdown">
-                                <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran"
-                                        data-value="all">Semua</a></li>
-                                <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran"
-                                        data-value="5y">5 Tahun Terakhir</a></li>
-                                <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran"
-                                        data-value="7y">7 Tahun Terakhir</a></li>
-                                <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran"
-                                        data-value="10y">10 Tahun Terakhir</a></li>
-                            </ul>
+                    <div class="chart-header-horizontal-item" style="margin-left:auto;">
+                        <div class="chart-controls">
+                            <div class="dropdown">
+                                <button class="filter-btn dropdown-toggle" type="button" id="pengeluaranFilterDropdown"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-funnel"></i> Semua
+                                    <i class="bi bi-chevron-right arrow-icon"></i>
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="pengeluaranFilterDropdown">
+                                    <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran"
+                                            data-value="all">Semua</a></li>
+                                    <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran"
+                                            data-value="5y">5 Tahun Terakhir</a></li>
+                                    <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran"
+                                            data-value="7y">7 Tahun Terakhir</a></li>
+                                    <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran"
+                                            data-value="10y">10 Tahun Terakhir</a></li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -410,6 +416,7 @@
             }
             renderYearLegend({!! json_encode($years) !!}, {!! json_encode($colorsForYears) !!});
 
+            // ====== Filter Pengeluaran (update data + badge tahun) ======
             function filterPengeluaran(filterType) {
                 fetch(`${FILTER_URL}?type=pengeluaran&filter=${filterType}`)
                     .then(r => r.json())
@@ -429,8 +436,28 @@
                         }
                         pengeluaranChart.update();
                         renderYearLegend(d.labels, d.colors);
+
+                        // Update range hint untuk pengeluaran
+                        const hint = document.getElementById('rangeHintPengeluaran');
+                        if (d.labels && d.labels.length > 0) {
+                            const startYear = Math.min(...d.labels);
+                            const endYear = Math.max(...d.labels);
+                            const txt = `${startYear} – ${endYear}`;
+                            setRangeHint(hint, txt, txt);
+                        } else {
+                            setRangeHint(hint, 'Semua Tahun', 'Semua Tahun');
+                        }
                     })
                     .catch(console.error);
+            }
+
+            // Set awal untuk grafik pengeluaran
+            const initialYears = {!! json_encode($years) !!};
+            if (initialYears.length > 0) {
+                const startYear = Math.min(...initialYears);
+                const endYear = Math.max(...initialYears);
+                const txt = `${startYear} – ${endYear}`;
+                setRangeHint(document.getElementById('rangeHintPengeluaran'), txt, txt);
             }
 
             // set awal -> badge "Semua Data"

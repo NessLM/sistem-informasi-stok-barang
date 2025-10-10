@@ -196,15 +196,17 @@ class DashboardController extends Controller
         $end = null; // untuk badge
         if ($filter === 'week') {
             $start = Carbon::now()->subWeek();
-            $q->where('tanggal', '>=', $start);
+            $end = Carbon::now();
+            $q->whereBetween('tanggal', [$start, $end]);
         } elseif ($filter === 'month') {
             $start = Carbon::now()->subMonth();
-            $q->where('tanggal', '>=', $start);
+            $end = Carbon::now();
+            $q->whereBetween('tanggal', [$start, $end]);
         } elseif ($filter === 'year') {
             $start = Carbon::now()->subYear();
-            $q->where('tanggal', '>=', $start);
+            $end = Carbon::now();
+            $q->whereBetween('tanggal', [$start, $end]);
         }
-        $end = Carbon::now();
 
         $keluarData = [];
         foreach ($allTimeLabels as $bagian) {
@@ -235,7 +237,7 @@ class DashboardController extends Controller
         elseif ($filter === '7y')
             $years = range($currentYear - 6, $currentYear);
         elseif ($filter === '10y')
-            $years = range($currentYear - 10, $currentYear);
+            $years = range($currentYear - 9, $currentYear);
         else
             $years = range($currentYear - 9, $currentYear);
 
