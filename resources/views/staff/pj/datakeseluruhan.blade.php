@@ -343,7 +343,19 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Bagian <small class="text-muted">(Opsional)</small></label>
-                            <input type="text" name="bagian" class="form-control" placeholder="Masukkan Bagian">
+                            <select name="bagian" class="form-select">
+                                <option value="">-- Pilih Bagian --</option>
+                                <option value="Tata Pemerintahan">Tata Pemerintahan</option>
+                                <option value="Kesejahteraan Rakyat dan Kemasyarakatan">Kesejahteraan Rakyat dan Kemasyarakatan</option>
+                                <option value="Hukum dan HAM">Hukum dan HAM</option>
+                                <option value="Adm Pembangunan">Adm Pembangunan</option>
+                                <option value="Perekonomian">Perekonomian</option>
+                                <option value="Adm Pelayanan Pengadaan Barang dan Jasa">Adm Pelayanan Pengadaan Barang dan Jasa</option>
+                                <option value="Protokol">Protokol</option>
+                                <option value="Organisasi">Organisasi</option>
+                                <option value="Umum dan Rumah Tangga">Umum dan Rumah Tangga</option>
+                                <option value="Perencanaan dan Keuangan">Perencanaan dan Keuangan</option>
+                            </select>
                         </div>
                         <div class="col-12">
                             <label class="form-label">Keterangan <small class="text-muted">(Opsional)</small></label>
