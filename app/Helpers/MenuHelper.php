@@ -64,13 +64,13 @@ class MenuHelper
         return [
             [
                 'label' => 'Dashboard',
-                'icon' => 'bi-speedometer2',
+                'icon' => 'bi-grid', // DIUBAH: dari 'bi-speedometer2' menjadi 'bi-grid'
                 'route' => 'pj.dashboard',
                 'active' => request()->routeIs('pj.dashboard'),
             ],
             [
                 'label' => 'Data Gudang',
-                'icon' => 'bi-box-seam',
+                'icon' => 'bi-card-list', // DIUBAH: dari 'bi-box-seam' menjadi 'bi-card-list'
                 'route' => 'pj.datakeseluruhan.index',
                 'active' => request()->routeIs('pj.datakeseluruhan.*'),
             ],
