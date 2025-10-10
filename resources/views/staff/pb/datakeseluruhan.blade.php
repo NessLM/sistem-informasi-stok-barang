@@ -208,25 +208,22 @@
                             </thead>
                             <tbody>
                                 @foreach ($barang as $i => $b)
-                                    <tr @if ($b->stok == 0) class="table-danger" @endif>
-                                        <td>{{ $i + 1 }}</td>
-                                        <td>{{ $b->nama }}</td>
-                                        <td>{{ $b->kode }}</td>
-                                        <td>{{ $b->stok }}</td>
-                                        <td>{{ $b->satuan }}</td>
-                                        <td>{{ $b->kategori->nama ?? '-' }}</td>
-                                        <td>
-                                            <button type="button" class="btn btn-primary btn-sm"
-                                                data-bs-toggle="modal" 
-                                                data-bs-target="#modalKelolaBarang"
-                                                data-id="{{ $b->id }}"
-                                                data-nama="{{ $b->nama }}"
-                                                data-kode="{{ $b->kode }}">
-                                                <i class="bi bi-box-seam"></i> Kelola
-                                            </button>
-                                        </td>
-                                    </tr>
-                                @endforeach
+    @php
+        $stokGudang = \App\Models\StokGudang::where('barang_id', $b->id)
+            ->where('gudang_id', $selectedGudang->id)
+            ->first();
+        $stokTersedia = $stokGudang ? $stokGudang->stok : 0;
+    @endphp
+    <tr @if ($stokTersedia == 0) class="table-danger" @endif>
+        <td>{{ $i + 1 }}</td>
+        <td>{{ $b->nama }}</td>
+        <td>{{ $b->kode }}</td>
+        <td>{{ $stokTersedia }}</td>
+        <td>{{ $b->satuan }}</td>
+        <td>{{ $b->kategori->nama ?? '-' }}</td>
+        <td>...</td>
+    </tr>
+@endforeach
                             </tbody>
                         </table>
                     </div>
