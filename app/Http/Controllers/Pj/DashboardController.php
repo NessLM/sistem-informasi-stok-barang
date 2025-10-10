@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Pj;
 
 use App\Helpers\MenuHelper;
 use App\Http\Controllers\Controller;
-use App\Models\Riwayat;
+use App\Models\BarangKeluar;
 use App\Models\Barang;
 use App\Models\JenisBarang;
 use App\Models\Gudang;
@@ -29,25 +29,25 @@ class DashboardController extends Controller
         $pageTitle = $this->getDashboardTitle($gudang->nama);
 
         // Ringkasan: total jenis barang dan total barang hanya untuk gudang ini
-        $totalJenisBarang = JenisBarang::whereHas('kategori', function($query) use ($gudang) {
+        $totalJenisBarang = JenisBarang::whereHas('kategori', function ($query) use ($gudang) {
             $query->where('gudang_id', $gudang->id);
         })->count();
 
-        $totalBarang = Barang::whereHas('kategori', function($query) use ($gudang) {
+        $totalBarang = Barang::whereHas('kategori', function ($query) use ($gudang) {
             $query->where('gudang_id', $gudang->id);
         })->sum('stok');
 
         /* =========================================================
-         * GRAFIK PER BAGIAN  (HANYA KELUAR, TANPA DEFAULT, EXCLUDE "Umum")
+         * GRAFIK PER BAGIAN (DARI TABEL barang_keluars, EXCLUDE "Umum")
          * =========================================================
-         * - Ambil hanya bagian yang benar-benar punya transaksi Keluar dari gudang ini
+         * - Ambil hanya bagian yang benar-benar punya transaksi keluar dari gudang ini
          * - Urut alfabet biar stabil
          * - "Umum" dikecualikan
          */
-        $bagianRows = Riwayat::select('bagian', DB::raw('SUM(jumlah) AS total'))
-            ->where('alur_barang', 'Keluar')
-            ->where('gudang', $gudang->nama) // Hanya riwayat dari gudang ini
+        $bagianRows = BarangKeluar::select('bagian', DB::raw('SUM(jumlah) AS total'))
+            ->where('gudang_id', $gudang->id) // Hanya dari gudang ini
             ->where('bagian', 'NOT LIKE', '%Umum%')
+            ->whereNotNull('bagian')
             ->groupBy('bagian')
             ->orderBy('bagian')
             ->get();
@@ -56,32 +56,33 @@ class DashboardController extends Controller
         $bagianLabels = $bagianRows->pluck('bagian')
             ->map(fn($b) => preg_replace('/^\s*Bagian\s+/i', '', $b))
             ->values();
-        $keluarData   = $bagianRows->pluck('total')->map(fn($v) => (int)$v)->values();
+        $keluarData = $bagianRows->pluck('total')->map(fn($v) => (int) $v)->values();
 
         /* =========================================================
          * GRAFIK PENGELUARAN PER TAHUN
          * ========================================================= */
-        $currentYear        = (int) date('Y');
-        $years              = range($currentYear - 9, $currentYear);
-        $pengeluaranLabels  = $years;
+        $currentYear = (int) date('Y');
+        $years = range($currentYear - 9, $currentYear);
+        $pengeluaranLabels = $years;
 
-        $colorsForYears        = [];
+        $colorsForYears = [];
         $colorsForYearsOrdered = [];
-        $totalsPerYear         = [];
+        $totalsPerYear = [];
         foreach ($years as $y) {
-            $totalsPerYear[] = (int) Riwayat::where('alur_barang', 'Keluar')
-                ->where('gudang', $gudang->nama) // Hanya riwayat dari gudang ini
+            $totalsPerYear[] = (int) BarangKeluar::where('gudang_id', $gudang->id)
                 ->whereYear('tanggal', $y)->sum('jumlah');
             $c = $this->getColorForYear($y);
-            $colorsForYears[$y]      = $c;
+            $colorsForYears[$y] = $c;
             $colorsForYearsOrdered[] = $c;
         }
-        $pengeluaranData = [[
-            'label'           => 'Keluar',
-            'data'            => $totalsPerYear,
-            'backgroundColor' => $colorsForYearsOrdered,
-            'borderRadius'    => 4,
-        ]];
+        $pengeluaranData = [
+            [
+                'label' => 'Keluar',
+                'data' => $totalsPerYear,
+                'backgroundColor' => $colorsForYearsOrdered,
+                'borderRadius' => 4,
+            ]
+        ];
 
         return view('staff.pj.dashboard', compact(
             'menu',
@@ -132,14 +133,13 @@ class DashboardController extends Controller
 
         $gudangShort = $mapping[$gudangName] ?? $gudangName;
 
-
         return "Dashboard Penanggung Jawab {$gudangShort}";
     }
 
     /* ==================== AJAX FILTER ==================== */
     public function filterData(Request $request)
     {
-        $type   = $request->query('type', 'bagian');
+        $type = $request->query('type', 'bagian');
         $filter = $request->query('filter', 'all');
 
         // Dapatkan gudang untuk user yang login
@@ -162,11 +162,11 @@ class DashboardController extends Controller
     private function filterRingkasanData($gudangFilter, $gudang)
     {
         // Untuk PJ, gudangFilter sebenarnya tidak digunakan karena gudang sudah tetap.
-        $totalJenisBarang = JenisBarang::whereHas('kategori', function($query) use ($gudang) {
+        $totalJenisBarang = JenisBarang::whereHas('kategori', function ($query) use ($gudang) {
             $query->where('gudang_id', $gudang->id);
         })->count();
 
-        $totalBarang = Barang::whereHas('kategori', function($query) use ($gudang) {
+        $totalBarang = Barang::whereHas('kategori', function ($query) use ($gudang) {
             $query->where('gudang_id', $gudang->id);
         })->sum('stok');
 
@@ -180,19 +180,20 @@ class DashboardController extends Controller
     private function filterBagianData($filter, $gudang)
     {
         // baseline labels (supaya batang tidak hilang)
-        $allTimeLabels = Riwayat::query()
-            ->where('alur_barang', 'Keluar')
-            ->where('gudang', $gudang->nama) // Hanya dari gudang ini
+        $allTimeLabels = BarangKeluar::query()
+            ->where('gudang_id', $gudang->id)
             ->where('bagian', 'NOT LIKE', '%Umum%')
+            ->whereNotNull('bagian')
             ->select('bagian')
             ->groupBy('bagian')
             ->orderBy('bagian')
             ->pluck('bagian')
             ->values();
 
-        $q = Riwayat::query()->where('alur_barang', 'Keluar')->where('gudang', $gudang->nama);
+        $q = BarangKeluar::query()->where('gudang_id', $gudang->id);
 
-        $start = null; $end = null; // untuk badge
+        $start = null;
+        $end = null; // untuk badge
         if ($filter === 'week') {
             $start = Carbon::now()->subWeek();
             $q->where('tanggal', '>=', $start);
@@ -229,23 +230,26 @@ class DashboardController extends Controller
     {
         $currentYear = (int) date('Y');
 
-        if ($filter === '5y')      $years = range($currentYear - 4,  $currentYear);
-        elseif ($filter === '7y')  $years = range($currentYear - 6,  $currentYear);
-        elseif ($filter === '10y') $years = range($currentYear - 10, $currentYear);
-        else                       $years = range($currentYear - 9,  $currentYear);
+        if ($filter === '5y')
+            $years = range($currentYear - 4, $currentYear);
+        elseif ($filter === '7y')
+            $years = range($currentYear - 6, $currentYear);
+        elseif ($filter === '10y')
+            $years = range($currentYear - 10, $currentYear);
+        else
+            $years = range($currentYear - 9, $currentYear);
 
         $totals = [];
         $colors = [];
         foreach ($years as $y) {
-            $totals[]   = (int) Riwayat::where('alur_barang', 'Keluar')
-                ->where('gudang', $gudang->nama) // Hanya dari gudang ini
+            $totals[] = (int) BarangKeluar::where('gudang_id', $gudang->id)
                 ->whereYear('tanggal', $y)->sum('jumlah');
             $colors[$y] = $this->getColorForYear($y);
         }
 
         return response()->json([
             'labels' => $years,
-            'data'   => $totals,
+            'data' => $totals,
             'colors' => $colors,
         ]);
     }
@@ -255,8 +259,9 @@ class DashboardController extends Controller
         // palet stabil; otomatis berulang
         $palette = ['#8B5CF6', '#F87171', '#06B6D4', '#10B981', '#F59E0B'];
         $currentYear = (int) date('Y');
-        $idx = ($currentYear - (int)$year) % count($palette);
-        if ($idx < 0) $idx += count($palette);
+        $idx = ($currentYear - (int) $year) % count($palette);
+        if ($idx < 0)
+            $idx += count($palette);
         return $palette[$idx];
     }
 }

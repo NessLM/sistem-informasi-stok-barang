@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Pj;
 
 use App\Http\Controllers\Controller;
-use App\Models\RiwayatBarang;
+use App\Models\BarangKeluar;
 use App\Models\Gudang;
 use App\Helpers\MenuHelper;
 use Illuminate\Http\Request;
@@ -18,34 +18,38 @@ class RiwayatController extends Controller
     {
         $menu = MenuHelper::pjMenu();
 
+        // Dapatkan gudang user yang login
+        $user = auth()->user();
+
+        // Validasi apakah user memiliki gudang
+        if (!$user->gudang_id) {
+            return back()->with('toast', [
+                'type' => 'error',
+                'title' => 'Error!',
+                'message' => 'Anda belum memiliki gudang yang ditugaskan.'
+            ]);
+        }
+
+        $userGudang = $user->gudang;
+
         // Check if download requested
         if ($request->has('download')) {
             return $this->downloadReport($request);
         }
 
-        // Query dasar
-        $query = RiwayatBarang::with([
-            'barang.kategori.gudang',
-            'kategoriAsal',
-            'kategoriTujuan',
-            'gudangTujuan',
+        // Query dasar - hanya barang keluar dari gudang user
+        $query = BarangKeluar::with([
+            'barang.kategori',
+            'gudang',
             'user'
-        ])->orderBy('tanggal', 'desc')->orderBy('created_at', 'desc');
+        ])
+            ->where('gudang_id', $userGudang->id)
+            ->orderBy('tanggal', 'desc')
+            ->orderBy('created_at', 'desc');
 
-        // Filter berdasarkan alur barang
-        if ($request->filled('alur_barang') && $request->alur_barang != 'Semua') {
-            if ($request->alur_barang == 'Masuk') {
-                $query->where('jenis_transaksi', 'masuk');
-            } else {
-                $query->where('jenis_transaksi', 'distribusi');
-            }
-        }
-
-        // Filter berdasarkan gudang
-        if ($request->filled('gudang') && $request->gudang != 'Semua') {
-            $query->whereHas('barang.kategori.gudang', function ($q) use ($request) {
-                $q->where('nama', $request->gudang);
-            });
+        // Filter berdasarkan bagian
+        if ($request->filled('bagian') && $request->bagian != 'Semua') {
+            $query->where('bagian', $request->bagian);
         }
 
         // Filter berdasarkan periode
@@ -74,59 +78,69 @@ class RiwayatController extends Controller
         // Ambil data dan transform
         $riwayat = $query->get()->map(function ($item) {
             return (object) [
+                'id' => $item->id,
                 'tanggal' => $item->tanggal,
                 'waktu' => $item->created_at->format('H:i:s'),
-                'alur_barang' => $item->jenis_transaksi == 'masuk' ? 'Masuk' : 'Keluar',
-                'gudang' => optional(optional($item->barang->kategori)->gudang)->nama ?? '-',
+                'alur_barang' => 'Keluar',
+                'gudang' => optional($item->gudang)->nama ?? '-',
                 'nama_barang' => optional($item->barang)->nama ?? '-',
+                'kode_barang' => optional($item->barang)->kode ?? '-',
                 'jumlah' => $item->jumlah,
-                'kategori_asal' => optional($item->kategoriAsal)->nama ?? '-',
-                'kategori_tujuan' => optional($item->kategoriTujuan)->nama ?? '-',
-                'gudang_tujuan' => optional($item->gudangTujuan)->nama ?? '-',
+                'bagian' => $item->bagian ?? '-',
+                'nama_penerima' => $item->nama_penerima ?? '-',
+                'keterangan' => $item->keterangan ?? '-',
                 'bukti' => $item->bukti,
-                'bukti_path' => $item->bukti ? $item->bukti : null,
+                'bukti_path' => $item->bukti ? asset('storage/' . $item->bukti) : null,
+                'user' => optional($item->user)->nama ?? '-',
             ];
         });
 
-        // Ambil list gudang untuk filter
-        $gudangList = RiwayatBarang::with('barang.kategori.gudang')
+        // Ambil list bagian untuk filter (dari barang keluar gudang ini)
+        $bagianList = BarangKeluar::where('gudang_id', $userGudang->id)
+            ->whereNotNull('bagian')
+            ->where('bagian', '!=', '')
+            ->select('bagian')
+            ->distinct()
+            ->orderBy('bagian')
             ->get()
-            ->pluck('barang.kategori.gudang.nama')
-            ->unique()
-            ->filter()
-            ->map(function ($nama) {
-                return (object) ['gudang' => $nama];
-            })
-            ->values();
+            ->map(function ($item) {
+                return (object) ['bagian' => $item->bagian];
+            });
 
-        return view('staff.pj.riwayat', compact('riwayat', 'gudangList', 'menu'));
+        // Untuk backward compatibility dengan view yang menggunakan gudangList
+        $gudangList = collect([(object) ['gudang' => $userGudang->nama]]);
+
+        return view('staff.pj.riwayat', compact('riwayat', 'bagianList', 'gudangList', 'menu', 'userGudang'));
     }
 
     public function downloadReport(Request $request)
     {
-        // Query dasar (sama dengan index)
-        $query = RiwayatBarang::with([
-            'barang.kategori.gudang',
-            'kategoriAsal',
-            'kategoriTujuan',
-            'gudangTujuan',
-            'user'
-        ])->orderBy('tanggal', 'desc')->orderBy('created_at', 'desc');
+        // Dapatkan gudang user yang login
+        $user = auth()->user();
 
-        // Filter berdasarkan alur barang
-        if ($request->filled('alur_barang') && $request->alur_barang != 'Semua') {
-            if ($request->alur_barang == 'Masuk') {
-                $query->where('jenis_transaksi', 'masuk');
-            } else {
-                $query->where('jenis_transaksi', 'distribusi');
-            }
+        if (!$user->gudang_id) {
+            return back()->with('toast', [
+                'type' => 'error',
+                'title' => 'Error!',
+                'message' => 'Anda belum memiliki gudang yang ditugaskan.'
+            ]);
         }
 
-        // Filter berdasarkan gudang
-        if ($request->filled('gudang') && $request->gudang != 'Semua') {
-            $query->whereHas('barang.kategori.gudang', function ($q) use ($request) {
-                $q->where('nama', $request->gudang);
-            });
+        $userGudang = $user->gudang;
+
+        // Query dasar - hanya barang keluar dari gudang user
+        $query = BarangKeluar::with([
+            'barang.kategori',
+            'gudang',
+            'user'
+        ])
+            ->where('gudang_id', $userGudang->id)
+            ->orderBy('tanggal', 'desc')
+            ->orderBy('created_at', 'desc');
+
+        // Filter berdasarkan bagian
+        if ($request->filled('bagian') && $request->bagian != 'Semua') {
+            $query->where('bagian', $request->bagian);
         }
 
         // Filter berdasarkan periode
@@ -159,44 +173,53 @@ class RiwayatController extends Controller
 
         // Siapkan filter untuk export
         $filter = [
-            'alur_barang' => $request->alur_barang,
-            'gudang' => $request->gudang,
+            'gudang' => $userGudang->nama,
+            'bagian' => $request->bagian ?? 'Semua',
             'periode' => $request->periode,
             'dari_tanggal' => $request->dari_tanggal,
             'sampai_tanggal' => $request->sampai_tanggal
         ];
 
         if ($format == 'pdf') {
-            // Transform data untuk PDF (gunakan variabel $riwayat seperti di view)
+            // Transform data untuk PDF
             $riwayat = $riwayatData->map(function ($item) {
                 return (object) [
                     'tanggal' => $item->tanggal,
                     'waktu' => $item->created_at->format('H:i:s'),
-                    'alur_barang' => $item->jenis_transaksi == 'masuk' ? 'Masuk' : 'Keluar',
-                    'gudang' => optional(optional($item->barang->kategori)->gudang)->nama ?? '-',
+                    'alur_barang' => 'Keluar',
+                    'gudang' => optional($item->gudang)->nama ?? '-',
                     'nama_barang' => optional($item->barang)->nama ?? '-',
+                    'kode_barang' => optional($item->barang)->kode ?? '-',
                     'jumlah' => $item->jumlah,
-                    'kategori_asal' => optional($item->kategoriAsal)->nama ?? '-',
-                    'kategori_tujuan' => optional($item->kategoriTujuan)->nama ?? '-',
-                    'gudang_tujuan' => optional($item->gudangTujuan)->nama ?? '-',
+                    'bagian' => $item->bagian ?? '-',
+                    'nama_penerima' => $item->nama_penerima ?? '-',
+                    'keterangan' => $item->keterangan ?? '-',
                     'bukti' => $item->bukti,
+                    'user' => optional($item->user)->nama ?? '-',
                 ];
             });
 
-            // Generate PDF menggunakan variabel $riwayat
+            // Generate PDF
             $pdf = Pdf::loadView('staff.pj.riwayat-pdf', compact('riwayat', 'filter'))
                 ->setPaper('a4', 'landscape')
                 ->setOption('isHtml5ParserEnabled', true)
                 ->setOption('isRemoteEnabled', true);
 
-            return $pdf->download('Laporan_Riwayat_Barang_' . date('Y-m-d_His') . '.pdf');
+            return $pdf->download('Laporan_Riwayat_Barang_Keluar_' . date('Y-m-d_His') . '.pdf');
         }
 
         if ($format == 'excel') {
-            // Download Excel menggunakan data ASLI (model RiwayatBarang)
-            return Excel::download(new RiwayatExportPj($riwayatData, $filter), 'Laporan_Riwayat_Barang_' . date('Y-m-d_His') . '.xlsx');
+            // Download Excel
+            return Excel::download(
+                new RiwayatExportPj($riwayatData, $filter),
+                'Laporan_Riwayat_Barang_Keluar_' . date('Y-m-d_His') . '.xlsx'
+            );
         }
 
-        return redirect()->back()->with('error', 'Format tidak valid');
+        return redirect()->back()->with('toast', [
+            'type' => 'error',
+            'title' => 'Error!',
+            'message' => 'Format tidak valid'
+        ]);
     }
 }
