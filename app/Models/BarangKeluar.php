@@ -13,10 +13,10 @@ class BarangKeluar extends Model
         'barang_id',
         'gudang_id',
         'user_id',
+        'bagian_id',   
         'nama_penerima',
         'jumlah',
         'tanggal',
-        'bagian',
         'keterangan',
         'bukti',
     ];
@@ -47,5 +47,13 @@ class BarangKeluar extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Relasi ke Bagian
+     */
+    public function bagian()
+    {
+        return $this->belongsTo(Bagian::class, 'bagian_id');
     }
 }

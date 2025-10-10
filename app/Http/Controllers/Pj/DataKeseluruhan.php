@@ -8,9 +8,11 @@ use App\Models\Barang;
 use App\Models\Gudang;
 use App\Models\StokGudang;
 use App\Models\BarangKeluar;
+use App\Models\Bagian;
 use Illuminate\Http\Request;
 use App\Helpers\MenuHelper;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class DataKeseluruhan extends Controller
 {
@@ -36,15 +38,18 @@ class DataKeseluruhan extends Controller
             'barang' => function ($q) use ($search) {
                 if ($search) {
                     $q->where('nama', 'like', "%{$search}%")
-                      ->orWhere('kode', 'like', "%{$search}%");
+                        ->orWhere('kode', 'like', "%{$search}%");
                 }
             },
             'gudang'
         ])->where('gudang_id', $gudangUser->id);
 
         $kategori = $kategoriQuery->get();
-        
+
         $selectedGudang = $gudangUser;
+
+        // Ambil semua bagian untuk dropdown
+        $bagian = Bagian::orderBy('nama')->get();
 
         $request->validate([
             'harga_min' => 'nullable|numeric|min:0',
@@ -68,7 +73,8 @@ class DataKeseluruhan extends Controller
             'kategori',
             'barang',
             'menu',
-            'selectedGudang'
+            'selectedGudang',
+            'bagian'
         ));
     }
 
@@ -96,15 +102,18 @@ class DataKeseluruhan extends Controller
             'barang' => function ($q) use ($search) {
                 if ($search) {
                     $q->where('nama', 'like', "%{$search}%")
-                      ->orWhere('kode', 'like', "%{$search}%");
+                        ->orWhere('kode', 'like', "%{$search}%");
                 }
             },
             'gudang'
         ])->where('gudang_id', $gudang->id);
 
         $kategori = $kategoriQuery->get();
-        
+
         $selectedGudang = $gudang;
+
+        // Ambil semua bagian untuk dropdown
+        $bagian = Bagian::orderBy('nama')->get();
 
         $request->validate([
             'harga_min' => 'nullable|numeric|min:0',
@@ -128,7 +137,8 @@ class DataKeseluruhan extends Controller
             'kategori',
             'barang',
             'menu',
-            'selectedGudang'
+            'selectedGudang',
+            'bagian'
         ));
     }
 
@@ -138,14 +148,14 @@ class DataKeseluruhan extends Controller
     private function findGudangBySlug($slug)
     {
         $gudangs = Gudang::all();
-        
+
         foreach ($gudangs as $gudang) {
             $gudangSlug = $this->createSlugFromGudangName($gudang->nama);
             if ($gudangSlug === $slug) {
                 return $gudang;
             }
         }
-        
+
         return null;
     }
 
@@ -168,7 +178,7 @@ class DataKeseluruhan extends Controller
     {
         $query = $request->get('q', '');
         $user = Auth::user();
-        
+
         if (strlen($query) < 2) {
             return response()->json([]);
         }
@@ -176,32 +186,32 @@ class DataKeseluruhan extends Controller
         if (!$user->gudang_id) {
             return response()->json([]);
         }
-        
+
         $barangQuery = Barang::with(['kategori.gudang'])
-            ->where(function($q) use ($query) {
+            ->where(function ($q) use ($query) {
                 $q->where('nama', 'like', "%{$query}%")
-                  ->orWhere('kode', 'like', "%{$query}%");
+                    ->orWhere('kode', 'like', "%{$query}%");
             })
-            ->whereHas('kategori', function($q) use ($user) {
+            ->whereHas('kategori', function ($q) use ($user) {
                 $q->where('gudang_id', $user->gudang_id);
             });
-        
+
         $barang = $barangQuery->limit(10)->get();
-        
-        $results = $barang->map(function($item) use ($user) {
+
+        $results = $barang->map(function ($item) use ($user) {
             $stokGudang = StokGudang::where('barang_id', $item->id)
                 ->where('gudang_id', $user->gudang_id)
                 ->first();
-            
+
             $stok = $stokGudang ? $stokGudang->stok : 0;
-            
+
             $stockStatus = 'available';
             if ($stok == 0) {
                 $stockStatus = 'empty';
             } elseif ($stok <= 10) {
                 $stockStatus = 'low';
             }
-            
+
             return [
                 'id' => $item->id,
                 'nama' => $item->nama,
@@ -212,22 +222,31 @@ class DataKeseluruhan extends Controller
                 'stock_status' => $stockStatus
             ];
         });
-        
+
         return response()->json($results);
     }
 
     /**
-     * Proses barang keluar - FIXED
+     * Proses barang keluar - FIXED bagian_id issue
      */
     public function barangKeluar(Request $request, Barang $barang)
     {
-        $request->validate([
+        // Debug: Log semua data yang diterima dari request
+        Log::info('=== BARANG KELUAR REQUEST ===');
+        Log::info('All Request Data:', $request->all());
+        Log::info('Bagian ID from request:', ['bagian_id' => $request->bagian_id]);
+
+        // Validasi input
+        $validated = $request->validate([
             'jumlah' => 'required|integer|min:1',
             'nama_penerima' => 'required|string|max:255',
             'tanggal' => 'nullable|date',
-            'bagian' => 'nullable|string|max:255',
+            'bagian_id' => 'nullable|exists:bagian,id',
+            'keterangan' => 'nullable|string',
             'bukti' => 'nullable|file|mimes:jpeg,jpg,png,pdf|max:2048',
         ]);
+
+        Log::info('Validated Data:', $validated);
 
         $user = Auth::user();
 
@@ -259,45 +278,97 @@ class DataKeseluruhan extends Controller
             $file = $request->file('bukti');
             $filename = time() . '_' . $file->getClientOriginalName();
             $buktiPath = $file->storeAs('bukti_barang_keluar', $filename, 'public');
+            Log::info('Bukti uploaded:', ['path' => $buktiPath]);
         }
 
-        // Simpan data barang keluar
-        BarangKeluar::create([
+        // Proses bagian_id - pastikan null jika kosong
+        $bagianId = $request->input('bagian_id');
+
+        // Jika bagian_id adalah string kosong atau "null", set ke null
+        if ($bagianId === '' || $bagianId === 'null' || empty($bagianId)) {
+            $bagianId = null;
+        } else {
+            // Pastikan bagian_id adalah integer
+            $bagianId = (int) $bagianId;
+
+            // Double check apakah bagian benar-benar ada
+            $bagianExists = Bagian::find($bagianId);
+            if (!$bagianExists) {
+                Log::warning('Bagian ID tidak ditemukan:', ['bagian_id' => $bagianId]);
+                $bagianId = null;
+            }
+        }
+
+        Log::info('Processed Bagian ID:', ['bagian_id' => $bagianId]);
+
+        // Siapkan data untuk disimpan
+        $dataToInsert = [
             'barang_id' => $barang->id,
             'gudang_id' => $user->gudang_id,
             'user_id' => $user->id,
+            'bagian_id' => $bagianId,
             'nama_penerima' => $request->nama_penerima,
             'jumlah' => $request->jumlah,
-            'tanggal' => $request->tanggal ?? now(),
-            'bagian' => $request->bagian,
+            'tanggal' => $request->tanggal ?? now()->format('Y-m-d'),
             'keterangan' => $request->keterangan,
             'bukti' => $buktiPath,
-        ]);
+        ];
 
-        // Kurangi stok gudang
-        $stokGudang->decrement('stok', $request->jumlah);
+        Log::info('Data to be inserted:', $dataToInsert);
 
-        return back()->with('toast', [
-            'type' => 'success',
-            'title' => 'Berhasil!',
-            'message' => 'Barang keluar berhasil dicatat.'
-        ]);
+        // Simpan data barang keluar
+        try {
+            $barangKeluar = BarangKeluar::create($dataToInsert);
+
+            Log::info('Barang Keluar Created Successfully:', $barangKeluar->toArray());
+
+            // Kurangi stok gudang
+            $stokGudang->decrement('stok', $request->jumlah);
+
+            Log::info('Stok Gudang Updated:', [
+                'barang_id' => $barang->id,
+                'gudang_id' => $user->gudang_id,
+                'stok_before' => $stokGudang->stok + $request->jumlah,
+                'stok_after' => $stokGudang->stok
+            ]);
+
+            return back()->with('toast', [
+                'type' => 'success',
+                'title' => 'Berhasil!',
+                'message' => 'Barang keluar berhasil dicatat.'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error creating Barang Keluar:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return back()->with('toast', [
+                'type' => 'error',
+                'title' => 'Error!',
+                'message' => 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage()
+            ]);
+        }
     }
 
+    /**
+     * Filter barang berdasarkan kriteria
+     */
     private function getFilteredBarang(Request $request, $gudangId)
     {
         $query = Barang::with(['kategori.gudang']);
-        
+
         // Filter berdasarkan gudang user
-        $query->whereHas('kategori', function($q) use ($gudangId) {
+        $query->whereHas('kategori', function ($q) use ($gudangId) {
             $q->where('gudang_id', $gudangId);
         });
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nama', 'like', "%{$search}%")
-                  ->orWhere('kode', 'like', "%{$search}%");
+                    ->orWhere('kode', 'like', "%{$search}%");
             });
         }
 
