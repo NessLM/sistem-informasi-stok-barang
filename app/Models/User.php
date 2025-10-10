@@ -13,9 +13,9 @@ class User extends Authenticatable
         'nama',
         'username',
         'password',
-        'role',
-        'bagian',
-        'gudang_id', // tambahkan ini agar mass assignment bisa dilakukan
+        'role_id',
+        'bagian_id', // UBAH dari 'bagian' ke 'bagian_id'
+        'gudang_id',
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -33,6 +33,14 @@ class User extends Authenticatable
     public function role()
     {
         return $this->belongsTo(Role::class);
+    }
+
+    /**
+     * Relasi ke bagian - TAMBAH INI
+     */
+    public function bagian()
+    {
+        return $this->belongsTo(Bagian::class, 'bagian_id');
     }
 
     /**

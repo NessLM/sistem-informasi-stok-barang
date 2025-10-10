@@ -52,7 +52,6 @@
 
         <div class="card p-3">
             <table class="table table-bordered">
-                <!-- Isi tabel tetap sama -->
                 <thead>
                     <tr>
                         <th>No</th>
@@ -79,18 +78,17 @@
                                 <td>{{ $u->nama }}</td>
                                 <td>{{ $u->username }}</td>
                                 <td>{{ $u->role?->nama ?? '-' }}</td>
-                                <td>{{ $u->bagian }}</td>
+                                <td>{{ $u->bagian?->nama ?? '-' }}</td>
                                 <td>
                                     <div class="action-buttons">
                                         <button type="button" class="btn btn-warning btn-sm btn-action editUser"
                                             data-id="{{ $u->id }}" data-nama="{{ $u->nama }}"
                                             data-username="{{ $u->username }}" data-role-id="{{ $u->role_id }}"
-                                            data-role-name="{{ $u->role?->nama }}" data-bagian="{{ $u->bagian }}"
+                                            data-role-name="{{ $u->role?->nama }}" data-bagian-id="{{ $u->bagian_id }}"
                                             data-password="{{ $u->password }}" data-bs-toggle="modal"
                                             data-bs-target="#modalEditUser">
                                             <i class="bi bi-pencil"></i> Edit
                                         </button>
-                                        {{-- Tombol hapus dihidden untuk admin yang login --}}
                                     </div>
                                 </td>
                             </tr>
@@ -106,13 +104,13 @@
                                 <td>{{ $u->nama }}</td>
                                 <td>{{ $u->username }}</td>
                                 <td>{{ $u->role?->nama ?? '-' }}</td>
-                                <td>{{ $u->bagian }}</td>
+                                <td>{{ $u->bagian?->nama ?? '-' }}</td>
                                 <td>
                                     <div class="action-buttons">
                                         <button type="button" class="btn btn-warning btn-sm btn-action editUser"
                                             data-id="{{ $u->id }}" data-nama="{{ $u->nama }}"
                                             data-username="{{ $u->username }}" data-role-id="{{ $u->role_id }}"
-                                            data-role-name="{{ $u->role?->nama }}" data-bagian="{{ $u->bagian }}"
+                                            data-role-name="{{ $u->role?->nama }}" data-bagian-id="{{ $u->bagian_id }}"
                                             data-password="{{ $u->password }}" data-bs-toggle="modal"
                                             data-bs-target="#modalEditUser">
                                             <i class="bi bi-pencil"></i> Edit
@@ -139,13 +137,13 @@
                                 <td>{{ $u->nama }}</td>
                                 <td>{{ $u->username }}</td>
                                 <td>{{ $u->role?->nama ?? '-' }}</td>
-                                <td>{{ $u->bagian }}</td>
+                                <td>{{ $u->bagian?->nama ?? '-' }}</td>
                                 <td>
                                     <div class="action-buttons">
                                         <button type="button" class="btn btn-warning btn-sm btn-action editUser"
                                             data-id="{{ $u->id }}" data-nama="{{ $u->nama }}"
                                             data-username="{{ $u->username }}" data-role-id="{{ $u->role_id }}"
-                                            data-role-name="{{ $u->role?->nama }}" data-bagian="{{ $u->bagian }}"
+                                            data-role-name="{{ $u->role?->nama }}" data-bagian-id="{{ $u->bagian_id }}"
                                             data-password="{{ $u->password }}" data-bs-toggle="modal"
                                             data-bs-target="#modalEditUser">
                                             <i class="bi bi-pencil"></i> Edit
@@ -266,8 +264,12 @@
 
                     <div class="mb-3">
                         <label class="form-label">Bagian</label>
-                        <input type="text" class="form-control" name="bagian" required
-                            placeholder="Masukkan bagian">
+                        <select class="form-select" name="bagian_id" required>
+                            <option value="">-- Pilih Bagian --</option>
+                            @foreach ($bagians as $bagian)
+                                <option value="{{ $bagian->id }}">{{ $bagian->nama }}</option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
 
@@ -342,7 +344,12 @@
 
                     <div class="mb-3">
                         <label class="form-label">Bagian</label>
-                        <input type="text" class="form-control" name="bagian" id="user_bagian" required>
+                        <select class="form-select" name="bagian_id" id="user_bagian" required>
+                            <option value="">-- Pilih Bagian --</option>
+                            @foreach ($bagians as $bagian)
+                                <option value="{{ $bagian->id }}">{{ $bagian->nama }}</option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
 
@@ -390,13 +397,14 @@
                         const id = this.dataset.id;
                         const roleName = this.dataset.roleName;
                         const roleId = this.dataset.roleId;
+                        const bagianId = this.dataset.bagianId; // TAMBAH INI
                         const isCurrentAdmin = (parseInt(id) === {{ auth()->id() }});
 
                         document.getElementById('user_id').value = id;
                         document.getElementById('user_nama').value = this.dataset.nama || '';
                         document.getElementById('user_username').value = this.dataset.username || '';
                         document.getElementById('user_role').value = roleId || '';
-                        document.getElementById('user_bagian').value = this.dataset.bagian || '';
+                        document.getElementById('user_bagian').value = bagianId || ''; // UBAH INI
                         document.getElementById('user_old_password').value = this.dataset.password ||
                             '';
 
@@ -483,18 +491,18 @@
                         username.classList.remove('is-invalid');
 
                         // Validasi password hanya jika diisi
-                        // Validasi password - perbolehkan simbol
-                        if (password.value.length < 8) {
-                            password.classList.add('is-invalid');
-                            document.getElementById('password-feedback').textContent =
-                                'Password minimal 8 karakter';
-                            isValid = false;
-                        } else if (!/(?=.*[a-zA-Z])(?=.*\d)/.test(password.value)) {
-                            // Hanya memeriksa minimal 1 huruf dan 1 angka
-                            password.classList.add('is-invalid');
-                            document.getElementById('password-feedback').textContent =
-                                'Password harus mengandung huruf dan angka';
-                            isValid = false;
+                        if (password.value.length > 0) {
+                            if (password.value.length < 8) {
+                                password.classList.add('is-invalid');
+                                document.getElementById('edit-password-feedback').textContent =
+                                    'Password minimal 8 karakter';
+                                isValid = false;
+                            } else if (!/(?=.*[a-zA-Z])(?=.*\d)/.test(password.value)) {
+                                password.classList.add('is-invalid');
+                                document.getElementById('edit-password-feedback').textContent =
+                                    'Password harus mengandung huruf dan angka';
+                                isValid = false;
+                            }
                         }
 
                         if (!isValid) {

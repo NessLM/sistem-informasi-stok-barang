@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\Role;
 use App\Models\Gudang;
+use App\Models\Bagian;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 
@@ -26,6 +27,11 @@ class UserSeeder extends Seeder
         $gudangListrik = Gudang::where('nama', 'LIKE', '%Listrik%')->first();
         $gudangKomputer = Gudang::where('nama', 'LIKE', '%Komputer%')->orWhere('nama', 'LIKE', '%Bahan Komputer%')->first();
 
+        // Get Bagian IDs (atau buat jika belum ada)
+        $bagianUmum = Bagian::firstOrCreate(['nama' => 'Umum']);
+        $bagianGudang = Bagian::firstOrCreate(['nama' => 'Gudang']);
+        $bagianOperasional = Bagian::firstOrCreate(['nama' => 'Operasional']);
+
         // Helper: simpan plaintext ke cache (terenkripsi) PERMANEN
         $putPlain = function (User $u, string $plain) {
             $key = "user:plainpwd:{$u->id}";
@@ -39,7 +45,7 @@ class UserSeeder extends Seeder
                 'nama'     => 'Administrator',
                 'password' => 'admin-1234',
                 'role_id'  => $adminRole,
-                'bagian'   => 'Umum',
+                'bagian_id' => $bagianUmum->id, // UBAH dari 'bagian' ke 'bagian_id'
                 'gudang_id' => null,
             ]
         );
@@ -52,7 +58,7 @@ class UserSeeder extends Seeder
                 'nama'     => 'Pengelola Barang',
                 'password' => 'pb-1234',
                 'role_id'  => $pbRole,
-                'bagian'   => 'Gudang',
+                'bagian_id' => $bagianGudang->id, // UBAH dari 'bagian' ke 'bagian_id'
                 'gudang_id' => 1, // Gudang Utama
             ]
         );
@@ -65,7 +71,7 @@ class UserSeeder extends Seeder
                 'nama'     => 'Penanggung Jawab ATK',
                 'password' => 'atk-1234',
                 'role_id'  => $atkRole,
-                'bagian'   => 'Operasional',
+                'bagian_id' => $bagianOperasional->id, // UBAH dari 'bagian' ke 'bagian_id'
                 'gudang_id' => $gudangATK ? $gudangATK->id : 2,
             ]
         );
@@ -78,7 +84,7 @@ class UserSeeder extends Seeder
                 'nama'     => 'Penanggung Jawab Kebersihan',
                 'password' => 'kebersihan-1234',
                 'role_id'  => $cleanRole,
-                'bagian'   => 'Operasional',
+                'bagian_id' => $bagianOperasional->id, // UBAH dari 'bagian' ke 'bagian_id'
                 'gudang_id' => $gudangKebersihan ? $gudangKebersihan->id : 4,
             ]
         );
@@ -91,7 +97,7 @@ class UserSeeder extends Seeder
                 'nama'     => 'Penanggung Jawab Listrik',
                 'password' => 'listrik-1234',
                 'role_id'  => $elecRole,
-                'bagian'   => 'Operasional',
+                'bagian_id' => $bagianOperasional->id, // UBAH dari 'bagian' ke 'bagian_id'
                 'gudang_id' => $gudangListrik ? $gudangListrik->id : 5,
             ]
         );
@@ -104,7 +110,7 @@ class UserSeeder extends Seeder
                 'nama'     => 'Penanggung Jawab Bahan Komputer',
                 'password' => 'komputer-1234',
                 'role_id'  => $compRole,
-                'bagian'   => 'Operasional',
+                'bagian_id' => $bagianOperasional->id, // UBAH dari 'bagian' ke 'bagian_id'
                 'gudang_id' => $gudangKomputer ? $gudangKomputer->id : 6,
             ]
         );

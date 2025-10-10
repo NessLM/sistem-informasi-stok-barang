@@ -13,7 +13,7 @@
 
     <main class="page-wrap container py-4">
 
-      <!-- Kode toast notification tetap sama -->
+      <!-- Toast notification -->
     @if (session('toast'))
         <div id="toast-notif"
             style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
@@ -151,12 +151,27 @@
                             </thead>
                             <tbody>
                                 @foreach ($barang as $i => $b)
-                                    <tr @if ($b->stok == 0) class="table-danger" @endif>
+                                    @php
+                                        // Ambil stok berdasarkan gudang yang dipilih atau total
+                                        $stokDisplay = 0;
+                                        if (request()->filled('gudang_id') && isset($selectedGudang)) {
+                                            $stokGudang = $b->stokGudang()->where('gudang_id', $selectedGudang->id)->first();
+                                            $stokDisplay = $stokGudang ? $stokGudang->stok : 0;
+                                        } elseif ($b->kategori && $b->kategori->gudang_id) {
+                                            // Stok di gudang kategori
+                                            $stokGudang = $b->stokGudang()->where('gudang_id', $b->kategori->gudang_id)->first();
+                                            $stokDisplay = $stokGudang ? $stokGudang->stok : 0;
+                                        } else {
+                                            // Total stok
+                                            $stokDisplay = $b->stokGudang()->sum('stok');
+                                        }
+                                    @endphp
+                                    <tr @if ($stokDisplay == 0) class="table-danger" @endif>
                                         <td>{{ $i + 1 }}</td>
                                         <td>{{ $b->nama }}</td>
                                         <td>{{ $b->kode }}</td>
                                         <td>Rp {{ number_format($b->harga ?? 0, 0, ',', '.') }}</td>
-                                        <td>{{ $b->stok }}</td>
+                                        <td>{{ $stokDisplay }}</td>
                                         <td>{{ $b->satuan }}</td>
                                         <td>{{ $b->kategori->nama ?? '-' }}</td>
                                         <td>
@@ -238,12 +253,26 @@
                                                     </thead>
                                                     <tbody>
                                                         @foreach ($k->barang as $i => $b)
-                                                            <tr @if ($b->stok == 0) class="table-danger" @endif>
+                                                            @php
+                                                                // Ambil stok dari gudang yang sedang dipilih
+                                                                $stokDisplay = 0;
+                                                                if (isset($selectedGudang)) {
+                                                                    $stokGudang = $b->stokGudang()->where('gudang_id', $selectedGudang->id)->first();
+                                                                    $stokDisplay = $stokGudang ? $stokGudang->stok : 0;
+                                                                } else {
+                                                                    // Jika tidak ada filter gudang, ambil stok dari gudang kategori
+                                                                    if ($k->gudang_id) {
+                                                                        $stokGudang = $b->stokGudang()->where('gudang_id', $k->gudang_id)->first();
+                                                                        $stokDisplay = $stokGudang ? $stokGudang->stok : 0;
+                                                                    }
+                                                                }
+                                                            @endphp
+                                                            <tr @if ($stokDisplay == 0) class="table-danger" @endif>
                                                                 <td>{{ $i + 1 }}</td>
                                                                 <td>{{ $b->nama }}</td>
                                                                 <td>{{ $b->kode }}</td>
                                                                 <td>Rp {{ number_format($b->harga ?? 0, 0, ',', '.') }}</td>
-                                                                <td>{{ $b->stok }}</td>
+                                                                <td>{{ $stokDisplay }}</td>
                                                                 <td>{{ $b->satuan }}</td>
                                                                 <td class="d-flex gap-2">
                                                                     <button class="btn btn-sm btn-warning"
@@ -309,7 +338,7 @@
     </div> 
     {{-- Simple nya ini itu untuk Pilih kategori yang berada di Navbar bagian Data Keseluruhan --}}
     @php
-    // Kita cek: ini konteks “satu gudang” atau “multi gudang”?
+    // Kita cek: ini konteks "satu gudang" atau "multi gudang"?
     $isSingleGudang = false;
 
     if ($kategori->isNotEmpty()) {
