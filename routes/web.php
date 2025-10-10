@@ -153,8 +153,8 @@ Route::prefix('pb')->name('pb.')->middleware(['auth', 'role:Pengelola Barang'])-
     Route::get('/datakeseluruhan', [PbDataKeseluruhanController::class, 'index'])
         ->name('datakeseluruhan.index');
 
-    Route::get('/datakeseluruhan/{slug}', [PbDataKeseluruhanController::class, 'byGudang'])
-        ->name('datakeseluruhan.gudang');
+    Route::get('/datakeseluruhan/{slug}', [AdminDataKeseluruhanController::class, 'gudang'])
+    ->name('datakeseluruhan.gudang');
 
     // API Kategori by Gudang
     Route::get('/api/kategori-by-gudang/{gudangId}', [PbDataKeseluruhanController::class, 'getKategoriByGudang'])
