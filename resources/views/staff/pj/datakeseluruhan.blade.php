@@ -224,7 +224,7 @@
                         <thead class="table-dark">
                             <tr>
                                 <th>KATEGORI</th>
-                                <th>GUDANG</th>
+                                {{-- <th>GUDANG</th> --}}
                                 <th style="width:180px" class="text-center">AKSI</th>
                             </tr>
                         </thead>
@@ -232,7 +232,7 @@
                             @foreach ($kategori as $k)
                                 <tr>
                                     <td>{{ $k->nama }}</td>
-                                    <td>{{ $k->gudang->nama ?? '-' }}</td>
+                                    {{-- <td>{{ $k->gudang->nama ?? '-' }}</td> --}}
                                     <td class="text-center">
                                         <div class="d-flex flex-wrap justify-content-center gap-2">
                                             <button class="btn btn-sm btn-success"
@@ -262,8 +262,8 @@
                                                             <th>Nama Barang</th>
                                                             <th>Stok</th>
                                                             <th>Satuan</th>
-                                                            <th>Kategori</th>
-                                                            <th>Gudang</th>
+                                                            {{-- <th>Kategori</th> --}}
+                                                            {{-- <th>Gudang</th> --}}
                                                             <th>Aksi</th>
                                                         </tr>
                                                     </thead>
@@ -284,8 +284,8 @@
                                                                 <td>{{ $item->nama }}</td>
                                                                 <td>{{ $stokTersedia }}</td>
                                                                 <td>{{ $item->satuan }}</td>
-                                                                <td>{{ $item->kategori->nama ?? '-' }}</td>
-                                                                <td>{{ $item->kategori->gudang->nama ?? '-' }}</td>
+                                                                {{-- <td>{{ $item->kategori->nama ?? '-' }}</td> --}}
+                                                                {{-- <td>{{ $item->kategori->gudang->nama ?? '-' }}</td> --}}
                                                                 <td>
                                                                     <button type="button" class="btn btn-danger btn-sm"
                                                                         data-bs-toggle="modal"
@@ -322,7 +322,7 @@
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title fw-semibold">Form Barang Keluar</h5>
+                    <h5 class="modal-title fw-semibold">Barang Keluar</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body pt-3">
@@ -336,8 +336,7 @@
                                 <input type="text" id="barangKeluarNama" class="form-control" readonly>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Kode Barang <small
-                                        class="text-muted">(Otomatis)</small></label>
+                                <label class="form-label">Kode Barang</label>
                                 <input type="text" id="barangKeluarKode" class="form-control" readonly>
                             </div>
                             <div class="col-md-6">
@@ -356,8 +355,8 @@
                                 <input type="date" name="tanggal" id="tanggalKeluar" class="form-control">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Bagian <small class="text-muted">(Opsional)</small></label>
-                                <select name="bagian_id" class="form-select">
+                                <label class="form-label">Bagian <small class="text-danger">*</span></label>
+                                <select name="bagian_id" class="form-select" required>
                                     <option value="">-- Pilih Bagian --</option>
                                     @foreach ($bagian as $b)
                                         <option value="{{ $b->id }}">{{ $b->nama }}</option>
