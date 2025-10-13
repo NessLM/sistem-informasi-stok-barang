@@ -1,9 +1,9 @@
 <x-layouts.app title="Dashboard Pengelola Barang" :menu="$menu">
-  
+
   {{-- CSS khusus dashboard PB --}}
   <link rel="stylesheet" href="{{ asset('assets/css/staff/pb/dashboard.css') }}">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-  
+
   <div class="dashboard-container">
 
     {{-- Row pertama: Ringkasan dan Grafik Barang Keluar --}}
@@ -63,7 +63,7 @@
           <div class="chart-header-horizontal-item">
             <h2>Barang Keluar</h2>
           </div>
-          
+
           <div class="chart-header-horizontal-item">
             {{-- Badge keterangan rentang --}}
             <span id="rangeHintKategori" class="range-hint" title="Semua Data">Semua Data</span>
@@ -73,15 +73,19 @@
           <div class="chart-header-horizontal-item" style="margin-left: auto;">
             {{-- Filter waktu dengan arrow icon seperti admin --}}
             <div class="dropdown">
-              <button class="filter-btn dropdown-toggle" type="button" id="kategoriFilterDropdown" aria-expanded="false">
+              <button class="filter-btn dropdown-toggle" type="button" id="kategoriFilterDropdown"
+                aria-expanded="false">
                 <i class="bi bi-funnel"></i> Semua
                 <i class="bi bi-chevron-right arrow-icon"></i>
               </button>
               <ul class="dropdown-menu" aria-labelledby="kategoriFilterDropdown">
                 <li><a class="dropdown-item filter-option" href="#" data-type="kategori" data-value="all">Semua</a></li>
-                <li><a class="dropdown-item filter-option" href="#" data-type="kategori" data-value="week">1 Minggu Terakhir</a></li>
-                <li><a class="dropdown-item filter-option" href="#" data-type="kategori" data-value="month">1 Bulan Terakhir</a></li>
-                <li><a class="dropdown-item filter-option" href="#" data-type="kategori" data-value="year">1 Tahun Terakhir</a></li>
+                <li><a class="dropdown-item filter-option" href="#" data-type="kategori" data-value="week">1 Minggu
+                    Terakhir</a></li>
+                <li><a class="dropdown-item filter-option" href="#" data-type="kategori" data-value="month">1 Bulan
+                    Terakhir</a></li>
+                <li><a class="dropdown-item filter-option" href="#" data-type="kategori" data-value="year">1 Tahun
+                    Terakhir</a></li>
               </ul>
             </div>
           </div>
@@ -90,7 +94,7 @@
         <div class="chart-container">
           <canvas id="kategoriChart"></canvas>
         </div>
-        
+
         <div class="chart-legend">
           <div class="legend-item">
             <span class="legend-color atk"></span>
@@ -130,14 +134,14 @@
                 <i class="bi bi-chevron-right arrow-icon"></i>
               </button>
               <ul class="dropdown-menu" aria-labelledby="pengeluaranFilterDropdown">
-                <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran"
-                    data-value="all">Semua</a></li>
-                <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran"
-                    data-value="5y">5 Tahun Terakhir</a></li>
-                <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran"
-                    data-value="7y">7 Tahun Terakhir</a></li>
-                <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran"
-                    data-value="10y">10 Tahun Terakhir</a></li>
+                <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran" data-value="all">Semua</a>
+                </li>
+                <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran" data-value="5y">5 Tahun
+                    Terakhir</a></li>
+                <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran" data-value="7y">7 Tahun
+                    Terakhir</a></li>
+                <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran" data-value="10y">10 Tahun
+                    Terakhir</a></li>
               </ul>
             </div>
           </div>
@@ -155,7 +159,7 @@
   {{-- Chart.js Library --}}
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       const FILTER_URL = "{{ route('pb.dashboard.filter') }}";
 
       /* ====================== [NEW] Atur Arrow Dropdown seperti admin ====================== */
@@ -168,7 +172,7 @@
 
       if (summaryFilterBtn) {
         // Toggle dropdown visibility dan atur arrow
-        summaryFilterBtn.addEventListener('click', function(e) {
+        summaryFilterBtn.addEventListener('click', function (e) {
           e.stopPropagation();
           const isExpanded = this.getAttribute('aria-expanded') === 'true';
           this.setAttribute('aria-expanded', !isExpanded);
@@ -176,7 +180,7 @@
         });
 
         // Close dropdown ketika klik di luar
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
           if (!summaryFilterBtn.contains(e.target) && !summaryDropdownMenu.contains(e.target)) {
             summaryDropdownMenu.classList.remove('show');
             summaryFilterBtn.setAttribute('aria-expanded', 'false');
@@ -184,7 +188,7 @@
         });
 
         // Handle filter selection untuk Ringkasan
-        summaryDropdownMenu.addEventListener('click', function(e) {
+        summaryDropdownMenu.addEventListener('click', function (e) {
           if (e.target.classList.contains('summary-dropdown-item')) {
             e.preventDefault();
             const selectedValue = e.target.getAttribute('data-value');
@@ -240,14 +244,14 @@
       }
 
       /* ====================== Helper Functions ====================== */
-      function fmt(d){ 
-        const z=n=>String(n).padStart(2,'0'); 
-        return `${z(d.getDate())}/${z(d.getMonth()+1)}/${d.getFullYear()}`;
+      function fmt(d) {
+        const z = n => String(n).padStart(2, '0');
+        return `${z(d.getDate())}/${z(d.getMonth() + 1)}/${d.getFullYear()}`;
       }
-      function setRangeHint(el, text, titleText){ 
-        if(!el) return; 
-        el.textContent = text; 
-        el.title = titleText || text; 
+      function setRangeHint(el, text, titleText) {
+        if (!el) return;
+        el.textContent = text;
+        el.title = titleText || text;
       }
 
       /* ====================== Grafik Barang Keluar per Kategori ====================== */
@@ -269,17 +273,17 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { 
+          plugins: {
             legend: { display: false }
           },
           scales: {
-            y: { 
-              beginAtZero: true, 
-              ticks: { color: '#6B7280' }, 
+            y: {
+              beginAtZero: true,
+              ticks: { color: '#6B7280' },
               grid: { color: '#F3F4F6' }
             },
-            x: { 
-              ticks: { color: '#6B7280', maxRotation: 45, minRotation: 45 }, 
+            x: {
+              ticks: { color: '#6B7280', maxRotation: 45, minRotation: 45 },
               grid: { display: false }
             }
           }
@@ -291,7 +295,18 @@
         labels: {!! json_encode($pengeluaranLabels) !!},
         datasets: {!! json_encode($pengeluaranData) !!} // label 'Keluar' + colors sudah dari controller
       };
-      
+
+      // Ambil nilai data dari dataset pertama
+      const dataValues = pengeluaranData.datasets[0].data || [];
+
+      // Hitung nilai maksimum & minimum dari data
+      const maxValue = Math.max(...dataValues, 0);
+      const minValue = Math.min(...dataValues, 0);
+
+      // Tentukan batas sumbu Y secara dinamis
+      const suggestedMin = minValue > 0 ? minValue * 0.8 : 0;
+      const suggestedMax = maxValue > 0 ? maxValue * 1.2 : 1000000;
+
       const pengeluaranChart = new Chart(document.getElementById('pengeluaranChart').getContext('2d'), {
         type: 'bar',
         data: pengeluaranData,
@@ -301,13 +316,26 @@
           plugins: {
             legend: {
               display: false
+            },
+            tooltip: {
+              callbacks: {
+                label: function (context) {
+                  const value = context.raw || 0;
+                  return 'Rp ' + value.toLocaleString('id-ID');
+                }
+              }
             }
           },
           scales: {
             y: {
-              beginAtZero: true,
+              beginAtZero: false, // biar ga maksa mulai dari 0
+              suggestedMin: suggestedMin,
+              suggestedMax: suggestedMax,
               ticks: {
-                color: '#6B7280'
+                color: '#6B7280',
+                callback: function (value) {
+                  return 'Rp ' + value.toLocaleString('id-ID');
+                }
               },
               grid: {
                 color: '#F3F4F6'
@@ -324,6 +352,7 @@
           }
         }
       });
+
 
       function renderYearLegend(years, colorsMap) {
         const box = document.getElementById('legendYears');
@@ -358,13 +387,13 @@
       // [NEW] Custom dropdown handling untuk arrow rotation (fallback)
       document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
         if (!toggle.hasAttribute('data-bs-toggle')) {
-          toggle.addEventListener('click', function(e) {
+          toggle.addEventListener('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
-            
+
             const isExpanded = this.getAttribute('aria-expanded') === 'true';
             this.setAttribute('aria-expanded', !isExpanded);
-            
+
             // Toggle dropdown menu
             const menu = this.nextElementSibling;
             if (menu && menu.classList.contains('dropdown-menu')) {
@@ -375,7 +404,7 @@
       });
 
       // Close dropdown ketika klik di luar
-      document.addEventListener('click', function(e) {
+      document.addEventListener('click', function (e) {
         if (!e.target.closest('.dropdown')) {
           document.querySelectorAll('.dropdown-menu').forEach(menu => {
             menu.classList.remove('show');
@@ -404,7 +433,7 @@
 
             // Update badge rentang waktu
             const hint = document.getElementById('rangeHintKategori');
-            if (data.range && data.range.start && data.range.end){
+            if (data.range && data.range.start && data.range.end) {
               const s = new Date(data.range.start), e = new Date(data.range.end);
               const txt = `${fmt(s)} – ${fmt(e)}`;
               setRangeHint(hint, txt, txt);
@@ -448,7 +477,7 @@
             const hintT = document.getElementById('rangeHintTahun');
             if (hintT) {
               if (d.labels && d.labels.length) {
-                const txt = `${d.labels[0]} – ${d.labels[d.labels.length-1]}`;
+                const txt = `${d.labels[0]} – ${d.labels[d.labels.length - 1]}`;
                 setRangeHint(hintT, txt, txt);
               } else setRangeHint(hintT, 'Semua Data', 'Semua Data');
             }
@@ -458,22 +487,22 @@
 
       /* ====================== Filter Dropdown Functionality ====================== */
       document.querySelectorAll('.filter-option').forEach(item => {
-        item.addEventListener('click', function(e) {
+        item.addEventListener('click', function (e) {
           e.preventDefault();
-          const type  = this.getAttribute('data-type');
+          const type = this.getAttribute('data-type');
           const value = this.getAttribute('data-value');
-          
+
           // Update teks pada tombol dropdown dengan arrow icon seperti admin
           const dropdownButton = this.closest('.dropdown').querySelector('.dropdown-toggle');
           dropdownButton.innerHTML = `<i class="bi bi-funnel"></i> ${this.textContent} <i class="bi bi-chevron-right arrow-icon"></i>`;
-          
+
           // Close dropdown
           const dropdownMenu = this.closest('.dropdown-menu');
           if (dropdownMenu) {
             dropdownMenu.classList.remove('show');
           }
           dropdownButton.setAttribute('aria-expanded', 'false');
-          
+
           if (type === 'kategori') {
             filterKategori(value);
           } else if (type === 'pengeluaran') {
@@ -483,7 +512,7 @@
       });
 
       /* ====================== Chart Resize Handler ====================== */
-      window.addEventListener('resize', function() {
+      window.addEventListener('resize', function () {
         kategoriChart.resize();
         pengeluaranChart.resize();
       });
@@ -493,45 +522,45 @@
       // setRangeHint(document.getElementById('rangeHintTahun'), 'Semua Data', 'Semua Data'); // [OPSIONAL-HILANGKAN BADGE TAHUN]
     });
     // ===== ANIMASI TRANSISI SETELAH LOGIN =====
-document.addEventListener('DOMContentLoaded', function() {
-    // Trigger reflow untuk memastikan animasi berjalan
-    const sections = document.querySelectorAll('.summary-section, .chart-section, .wide-chart-section');
-    
-    sections.forEach(section => {
+    document.addEventListener('DOMContentLoaded', function () {
+      // Trigger reflow untuk memastikan animasi berjalan
+      const sections = document.querySelectorAll('.summary-section, .chart-section, .wide-chart-section');
+
+      sections.forEach(section => {
         // Force reflow
         void section.offsetWidth;
-    });
+      });
 
-    // Animasi untuk counting numbers pada ringkasan
-    const numberElements = document.querySelectorAll('.summary-card__number');
-    
-    numberElements.forEach(element => {
+      // Animasi untuk counting numbers pada ringkasan
+      const numberElements = document.querySelectorAll('.summary-card__number');
+
+      numberElements.forEach(element => {
         const finalValue = element.textContent;
         if (!isNaN(finalValue)) {
-            element.textContent = '0';
-            element.classList.add('number-counting');
-            
-            setTimeout(() => {
-                animateCount(element, 0, parseInt(finalValue), 1000);
-            }, 800);
-        }
-    });
+          element.textContent = '0';
+          element.classList.add('number-counting');
 
-    function animateCount(element, start, end, duration) {
+          setTimeout(() => {
+            animateCount(element, 0, parseInt(finalValue), 1000);
+          }, 800);
+        }
+      });
+
+      function animateCount(element, start, end, duration) {
         let startTimestamp = null;
         const step = (timestamp) => {
-            if (!startTimestamp) startTimestamp = timestamp;
-            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-            const value = Math.floor(progress * (end - start) + start);
-            element.textContent = value.toLocaleString();
-            
-            if (progress < 1) {
-                window.requestAnimationFrame(step);
-            }
+          if (!startTimestamp) startTimestamp = timestamp;
+          const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+          const value = Math.floor(progress * (end - start) + start);
+          element.textContent = value.toLocaleString();
+
+          if (progress < 1) {
+            window.requestAnimationFrame(step);
+          }
         };
         window.requestAnimationFrame(step);
-    }
-});
+      }
+    });
   </script>
 
 </x-layouts.app>
