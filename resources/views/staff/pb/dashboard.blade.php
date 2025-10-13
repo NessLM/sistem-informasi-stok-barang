@@ -492,6 +492,46 @@
       setRangeHint(document.getElementById('rangeHintKategori'), 'Semua Data', 'Semua Data');
       // setRangeHint(document.getElementById('rangeHintTahun'), 'Semua Data', 'Semua Data'); // [OPSIONAL-HILANGKAN BADGE TAHUN]
     });
+    // ===== ANIMASI TRANSISI SETELAH LOGIN =====
+document.addEventListener('DOMContentLoaded', function() {
+    // Trigger reflow untuk memastikan animasi berjalan
+    const sections = document.querySelectorAll('.summary-section, .chart-section, .wide-chart-section');
+    
+    sections.forEach(section => {
+        // Force reflow
+        void section.offsetWidth;
+    });
+
+    // Animasi untuk counting numbers pada ringkasan
+    const numberElements = document.querySelectorAll('.summary-card__number');
+    
+    numberElements.forEach(element => {
+        const finalValue = element.textContent;
+        if (!isNaN(finalValue)) {
+            element.textContent = '0';
+            element.classList.add('number-counting');
+            
+            setTimeout(() => {
+                animateCount(element, 0, parseInt(finalValue), 1000);
+            }, 800);
+        }
+    });
+
+    function animateCount(element, start, end, duration) {
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            const value = Math.floor(progress * (end - start) + start);
+            element.textContent = value.toLocaleString();
+            
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            }
+        };
+        window.requestAnimationFrame(step);
+    }
+});
   </script>
 
 </x-layouts.app>
