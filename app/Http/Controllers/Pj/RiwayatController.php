@@ -12,8 +12,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\RiwayatExportPj;
 use Carbon\Carbon;
-use App\Models\Bagian; // tambahkan di atas file controller kamu (jika belum ada)
-
+use App\Models\Bagian;
 
 class RiwayatController extends Controller
 {
@@ -75,28 +74,27 @@ class RiwayatController extends Controller
             }
         }
 
-        // Ambil data distribusi
-        // 1) Setelah ambil data distribusi
-        $riwayatDistribusi = $riwayatDistribusiQuery->get()
-            ->map(function ($item) {
-                return (object) [
-                    'id' => $item->id,
-                    'tanggal' => $item->tanggal,
-                    'waktu' => optional($item->created_at)->format('H:i:s'),
-                    'alur_barang' => 'Masuk',
-                    'gudang' => optional($item->barang->kategori->gudang)->nama ?? '-',
-                    'nama_barang' => optional($item->barang)->nama ?? '-',
-                    'kode_barang' => optional($item->barang)->kode ?? '-',
-                    'jumlah' => $item->jumlah,
-                    'bukti' => $item->bukti,
-                    'bukti_path' => $item->bukti ? asset('storage/bukti/' . $item->bukti) : null,
-                    'keterangan' => $item->keterangan ?? '-',
-                    'user' => optional($item->user)->nama ?? '-',
-                ];
-            })
-            ->values()
-            ->toBase();   // <— tambahkan ini
 
+        $riwayatDistribusi = $riwayatDistribusiQuery->get()
+    ->map(function ($item) {
+        return (object) [
+            'id' => $item->id,
+            'tanggal' => $item->tanggal,
+            'waktu' => optional($item->created_at)->format('H:i:s'),
+            'alur_barang' => 'Masuk',
+            'gudang' => optional($item->barang->kategori->gudang)->nama ?? '-',
+            'nama_barang' => optional($item->barang)->nama ?? '-',
+            'kode_barang' => optional($item->barang)->kode ?? '-',
+            'jumlah' => $item->jumlah,
+            'satuan' => optional($item->barang)->satuan ?? '-', // TAMBAHAN SATUAN
+            'bukti' => $item->bukti,
+            'bukti_path' => $item->bukti ? asset('storage/bukti/' . $item->bukti) : null,
+            'keterangan' => $item->keterangan ?? '-',
+            'user' => optional($item->user)->nama ?? '-',
+        ];
+    })
+    ->values()
+    ->toBase();   // <— tambahkan ini
 
         // ===================
         // === BARANG KELUAR ===
@@ -107,11 +105,9 @@ class RiwayatController extends Controller
             ->orderBy('created_at', 'desc');
 
         // Filter bagian
-        // Filter bagian
         if ($request->filled('bagian') && $request->bagian != 'Semua') {
             $riwayatKeluarQuery->where('bagian_id', $request->bagian);
         }
-
 
         // Filter periode keluar
         if ($request->filled('periode')) {
@@ -136,49 +132,43 @@ class RiwayatController extends Controller
             }
         }
 
-        // Ambil data keluar
-        // 2) Setelah ambil data keluar
+
         $riwayatKeluar = $riwayatKeluarQuery->with('bagian')->get()
-            ->map(function ($item) {
-                return (object) [
-                    'id' => $item->id,
-                    'tanggal' => $item->tanggal,
-                    'waktu' => $item->created_at->format('H:i:s'),
-                    'alur_barang' => 'Keluar',
-                    'gudang' => optional($item->gudang)->nama ?? '-',
-                    'nama_barang' => optional($item->barang)->nama ?? '-',
-                    'kode_barang' => optional($item->barang)->kode ?? '-',
-                    'jumlah' => $item->jumlah,
-                    'bagian' => optional($item->bagian)->nama ?? '-',
-                    'nama_penerima' => $item->nama_penerima ?? '-',
-                    'keterangan' => $item->keterangan ?? '-',
-                    'bukti' => $item->bukti,
-                    'bukti_path' => $item->bukti ? asset('storage/' . $item->bukti) : null,
-                    'user' => optional($item->user)->nama ?? '-',
-                ];
-            })
-            ->values()
-            ->toBase();   // <— tambahkan ini
+    ->map(function ($item) {
+        return (object) [
+            'id' => $item->id,
+            'tanggal' => $item->tanggal,
+            'waktu' => $item->created_at->format('H:i:s'),
+            'alur_barang' => 'Keluar',
+            'gudang' => optional($item->gudang)->nama ?? '-',
+            'nama_barang' => optional($item->barang)->nama ?? '-',
+            'kode_barang' => optional($item->barang)->kode ?? '-',
+            'jumlah' => $item->jumlah,
+            'satuan' => optional($item->barang)->satuan ?? '-', 
+            'bagian' => optional($item->bagian)->nama ?? '-',
+            'nama_penerima' => $item->nama_penerima ?? '-',
+            'keterangan' => $item->keterangan ?? '-',
+            'bukti' => $item->bukti,
+            'bukti_path' => $item->bukti ? asset('storage/' . $item->bukti) : null,
+            'user' => optional($item->user)->nama ?? '-',
+        ];
+    })
+    ->values()
+    ->toBase();   // <— tambahkan ini
 
-
-
-        // 3) List bagian (biar konsisten)
+        // List bagian untuk filter
         $bagianList = Bagian::orderBy('nama')->get()
-            ->map(fn($item) => (object) ['id' => $item->id, 'nama' => $item->nama])
-            ->values()
-            ->toBase();   // <— tambahkan ini
-
-
+    ->map(fn($item) => (object) ['id' => $item->id, 'nama' => $item->nama])
+    ->values()
+    ->toBase();   // <— tambahkan ini
 
         $gudangList = collect([(object) ['gudang' => $userGudang->nama]]);
 
         // Gabungkan semua riwayat (Masuk dan Keluar)
-        // Gabungkan semua riwayat (Masuk & Keluar)
         $riwayat = $riwayatDistribusi->concat($riwayatKeluar)
-            // opsional rapihin urutan terbaru dulu:
-            ->sortByDesc(fn($x) => $x->tanggal . ' ' . ($x->waktu ?? '00:00:00'))
-            ->values();
-
+// opsional rapihin urutan terbaru dulu:
+    ->sortByDesc(fn($x) => $x->tanggal.' '.($x->waktu ?? '00:00:00'))
+    ->values();
 
         return view('staff.pj.riwayat', compact('riwayat', 'bagianList', 'gudangList', 'menu', 'userGudang'));
     }
@@ -201,7 +191,7 @@ class RiwayatController extends Controller
         $userGudang = $user->gudang;
 
         $format = $request->download;
-        $jenis = $request->jenis ?? 'semua'; // 'masuk', 'keluar', atau 'semua'
+        $jenis = $request->jenis ?? 'semua';
 
         // Query Barang Masuk (Distribusi)
         $riwayatDistribusiQuery = RiwayatBarang::with(['barang.kategori', 'barang.kategori.gudang'])

@@ -21,6 +21,7 @@ class DistribusiController extends Controller
             'tanggal' => 'nullable|date',
             'gudang_tujuan_id' => 'required|exists:gudang,id',
             'kategori_tujuan_id' => 'required|exists:kategori,id',
+            'keterangan' => 'nullable|string|max:500', // TAMBAHKAN validasi keterangan
             'bukti' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
 
@@ -145,13 +146,14 @@ class DistribusiController extends Controller
             $barangTujuan->stok = $stokGudangTujuan->stok;
             $barangTujuan->save();
 
-            // Simpan riwayat
+            // Simpan riwayat - TAMBAHKAN keterangan di sini
             RiwayatBarang::create([
                 'barang_id' => $barang->id,
                 'jenis_transaksi' => 'distribusi',
                 'jumlah' => $request->jumlah,
                 'stok_sebelum' => $stokSebelum,
                 'stok_sesudah' => $stokGudangAsal->stok,
+                'keterangan' => $request->keterangan, // PENTING: Simpan keterangan
                 'kategori_asal_id' => $barang->kategori_id,
                 'kategori_tujuan_id' => $request->kategori_tujuan_id,
                 'gudang_tujuan_id' => $request->gudang_tujuan_id,

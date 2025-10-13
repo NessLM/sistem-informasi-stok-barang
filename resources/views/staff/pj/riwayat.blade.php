@@ -141,6 +141,7 @@
                                     <th>Waktu</th>
                                     <th>Nama Barang</th>
                                     <th>Jumlah</th>
+                                    <th>Satuan</th>
                                     <th>Bukti</th>
                                 </tr>
                             </thead>
@@ -153,6 +154,7 @@
                                         <td>{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }} WIB</td>
                                         <td class="fw-medium">{{ $item->nama_barang }}</td>
                                         <td><span>{{ $item->jumlah }}</span></td>
+                                        <td>{{ $item->satuan ?? '-' }}</td>
                                         <td>
                                             @if ($item->bukti)
                                                 <span class="riwayat-bukti-icon" data-bs-toggle="modal"
@@ -167,7 +169,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="riwayat-empty-state text-center py-4">
+                                        <td colspan="7" class="riwayat-empty-state text-center py-4">
                                             <i class="bi bi-inbox"></i>
                                             <p>Tidak ada data barang masuk ditemukan</p>
                                         </td>
@@ -218,6 +220,7 @@
                                     <th>Waktu</th>
                                     <th>Nama Barang</th>
                                     <th>Jumlah</th>
+                                    <th>Satuan</th>
                                     <th>Bagian</th>
                                     <th>Bukti</th>
                                 </tr>
@@ -231,6 +234,7 @@
                                         <td>{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }} WIB</td>
                                         <td class="fw-medium">{{ $item->nama_barang }}</td>
                                         <td><span>{{ $item->jumlah }}</span></td>
+                                        <td>{{ $item->satuan ?? '-' }}</td>
                                         <td>{{ $item->bagian ?? '-' }}</td>
                                         <td>
                                             @if ($item->bukti)
@@ -246,7 +250,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="riwayat-empty-state text-center py-4">
+                                        <td colspan="8" class="riwayat-empty-state text-center py-4">
                                             <i class="bi bi-inbox"></i>
                                             <p>Tidak ada data barang keluar ditemukan</p>
                                         </td>
@@ -335,52 +339,41 @@
                 initEventListeners();
 
                 function initEventListeners() {
-                    // Filter untuk alur barang
                     document.querySelectorAll('.riwayat-filter-dropdown .dropdown-item').forEach(item => {
-                        // Hapus event listener lama dan tambahkan yang baru
                         item.removeEventListener('click', handleFilterClick);
                         item.addEventListener('click', handleFilterClick);
                     });
 
-                    // Handle custom period modal - khusus untuk item custom period
                     const customPeriodItem = document.querySelector('.custom-period-item');
                     if (customPeriodItem) {
                         customPeriodItem.removeEventListener('click', handleCustomPeriodClick);
                         customPeriodItem.addEventListener('click', handleCustomPeriodClick);
                     }
 
-                    // Handle apply button di modal custom period
                     const applyCustomPeriodBtn = document.getElementById('applyCustomPeriod');
                     if (applyCustomPeriodBtn) {
                         applyCustomPeriodBtn.removeEventListener('click', applyCustomPeriod);
                         applyCustomPeriodBtn.addEventListener('click', applyCustomPeriod);
                     }
 
-                    // Inisialisasi modal bukti
                     document.querySelectorAll('.riwayat-bukti-icon').forEach(icon => {
                         icon.removeEventListener('click', handleBuktiClick);
                         icon.addEventListener('click', handleBuktiClick);
                     });
 
-                    // Inisialisasi pagination buttons
                     document.querySelectorAll('.pagination-btn').forEach(btn => {
                         btn.removeEventListener('click', handlePaginationClick);
                         btn.addEventListener('click', handlePaginationClick);
                     });
                 }
 
-                // Fungsi khusus untuk menangani klik pada custom period item
                 function handleCustomPeriodClick(e) {
                     e.preventDefault();
-                    // Hanya buka modal, jangan submit form
-                    // Biarkan modal Bootstrap menangani pembukaan modal
                 }
 
-                // Fungsi untuk menangani klik filter regular (bukan custom period)
                 function handleFilterClick(e) {
                     e.preventDefault();
 
-                    // Jika ini adalah custom period item, biarkan handleCustomPeriodClick yang menanganinya
                     if (this.classList.contains('custom-period-item')) {
                         return;
                     }
@@ -390,33 +383,25 @@
                     const button = dropdown.querySelector('.riwayat-btn-filter');
                     const hiddenInput = dropdown.querySelector('input[type="hidden"]');
 
-                    // Perbarui teks tombol
                     button.querySelector('span').textContent = this.textContent;
 
-                    // Perbarui nilai input tersembunyi
                     if (hiddenInput) {
                         hiddenInput.value = value;
 
-                        // Jika ini dropdown periode dan bukan custom, reset tanggal custom
-                        if (dropdown.id === 'periodeDropdown' && value !== 'custom') {
+                        if (dropdown.querySelector('#periodeDropdown') && value !== 'custom') {
                             document.getElementById('dariTanggalInput').value = '';
                             document.getElementById('sampaiTanggalInput').value = '';
                         }
                     }
 
-                    // Hapus kelas active dari semua item dalam dropdown yang sama
                     dropdown.querySelectorAll('.dropdown-item').forEach(i => {
                         i.classList.remove('active');
                     });
 
-                    // Tambahkan kelas active ke item yang dipilih
                     this.classList.add('active');
-
-                    // Submit form
                     submitFilterForm();
                 }
 
-                // Fungsi untuk menerapkan periode custom
                 function applyCustomPeriod() {
                     const dariTanggal = document.getElementById('dariTanggal').value;
                     const sampaiTanggal = document.getElementById('sampaiTanggal').value;
@@ -431,33 +416,26 @@
                         return;
                     }
 
-                    // Update hidden inputs
                     document.getElementById('periodeInput').value = 'custom';
                     document.getElementById('dariTanggalInput').value = dariTanggal;
                     document.getElementById('sampaiTanggalInput').value = sampaiTanggal;
 
-                    // Update button text
                     const dariFormatted = formatDate(dariTanggal);
                     const sampaiFormatted = formatDate(sampaiTanggal);
                     document.getElementById('periodeText').textContent = `${dariFormatted} - ${sampaiFormatted}`;
 
-                    // Update active class di dropdown periode
                     document.querySelectorAll('#periodeDropdown + .dropdown-menu .dropdown-item').forEach(i => {
                         i.classList.remove('active');
                     });
-                    document.querySelector('#periodeDropdown + .dropdown-menu .custom-period-item').classList.add(
-                        'active');
+                    document.querySelector('#periodeDropdown + .dropdown-menu .custom-period-item').classList.add('active');
 
-                    // Close modal dengan getOrCreateInstance
                     const modalEl = document.getElementById('customPeriodModal');
                     const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
                     modal.hide();
 
-                    // Submit form
                     submitFilterForm();
                 }
 
-                // Fungsi untuk menangani klik bukti
                 function handleBuktiClick() {
                     const imageUrl = this.getAttribute('data-image');
                     const modalImage = document.querySelector('#buktiImage');
@@ -466,7 +444,6 @@
                     }
                 }
 
-                // Fungsi untuk menangani klik pagination
                 function handlePaginationClick() {
                     const onclickAttr = this.getAttribute('onclick');
                     if (onclickAttr) {
@@ -479,16 +456,11 @@
                     }
                 }
 
-                // Fungsi untuk submit form filter
                 function submitFilterForm() {
-                    // Reset pagination saat filter berubah
                     resetPagination();
-
-                    // Submit form
                     document.getElementById('filterForm').submit();
                 }
 
-                // Fungsi untuk reset pagination
                 function resetPagination() {
                     const url = new URL(window.location.href);
                     url.searchParams.delete('page_masuk');
@@ -496,12 +468,10 @@
                     window.history.replaceState({}, '', url);
                 }
 
-                // Fungsi untuk mengubah halaman
                 function changePage(type, page) {
                     const url = new URL(window.location.href);
                     url.searchParams.set(`page_${type}`, page);
 
-                    // Scroll ke bagian atas tabel
                     const tableElement = document.querySelector(`.riwayat-header-${type}`)?.closest('.card');
                     if (tableElement) {
                         tableElement.scrollIntoView({
@@ -510,7 +480,6 @@
                         });
                     }
 
-                    // AJAX request
                     fetch(url, {
                             headers: {
                                 'X-Requested-With': 'XMLHttpRequest',
@@ -529,8 +498,7 @@
                             const newTable = doc.querySelector(`.riwayat-header-${type}`)?.closest('.card');
 
                             if (newTable) {
-                                const oldTable = document.querySelector(`.riwayat-header-${type}`)?.closest(
-                                    '.card');
+                                const oldTable = document.querySelector(`.riwayat-header-${type}`)?.closest('.card');
                                 if (oldTable) {
                                     oldTable.replaceWith(newTable);
                                 }
@@ -547,7 +515,6 @@
                         });
                 }
 
-                // Fungsi utilitas untuk memformat tanggal
                 function formatDate(dateString) {
                     const date = new Date(dateString);
                     return date.toLocaleDateString('id-ID', {
@@ -557,7 +524,6 @@
                     });
                 }
 
-                // Set max date for date inputs to today
                 const today = new Date().toISOString().split('T')[0];
                 const dariTanggalInput = document.getElementById('dariTanggal');
                 const sampaiTanggalInput = document.getElementById('sampaiTanggal');
@@ -566,46 +532,22 @@
                 if (sampaiTanggalInput) sampaiTanggalInput.max = today;
             });
 
-            // PERBAIKAN: Fungsi downloadReport yang baru
             function downloadReport(format) {
-                // Ambil semua parameter filter yang aktif
                 const form = document.getElementById('filterForm');
                 const formData = new FormData(form);
                 
-                // Buat URL dengan parameter filter yang aktif
                 const params = new URLSearchParams();
                 
-                // Tambahkan semua parameter filter
                 for (let [key, value] of formData) {
                     if (value && value !== 'Semua' && value !== '') {
                         params.append(key, value);
                     }
                 }
                 
-                // Tambahkan parameter download
                 params.append('download', format);
                 
-                // Redirect ke URL dengan parameter yang sudah difilter
                 const url = `{{ route('pj.riwayat.index') }}?${params.toString()}`;
                 window.location.href = url;
-            }
-
-            // Alternatif: Jika ingin menggunakan form submission
-            function downloadReportAlternative(format) {
-                const form = document.getElementById('filterForm');
-                const downloadInput = document.createElement('input');
-                downloadInput.type = 'hidden';
-                downloadInput.name = 'download';
-                downloadInput.value = format;
-                
-                // Hapus input download lama jika ada
-                const oldDownloadInput = form.querySelector('input[name="download"]');
-                if (oldDownloadInput) {
-                    oldDownloadInput.remove();
-                }
-                
-                form.appendChild(downloadInput);
-                form.submit();
             }
         </script>
     @endpush

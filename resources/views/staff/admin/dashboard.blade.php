@@ -446,6 +446,17 @@
                 labels: {!! json_encode($pengeluaranLabels) !!},
                 datasets: {!! json_encode($pengeluaranData) !!} // label 'Keluar' + colors sudah dari controller
             };
+            // Ambil data mentah dulu
+            const pengeluaranChartData = pengeluaranData.datasets[0].data;
+
+            // Cari nilai maksimum dan minimum
+            const maxValue = Math.max(...pengeluaranChartData, 0);
+            const minValue = Math.min(...pengeluaranChartData, 0);
+
+            // Biar sumbu Y fleksibel sesuai data
+            const suggestedMin = minValue > 0 ? minValue * 0.8 : 0;
+            const suggestedMax = maxValue > 0 ? maxValue * 1.2 : 1000000;
+
             const pengeluaranChart = new Chart(document.getElementById('pengeluaranChart').getContext('2d'), {
                 type: 'bar',
                 data: pengeluaranData,
@@ -453,31 +464,37 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            display: false
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    const value = context.raw || 0;
+                                    return 'Rp ' + value.toLocaleString('id-ID');
+                                }
+                            }
                         }
                     },
                     scales: {
                         y: {
-                            beginAtZero: true,
+                            beginAtZero: false, // biar nggak selalu mulai dari 0
                             ticks: {
-                                color: '#6B7280'
+                                color: '#6B7280',
+                                callback: function (value) {
+                                    return 'Rp ' + value.toLocaleString('id-ID');
+                                },
                             },
-                            grid: {
-                                color: '#F3F4F6'
-                            }
+                            suggestedMin: suggestedMin,
+                            suggestedMax: suggestedMax,
+                            grid: { color: '#F3F4F6' }
                         },
                         x: {
-                            ticks: {
-                                color: '#6B7280'
-                            },
-                            grid: {
-                                display: false
-                            }
+                            ticks: { color: '#6B7280' },
+                            grid: { display: false }
                         }
                     }
                 }
             });
+
 
             function renderYearLegend(years, colorsMap) {
                 const box = document.getElementById('legendYears');
