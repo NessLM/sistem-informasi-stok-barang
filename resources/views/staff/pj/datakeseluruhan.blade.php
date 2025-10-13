@@ -78,6 +78,11 @@
                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
                 border-radius: 0 0 0.375rem 0.375rem;
             }
+
+            .row-low-stock {
+                background-color: #ffcccc !important;
+                border-left: 8px solid #dc3545 !important;
+            }
         </style>
     </head>
 
@@ -181,22 +186,24 @@
                                             ->first();
                                         $stokTersedia = $stokGudang ? $stokGudang->stok : 0;
                                     @endphp
-                                    <tr @if ($stokTersedia == 0) class="table-danger" @endif>
-                                        <td>{{ $i + 1 }}</td>
-                                        <td>{{ $b->nama }}</td>
-                                        <td>{{ $b->kode }}</td>
-                                        <td>{{ $stokTersedia }}</td>
-                                        <td>{{ $b->satuan }}</td>
-                                        <td>{{ $b->kategori->nama ?? '-' }}</td>
-                                        <td>
-                                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal"
-                                                data-bs-target="#modalBarangKeluar" data-id="{{ $b->id }}"
-                                                data-nama="{{ $b->nama }}" data-kode="{{ $b->kode }}"
-                                                data-stok="{{ $stokTersedia }}">
-                                                <i class="bi bi-box-arrow-right"></i> Barang Keluar
-                                            </button>
-                                        </td>
-                                    </tr>
+                                    @if ($stokTersedia > 0)
+                                        <tr @if ($stokTersedia < 10) class="row-low-stock" @endif>
+                                            <td>{{ $i + 1 }}</td>
+                                            <td>{{ $b->nama }}</td>
+                                            <td>{{ $b->kode }}</td>
+                                            <td>{{ $stokTersedia }}</td>
+                                            <td>{{ $b->satuan }}</td>
+                                            <td>{{ $b->kategori->nama ?? '-' }}</td>
+                                            <td>
+                                                <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                                                    data-bs-target="#modalBarangKeluar" data-id="{{ $b->id }}"
+                                                    data-nama="{{ $b->nama }}" data-kode="{{ $b->kode }}"
+                                                    data-stok="{{ $stokTersedia }}">
+                                                    <i class="bi bi-box-arrow-right"></i> Barang Keluar
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    @endif
                                 @endforeach
                             </tbody>
                         </table>
@@ -243,7 +250,16 @@
 
                                 <tr id="detail-{{ $k->id }}" style="display:none;">
                                     <td colspan="3">
-                                        @if ($k->barang->count())
+                                        @php
+                                            $barangFiltered = $k->barang->filter(function($item) use ($k) {
+                                                $stokGudang = \App\Models\StokGudang::where('barang_id', $item->id)
+                                                    ->where('gudang_id', $k->gudang_id)
+                                                    ->first();
+                                                $stokTersedia = $stokGudang ? $stokGudang->stok : 0;
+                                                return $stokTersedia > 0;
+                                            });
+                                        @endphp
+                                        @if ($barangFiltered->count())
                                             <div class="table-responsive">
                                                 <table class="table table-bordered">
                                                     <thead>
@@ -258,14 +274,14 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        @foreach ($k->barang as $item)
+                                                        @foreach ($barangFiltered as $item)
                                                             @php
                                                                 $stokGudang = \App\Models\StokGudang::where('barang_id', $item->id)
                                                                     ->where('gudang_id', $k->gudang_id)
                                                                     ->first();
                                                                 $stokTersedia = $stokGudang ? $stokGudang->stok : 0;
                                                             @endphp
-                                                            <tr>
+                                                            <tr @if ($stokTersedia < 10) class="row-low-stock" @endif>
                                                                 <td>{{ $item->kode }}</td>
                                                                 <td>{{ $item->nama }}</td>
                                                                 <td>{{ $stokTersedia }}</td>
@@ -286,7 +302,7 @@
                                                 </table>
                                             </div>
                                         @else
-                                            <p class="text-muted">Belum ada barang pada kategori ini.</p>
+                                            <p class="text-muted">Tidak ada barang pada kategori ini (atau semua barang telah habis).</p>
                                         @endif
                                     </td>
                                 </tr>
@@ -338,7 +354,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Bagian <small class="text-muted">(Opsional)</small></label>
-                                <select name="bagian_id" class="form-select"> <!-- ← Pastikan ini bagian_id -->
+                                <select name="bagian_id" class="form-select">
                                     <option value="">-- Pilih Bagian --</option>
                                     @foreach($bagian as $b)
                                         <option value="{{ $b->id }}">{{ $b->nama }}</option>
@@ -653,25 +669,6 @@
             }
         });
     </script>
-    <script>
-        // Fungsi ini dipanggil ketika tombol "Barang Keluar" diklik
-        function openModalBarangKeluar(id, nama, kode, stok) {
-            // Isi data ke input form
-            document.getElementById('barangKeluarId').value = id;
-            document.getElementById('barangKeluarNama').value = nama;
-            document.getElementById('barangKeluarKode').value = kode;
-            document.getElementById('stokTersedia').innerText = stok;
-
-            // Atur action form ke URL route barang keluar yang sesuai
-            const form = document.getElementById('formBarangKeluar');
-            form.action = `/pj/barang-keluar/${id}`; // ← arahkan ke route kamu
-
-            // Tampilkan modal
-            const modal = new bootstrap.Modal(document.getElementById('modalBarangKeluar'));
-            modal.show();
-        }
-    </script>
-
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </x-layouts.app>

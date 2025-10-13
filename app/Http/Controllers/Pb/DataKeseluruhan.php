@@ -45,8 +45,8 @@ class DataKeseluruhan extends Controller
 
         $kategori = $kategoriQuery->get();
 
-        // Ambil semua gudang untuk dropdown distribusi
-        $gudang = Gudang::all();
+        // Ambil semua gudang KECUALI Gudang Utama untuk dropdown distribusi
+        $gudang = Gudang::where('id', '!=', $gudangUtama->id)->get();
 
         $selectedGudang = $gudangUtama;
 
@@ -178,6 +178,12 @@ class DataKeseluruhan extends Controller
             $query->whereHas('kategori', function ($q) use ($gudangId) {
                 $q->where('gudang_id', $gudangId);
             });
+
+            // Exclude barang dengan stok 0 di gudang tertentu
+            $query->whereHas('stokGudang', function ($q) use ($gudangId) {
+                $q->where('gudang_id', $gudangId)
+                  ->where('stok', '>', 0);
+            }, '>', 0);
         }
 
         if ($request->filled('search')) {
