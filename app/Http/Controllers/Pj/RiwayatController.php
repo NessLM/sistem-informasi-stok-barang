@@ -12,8 +12,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\RiwayatExportPj;
 use Carbon\Carbon;
-use App\Models\Bagian; // tambahkan di atas file controller kamu (jika belum ada)
-
+use App\Models\Bagian;
 
 class RiwayatController extends Controller
 {
@@ -86,6 +85,7 @@ class RiwayatController extends Controller
                 'nama_barang' => optional($item->barang)->nama ?? '-',
                 'kode_barang' => optional($item->barang)->kode ?? '-',
                 'jumlah' => $item->jumlah,
+                'satuan' => optional($item->barang)->satuan ?? '-', // TAMBAHAN SATUAN
                 'bukti' => $item->bukti,
                 'bukti_path' => $item->bukti ? asset('storage/bukti/' . $item->bukti) : null,
                 'keterangan' => $item->keterangan ?? '-',
@@ -102,11 +102,9 @@ class RiwayatController extends Controller
             ->orderBy('created_at', 'desc');
 
         // Filter bagian
-        // Filter bagian
         if ($request->filled('bagian') && $request->bagian != 'Semua') {
             $riwayatKeluarQuery->where('bagian_id', $request->bagian);
         }
-
 
         // Filter periode keluar
         if ($request->filled('periode')) {
@@ -142,7 +140,8 @@ class RiwayatController extends Controller
                 'nama_barang' => optional($item->barang)->nama ?? '-',
                 'kode_barang' => optional($item->barang)->kode ?? '-',
                 'jumlah' => $item->jumlah,
-                'bagian' => optional($item->bagian)->nama ?? '-', // <--- ambil dari relasi
+                'satuan' => optional($item->barang)->satuan ?? '-', // TAMBAHAN SATUAN
+                'bagian' => optional($item->bagian)->nama ?? '-',
                 'nama_penerima' => $item->nama_penerima ?? '-',
                 'keterangan' => $item->keterangan ?? '-',
                 'bukti' => $item->bukti,
@@ -151,14 +150,12 @@ class RiwayatController extends Controller
             ];
         });
 
-
         // List bagian untuk filter
         $bagianList = Bagian::orderBy('nama')->get()
             ->map(fn($item) => (object) [
                 'id' => $item->id,
                 'nama' => $item->nama
             ]);
-
 
         $gudangList = collect([(object) ['gudang' => $userGudang->nama]]);
 
@@ -186,7 +183,7 @@ class RiwayatController extends Controller
         $userGudang = $user->gudang;
 
         $format = $request->download;
-        $jenis = $request->jenis ?? 'semua'; // 'masuk', 'keluar', atau 'semua'
+        $jenis = $request->jenis ?? 'semua';
 
         // Query Barang Masuk (Distribusi)
         $riwayatDistribusiQuery = RiwayatBarang::with(['barang.kategori', 'barang.kategori.gudang'])
