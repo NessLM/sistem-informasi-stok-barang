@@ -27,25 +27,6 @@
                         <input type="hidden" name="alur_barang" value="{{ request('alur_barang', 'Semua') }}">
                     </div>
 
-                    <!-- Filter Gudang -->
-                    <div class="riwayat-filter-group riwayat-filter-dropdown">
-                        <button class="btn riwayat-btn-filter dropdown-toggle" type="button" id="gudangDropdown"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            <span>{{ request('gudang', 'Semua') == 'Semua' ? 'Pilih Gudang' : request('gudang') }}</span>
-                            <i class="bi bi-chevron-right dropdown-arrow"></i>
-                        </button>
-                        <ul class="dropdown-menu" aria-labelledby="gudangDropdown">
-                            <li><a class="dropdown-item {{ request('gudang', 'Semua') == 'Semua' ? 'active' : '' }}"
-                                    href="#" data-value="Semua">Semua</a></li>
-                            @foreach ($gudangList as $gudang)
-                                <li><a class="dropdown-item {{ request('gudang') == $gudang->gudang ? 'active' : '' }}"
-                                        href="#" data-value="{{ $gudang->gudang }}">{{ $gudang->gudang }}</a>
-                                </li>
-                            @endforeach
-                        </ul>
-                        <input type="hidden" name="gudang" value="{{ request('gudang', 'Semua') }}">
-                    </div>
-
                     <!-- Filter Periode -->
                     <div class="riwayat-filter-group riwayat-filter-dropdown">
                         <button class="btn riwayat-btn-filter dropdown-toggle" type="button" id="periodeDropdown"
@@ -107,12 +88,14 @@
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="downloadDropdown">
                                 <li>
-                                    <a class="dropdown-item" href="#" onclick="event.preventDefault(); downloadReport('excel')">
+                                    <a class="dropdown-item" href="#"
+                                        onclick="event.preventDefault(); downloadReport('excel')">
                                         <i class="bi bi-file-earmark-excel me-2"></i>Excel
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" href="#" onclick="event.preventDefault(); downloadReport('pdf')">
+                                    <a class="dropdown-item" href="#"
+                                        onclick="event.preventDefault(); downloadReport('pdf')">
                                         <i class="bi bi-file-earmark-pdf me-2"></i>PDF
                                     </a>
                                 </li>
@@ -176,11 +159,9 @@
                                         <td><span class="badge bg-success">+{{ $item->jumlah }}</span></td>
                                         <td class="text-center">
                                             @if ($item->bukti_path)
-                                                <span class="riwayat-bukti-icon" 
-                                                      style="cursor: pointer;"
-                                                      data-bs-toggle="modal"
-                                                      data-bs-target="#buktiModal"
-                                                      data-image="{{ asset('storage/' . $item->bukti_path) }}">
+                                                <span class="riwayat-bukti-icon" style="cursor: pointer;"
+                                                    data-bs-toggle="modal" data-bs-target="#buktiModal"
+                                                    data-image="{{ asset('storage/' . $item->bukti_path) }}">
                                                     <i class="bi bi-eye-fill"></i>
                                                 </span>
                                             @else
@@ -265,11 +246,9 @@
                                         </td>
                                         <td class="text-center">
                                             @if ($item->bukti_path)
-                                                <span class="riwayat-bukti-icon" 
-                                                      style="cursor: pointer;"
-                                                      data-bs-toggle="modal"
-                                                      data-bs-target="#buktiModal"
-                                                      data-image="{{ asset('storage/' . $item->bukti_path) }}">
+                                                <span class="riwayat-bukti-icon" style="cursor: pointer;"
+                                                    data-bs-toggle="modal" data-bs-target="#buktiModal"
+                                                    data-image="{{ asset('storage/' . $item->bukti_path) }}">
                                                     <i class="bi bi-eye-fill"></i>
                                                 </span>
                                             @else
@@ -323,8 +302,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="customPeriodModalLabel">Pilih Periode Custom</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="customPeriodForm">
@@ -349,18 +327,15 @@
     </div>
 
     <!-- Modal untuk menampilkan bukti -->
-    <div class="modal fade" id="buktiModal" tabindex="-1" aria-labelledby="buktiModalLabel"
-        aria-hidden="true">
+    <div class="modal fade" id="buktiModal" tabindex="-1" aria-labelledby="buktiModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="buktiModalLabel">Bukti Foto</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-center">
-                    <img id="buktiImage" src="" alt="Bukti" class="img-fluid"
-                        style="max-height: 70vh;">
+                    <img id="buktiImage" src="" alt="Bukti" class="img-fluid" style="max-height: 70vh;">
                 </div>
             </div>
         </div>
@@ -460,7 +435,8 @@
                     document.querySelectorAll('#periodeDropdown + .dropdown-menu .dropdown-item').forEach(i => {
                         i.classList.remove('active');
                     });
-                    document.querySelector('#periodeDropdown + .dropdown-menu .custom-period-item').classList.add('active');
+                    document.querySelector('#periodeDropdown + .dropdown-menu .custom-period-item').classList.add(
+                        'active');
 
                     const modalEl = document.getElementById('customPeriodModal');
                     const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
@@ -515,7 +491,7 @@
             function downloadReport(format) {
                 const form = document.getElementById('filterForm');
                 const formData = new FormData(form);
-                
+
                 // Buat URL dengan semua parameter filter
                 const params = new URLSearchParams();
                 for (let [key, value] of formData.entries()) {
@@ -523,27 +499,28 @@
                         params.append(key, value);
                     }
                 }
-                
+
                 // Tambahkan parameter download
                 params.append('download', format);
-                
+
                 // Redirect untuk download
                 window.location.href = `{{ route('pb.riwayat.index') }}?${params.toString()}`;
             }
-            </script>
-@endpush
+        </script>
+    @endpush
 
-@push('styles')
-    <style>
-        .riwayat-bukti-icon {
-            cursor: pointer;
-            color: #0d6efd;
-            font-size: 1.2rem;
-        }
-        .riwayat-bukti-icon:hover {
-            color: #0a58ca;
-        }
-    </style>
-@endpush
+    @push('styles')
+        <style>
+            .riwayat-bukti-icon {
+                cursor: pointer;
+                color: #0d6efd;
+                font-size: 1.2rem;
+            }
+
+            .riwayat-bukti-icon:hover {
+                color: #0a58ca;
+            }
+        </style>
+    @endpush
 </x-layouts.app></parameter>
 </invoke>
