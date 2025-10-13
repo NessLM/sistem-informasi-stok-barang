@@ -257,7 +257,6 @@
                         <thead class="table-dark">
                             <tr>
                                 <th>KATEGORI</th>
-                                <th>GUDANG</th>
                                 <th style="width:180px" class="text-center">AKSI</th>
                             </tr>
                         </thead>
@@ -265,7 +264,6 @@
                             @foreach ($kategori as $k)
                                 <tr>
                                     <td>{{ $k->nama }}</td>
-                                    <td>{{ $k->gudang->nama ?? '-' }}</td>
                                     <td class="text-center">
                                         <div class="d-flex flex-wrap justify-content-center gap-2">
                                             <button class="btn btn-sm btn-success"
@@ -276,7 +274,7 @@
                                 </tr>
 
                                 <tr id="detail-{{ $k->id }}" style="display:none;">
-                                    <td colspan="3">
+                                    <td colspan="2">
                                         @php
                                             $barangFiltered = $k->barang->filter(function($item) use ($k) {
                                                 $stokGudang = \App\Models\StokGudang::where('barang_id', $item->id)
@@ -295,8 +293,6 @@
                                                             <th>Nama Barang</th>
                                                             <th>Stok</th>
                                                             <th>Satuan</th>
-                                                            <th>Kategori</th>
-                                                            <th>Gudang</th>
                                                             <th>Aksi</th>
                                                         </tr>
                                                     </thead>
@@ -313,8 +309,6 @@
                                                                 <td>{{ $item->nama }}</td>
                                                                 <td>{{ $stokTersedia }}</td>
                                                                 <td>{{ $item->satuan }}</td>
-                                                                <td>{{ $item->kategori->nama ?? '-' }}</td>
-                                                                <td>{{ $item->kategori->gudang->nama ?? '-' }}</td>
                                                                 <td>
                                                                     <button type="button"
                                                                         class="btn btn-primary btn-sm"
@@ -364,7 +358,7 @@
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="tab-distribusi" data-bs-toggle="tab" 
                                 data-bs-target="#content-distribusi" type="button" role="tab">
-                            <i class="bi bi-box-arrow-right"></i> Keluar
+                            <i class="bi bi-box-arrow-right"></i> Barang Keluar
                         </button>
                     </li>
                 </ul>
@@ -416,7 +410,7 @@
                         </form>
                     </div>
 
-                    <!-- Content: Keluar -->
+                    <!-- Content: Barang Keluar -->
                     <div class="tab-pane fade" id="content-distribusi" role="tabpanel">
                         <form method="POST" id="formDistribusi" enctype="multipart/form-data">
                             @csrf
@@ -455,8 +449,12 @@
                                         <option value="">-- Pilih Gudang Terlebih Dahulu --</option>
                                     </select>
                                 </div>
+                                <div class="col-md-12">
+                                    <label class="form-label">Keterangan</label>
+                                    <input type="text" name="keterangan" class="form-control" placeholder="Masukkan keterangan">
+                                </div>
                                 <div class="col-12">
-                                    <label class="form-label">Bukti Keluar</label>
+                                    <label class="form-label">Bukti Barang Keluar</label>
                                     <div class="border rounded p-4 text-center" style="background-color: #f8f9fa;">
                                         <input type="file" name="bukti" id="buktiBrgDistribusi" class="d-none" accept="image/*,.pdf">
                                         <label for="buktiBrgDistribusi" class="d-block" style="cursor: pointer;">
@@ -471,7 +469,7 @@
                             <div class="d-flex justify-content-end gap-2 mt-4">
                                 <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Batal</button>
                                 <button type="submit" class="btn btn-warning px-4">
-                                    <i class="bi bi-send"></i> Simpan Keluar
+                                    <i class="bi bi-send"></i> Simpan Barang Keluar
                                 </button>
                             </div>
                         </form>

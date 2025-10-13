@@ -12,13 +12,9 @@ class GudangSeeder extends Seeder
 {
     public function run(): void
     {
-        // Daftar gudang dan kategori yang unik untuk masing-masing
+        // Daftar kategori per gudang (tanpa Elektronik, Peralatan Kantor, Furnitur)
         $gudangData = [
-            'Gudang Utama' => [
-                'Elektronik',
-                'Peralatan Kantor',
-                'Furnitur',
-            ],
+            'Gudang Utama' => [], // nanti diisi semua kategori
             'Gudang ATK' => [
                 'Alat Tulis',
                 'Kertas & Buku',
@@ -41,12 +37,19 @@ class GudangSeeder extends Seeder
             ],
         ];
 
-        // Daftar jenis barang contoh per kategori
-        $jenisPerKategori = [
-            'Elektronik' => ['Laptop', 'Printer', 'Monitor'],
-            'Peralatan Kantor' => ['Stapler', 'Gunting', 'Penggaris'],
-            'Furnitur' => ['Meja', 'Kursi', 'Lemari'],
+        // Gabungkan semua kategori selain Gudang Utama
+        $allKategori = collect($gudangData)
+            ->except('Gudang Utama')
+            ->flatten()
+            ->unique()
+            ->values()
+            ->toArray();
 
+        // Masukkan semua kategori gabungan ke Gudang Utama
+        $gudangData['Gudang Utama'] = $allKategori;
+
+        // Jenis barang per kategori
+        $jenisPerKategori = [
             'Alat Tulis' => ['Pulpen', 'Pensil', 'Spidol'],
             'Kertas & Buku' => ['Kertas A4', 'Buku Catatan', 'Map Dokumen'],
             'Aksesoris Kantor' => ['Binder', 'Clip', 'Lakban'],
@@ -64,6 +67,56 @@ class GudangSeeder extends Seeder
             'Jaringan & Server' => ['Router', 'Switch', 'Kabel LAN'],
         ];
 
+        // Fungsi untuk menentukan satuan yang sesuai
+        $getSatuan = function ($namaBarang) {
+            $nama = strtolower($namaBarang);
+
+            return match (true) {
+                str_contains($nama, 'pulpen'),
+                str_contains($nama, 'pensil'),
+                str_contains($nama, 'spidol'),
+                str_contains($nama, 'mouse'),
+                str_contains($nama, 'keyboard'),
+                str_contains($nama, 'headset'),
+                str_contains($nama, 'bohlam'),
+                str_contains($nama, 'lampu'),
+                str_contains($nama, 'obeng'),
+                str_contains($nama, 'tang'),
+                str_contains($nama, 'tespen'),
+                str_contains($nama, 'colokan'),
+                str_contains($nama, 'stopkontak'),
+                str_contains($nama, 'router'),
+                str_contains($nama, 'switch'),
+                str_contains($nama, 'ram') => 'Pcs',
+
+                str_contains($nama, 'kertas'),
+                str_contains($nama, 'buku'),
+                str_contains($nama, 'map'),
+                str_contains($nama, 'clip'),
+                str_contains($nama, 'lakban'),
+                str_contains($nama, 'binder') => 'Pack',
+
+                str_contains($nama, 'sabun'),
+                str_contains($nama, 'detergen'),
+                str_contains($nama, 'cairan') => 'Box',
+
+                str_contains($nama, 'kabel'),
+                str_contains($nama, 'jaringan'),
+                str_contains($nama, 'server') => 'Rim',
+
+                str_contains($nama, 'sapu'),
+                str_contains($nama, 'pel'),
+                str_contains($nama, 'lap'),
+                str_contains($nama, 'ember'),
+                str_contains($nama, 'sampah'),
+                str_contains($nama, 'sarung tangan'),
+                str_contains($nama, 'motherboard'),
+                str_contains($nama, 'processor') => 'Unit',
+
+                default => 'Pcs',
+            };
+        };
+
         // Proses seeding
         foreach ($gudangData as $namaGudang => $kategoriList) {
             $gudang = Gudang::firstOrCreate(['nama' => $namaGudang]);
@@ -71,7 +124,7 @@ class GudangSeeder extends Seeder
             foreach ($kategoriList as $kategoriNama) {
                 $kategori = Kategori::firstOrCreate([
                     'nama' => $kategoriNama,
-                    'gudang_id' => $gudang->id
+                    'gudang_id' => $gudang->id,
                 ]);
 
                 $jenisList = $jenisPerKategori[$kategoriNama] ?? [];
@@ -79,23 +132,23 @@ class GudangSeeder extends Seeder
                 foreach ($jenisList as $jenisNama) {
                     $jenisBarang = JenisBarang::firstOrCreate([
                         'nama' => $jenisNama,
-                        'kategori_id' => $kategori->id
+                        'kategori_id' => $kategori->id,
                     ]);
 
-                    // Barang contoh per jenis barang
                     for ($i = 1; $i <= 3; $i++) {
+                        $namaBarang = $jenisNama . ' ' . $i;
+                        $satuan = $getSatuan($namaBarang);
+
                         Barang::firstOrCreate(
+                            ['kode' => strtoupper(substr($jenisNama, 0, 2)) . str_pad($i, 3, '0', STR_PAD_LEFT)],
                             [
-                                'kode' => strtoupper(substr($jenisNama, 0, 2)) . str_pad($i, 3, '0', STR_PAD_LEFT)
-                            ],
-                            [
-                                'nama' => $jenisNama . ' ' . $i,
+                                'nama' => $namaBarang,
                                 'kategori_id' => $kategori->id,
                                 'jenis_barang_id' => $jenisBarang->id,
                                 'jumlah' => rand(5, 20),
                                 'stok' => rand(5, 20),
-                                'harga' => rand(100000, 5000000),
-                                'satuan' => 'unit'
+                                'harga' => rand(10000, 5000000),
+                                'satuan' => $satuan,
                             ]
                         );
                     }
