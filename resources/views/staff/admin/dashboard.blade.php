@@ -47,7 +47,7 @@
                         </div>
                         <div class="summary-card__body">
                             <div class="summary-card__number" id="totalBarang">{{ $totalBarang }}</div>
-                            <div class="summary-card__label">Total Barang</div>
+                            <div class="summary-card__label">Total Stok Barang</div>
                         </div>
                     </div>
                 </div>
@@ -60,7 +60,7 @@
                     <div class="chart-header-horizontal-item">
                         <h2>Grafik Per Bagian</h2>
                     </div>
-                    
+
                     <div class="chart-header-horizontal-item">
                         <span id="rangeHintBagian" class="range-hint" title="Semua Data">Semua Data</span>
                     </div>
@@ -121,7 +121,7 @@
                     <div class="chart-header-left">
                         <h2>Grafik Pengeluaran per Tahun</h2>
                         {{-- [OPSIONAL-HILANGKAN BADGE TAHUN]
-                 kalau mau DISEMBUNYIKAN, comment span di bawah + baris JS yg setRangeHint untuk Tahun --}}
+                        kalau mau DISEMBUNYIKAN, comment span di bawah + baris JS yg setRangeHint untuk Tahun --}}
                         {{-- <span id="rangeHintTahun" class="range-hint" title="Semua Data">Semua Data</span> --}}
                     </div>
 
@@ -158,7 +158,7 @@
     {{-- Chart.js --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const FILTER_URL = "{{ route('admin.dashboard.filter') }}";
 
             /* ====================== [NEW] Atur Arrow Dropdown ====================== */
@@ -170,7 +170,7 @@
             const totalBarangEl = document.getElementById('totalBarang');
 
             // Toggle dropdown visibility dan atur arrow
-            summaryFilterBtn.addEventListener('click', function(e) {
+            summaryFilterBtn.addEventListener('click', function (e) {
                 e.stopPropagation();
                 const isExpanded = this.getAttribute('aria-expanded') === 'true';
                 this.setAttribute('aria-expanded', !isExpanded);
@@ -178,7 +178,7 @@
             });
 
             // Close dropdown ketika klik di luar
-            document.addEventListener('click', function(e) {
+            document.addEventListener('click', function (e) {
                 if (!summaryFilterBtn.contains(e.target) && !summaryDropdownMenu.contains(e.target)) {
                     summaryDropdownMenu.classList.remove('show');
                     summaryFilterBtn.setAttribute('aria-expanded', 'false');
@@ -186,7 +186,7 @@
             });
 
             // Handle filter selection untuk Ringkasan
-            summaryDropdownMenu.addEventListener('click', function(e) {
+            summaryDropdownMenu.addEventListener('click', function (e) {
                 if (e.target.classList.contains('summary-dropdown-item')) {
                     e.preventDefault();
                     const selectedValue = e.target.getAttribute('data-value');
@@ -383,7 +383,7 @@
             // ===== Helper format tanggal untuk badge (ID locale) =====
             function fmt(d) {
                 const z = n => String(n).padStart(2, '0');
-                return `${z(d.getDate())}/${z(d.getMonth()+1)}/${d.getFullYear()}`;
+                return `${z(d.getDate())}/${z(d.getMonth() + 1)}/${d.getFullYear()}`;
             }
 
             function setRangeHint(el, text, titleText) {
@@ -406,13 +406,13 @@
 
             // ===== Filter dropdown (keduanya) =====
             document.querySelectorAll('.filter-option').forEach(el => {
-                el.addEventListener('click', function(e) {
+                el.addEventListener('click', function (e) {
                     e.preventDefault();
                     const type = this.getAttribute('data-type');
                     const value = this.getAttribute('data-value');
                     const dropdownToggle = this.closest('.dropdown').querySelector('.dropdown-toggle');
                     dropdownToggle.innerHTML = `<i class="bi bi-funnel"></i> ${this.textContent} <i class="bi bi-chevron-right arrow-icon"></i>`;
-                    
+
                     if (type === 'bagian') filterBagian(value);
                     else filterPengeluaran(value);
                 });
@@ -521,7 +521,7 @@
                         const hintT = document.getElementById('rangeHintTahun');
                         if (hintT) {
                             if (d.labels && d.labels.length) {
-                                const txt = `${d.labels[0]} – ${d.labels[d.labels.length-1]}`;
+                                const txt = `${d.labels[0]} – ${d.labels[d.labels.length - 1]}`;
                                 setRangeHint(hintT, txt, txt);
                             } else setRangeHint(hintT, 'Semua Data', 'Semua Data');
                         }

@@ -9,6 +9,12 @@
     <head>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+        <style>
+            .row-low-stock {
+                background-color: #ffcccc !important;
+                border-left: 4px solid #dc3545 !important;
+            }
+        </style>
     </head>
 
     <main class="page-wrap container py-4">
@@ -166,7 +172,7 @@
                                             $stokDisplay = $b->stokGudang()->sum('stok');
                                         }
                                     @endphp
-                                    <tr @if ($stokDisplay == 0) class="table-danger" @endif>
+                                    <tr @if ($stokDisplay < 10) class="row-low-stock" @endif>
                                         <td>{{ $i + 1 }}</td>
                                         <td>{{ $b->nama }}</td>
                                         <td>{{ $b->kode }}</td>
@@ -180,9 +186,9 @@
                                                 <i class="bi bi-pencil"></i>
                                             </button>
                                              <button type="button" class="btn btn-sm btn-danger"
-                                                                        onclick="confirmDelete('{{ route('admin.barang.destroy', $b->id) }}', 'Barang {{ $b->nama }}')">
-                                                                        <i class="bi bi-trash"></i>
-                                                                    </button>
+                                                onclick="confirmDelete('{{ route('admin.barang.destroy', $b->id) }}', 'Barang {{ $b->nama }}')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -267,7 +273,7 @@
                                                                     }
                                                                 }
                                                             @endphp
-                                                            <tr @if ($stokDisplay == 0) class="table-danger" @endif>
+                                                            <tr @if ($stokDisplay < 10) class="row-low-stock" @endif>
                                                                 <td>{{ $i + 1 }}</td>
                                                                 <td>{{ $b->nama }}</td>
                                                                 <td>{{ $b->kode }}</td>
