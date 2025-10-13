@@ -79,6 +79,11 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             border-radius: 0 0 0.375rem 0.375rem;
         }
+
+        .row-low-stock {
+            background-color: #ffcccc !important;
+            border-left: 8px solid #dc3545 !important;
+        }
     </style>
 </head>
 
@@ -208,22 +213,24 @@
                             </thead>
                             <tbody>
                                 @foreach ($barang as $i => $b)
-    @php
-        $stokGudang = \App\Models\StokGudang::where('barang_id', $b->id)
-            ->where('gudang_id', $selectedGudang->id)
-            ->first();
-        $stokTersedia = $stokGudang ? $stokGudang->stok : 0;
-    @endphp
-    <tr @if ($stokTersedia == 0) class="table-danger" @endif>
-        <td>{{ $i + 1 }}</td>
-        <td>{{ $b->nama }}</td>
-        <td>{{ $b->kode }}</td>
-        <td>{{ $stokTersedia }}</td>
-        <td>{{ $b->satuan }}</td>
-        <td>{{ $b->kategori->nama ?? '-' }}</td>
-        <td>...</td>
-    </tr>
-@endforeach
+                                    @php
+                                        $stokGudang = \App\Models\StokGudang::where('barang_id', $b->id)
+                                            ->where('gudang_id', $selectedGudang->id)
+                                            ->first();
+                                        $stokTersedia = $stokGudang ? $stokGudang->stok : 0;
+                                    @endphp
+                                    @if ($stokTersedia > 0)
+                                        <tr @if ($stokTersedia < 10) class="row-low-stock" @endif>
+                                            <td>{{ $i + 1 }}</td>
+                                            <td>{{ $b->nama }}</td>
+                                            <td>{{ $b->kode }}</td>
+                                            <td>{{ $stokTersedia }}</td>
+                                            <td>{{ $b->satuan }}</td>
+                                            <td>{{ $b->kategori->nama ?? '-' }}</td>
+                                            <td>...</td>
+                                        </tr>
+                                    @endif
+                                @endforeach
                             </tbody>
                         </table>
                     </div>
@@ -270,7 +277,16 @@
 
                                 <tr id="detail-{{ $k->id }}" style="display:none;">
                                     <td colspan="3">
-                                        @if ($k->barang->count())
+                                        @php
+                                            $barangFiltered = $k->barang->filter(function($item) use ($k) {
+                                                $stokGudang = \App\Models\StokGudang::where('barang_id', $item->id)
+                                                    ->where('gudang_id', $k->gudang_id)
+                                                    ->first();
+                                                $stokTersedia = $stokGudang ? $stokGudang->stok : 0;
+                                                return $stokTersedia > 0;
+                                            });
+                                        @endphp
+                                        @if ($barangFiltered->count())
                                             <div class="table-responsive">
                                                 <table class="table table-bordered">
                                                     <thead>
@@ -285,14 +301,14 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        @foreach ($k->barang as $item)
+                                                        @foreach ($barangFiltered as $item)
                                                             @php
                                                                 $stokGudang = \App\Models\StokGudang::where('barang_id', $item->id)
                                                                     ->where('gudang_id', $k->gudang_id)
                                                                     ->first();
                                                                 $stokTersedia = $stokGudang ? $stokGudang->stok : 0;
                                                             @endphp
-                                                            <tr>
+                                                            <tr @if ($stokTersedia < 10) class="row-low-stock" @endif>
                                                                 <td>{{ $item->kode }}</td>
                                                                 <td>{{ $item->nama }}</td>
                                                                 <td>{{ $stokTersedia }}</td>
@@ -316,7 +332,7 @@
                                                 </table>
                                             </div>
                                         @else
-                                            <p class="text-muted">Belum ada barang pada kategori ini.</p>
+                                            <p class="text-muted">Tidak ada barang pada kategori ini (atau semua barang telah habis).</p>
                                         @endif
                                     </td>
                                 </tr>
@@ -328,7 +344,7 @@
         </section>
     </main>
 
-<!-- Modal Kelola Barang (menggabungkan Barang Masuk & Distribusi) -->
+<!-- Modal Kelola Barang (menggabungkan Barang Masuk & Keluar) -->
 <div class="modal fade" id="modalKelolaBarang" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
@@ -348,7 +364,7 @@
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="tab-distribusi" data-bs-toggle="tab" 
                                 data-bs-target="#content-distribusi" type="button" role="tab">
-                            <i class="bi bi-box-arrow-right"></i> Distribusi
+                            <i class="bi bi-box-arrow-right"></i> Keluar
                         </button>
                     </li>
                 </ul>
@@ -400,7 +416,7 @@
                         </form>
                     </div>
 
-                    <!-- Content: Distribusi -->
+                    <!-- Content: Keluar -->
                     <div class="tab-pane fade" id="content-distribusi" role="tabpanel">
                         <form method="POST" id="formDistribusi" enctype="multipart/form-data">
                             @csrf
@@ -416,14 +432,19 @@
                                     <input type="number" name="jumlah" class="form-control" placeholder="Masukkan Jumlah" required min="1">
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Tanggal Distribusi <small class="text-muted">(Opsional)</small></label>
+                                    <label class="form-label">Tanggal Keluar <small class="text-muted">(Opsional)</small></label>
                                     <input type="date" name="tanggal" id="tanggalDistribusi" class="form-control">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Gudang Tujuan</label>
                                     <select name="gudang_tujuan_id" id="distribusiGudangTujuan" class="form-select" required>
                                         <option value="">-- Pilih Gudang --</option>
-                                        @foreach($gudang as $g)
+                                        @php
+                                            $gudangTujuan = collect($gudang)->reject(function($item) {
+                                                return str_contains(strtolower($item->nama), 'utama');
+                                            });
+                                        @endphp
+                                        @foreach($gudangTujuan as $g)
                                             <option value="{{ $g->id }}">{{ $g->nama }}</option>
                                         @endforeach
                                     </select>
@@ -435,7 +456,7 @@
                                     </select>
                                 </div>
                                 <div class="col-12">
-                                    <label class="form-label">Bukti Distribusi</label>
+                                    <label class="form-label">Bukti Keluar</label>
                                     <div class="border rounded p-4 text-center" style="background-color: #f8f9fa;">
                                         <input type="file" name="bukti" id="buktiBrgDistribusi" class="d-none" accept="image/*,.pdf">
                                         <label for="buktiBrgDistribusi" class="d-block" style="cursor: pointer;">
@@ -450,7 +471,7 @@
                             <div class="d-flex justify-content-end gap-2 mt-4">
                                 <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Batal</button>
                                 <button type="submit" class="btn btn-warning px-4">
-                                    <i class="bi bi-send"></i> Simpan Distribusi
+                                    <i class="bi bi-send"></i> Simpan Keluar
                                 </button>
                             </div>
                         </form>
