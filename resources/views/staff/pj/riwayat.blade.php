@@ -27,25 +27,6 @@
                         <input type="hidden" name="alur_barang" value="{{ request('alur_barang', 'Semua') }}">
                     </div>
 
-                    <!-- Filter Gudang -->
-                    <div class="riwayat-filter-group riwayat-filter-dropdown">
-                        <button class="btn riwayat-btn-filter dropdown-toggle" type="button" id="gudangDropdown"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            <span>{{ request('gudang', 'Semua') == 'Semua' ? 'Pilih Gudang' : request('gudang') }}</span>
-                            <i class="bi bi-chevron-right dropdown-arrow"></i>
-                        </button>
-                        <ul class="dropdown-menu" aria-labelledby="gudangDropdown">
-                            <li><a class="dropdown-item {{ request('gudang', 'Semua') == 'Semua' ? 'active' : '' }}"
-                                    href="#" data-value="Semua">Semua</a></li>
-                            @foreach ($gudangList as $gudang)
-                                <li><a class="dropdown-item {{ request('gudang') == $gudang->gudang ? 'active' : '' }}"
-                                        href="#" data-value="{{ $gudang->gudang }}">{{ $gudang->gudang }}</a>
-                                </li>
-                            @endforeach
-                        </ul>
-                        <input type="hidden" name="gudang" value="{{ request('gudang', 'Semua') }}">
-                    </div>
-
                     <!-- Filter Periode -->
                     <div class="riwayat-filter-group riwayat-filter-dropdown">
                         <button class="btn riwayat-btn-filter dropdown-toggle" type="button" id="periodeDropdown"
@@ -92,7 +73,7 @@
 
                     <!-- Tombol Reset -->
                     <div class="riwayat-filter-group-reset">
-                        <a href="{{ route('admin.riwayat.index') }}" class="btn riwayat-btn-reset">
+                        <a href="{{ route('pj.riwayat.index') }}" class="btn riwayat-btn-reset">
                             <i class="bi bi-arrow-clockwise me-2"></i>Reset
                         </a>
                     </div>
@@ -158,11 +139,9 @@
                                     <th>No</th>
                                     <th>Tanggal</th>
                                     <th>Waktu</th>
-                                    <th>Gudang</th>
                                     <th>Nama Barang</th>
                                     <th>Jumlah</th>
                                     <th>Bukti</th>
-                                    <th>Alur Barang</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -172,7 +151,6 @@
                                             {{ ($currentPageMasuk - 1) * $itemsPerPage + $loop->iteration }}</td>
                                         <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
                                         <td>{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }} WIB</td>
-                                        <td class="fw-medium">{{ $item->gudang }}</td>
                                         <td class="fw-medium">{{ $item->nama_barang }}</td>
                                         <td><span>{{ $item->jumlah }}</span></td>
                                         <td>
@@ -186,15 +164,10 @@
                                                 <span class="text-muted">-</span>
                                             @endif
                                         </td>
-                                        <td>
-                                            <span class="btn-masuk btn-sm btn-action">
-                                                {{ $item->alur_barang }}
-                                            </span>
-                                        </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="8" class="riwayat-empty-state text-center py-4">
+                                        <td colspan="6" class="riwayat-empty-state text-center py-4">
                                             <i class="bi bi-inbox"></i>
                                             <p>Tidak ada data barang masuk ditemukan</p>
                                         </td>
@@ -243,12 +216,10 @@
                                     <th>No</th>
                                     <th>Tanggal</th>
                                     <th>Waktu</th>
-                                    <th>Gudang</th>
                                     <th>Nama Barang</th>
                                     <th>Jumlah</th>
                                     <th>Bagian</th>
                                     <th>Bukti</th>
-                                    <th>Alur Barang</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -258,12 +229,11 @@
                                             {{ ($currentPageKeluar - 1) * $itemsPerPage + $loop->iteration }}</td>
                                         <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
                                         <td>{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }} WIB</td>
-                                        <td class="fw-medium">{{ $item->gudang }}</td>
                                         <td class="fw-medium">{{ $item->nama_barang }}</td>
                                         <td><span>{{ $item->jumlah }}</span></td>
-<td>{{ $item->bagian ?? '-' }}</td>
-<td>
-    @if ($item->bukti)
+                                        <td>{{ $item->bagian ?? '-' }}</td>
+                                        <td>
+                                            @if ($item->bukti)
                                                 <span class="riwayat-bukti-icon" data-bs-toggle="modal"
                                                     data-bs-target="#buktiModal"
                                                     data-image="{{ asset('storage/bukti/' . $item->bukti) }}">
@@ -273,15 +243,10 @@
                                                 <span class="text-muted">-</span>
                                             @endif
                                         </td>
-                                        <td>
-                                            <span class="btn-keluar btn-sm btn-action">
-                                                {{ $item->alur_barang }}
-                                            </span>
-                                        </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="9" class="riwayat-empty-state text-center py-4">
+                                        <td colspan="7" class="riwayat-empty-state text-center py-4">
                                             <i class="bi bi-inbox"></i>
                                             <p>Tidak ada data barang keluar ditemukan</p>
                                         </td>
@@ -370,7 +335,7 @@
                 initEventListeners();
 
                 function initEventListeners() {
-                    // Filter untuk alur barang dan gudang
+                    // Filter untuk alur barang
                     document.querySelectorAll('.riwayat-filter-dropdown .dropdown-item').forEach(item => {
                         // Hapus event listener lama dan tambahkan yang baru
                         item.removeEventListener('click', handleFilterClick);
@@ -621,7 +586,7 @@
                 params.append('download', format);
                 
                 // Redirect ke URL dengan parameter yang sudah difilter
-                const url = `{{ route('admin.riwayat.index') }}?${params.toString()}`;
+                const url = `{{ route('pj.riwayat.index') }}?${params.toString()}`;
                 window.location.href = url;
             }
 
