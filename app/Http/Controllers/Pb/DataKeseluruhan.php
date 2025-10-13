@@ -89,7 +89,16 @@ class DataKeseluruhan extends Controller
             return response()->json([]);
         }
 
-        $barangQuery = Barang::with(['kategori.gudang', 'stokGudang'])
+        // Jika tidak ada gudang_id, ambil Gudang Utama sebagai default
+        if (!$gudangId) {
+            $gudangUtama = Gudang::where('nama', 'Gudang Utama')
+                ->orWhere('nama', 'LIKE', '%Utama%')
+                ->first();
+            $gudangId = $gudangUtama ? $gudangUtama->id : null;
+        }
+
+        // Query barang dengan relasi kategori dan gudang
+        $barangQuery = Barang::with(['kategori.gudang'])
             ->where(function ($q) use ($query) {
                 $q->where('nama', 'like', "%{$query}%")
                     ->orWhere('kode', 'like', "%{$query}%");
@@ -105,8 +114,12 @@ class DataKeseluruhan extends Controller
         $barang = $barangQuery->limit(10)->get();
 
         $results = $barang->map(function ($item) use ($gudangId) {
-            // Ambil stok dari stok_gudang
-            $stok = $this->getStokBarangGudang($item->id, $gudangId);
+            // Ambil stok dari tabel stok_gudang berdasarkan gudang_id
+            $stokGudang = StokGudang::where('barang_id', $item->id)
+                ->where('gudang_id', $gudangId)
+                ->first();
+            
+            $stok = $stokGudang ? $stokGudang->stok : 0;
 
             // Tentukan status stok
             $stockStatus = 'available';
@@ -125,7 +138,10 @@ class DataKeseluruhan extends Controller
                 'gudang' => $item->kategori->gudang->nama ?? '-',
                 'stock_status' => $stockStatus
             ];
-        });
+        })->filter(function ($item) {
+            // Filter: hanya tampilkan barang yang stoknya > 0
+            return $item['stok'] > 0;
+        })->values(); // Reset array keys setelah filter
 
         return response()->json($results);
     }
