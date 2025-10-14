@@ -3,7 +3,8 @@
 namespace App\Http\Controllers\Pb;
 
 use App\Http\Controllers\Controller;
-use App\Models\RiwayatBarang;
+use App\Models\TransaksiBarangMasuk;
+use App\Models\TransaksiDistribusi;
 use App\Models\Gudang;
 use App\Helpers\MenuHelper;
 use Illuminate\Http\Request;
@@ -14,6 +15,43 @@ use Carbon\Carbon;
 
 class RiwayatController extends Controller
 {
+    /**
+     * Map Transaksi Barang Masuk (dari Admin ke PB) menjadi row "Masuk"
+     */
+    private function mapBarangMasukToPbRow(TransaksiBarangMasuk $item)
+    {
+        return (object) [
+            'tanggal'       => $item->tanggal ?? optional($item->created_at)->toDateString(),
+            'waktu'         => optional($item->created_at)->format('H:i:s'),
+            'alur_barang'   => 'Masuk',
+            'gudang'        => 'Gudang Utama', // Barang masuk ke PB (Gudang Utama)
+            'nama_barang'   => optional($item->barang)->nama_barang ?? '-',
+            'jumlah'        => (int) ($item->jumlah ?? 0),
+            'keterangan'    => $item->keterangan ?? '-',
+            'bukti'         => $item->bukti,
+            'bukti_path'    => $item->bukti ? asset('storage/' . $item->bukti) : null,
+        ];
+    }
+
+    /**
+     * Map Transaksi Distribusi (dari PB ke PJ) menjadi row "Keluar"
+     */
+    private function mapDistribusiToPbRow(TransaksiDistribusi $item)
+    {
+        return (object) [
+            'tanggal'         => $item->tanggal ?? optional($item->created_at)->toDateString(),
+            'waktu'           => optional($item->created_at)->format('H:i:s'),
+            'alur_barang'     => 'Keluar',
+            'gudang'          => optional($item->gudangTujuan)->nama ?? '-',
+            'nama_barang'     => optional($item->barang)->nama_barang ?? '-',
+            'jumlah'          => (int) ($item->jumlah ?? 0),
+            'gudang_tujuan'   => optional($item->gudangTujuan)->nama ?? '-',
+            'keterangan'      => $item->keterangan ?? '-',
+            'bukti'           => $item->bukti,
+            'bukti_path'      => $item->bukti ? asset('storage/' . $item->bukti) : null,
+        ];
+    }
+
     public function index(Request $request)
     {
         $menu = MenuHelper::pbMenu();
@@ -23,75 +61,73 @@ class RiwayatController extends Controller
             return $this->downloadReport($request);
         }
 
-        // Query dasar
-        $query = RiwayatBarang::with([
-            'barang.kategori.gudang',
-            'kategoriAsal',
-            'kategoriTujuan',
+        // ---------------------------------------------------------------
+        // MASUK: Transaksi Barang Masuk (dari Admin ke PB)
+        // ---------------------------------------------------------------
+        $barangMasukQuery = TransaksiBarangMasuk::with([
+            'barang.kategori',
+            'user'
+        ]);
+
+        // Filter periode untuk barang masuk
+        $this->applyPeriodeFilter($barangMasukQuery, $request);
+
+        $riwayatMasuk = $barangMasukQuery
+            ->orderBy('tanggal', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(fn($item) => $this->mapBarangMasukToPbRow($item))
+            ->values()
+            ->toBase();
+
+        // ---------------------------------------------------------------
+        // KELUAR: Transaksi Distribusi (dari PB ke PJ)
+        // ---------------------------------------------------------------
+        $distribusiQuery = TransaksiDistribusi::with([
+            'barang.kategori',
             'gudangTujuan',
             'user'
-        ])->orderBy('tanggal', 'desc')->orderBy('created_at', 'desc');
+        ]);
 
-        // Filter berdasarkan alur barang
-        if ($request->filled('alur_barang') && $request->alur_barang != 'Semua') {
-            if ($request->alur_barang == 'Masuk') {
-                $query->where('jenis_transaksi', 'masuk');
-            } else {
-                $query->where('jenis_transaksi', 'distribusi');
-            }
-        }
-
-        // Filter berdasarkan gudang
-        if ($request->filled('gudang') && $request->gudang != 'Semua') {
-            $query->whereHas('barang.kategori.gudang', function ($q) use ($request) {
+        // Filter gudang tujuan
+        if ($request->filled('gudang') && $request->gudang !== 'Semua') {
+            $distribusiQuery->whereHas('gudangTujuan', function ($q) use ($request) {
                 $q->where('nama', $request->gudang);
             });
         }
 
-        // Filter berdasarkan periode
-        if ($request->filled('periode')) {
-            switch ($request->periode) {
-                case '1_minggu_terakhir':
-                    $query->where('tanggal', '>=', Carbon::now()->subWeek());
-                    break;
-                case '1_bulan_terakhir':
-                    $query->where('tanggal', '>=', Carbon::now()->subMonth());
-                    break;
-                case '1_tahun_terakhir':
-                    $query->where('tanggal', '>=', Carbon::now()->subYear());
-                    break;
-                case 'custom':
-                    if ($request->filled('dari_tanggal') && $request->filled('sampai_tanggal')) {
-                        $query->whereBetween('tanggal', [
-                            $request->dari_tanggal,
-                            $request->sampai_tanggal
-                        ]);
-                    }
-                    break;
-            }
+        // Filter periode untuk distribusi
+        $this->applyPeriodeFilter($distribusiQuery, $request);
+
+        $riwayatKeluar = $distribusiQuery
+            ->orderBy('tanggal', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(fn($item) => $this->mapDistribusiToPbRow($item))
+            ->values()
+            ->toBase();
+
+        // ---------------------------------------------------------------
+        // Filter "Alur Barang"
+        // ---------------------------------------------------------------
+        $riwayat = collect()->toBase();
+        if ($request->filled('alur_barang') && $request->alur_barang !== 'Semua') {
+            $riwayat = $request->alur_barang === 'Masuk' ? $riwayatMasuk : $riwayatKeluar;
+        } else {
+            $riwayat = $riwayatMasuk->concat($riwayatKeluar);
         }
 
-        // Ambil data dan transform
-        $riwayat = $query->get()->map(function ($item) {
-            return (object) [
-                'tanggal' => $item->tanggal,
-                'waktu' => $item->created_at->format('H:i:s'),
-                'alur_barang' => $item->jenis_transaksi == 'masuk' ? 'Masuk' : 'Keluar',
-                'gudang' => optional(optional($item->barang->kategori)->gudang)->nama ?? '-',
-                'nama_barang' => optional($item->barang)->nama ?? '-',
-                'jumlah' => $item->jumlah,
-                'kategori_asal' => optional($item->kategoriAsal)->nama ?? '-',
-                'kategori_tujuan' => optional($item->kategoriTujuan)->nama ?? '-',
-                'gudang_tujuan' => optional($item->gudangTujuan)->nama ?? '-',
-                'bukti' => $item->bukti,
-                'bukti_path' => $item->bukti ? $item->bukti : null,
-            ];
-        });
+        // Urut berdasarkan tanggal & waktu terbaru
+        $riwayat = $riwayat->sortByDesc(function ($x) {
+            return ($x->tanggal ?? '1970-01-01') . ' ' . ($x->waktu ?? '00:00:00');
+        })->values();
 
-        // Ambil list gudang untuk filter
-        $gudangList = RiwayatBarang::with('barang.kategori.gudang')
+        // ---------------------------------------------------------------
+        // Ambil list gudang untuk filter (hanya gudang tujuan dari distribusi)
+        // ---------------------------------------------------------------
+        $gudangList = TransaksiDistribusi::with('gudangTujuan')
             ->get()
-            ->pluck('barang.kategori.gudang.nama')
+            ->pluck('gudangTujuan.nama')
             ->unique()
             ->filter()
             ->map(function ($nama) {
@@ -104,42 +140,107 @@ class RiwayatController extends Controller
 
     public function downloadReport(Request $request)
     {
-        // Query dasar (sama dengan index)
-        $query = RiwayatBarang::with([
-            'barang.kategori.gudang',
-            'kategoriAsal',
-            'kategoriTujuan',
+        // ---------------------------------------------------------------
+        // MASUK: Transaksi Barang Masuk
+        // ---------------------------------------------------------------
+        $barangMasukQuery = TransaksiBarangMasuk::with([
+            'barang.kategori',
+            'user'
+        ]);
+
+        // Filter periode
+        $this->applyPeriodeFilter($barangMasukQuery, $request);
+
+        // ---------------------------------------------------------------
+        // KELUAR: Transaksi Distribusi
+        // ---------------------------------------------------------------
+        $distribusiQuery = TransaksiDistribusi::with([
+            'barang.kategori',
             'gudangTujuan',
             'user'
-        ])->orderBy('tanggal', 'desc')->orderBy('created_at', 'desc');
+        ]);
 
-        // Filter berdasarkan alur barang
-        if ($request->filled('alur_barang') && $request->alur_barang != 'Semua') {
-            if ($request->alur_barang == 'Masuk') {
-                $query->where('jenis_transaksi', 'masuk');
-            } else {
-                $query->where('jenis_transaksi', 'distribusi');
-            }
-        }
-
-        // Filter berdasarkan gudang
-        if ($request->filled('gudang') && $request->gudang != 'Semua') {
-            $query->whereHas('barang.kategori.gudang', function ($q) use ($request) {
+        // Filter gudang tujuan
+        if ($request->filled('gudang') && $request->gudang !== 'Semua') {
+            $distribusiQuery->whereHas('gudangTujuan', function ($q) use ($request) {
                 $q->where('nama', $request->gudang);
             });
         }
 
-        // Filter berdasarkan periode
+        // Filter periode
+        $this->applyPeriodeFilter($distribusiQuery, $request);
+
+        // Map ke format PB
+        $rowsMasuk  = $barangMasukQuery->get()
+            ->map(fn($item) => $this->mapBarangMasukToPbRow($item))
+            ->values()
+            ->toBase();
+
+        $rowsKeluar = $distribusiQuery->get()
+            ->map(fn($item) => $this->mapDistribusiToPbRow($item))
+            ->values()
+            ->toBase();
+
+        // Gabungkan berdasarkan filter alur barang
+        $riwayat = collect()->toBase();
+        if ($request->filled('alur_barang') && $request->alur_barang !== 'Semua') {
+            $riwayat = $request->alur_barang === 'Masuk' ? $rowsMasuk : $rowsKeluar;
+        } else {
+            $riwayat = $rowsMasuk->concat($rowsKeluar);
+        }
+
+        // Urut berdasarkan tanggal terbaru
+        $riwayat = $riwayat->sortByDesc(function ($x) {
+            return ($x->tanggal ?? '1970-01-01') . ' ' . ($x->waktu ?? '00:00:00');
+        })->values();
+
+        // Siapkan filter untuk export
+        $filter = [
+            'alur_barang'    => $request->alur_barang,
+            'gudang'         => $request->gudang,
+            'periode'        => $request->periode,
+            'dari_tanggal'   => $request->dari_tanggal,
+            'sampai_tanggal' => $request->sampai_tanggal
+        ];
+
+        $format = $request->download;
+
+        if ($format == 'pdf') {
+            // Generate PDF
+            $pdf = Pdf::loadView('staff.pb.riwayat-pdf', compact('riwayat', 'filter'))
+                ->setPaper('a4', 'landscape')
+                ->setOption('isHtml5ParserEnabled', true)
+                ->setOption('isRemoteEnabled', true);
+
+            return $pdf->download('Laporan_Riwayat_Barang_PB_' . date('Y-m-d_His') . '.pdf');
+        }
+
+        if ($format == 'excel') {
+            // Download Excel
+            return Excel::download(
+                new RiwayatExportPb($riwayat, $filter),
+                'Laporan_Riwayat_Barang_PB_' . date('Y-m-d_His') . '.xlsx'
+            );
+        }
+
+        return redirect()->back()->with('error', 'Format tidak valid');
+    }
+
+    // =====================================================================
+    // HELPER: Apply Filter Periode
+    // =====================================================================
+    private function applyPeriodeFilter($query, Request $request)
+    {
         if ($request->filled('periode')) {
             switch ($request->periode) {
                 case '1_minggu_terakhir':
-                    $query->where('tanggal', '>=', Carbon::now()->subWeek());
+                    $query->whereDate('tanggal', '>=', Carbon::now()->subWeek());
                     break;
                 case '1_bulan_terakhir':
-                    $query->where('tanggal', '>=', Carbon::now()->subMonth());
+                    $query->whereDate('tanggal', '>=', Carbon::now()->subMonth());
                     break;
                 case '1_tahun_terakhir':
-                    $query->where('tanggal', '>=', Carbon::now()->subYear());
+                    $query->whereDate('tanggal', '>=', Carbon::now()->subYear());
                     break;
                 case 'custom':
                     if ($request->filled('dari_tanggal') && $request->filled('sampai_tanggal')) {
@@ -151,52 +252,5 @@ class RiwayatController extends Controller
                     break;
             }
         }
-
-        // Ambil data
-        $riwayatData = $query->get();
-
-        $format = $request->download;
-
-        // Siapkan filter untuk export
-        $filter = [
-            'alur_barang' => $request->alur_barang,
-            'gudang' => $request->gudang,
-            'periode' => $request->periode,
-            'dari_tanggal' => $request->dari_tanggal,
-            'sampai_tanggal' => $request->sampai_tanggal
-        ];
-
-        if ($format == 'pdf') {
-            // Transform data untuk PDF (gunakan variabel $riwayat seperti di view)
-            $riwayat = $riwayatData->map(function ($item) {
-                return (object) [
-                    'tanggal' => $item->tanggal,
-                    'waktu' => $item->created_at->format('H:i:s'),
-                    'alur_barang' => $item->jenis_transaksi == 'masuk' ? 'Masuk' : 'Keluar',
-                    'gudang' => optional(optional($item->barang->kategori)->gudang)->nama ?? '-',
-                    'nama_barang' => optional($item->barang)->nama ?? '-',
-                    'jumlah' => $item->jumlah,
-                    'kategori_asal' => optional($item->kategoriAsal)->nama ?? '-',
-                    'kategori_tujuan' => optional($item->kategoriTujuan)->nama ?? '-',
-                    'gudang_tujuan' => optional($item->gudangTujuan)->nama ?? '-',
-                    'bukti' => $item->bukti,
-                ];
-            });
-
-            // Generate PDF menggunakan variabel $riwayat
-            $pdf = Pdf::loadView('staff.pb.riwayat-pdf', compact('riwayat', 'filter'))
-                ->setPaper('a4', 'landscape')
-                ->setOption('isHtml5ParserEnabled', true)
-                ->setOption('isRemoteEnabled', true);
-
-            return $pdf->download('Laporan_Riwayat_Barang_' . date('Y-m-d_His') . '.pdf');
-        }
-
-        if ($format == 'excel') {
-            // Download Excel menggunakan data ASLI (model RiwayatBarang)
-            return Excel::download(new RiwayatExportPb($riwayatData, $filter), 'Laporan_Riwayat_Barang_' . date('Y-m-d_His') . '.xlsx');
-        }
-
-        return redirect()->back()->with('error', 'Format tidak valid');
     }
 }
