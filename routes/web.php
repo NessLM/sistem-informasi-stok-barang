@@ -154,7 +154,7 @@ Route::prefix('pb')->name('pb.')->middleware(['auth', 'role:Pengelola Barang'])-
         ->name('datakeseluruhan.index');
 
     Route::get('/datakeseluruhan/{slug}', [AdminDataKeseluruhanController::class, 'gudang'])
-    ->name('datakeseluruhan.gudang');
+        ->name('datakeseluruhan.gudang');
 
     // API Kategori by Gudang
     Route::get('/api/kategori-by-gudang/{gudangId}', [PbDataKeseluruhanController::class, 'getKategoriByGudang'])
@@ -167,12 +167,12 @@ Route::prefix('pb')->name('pb.')->middleware(['auth', 'role:Pengelola Barang'])-
     // Stok User (resource)
     Route::resource('stokuser', PbStokUserController::class);
 
-    // Barang Masuk
-    Route::post('/barang-masuk/{id}', [PbStokUserController::class, 'barangMasuk'])
-        ->name('barang.masuk');
+    // Barang Masuk - PERBAIKAN: gunakan method store() bukan barangMasuk()
+    Route::post('/barang-masuk/{kodeBarang}', [PbBarangMasukController::class, 'store'])
+        ->name('barang-masuk.store');
 
-    // Distribusi barang
-    Route::post('/distribusi/{id}', [PbDistribusiController::class, 'distribusi'])
+    // Distribusi barang - PERBAIKAN: gunakan method store() bukan distribusi()
+    Route::post('/distribusi/{kodeBarang}', [PbDistribusiController::class, 'store'])
         ->name('barang.distribusi');
 
     // Riwayat & Laporan PB
