@@ -135,8 +135,6 @@
                     request()->filled('kategori_id') ||
                     request()->filled('gudang_id') ||
                     request()->filled('satuan') ||
-                    request()->filled('nomor_awal') ||
-                    request()->filled('nomor_akhir') ||
                     request()->filled('harga_min') ||
                     request()->filled('harga_max'))
                 <h5 class="mt-3">Hasil Pencarian</h5>
@@ -161,32 +159,32 @@
                                         // Ambil stok berdasarkan gudang yang dipilih atau total
                                         $stokDisplay = 0;
                                         if (request()->filled('gudang_id') && isset($selectedGudang)) {
-                                            $stokGudang = $b->stokGudang()->where('gudang_id', $selectedGudang->id)->first();
-                                            $stokDisplay = $stokGudang ? $stokGudang->stok : 0;
+                                            $pjStok = $b->pjStok()->where('id_gudang', $selectedGudang->id)->first();
+                                            $stokDisplay = $pjStok ? $pjStok->stok : 0;
                                         } elseif ($b->kategori && $b->kategori->gudang_id) {
                                             // Stok di gudang kategori
-                                            $stokGudang = $b->stokGudang()->where('gudang_id', $b->kategori->gudang_id)->first();
-                                            $stokDisplay = $stokGudang ? $stokGudang->stok : 0;
+                                            $pjStok = $b->pjStok()->where('id_gudang', $b->kategori->gudang_id)->first();
+                                            $stokDisplay = $pjStok ? $pjStok->stok : 0;
                                         } else {
-                                            // Total stok
-                                            $stokDisplay = $b->stokGudang()->sum('stok');
+                                            // Total stok dari semua gudang PJ
+                                            $stokDisplay = $b->pjStok()->sum('stok');
                                         }
                                     @endphp
                                     <tr @if ($stokDisplay < 10) class="row-low-stock" @endif>
                                         <td>{{ $i + 1 }}</td>
-                                        <td>{{ $b->nama }}</td>
-                                        <td>{{ $b->kode }}</td>
-                                        <td>Rp {{ number_format($b->harga ?? 0, 0, ',', '.') }}</td>
+                                        <td>{{ $b->nama_barang }}</td>
+                                        <td>{{ $b->kode_barang }}</td>
+                                        <td>Rp {{ number_format($b->harga_barang ?? 0, 0, ',', '.') }}</td>
                                         <td>{{ $stokDisplay }}</td>
                                         <td>{{ $b->satuan }}</td>
                                         <td>{{ $b->kategori->nama ?? '-' }}</td>
                                         <td>
                                             <button class="btn btn-sm btn-warning" data-bs-toggle="modal"
-                                                data-bs-target="#modalEditBarang-{{ $b->id }}">
+                                                data-bs-target="#modalEditBarang-{{ $b->kode_barang }}">
                                                 <i class="bi bi-pencil"></i>
                                             </button>
                                              <button type="button" class="btn btn-sm btn-danger"
-                                                onclick="confirmDelete('{{ route('admin.barang.destroy', $b->id) }}', 'Barang {{ $b->nama }}')">
+                                                onclick="confirmDelete('{{ route('admin.barang.destroy', $b->kode_barang) }}', 'Barang {{ $b->nama_barang }}')">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </td>
@@ -209,8 +207,6 @@
                     !request()->filled('kategori_id') &&
                     !request()->filled('gudang_id') &&
                     !request()->filled('satuan') &&
-                    !request()->filled('nomor_awal') &&
-                    !request()->filled('nomor_akhir') &&
                     !request()->filled('harga_min') &&
                     !request()->filled('harga_max'))
                 <div class="table-responsive mt-3">
@@ -233,10 +229,9 @@
                                                 onclick="toggleDetail({{ $k->id }})"><i
                                                     class="bi bi-eye"></i></button>
                                             <button type="button" class="btn btn-sm btn-danger"
-    onclick="confirmDelete('{{ route('admin.kategori.destroy', $k->id) }}', 'Kategori {{ $k->nama }}')">
-    <i class="bi bi-trash"></i>
-</button>
-
+                                                onclick="confirmDelete('{{ route('admin.kategori.destroy', $k->id) }}', 'Kategori {{ $k->nama }}')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -263,31 +258,31 @@
                                                                 // Ambil stok dari gudang yang sedang dipilih
                                                                 $stokDisplay = 0;
                                                                 if (isset($selectedGudang)) {
-                                                                    $stokGudang = $b->stokGudang()->where('gudang_id', $selectedGudang->id)->first();
-                                                                    $stokDisplay = $stokGudang ? $stokGudang->stok : 0;
+                                                                    $pjStok = $b->pjStok()->where('id_gudang', $selectedGudang->id)->first();
+                                                                    $stokDisplay = $pjStok ? $pjStok->stok : 0;
                                                                 } else {
                                                                     // Jika tidak ada filter gudang, ambil stok dari gudang kategori
                                                                     if ($k->gudang_id) {
-                                                                        $stokGudang = $b->stokGudang()->where('gudang_id', $k->gudang_id)->first();
-                                                                        $stokDisplay = $stokGudang ? $stokGudang->stok : 0;
+                                                                        $pjStok = $b->pjStok()->where('id_gudang', $k->gudang_id)->first();
+                                                                        $stokDisplay = $pjStok ? $pjStok->stok : 0;
                                                                     }
                                                                 }
                                                             @endphp
                                                             <tr @if ($stokDisplay < 10) class="row-low-stock" @endif>
                                                                 <td>{{ $i + 1 }}</td>
-                                                                <td>{{ $b->nama }}</td>
-                                                                <td>{{ $b->kode }}</td>
-                                                                <td>Rp {{ number_format($b->harga ?? 0, 0, ',', '.') }}</td>
+                                                                <td>{{ $b->nama_barang }}</td>
+                                                                <td>{{ $b->kode_barang }}</td>
+                                                                <td>Rp {{ number_format($b->harga_barang ?? 0, 0, ',', '.') }}</td>
                                                                 <td>{{ $stokDisplay }}</td>
                                                                 <td>{{ $b->satuan }}</td>
                                                                 <td class="d-flex gap-2">
                                                                     <button class="btn btn-sm btn-warning"
                                                                         data-bs-toggle="modal"
-                                                                        data-bs-target="#modalEditBarang-{{ $b->id }}">
+                                                                        data-bs-target="#modalEditBarang-{{ $b->kode_barang }}">
                                                                         <i class="bi bi-pencil"></i>
                                                                     </button>
                                                                     <button type="button" class="btn btn-sm btn-danger"
-                                                                        onclick="confirmDelete('{{ route('admin.barang.destroy', $b->id) }}', 'Barang {{ $b->nama }}')">
+                                                                        onclick="confirmDelete('{{ route('admin.barang.destroy', $b->kode_barang) }}', 'Barang {{ $b->nama_barang }}')">
                                                                         <i class="bi bi-trash"></i>
                                                                     </button>
                                                                 </td>
@@ -342,7 +337,7 @@
             </div>
         </div>
     </div> 
-    {{-- Simple nya ini itu untuk Pilih kategori yang berada di Navbar bagian Data Keseluruhan --}}
+
     @php
     // Kita cek: ini konteks "satu gudang" atau "multi gudang"?
     $isSingleGudang = false;
@@ -375,60 +370,59 @@
                 <div class="modal-body">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label>Nama</label>
-                            <input type="text" name="nama"
-                                class="form-control @error('nama') is-invalid @enderror" value="{{ old('nama') }}"
+                            <label>Nama Barang</label>
+                            <input type="text" name="nama_barang"
+                                class="form-control @error('nama_barang') is-invalid @enderror" value="{{ old('nama_barang') }}"
                                 required>
-                            @error('nama')
+                            @error('nama_barang')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                         <div class="col-md-6">
-                            <label>Kode</label>
-                            <input type="text" name="kode"
-                                class="form-control @error('kode') is-invalid @enderror" value="{{ old('kode') }}"
+                            <label>Kode Barang</label>
+                            <input type="text" name="kode_barang"
+                                class="form-control @error('kode_barang') is-invalid @enderror" value="{{ old('kode_barang') }}"
                                 required>
-                            @error('kode')
+                            @error('kode_barang')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                         <div class="col-md-6">
                             <label>Kategori</label>
-                            <select name="kategori_id" class="form-select @error('kategori_id') is-invalid @enderror" required>
+                            <select name="id_kategori" class="form-select @error('id_kategori') is-invalid @enderror" required>
                                 <option value="">-- Pilih Kategori --</option>
                                 @foreach ($kategori as $k)
-                                    <option value="{{ $k->id }}" @selected(old('kategori_id') == $k->id)>
-                                        {{ $k->nama }}@unless($isSingleGudang) — {{ $k->gudang->nama ?? '-' }} @endunless
-                                    </option>
+                                    @if($k->gudang && str_contains(strtolower($k->gudang->nama), 'utama'))
+                                        <option value="{{ $k->id }}" @selected(old('id_kategori') == $k->id)>
+                                            {{ $k->nama }}
+                                        </option>
+                                    @endif
                                 @endforeach
                             </select>
-                            @error('kategori_id')
+                            @error('id_kategori')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-
                         </div>
-                       <div class="col-md-6">
-    <label>Harga / Satuan</label>
-    <div class="input-group">
-        <span class="input-group-text">Rp</span>
-        <input type="text" name="harga_display" id="hargaTambah"
-            class="form-control @error('harga') is-invalid @enderror"
-            value="{{ old('harga') }}" placeholder="Harga">
-        <input type="hidden" name="harga" id="hargaTambahHidden">
-        <select name="satuan" class="form-select">
-            <option value="Pcs" @if (old('satuan') == 'Pcs') selected @endif>Pcs</option>
-            <option value="Box" @if (old('satuan') == 'Box') selected @endif>Box</option>
-            <option value="Pack" @if (old('satuan') == 'Pack') selected @endif>Pack</option>
-            <option value="Rim" @if (old('satuan') == 'Rim') selected @endif>Rim</option>
-            <option value="Unit" @if (old('satuan') == 'Unit') selected @endif>Unit</option>
-        </select>
-    </div>
-    @error('harga')
-        <div class="invalid-feedback">{{ $message }}</div>
-    @enderror
-</div>
-
-                        <input type="hidden" name="stok" value="0">
+                        <div class="col-md-6">
+                            <label>Harga / Satuan</label>
+                            <div class="input-group">
+                                <span class="input-group-text">Rp</span>
+                                <input type="text" name="harga_display" id="hargaTambah"
+                                    class="form-control @error('harga_barang') is-invalid @enderror"
+                                    value="{{ old('harga_barang') }}" placeholder="Harga">
+                                <input type="hidden" name="harga_barang" id="hargaTambahHidden">
+                                <select name="satuan" class="form-select">
+                                    <option value="Pcs" @if (old('satuan') == 'Pcs') selected @endif>Pcs</option>
+                                    <option value="Box" @if (old('satuan') == 'Box') selected @endif>Box</option>
+                                    <option value="Pack" @if (old('satuan') == 'Pack') selected @endif>Pack</option>
+                                    <option value="Rim" @if (old('satuan') == 'Rim') selected @endif>Rim</option>
+                                    <option value="Unit" @if (old('satuan') == 'Unit') selected @endif>Unit</option>
+                                </select>
+                            </div>
+                            @error('harga_barang')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -442,55 +436,57 @@
     {{-- Modal Edit Barang --}}
     @foreach ($kategori as $k)
         @foreach ($k->barang as $b)
-            <div class="modal fade" id="modalEditBarang-{{ $b->id }}" tabindex="-1"aria-hidden="true">
+            <div class="modal fade" id="modalEditBarang-{{ $b->kode_barang }}" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered modal-lg">
-                    <form action="{{ route('admin.barang.update', $b->id) }}" method="POST" class="modal-content" id="formEditBarang-{{ $b->id }}">
+                    <form action="{{ route('admin.barang.update', $b->kode_barang) }}" method="POST" class="modal-content" id="formEditBarang-{{ $b->kode_barang }}">
                         @csrf
                         @method('PUT')
                         <div class="modal-header">
-                            <h5 class="modal-title">Edit Barang: {{ $b->nama }}</h5>
+                            <h5 class="modal-title">Edit Barang: {{ $b->nama_barang }}</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
                             <div class="row g-3">
                                 <div class="col-md-6">
-                                    <label>Nama</label>
-                                    <input type="text" name="nama" class="form-control"
-                                        value="{{ $b->nama }}" required>
+                                    <label>Nama Barang</label>
+                                    <input type="text" name="nama_barang" class="form-control"
+                                        value="{{ $b->nama_barang }}" required>
                                 </div>
                                 <div class="col-md-6">
-                                    <label>Kode</label>
-                                    <input type="text" name="kode" class="form-control"
-                                        value="{{ $b->kode }}" required>
+                                    <label>Kode Barang</label>
+                                    <input type="text" class="form-control"
+                                        value="{{ $b->kode_barang }}" disabled>
+                                    <small class="text-muted">Kode barang tidak dapat diubah</small>
                                 </div>
                                 <div class="col-md-6">
                                     <label>Kategori</label>
-                                    <select name="kategori_id" class="form-select" required>
+                                    <select name="id_kategori" class="form-select" required>
                                         @foreach ($kategori as $kat)
-                                            <option value="{{ $kat->id }}"
-                                                @if ($b->kategori_id == $kat->id) selected @endif>
-                                                {{ $kat->nama }}
-                                            </option>
+                                            @if($kat->gudang && str_contains(strtolower($kat->gudang->nama), 'utama'))
+                                                <option value="{{ $kat->id }}"
+                                                    @if ($b->id_kategori == $kat->id) selected @endif>
+                                                    {{ $kat->nama }}
+                                                </option>
+                                            @endif
                                         @endforeach
                                     </select>
                                 </div>
-                               <div class="col-md-6">
-    <label>Harga / Satuan</label>
-    <div class="input-group">
-        <span class="input-group-text">Rp</span>
-        <input type="text" name="harga_display" id="hargaEdit-{{ $b->id }}"
-            class="form-control" value="{{ number_format($b->harga ?? 0, 0, ',', '.') }}">
-        <input type="hidden" name="harga" id="hargaEditHidden-{{ $b->id }}" value="{{ $b->harga }}">
-        <select name="satuan" class="form-select">
-            <option value="Pcs" @if ($b->satuan == 'Pcs') selected @endif>Pcs</option>
-            <option value="Box" @if ($b->satuan == 'Box') selected @endif>Box</option>
-            <option value="Pack" @if ($b->satuan == 'Pack') selected @endif>Pack</option>
-            <option value="Rim" @if ($b->satuan == 'Rim') selected @endif>Rim</option>
-            <option value="Unit" @if ($b->satuan == 'Unit') selected @endif>Unit</option>
-        </select>
-    </div>
-</div>
-
+                                <div class="col-md-6">
+                                    <label>Harga / Satuan</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">Rp</span>
+                                        <input type="text" name="harga_display" id="hargaEdit-{{ $b->kode_barang }}"
+                                            class="form-control" value="{{ number_format($b->harga_barang ?? 0, 0, ',', '.') }}">
+                                        <input type="hidden" name="harga_barang" id="hargaEditHidden-{{ $b->kode_barang }}" value="{{ $b->harga_barang }}">
+                                        <select name="satuan" class="form-select">
+                                            <option value="Pcs" @if ($b->satuan == 'Pcs') selected @endif>Pcs</option>
+                                            <option value="Box" @if ($b->satuan == 'Box') selected @endif>Box</option>
+                                            <option value="Pack" @if ($b->satuan == 'Pack') selected @endif>Pack</option>
+                                            <option value="Rim" @if ($b->satuan == 'Rim') selected @endif>Rim</option>
+                                            <option value="Unit" @if ($b->satuan == 'Unit') selected @endif>Unit</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -512,70 +508,69 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-    <div class="row g-3">
-        <!-- Satuan -->
-        <div class="col-md-6">
-            <label class="form-label">Satuan</label>
-            <select name="satuan" class="form-select">
-                <option value="">-- Semua Satuan --</option>
-                <option value="Pcs" @if (request('satuan') == 'Pcs') selected @endif>Pcs</option>
-                <option value="Box" @if (request('satuan') == 'Box') selected @endif>Box</option>
-                <option value="Pack" @if (request('satuan') == 'Pack') selected @endif>Pack</option>
-                <option value="Rim" @if (request('satuan') == 'Rim') selected @endif>Rim</option>
-                <option value="Unit" @if (request('satuan') == 'Unit') selected @endif>Unit</option>
-            </select>
-        </div>
+                    <div class="row g-3">
+                        <!-- Satuan -->
+                        <div class="col-md-6">
+                            <label class="form-label">Satuan</label>
+                            <select name="satuan" class="form-select">
+                                <option value="">-- Semua Satuan --</option>
+                                <option value="Pcs" @if (request('satuan') == 'Pcs') selected @endif>Pcs</option>
+                                <option value="Box" @if (request('satuan') == 'Box') selected @endif>Box</option>
+                                <option value="Pack" @if (request('satuan') == 'Pack') selected @endif>Pack</option>
+                                <option value="Rim" @if (request('satuan') == 'Rim') selected @endif>Rim</option>
+                                <option value="Unit" @if (request('satuan') == 'Unit') selected @endif>Unit</option>
+                            </select>
+                        </div>
 
-        <!-- Rentang Harga -->
-        <div class="col-md-6">
-            <label class="form-label">Rentang Harga</label>
-            <div class="d-flex gap-2">
-                <input type="number" name="harga_min" class="form-control"
-                    placeholder="Min Harga" value="{{ request('harga_min') }}" step="0.01" min="0">
-                <input type="number" name="harga_max" class="form-control"
-                    placeholder="Max Harga" value="{{ request('harga_max') }}" step="0.01" min="0">
-            </div>
-        </div>
+                        <!-- Rentang Harga -->
+                        <div class="col-md-6">
+                            <label class="form-label">Rentang Harga</label>
+                            <div class="d-flex gap-2">
+                                <input type="number" name="harga_min" class="form-control"
+                                    placeholder="Min Harga" value="{{ request('harga_min') }}" step="0.01" min="0">
+                                <input type="number" name="harga_max" class="form-control"
+                                    placeholder="Max Harga" value="{{ request('harga_max') }}" step="0.01" min="0">
+                            </div>
+                        </div>
 
-        <!-- Kategori -->
-        <div class="col-md-6">
-            <label class="form-label">Kategori</label>
-            <select name="kategori_id" class="form-select">
-                <option value="">-- Semua Kategori --</option>
-                @foreach ($kategori as $k)
-                    <option value="{{ $k->id }}" @if (request('kategori_id') == $k->id) selected @endif>
-                        {{ $k->nama }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
+                        <!-- Kategori -->
+                        <div class="col-md-6">
+                            <label class="form-label">Kategori</label>
+                            <select name="kategori_id" class="form-select">
+                                <option value="">-- Semua Kategori --</option>
+                                @foreach ($kategori as $k)
+                                    <option value="{{ $k->id }}" @if (request('kategori_id') == $k->id) selected @endif>
+                                        {{ $k->nama }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
 
-        <!-- Stok -->
-        <div class="col-md-6">
-            <label class="form-label">Stok</label>
-            <div class="d-flex gap-2">
-                <input type="number" name="stok_min" class="form-control"
-                    placeholder="Stok Minimum" value="{{ request('stok_min') }}" min="0">
-                <input type="number" name="stok_max" class="form-control"
-                    placeholder="Stok Maksimal" value="{{ request('stok_max') }}" min="0">
-            </div>
-        </div>
+                        <!-- Stok -->
+                        <div class="col-md-6">
+                            <label class="form-label">Stok</label>
+                            <div class="d-flex gap-2">
+                                <input type="number" name="stok_min" class="form-control"
+                                    placeholder="Stok Minimum" value="{{ request('stok_min') }}" min="0">
+                                <input type="number" name="stok_max" class="form-control"
+                                    placeholder="Stok Maksimal" value="{{ request('stok_max') }}" min="0">
+                            </div>
+                        </div>
 
-        <!-- Gudang -->
-        <div class="col-md-12">
-            <label class="form-label">Gudang</label>
-            <select name="gudang_id" class="form-select">
-                <option value="">-- Semua Gudang --</option>
-                @foreach ($gudang as $g)
-                    <option value="{{ $g->id }}" @if (request('gudang_id') == $g->id) selected @endif>
-                        {{ $g->nama }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-    </div>
-</div>
-
+                        <!-- Gudang -->
+                        <div class="col-md-12">
+                            <label class="form-label">Gudang</label>
+                            <select name="gudang_id" class="form-select">
+                                <option value="">-- Semua Gudang --</option>
+                                @foreach ($gudang as $g)
+                                    <option value="{{ $g->id }}" @if (request('gudang_id') == $g->id) selected @endif>
+                                        {{ $g->nama }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </div>
                 <div class="modal-footer">
                     <a href="{{ route('admin.datakeseluruhan.index') }}" class="btn btn-secondary">Reset Filter</a>
                     <button class="btn btn-primary" type="submit">Terapkan Filter</button>
@@ -585,27 +580,27 @@
     </div>
 
     <!-- Modal Konfirmasi Hapus -->
-<div class="modal fade" id="modalConfirmDelete" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <form method="POST" id="deleteForm" class="modal-content">
-            @csrf
-            @method('DELETE')
-            <div class="modal-header">
-                <h5 class="modal-title">Konfirmasi Hapus</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p id="deleteMessage">Apakah Anda yakin ingin menghapus data ini?</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-danger">Hapus</button>
-            </div>
-        </form>
+    <div class="modal fade" id="modalConfirmDelete" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form method="POST" id="deleteForm" class="modal-content">
+                @csrf
+                @method('DELETE')
+                <div class="modal-header">
+                    <h5 class="modal-title">Konfirmasi Hapus</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="deleteMessage">Apakah Anda yakin ingin menghapus data ini?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-danger">Hapus</button>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
 
-    {{-- JavaScript yang sudah diperbaiki --}}
+    {{-- JavaScript --}}
     <script>
         // Toggle detail function
         function toggleDetail(id) {
@@ -616,6 +611,77 @@
                 el.style.display = 'none';
             }
         }
+
+        // Confirm delete function
+        function confirmDelete(actionUrl, itemName) {
+            document.getElementById('deleteForm').setAttribute('action', actionUrl);
+            document.getElementById('deleteMessage').innerText =
+                "Apakah Anda yakin ingin menghapus " + itemName + "?";
+            let modal = new bootstrap.Modal(document.getElementById('modalConfirmDelete'));
+            modal.show();
+        }
+
+        // Format Rupiah function
+        function formatRupiah(angka) {
+            return angka.replace(/\D/g, "")
+                .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        function unformatRupiah(formatted) {
+            return formatted.replace(/\./g, "");
+        }
+
+        // Handle Tambah Barang Price Format
+        const hargaTambahInput = document.getElementById('hargaTambah');
+        const hargaTambahHidden = document.getElementById('hargaTambahHidden');
+        
+        if (hargaTambahInput && hargaTambahHidden) {
+            hargaTambahInput.addEventListener('input', function() {
+                const formatted = formatRupiah(this.value);
+                this.value = formatted;
+                hargaTambahHidden.value = unformatRupiah(formatted);
+            });
+
+            // Set initial value if exists
+            if (hargaTambahInput.value) {
+                const initialValue = unformatRupiah(hargaTambahInput.value);
+                hargaTambahHidden.value = initialValue;
+                hargaTambahInput.value = formatRupiah(initialValue);
+            }
+        }
+
+        // Handle Edit Barang Price Format
+        document.querySelectorAll('[id^="hargaEdit-"]').forEach(input => {
+            const kodeBarang = input.id.replace('hargaEdit-', '');
+            const hiddenInput = document.getElementById('hargaEditHidden-' + kodeBarang);
+            
+            if (hiddenInput) {
+                input.addEventListener('input', function() {
+                    const formatted = formatRupiah(this.value);
+                    this.value = formatted;
+                    hiddenInput.value = unformatRupiah(formatted);
+                });
+
+                // Set initial formatted value
+                if (hiddenInput.value) {
+                    input.value = formatRupiah(hiddenInput.value.toString());
+                }
+            }
+        });
+
+        // Auto-clean form before submit (backup solution)
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function() {
+                // Clean any remaining display price inputs
+                const displayInputs = form.querySelectorAll('input[name="harga_display"]');
+                displayInputs.forEach(input => {
+                    const hiddenInput = form.querySelector('input[name="harga_barang"]');
+                    if (hiddenInput) {
+                        hiddenInput.value = unformatRupiah(input.value);
+                    }
+                });
+            });
+        });
 
         // Autocomplete search functionality
         document.addEventListener('DOMContentLoaded', function() {
@@ -697,31 +763,29 @@
             }
 
             function showLoading() {
-                suggestionsContainer.innerHTML = '<div class="loading-suggestion">Mencari...</div>';
+                suggestionsContainer.innerHTML = '<div class="dropdown-item">Mencari...</div>';
                 suggestionsContainer.style.display = 'block';
             }
 
             function displaySuggestions(suggestions) {
                 if (suggestions.length === 0) {
                     suggestionsContainer.innerHTML = 
-                        '<div class="loading-suggestion">Tidak ada barang ditemukan</div>';
+                        '<div class="dropdown-item">Tidak ada barang ditemukan</div>';
                     return;
                 }
 
                 let html = '';
                 suggestions.forEach((item, index) => {
-                    const stockStatusClass = `stock-${item.stock_status}`;
+                    const stockStatusClass = item.stock_status === 'empty' ? 'text-danger' :
+                        item.stock_status === 'low' ? 'text-warning' : 'text-success';
                     const stockText = item.stock_status === 'empty' ? 'Habis' :
                         item.stock_status === 'low' ? 'Sedikit' : 'Tersedia';
 
                     html += `
-                        <div class="search-suggestion-item" data-index="${index}">
-                            <div class="suggestion-name">${item.nama}</div>
-                            <div class="suggestion-code">Kode: ${item.kode}</div>
-                            <div class="suggestion-meta">
-                                <small>Kategori: ${item.kategori} | Gudang: ${item.gudang} | Stok: ${item.stok} | 
-                                <span class="stock-status ${stockStatusClass}">${stockText}</span></small>
-                            </div>
+                        <div class="dropdown-item cursor-pointer" data-index="${index}" style="cursor: pointer;">
+                            <div class="fw-bold">${item.nama}</div>
+                            <small class="text-muted">Kode: ${item.kode} | Kategori: ${item.kategori} | Gudang: ${item.gudang}</small><br>
+                            <small>Stok: <span class="${stockStatusClass}">${item.stok} - ${stockText}</span></small>
                         </div>
                     `;
                 });
@@ -729,11 +793,18 @@
                 suggestionsContainer.innerHTML = html;
                 suggestionsContainer.style.display = 'block';
 
-                suggestionsContainer.querySelectorAll('.search-suggestion-item').forEach(item => {
-                    item.addEventListener('click', function() {
-                        const index = parseInt(this.dataset.index);
-                        selectSuggestion(index);
-                    });
+                suggestionsContainer.querySelectorAll('.dropdown-item').forEach(item => {
+                    if (item.dataset.index) {
+                        item.addEventListener('click', function() {
+                            const index = parseInt(this.dataset.index);
+                            selectSuggestion(index);
+                        });
+                        
+                        item.addEventListener('mouseenter', function() {
+                            activeSuggestionIndex = parseInt(this.dataset.index);
+                            updateActiveSuggestion();
+                        });
+                    }
                 });
             }
 
@@ -766,9 +837,10 @@
                 }
             }
 
-            function updateActiveSuggestion(suggestions) {
+            function updateActiveSuggestion() {
+                const suggestions = suggestionsContainer.querySelectorAll('.dropdown-item[data-index]');
                 suggestions.forEach((item, index) => {
-                    if (index === activeSuggestionIndex) {
+                    if (parseInt(item.dataset.index) === activeSuggestionIndex) {
                         item.classList.add('active');
                     } else {
                         item.classList.remove('active');
@@ -782,18 +854,26 @@
             });
 
             searchInput.addEventListener('keydown', function(e) {
-                const suggestions = suggestionsContainer.querySelectorAll('.search-suggestion-item');
+                const suggestions = suggestionsContainer.querySelectorAll('.dropdown-item[data-index]');
 
                 if (e.key === 'ArrowDown') {
                     e.preventDefault();
-                    activeSuggestionIndex = Math.min(activeSuggestionIndex + 1, suggestions.length - 1);
-                    updateActiveSuggestion(suggestions);
+                    if (suggestions.length > 0) {
+                        activeSuggestionIndex = activeSuggestionIndex < suggestions.length - 1 
+                            ? activeSuggestionIndex + 1 
+                            : 0;
+                        updateActiveSuggestion();
+                    }
                 } else if (e.key === 'ArrowUp') {
                     e.preventDefault();
-                    activeSuggestionIndex = Math.max(activeSuggestionIndex - 1, -1);
-                    updateActiveSuggestion(suggestions);
+                    if (suggestions.length > 0) {
+                        activeSuggestionIndex = activeSuggestionIndex > 0 
+                            ? activeSuggestionIndex - 1 
+                            : suggestions.length - 1;
+                        updateActiveSuggestion();
+                    }
                 } else if (e.key === 'Enter') {
-                    if (activeSuggestionIndex >= 0) {
+                    if (activeSuggestionIndex >= 0 && suggestions.length > 0) {
                         e.preventDefault();
                         selectSuggestion(activeSuggestionIndex);
                     }
@@ -814,85 +894,15 @@
                 }
             });
 
-            const gudangSelects = document.querySelectorAll('select[name="gudang_id"]');
-            gudangSelects.forEach(select => {
-                select.addEventListener('change', function() {
+            // Listen to main gudang filter changes only
+            const mainGudangSelect = document.querySelector('#modalFilterBarang select[name="gudang_id"]');
+            if (mainGudangSelect) {
+                mainGudangSelect.addEventListener('change', function() {
                     if (searchInput.value.trim().length >= 2) {
                         fetchSuggestions(searchInput.value.trim());
                     }
                 });
-            });
-        });
-
-        // Confirm delete function
-        function confirmDelete(actionUrl, itemName) {
-            document.getElementById('deleteForm').setAttribute('action', actionUrl);
-            document.getElementById('deleteMessage').innerText =
-                "Apakah Anda yakin ingin menghapus " + itemName + "?";
-            let modal = new bootstrap.Modal(document.getElementById('modalConfirmDelete'));
-            modal.show();
-        }
-
-        // Format Rupiah function - DIPERBAIKI
-        function formatRupiah(angka) {
-            return angka.replace(/\D/g, "")
-                .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-        }
-
-        function unformatRupiah(formatted) {
-            return formatted.replace(/\./g, "");
-        }
-
-        // Handle Tambah Barang Price Format
-        const hargaTambahInput = document.getElementById('hargaTambah');
-        const hargaTambahHidden = document.getElementById('hargaTambahHidden');
-        
-        if (hargaTambahInput && hargaTambahHidden) {
-            hargaTambahInput.addEventListener('input', function() {
-                const formatted = formatRupiah(this.value);
-                this.value = formatted;
-                hargaTambahHidden.value = unformatRupiah(formatted);
-            });
-
-            // Set initial value if exists
-            if (hargaTambahInput.value) {
-                const initialValue = unformatRupiah(hargaTambahInput.value);
-                hargaTambahHidden.value = initialValue;
-                hargaTambahInput.value = formatRupiah(initialValue);
             }
-        }
-
-        // Handle Edit Barang Price Format
-        document.querySelectorAll('[id^="hargaEdit-"]').forEach(input => {
-            const id = input.id.replace('hargaEdit-', '');
-            const hiddenInput = document.getElementById('hargaEditHidden-' + id);
-            
-            if (hiddenInput) {
-                input.addEventListener('input', function() {
-                    const formatted = formatRupiah(this.value);
-                    this.value = formatted;
-                    hiddenInput.value = unformatRupiah(formatted);
-                });
-
-                // Set initial formatted value
-                if (hiddenInput.value) {
-                    input.value = formatRupiah(hiddenInput.value.toString());
-                }
-            }
-        });
-
-        // Auto-clean form before submit (backup solution)
-        document.querySelectorAll('form').forEach(form => {
-            form.addEventListener('submit', function() {
-                // Clean any remaining display price inputs
-                const displayInputs = form.querySelectorAll('input[name="harga_display"]');
-                displayInputs.forEach(input => {
-                    const hiddenInput = form.querySelector('input[name="harga"]');
-                    if (hiddenInput) {
-                        hiddenInput.value = unformatRupiah(input.value);
-                    }
-                });
-            });
         });
     </script>
 
