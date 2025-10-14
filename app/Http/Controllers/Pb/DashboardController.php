@@ -4,11 +4,13 @@ namespace App\Http\Controllers\Pb;
 
 use App\Http\Controllers\Controller;
 use App\Helpers\MenuHelper;
-use App\Models\RiwayatBarang;
 use App\Models\Barang;
 use App\Models\JenisBarang;
 use App\Models\Gudang;
 use App\Models\Kategori;
+use App\Models\PbStok;
+use App\Models\PjStok;
+use App\Models\TransaksiDistribusi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -19,28 +21,22 @@ class DashboardController extends Controller
     {
         $menu = MenuHelper::pbMenu();
 
-        // Ringkasan (default: semua data)
+        // Ringkasan (default: semua data) - FIXED: Ambil dari pb_stok
         $totalJenisBarang = JenisBarang::count();
-        $totalBarang = Barang::sum('stok');
+        $totalBarang = PbStok::sum('stok'); // Stok Pengelola Barang
 
         /* =========================================================
-         * GRAFIK BARANG KELUAR PER KATEGORI (default: semua data)
+         * GRAFIK BARANG KELUAR PER KATEGORI (DISTRIBUSI KE GUDANG)
          * =========================================================
-         * MASALAH YANG DITEMUKAN:
-         * 1. Query menggunakan whereHas pada relasi barang.kategori_id
-         *    padahal di riwayat_barang sudah ada kolom kategori_asal_id
-         * 2. Mapping gudang tidak lengkap (tidak ada Gudang Utama)
-         * 3. Data di database menunjukkan kategori_asal_id = 1 (Gudang Utama)
-         *    tapi tidak ada di mapping
+         * Menampilkan total distribusi barang ke setiap gudang
          */
 
-        // Mapping yang lengkap sesuai data di database
         $kategorMap = [
-            'Gudang Utama' => 'G. Utama',           // ID: 1
-            'Gudang ATK' => 'G. ATK',               // ID: 2
-            'Gudang Listrik' => 'G. Listrik',       // ID: 3
-            'Gudang Kebersihan' => 'G. Kebersihan', // ID: 4
-            'Gudang B Komputer' => 'G.B. Komputer'  // ID: 5
+            'Gudang Utama' => 'G. Utama',
+            'Gudang ATK' => 'G. ATK',
+            'Gudang Listrik' => 'G. Listrik',
+            'Gudang Kebersihan' => 'G. Kebersihan',
+            'Gudang B Komputer' => 'G.B. Komputer'
         ];
 
         $keluarPerKategoriLabels = [];
@@ -50,15 +46,8 @@ class DashboardController extends Controller
             $gudang = Gudang::where('nama', $gudangName)->first();
 
             if ($gudang) {
-                // Ambil semua kategori dari gudang ini
-                $kategoriIds = Kategori::where('gudang_id', $gudang->id)->pluck('id')->toArray();
-
-                // PERBAIKAN: Query langsung ke kategori_asal_id
-                // Karena di riwayat_barang sudah ada kolom kategori_asal_id
-                // Tidak perlu pakai whereHas ke barang
-                $total = RiwayatBarang::where('jenis_transaksi', 'distribusi')
-                    // ✅ BENAR - Melihat gudang tujuan
-                    ->where('gudang_tujuan_id', $gudang->id)
+                // Total distribusi ke gudang ini
+                $total = TransaksiDistribusi::where('id_gudang_tujuan', $gudang->id)
                     ->sum('jumlah');
             } else {
                 $total = 0;
@@ -81,11 +70,10 @@ class DashboardController extends Controller
         $totalsPerYear = [];
 
         foreach ($years as $y) {
-            // Hitung total harga: SUM(riwayat_barang.jumlah * barang.harga)
-            $totalHarga = RiwayatBarang::where('riwayat_barang.jenis_transaksi', 'distribusi')
-                ->join('barang', 'riwayat_barang.barang_id', '=', 'barang.id')
-                ->whereYear('riwayat_barang.tanggal', $y)
-                ->sum(DB::raw('riwayat_barang.jumlah * barang.harga'));
+            // Hitung total harga: SUM(transaksi_distribusi.jumlah * barang.harga_barang)
+            $totalHarga = TransaksiDistribusi::join('barang', 'transaksi_distribusi.kode_barang', '=', 'barang.kode_barang')
+                ->whereYear('transaksi_distribusi.tanggal', $y)
+                ->sum(DB::raw('transaksi_distribusi.jumlah * barang.harga_barang'));
 
             $totalsPerYear[] = (float) $totalHarga;
             $c = $this->getColorForYear($y);
@@ -127,16 +115,19 @@ class DashboardController extends Controller
         } elseif ($type === 'kategori') {
             return $this->filterKategoriData($filter);
         } else {
-            return $this->filterPengeluaranData($filter);
+            return $this->filterPengeluaanData($filter);
         }
     }
 
-    // Filter data ringkasan berdasarkan gudang
+    /**
+     * Filter data ringkasan berdasarkan gudang
+     * FIXED: Menggunakan pb_stok dan pj_stok
+     */
     private function filterRingkasanData($filter)
     {
         if ($filter === 'all') {
             $totalJenisBarang = JenisBarang::count();
-            $totalBarang = Barang::sum('stok');
+            $totalBarang = PbStok::sum('stok'); // Stok PB (pusat)
         } else {
             // Map filter ke nama gudang
             $gudangMap = [
@@ -150,18 +141,16 @@ class DashboardController extends Controller
             $gudangNama = $gudangMap[$filter] ?? null;
 
             if ($gudangNama) {
-                // Ambil gudang berdasarkan nama
                 $gudang = Gudang::where('nama', $gudangNama)->first();
 
                 if ($gudang) {
-                    // Hitung berdasarkan kategori yang berada di gudang tersebut
+                    // Hitung jenis barang berdasarkan kategori di gudang
                     $totalJenisBarang = JenisBarang::whereHas('kategori', function ($query) use ($gudang) {
                         $query->where('gudang_id', $gudang->id);
                     })->count();
 
-                    $totalBarang = Barang::whereHas('kategori', function ($query) use ($gudang) {
-                        $query->where('gudang_id', $gudang->id);
-                    })->sum('stok');
+                    // Hitung total stok dari PJ Stok untuk gudang ini
+                    $totalBarang = PjStok::where('id_gudang', $gudang->id)->sum('stok');
                 } else {
                     $totalJenisBarang = 0;
                     $totalBarang = 0;
@@ -178,15 +167,17 @@ class DashboardController extends Controller
         ]);
     }
 
-    // Filter data kategori berdasarkan rentang waktu
+    /**
+     * Filter data kategori berdasarkan rentang waktu
+     * FIXED: Menggunakan transaksi_distribusi
+     */
     private function filterKategoriData($filter)
     {
-        // PERBAIKAN: Tambahkan Gudang Utama
         $kategorMap = [
             'Gudang Utama' => 'G. Utama',
             'Gudang ATK' => 'G. ATK',
-            'Gudang Kebersihan' => 'G. Kebersihan',
             'Gudang Listrik' => 'G. Listrik',
+            'Gudang Kebersihan' => 'G. Kebersihan',
             'Gudang B Komputer' => 'G.B. Komputer'
         ];
 
@@ -207,16 +198,11 @@ class DashboardController extends Controller
         $data = [];
 
         foreach ($kategorMap as $gudangName => $kategoriLabel) {
-            // Cari ID gudang
             $gudang = Gudang::where('nama', $gudangName)->first();
 
             if ($gudang) {
-                // Ambil kategori dari gudang
-                $kategoriIds = Kategori::where('gudang_id', $gudang->id)->pluck('id')->toArray();
-
-                // PERBAIKAN: Query langsung ke kategori_asal_id
-                $query = RiwayatBarang::where('jenis_transaksi', 'distribusi')
-                    ->whereIn('kategori_asal_id', $kategoriIds);
+                // Query distribusi ke gudang ini
+                $query = TransaksiDistribusi::where('id_gudang_tujuan', $gudang->id);
 
                 // Tambahkan filter tanggal jika ada
                 if ($start) {
@@ -238,15 +224,18 @@ class DashboardController extends Controller
             'colors' => [
                 $this->getColorForKategori('Utama'),
                 $this->getColorForKategori('ATK'),
-                $this->getColorForKategori('Kebersihan'),
                 $this->getColorForKategori('Listrik'),
+                $this->getColorForKategori('Kebersihan'),
                 $this->getColorForKategori('Komputer')
             ],
             'range' => $start ? ['start' => $start->toDateString(), 'end' => $end->toDateString()] : null,
         ]);
     }
 
-    // Filter data pengeluaran per tahun (dalam total harga)
+    /**
+     * Filter data pengeluaran per tahun (dalam total harga)
+     * FIXED: Menggunakan transaksi_distribusi
+     */
     private function filterPengeluaranData($filter)
     {
         $currentYear = (int) date('Y');
@@ -264,11 +253,10 @@ class DashboardController extends Controller
         $colors = [];
 
         foreach ($years as $y) {
-            // Hitung total harga: SUM(jumlah * harga)
-            $totalHarga = RiwayatBarang::where('riwayat_barang.jenis_transaksi', 'distribusi')
-                ->join('barang', 'riwayat_barang.barang_id', '=', 'barang.id')
-                ->whereYear('riwayat_barang.tanggal', $y)
-                ->sum(DB::raw('riwayat_barang.jumlah * barang.harga'));
+            // Hitung total harga: SUM(jumlah * harga_barang)
+            $totalHarga = TransaksiDistribusi::join('barang', 'transaksi_distribusi.kode_barang', '=', 'barang.kode_barang')
+                ->whereYear('transaksi_distribusi.tanggal', $y)
+                ->sum(DB::raw('transaksi_distribusi.jumlah * barang.harga_barang'));
 
             $totals[] = (float) $totalHarga;
             $colors[$y] = $this->getColorForYear($y);
@@ -281,21 +269,25 @@ class DashboardController extends Controller
         ]);
     }
 
-    // Warna untuk setiap kategori
+    /**
+     * Warna untuk setiap kategori
+     */
     private function getColorForKategori($kategori)
     {
         $colors = [
-            'Utama' => '#6366F1',    // Indigo
-            'ATK' => '#3B82F6',      // Biru
+            'Utama' => '#6366F1',      // Indigo
+            'ATK' => '#3B82F6',        // Biru
+            'Listrik' => '#F59E0B',    // Kuning/Orange
             'Kebersihan' => '#10B981', // Hijau
-            'Listrik' => '#F59E0B',    // Kuning
             'Komputer' => '#8B5CF6'    // Ungu
         ];
 
         return $colors[$kategori] ?? '#6B7280';
     }
 
-    // Method untuk warna tahun
+    /**
+     * Warna untuk tahun
+     */
     private function getColorForYear($year)
     {
         $palette = ['#8B5CF6', '#F87171', '#06B6D4', '#10B981', '#F59E0B'];

@@ -4,11 +4,12 @@ namespace App\Http\Controllers\Pj;
 
 use App\Helpers\MenuHelper;
 use App\Http\Controllers\Controller;
-use App\Models\BarangKeluar;
+use App\Models\TransaksiBarangKeluar;
 use App\Models\Barang;
 use App\Models\JenisBarang;
 use App\Models\Gudang;
 use App\Models\Bagian;
+use App\Models\PjStok;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -26,35 +27,41 @@ class DashboardController extends Controller
 
         $pageTitle = $this->getDashboardTitle($gudang->nama);
 
+        // FIXED: Hitung jenis barang berdasarkan kategori di gudang
         $totalJenisBarang = JenisBarang::whereHas('kategori', function ($query) use ($gudang) {
             $query->where('gudang_id', $gudang->id);
         })->count();
 
-        $totalBarang = Barang::whereHas('kategori', function ($query) use ($gudang) {
-            $query->where('gudang_id', $gudang->id);
-        })->sum('stok');
+        // FIXED: Ambil total stok dari pj_stok untuk gudang ini
+        $totalBarang = PjStok::where('id_gudang', $gudang->id)->sum('stok');
 
         /* =========================================================
-         * GRAFIK PER BAGIAN - AMBIL DARI DATABASE
-         * ========================================================= */
+         * GRAFIK PER BAGIAN - BARANG KELUAR DARI GUDANG INI
+         * =========================================================
+         * Menggunakan transaksi_barang_keluar
+         */
 
-        // Ambil semua bagian dari database
-        $allBagian = Bagian::orderBy('id')->get();
+        // Ambil semua bagian dari database (exclude bagian internal)
+        $allBagian = Bagian::whereNotIn('nama', ['Umum', 'Gudang', 'Operasional'])
+            ->orderBy('id')
+            ->get();
         $bagianLabels = $allBagian->pluck('nama')->toArray();
 
-        // Hitung data keluar untuk setiap bagian dari tabel barang_keluars
+        // Hitung data keluar untuk setiap bagian
         $keluarData = [];
         foreach ($allBagian as $bagian) {
-            $total = BarangKeluar::where('barang_keluars.gudang_id', $gudang->id)
-                ->where('barang_keluars.bagian_id', $bagian->id)
-                ->sum('barang_keluars.jumlah');
+            $total = TransaksiBarangKeluar::where('id_gudang', $gudang->id)
+                ->where('bagian_id', $bagian->id)
+                ->sum('jumlah');
 
             $keluarData[] = (int) $total;
         }
 
         /* =========================================================
          * GRAFIK PENGELUARAN PER TAHUN
-         * ========================================================= */
+         * =========================================================
+         * Total barang keluar per tahun dari gudang ini
+         */
         $currentYear = (int) date('Y');
         $years = range($currentYear - 9, $currentYear);
         $pengeluaranLabels = $years;
@@ -62,13 +69,17 @@ class DashboardController extends Controller
         $colorsForYears = [];
         $colorsForYearsOrdered = [];
         $totalsPerYear = [];
+
         foreach ($years as $y) {
-            $totalsPerYear[] = (int) BarangKeluar::where('gudang_id', $gudang->id)
-                ->whereYear('tanggal', $y)->sum('jumlah');
+            $totalsPerYear[] = (int) TransaksiBarangKeluar::where('id_gudang', $gudang->id)
+                ->whereYear('tanggal', $y)
+                ->sum('jumlah');
+
             $c = $this->getColorForYear($y);
             $colorsForYears[$y] = $c;
             $colorsForYearsOrdered[] = $c;
         }
+
         $pengeluaranData = [
             [
                 'label' => 'Keluar',
@@ -94,11 +105,18 @@ class DashboardController extends Controller
     }
 
     /**
-     * Dapatkan gudang berdasarkan role user.
+     * Dapatkan gudang berdasarkan user yang login
+     * IMPROVED: Menggunakan gudang_id dari users table
      */
     private function getGudangForUser($user)
     {
-        $roleName = $user->role->nama;
+        // Cek apakah user memiliki gudang_id
+        if ($user->gudang_id) {
+            return Gudang::find($user->gudang_id);
+        }
+
+        // Fallback: mapping berdasarkan role (untuk backward compatibility)
+        $roleName = $user->role->nama ?? null;
 
         $mapping = [
             'Penanggung Jawab ATK' => 'Gudang ATK',
@@ -116,6 +134,9 @@ class DashboardController extends Controller
         return Gudang::where('nama', $gudangName)->first();
     }
 
+    /**
+     * Generate judul dashboard berdasarkan nama gudang
+     */
     private function getDashboardTitle($gudangName)
     {
         $mapping = [
@@ -152,17 +173,19 @@ class DashboardController extends Controller
             : $this->filterPengeluaranData($filter, $gudang);
     }
 
-    // Filter Ringkasan berdasarkan gudang
+    /**
+     * Filter Ringkasan berdasarkan gudang
+     * FIXED: Menggunakan pj_stok
+     */
     private function filterRingkasanData($gudangFilter, $gudang)
     {
-        // Untuk PJ, gudangFilter sebenarnya tidak digunakan karena gudang sudah tetap.
+        // Untuk PJ, gudang sudah tetap (tidak berubah)
         $totalJenisBarang = JenisBarang::whereHas('kategori', function ($query) use ($gudang) {
             $query->where('gudang_id', $gudang->id);
         })->count();
 
-        $totalBarang = Barang::whereHas('kategari', function ($query) use ($gudang) {
-            $query->where('gudang_id', $gudang->id);
-        })->sum('stok');
+        // FIXED: Typo 'kategari' -> 'kategori' dan gunakan pj_stok
+        $totalBarang = PjStok::where('id_gudang', $gudang->id)->sum('stok');
 
         return response()->json([
             'totalJenisBarang' => (int) $totalJenisBarang,
@@ -170,11 +193,16 @@ class DashboardController extends Controller
         ]);
     }
 
-    // Per Bagian → kirim juga rentang tanggal untuk badge
+    /**
+     * Filter data per bagian dengan rentang waktu
+     * FIXED: Menggunakan transaksi_barang_keluar
+     */
     private function filterBagianData($filter, $gudang)
     {
-        // Ambil semua bagian dari database
-        $allBagian = Bagian::orderBy('id')->get();
+        // Ambil semua bagian (exclude internal)
+        $allBagian = Bagian::whereNotIn('nama', ['Umum', 'Gudang', 'Operasional'])
+            ->orderBy('id')
+            ->get();
         $bagianLabels = $allBagian->pluck('nama')->toArray();
 
         $start = null;
@@ -183,27 +211,26 @@ class DashboardController extends Controller
         // Tentukan rentang waktu filter
         if ($filter === 'week') {
             $start = Carbon::now()->subWeek();
-            $end = Carbon::now();
         } elseif ($filter === 'month') {
             $start = Carbon::now()->subMonth();
-            $end = Carbon::now();
         } elseif ($filter === 'year') {
             $start = Carbon::now()->subYear();
-            $end = Carbon::now();
         }
+        $end = Carbon::now();
 
         // Hitung data keluar untuk setiap bagian dengan filter waktu
         $keluarData = [];
         foreach ($allBagian as $bagian) {
-            $q = BarangKeluar::where('barang_keluars.gudang_id', $gudang->id)
-                ->where('barang_keluars.bagian_id', $bagian->id);
+            $q = TransaksiBarangKeluar::where('id_gudang', $gudang->id)
+                ->where('bagian_id', $bagian->id);
 
             // Terapkan filter waktu jika ada
-            if ($start && $end) {
-                $q->whereBetween('barang_keluars.tanggal', [$start, $end]);
+            if ($start) {
+                $q->where('tanggal', '>=', $start)
+                    ->where('tanggal', '<=', $end);
             }
 
-            $total = $q->sum('barang_keluars.jumlah');
+            $total = $q->sum('jumlah');
             $keluarData[] = (int) $total;
         }
 
@@ -214,7 +241,10 @@ class DashboardController extends Controller
         ]);
     }
 
-    // Filter Pengeluaran per Tahun
+    /**
+     * Filter Pengeluaran per Tahun
+     * FIXED: Menggunakan transaksi_barang_keluar
+     */
     private function filterPengeluaranData($filter, $gudang)
     {
         $currentYear = (int) date('Y');
@@ -230,9 +260,12 @@ class DashboardController extends Controller
 
         $totals = [];
         $colors = [];
+
         foreach ($years as $y) {
-            $totals[] = (int) BarangKeluar::where('gudang_id', $gudang->id)
-                ->whereYear('tanggal', $y)->sum('jumlah');
+            $totals[] = (int) TransaksiBarangKeluar::where('id_gudang', $gudang->id)
+                ->whereYear('tanggal', $y)
+                ->sum('jumlah');
+
             $colors[$y] = $this->getColorForYear($y);
         }
 
@@ -243,9 +276,11 @@ class DashboardController extends Controller
         ]);
     }
 
+    /**
+     * Generate warna untuk tahun
+     */
     private function getColorForYear($year)
     {
-        // palet stabil; otomatis berulang
         $palette = ['#8B5CF6', '#F87171', '#06B6D4', '#10B981', '#F59E0B'];
         $currentYear = (int) date('Y');
         $idx = ($currentYear - (int) $year) % count($palette);

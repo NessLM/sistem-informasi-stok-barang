@@ -4,10 +4,13 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Helpers\MenuHelper;
-use App\Models\RiwayatBarang;
 use App\Models\Barang;
 use App\Models\JenisBarang;
 use App\Models\Gudang;
+use App\Models\PbStok;
+use App\Models\PjStok;
+use App\Models\TransaksiBarangKeluar;
+use App\Models\TransaksiDistribusi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -18,9 +21,9 @@ class DashboardController extends Controller
     {
         $menu = MenuHelper::adminMenu();
 
-        // Ringkasan (default: semua gudang)
+        // Ringkasan (default: semua gudang) - FIXED: Ambil dari pb_stok
         $totalJenisBarang = JenisBarang::count();
-        $totalBarang = Barang::sum('stok');
+        $totalBarang = PbStok::sum('stok'); // Stok dari Pengelola Barang
 
         // Data gudang untuk dropdown filter
         $gudangs = Gudang::orderBy('nama')->get();
@@ -28,42 +31,38 @@ class DashboardController extends Controller
         /* =========================================================
          * GRAFIK PER BAGIAN (KATEGORI TUJUAN) - HANYA KELUAR
          * =========================================================
-         * Dari riwayat_barang:
-         * - jenis_transaksi IN ('keluar', 'distribusi')
-         * - Grouping by kategori_tujuan->nama (sebagai "bagian")
-         * - Exclude "Umum" jika ada
+         * Dari transaksi_barang_keluar
+         * - Grouping by bagian_id
+         * - Exclude "Umum" dan "Gudang" dan "Operasional"
          */
-        $bagianRows = RiwayatBarang::select('kategori_tujuan_id', DB::raw('SUM(jumlah) AS total'))
-            ->whereIn('jenis_transaksi', ['keluar', 'distribusi'])
-            ->whereNotNull('kategori_tujuan_id')
-            ->groupBy('kategori_tujuan_id')
-            ->with('kategoriTujuan')
+        $bagianRows = TransaksiBarangKeluar::select('bagian_id', DB::raw('SUM(jumlah) AS total'))
+            ->whereNotNull('bagian_id')
+            ->groupBy('bagian_id')
+            ->with('bagian')
             ->get();
 
-        // Map ke nama kategori dan exclude "Umum"
+        // Map ke nama bagian dan exclude bagian tertentu
         $bagianData = $bagianRows->map(function ($row) {
-            $namaKategori = optional($row->kategoriTujuan)->nama ?? 'Tidak Diketahui';
+            $namaBagian = optional($row->bagian)->nama ?? 'Tidak Diketahui';
             return [
-                'bagian' => $namaKategori,
+                'bagian' => $namaBagian,
                 'total' => (int) $row->total
             ];
         })
             ->filter(function ($item) {
-                // Exclude "Umum" (case-insensitive)
-                return !preg_match('/umum/i', $item['bagian']);
+                // Exclude bagian tertentu (case-insensitive)
+                return !preg_match('/^(umum|gudang|operasional)$/i', $item['bagian']);
             })
-            ->sortBy('bagian') // Sort alfabetis
+            ->sortBy('bagian')
             ->values();
 
-        // Extract labels dan data
         $bagianLabels = $bagianData->pluck('bagian')->values();
         $keluarData = $bagianData->pluck('total')->values();
 
         /* =========================================================
          * GRAFIK PENGELUARAN PER TAHUN (DALAM TOTAL HARGA)
          * =========================================================
-         * Perhitungan: SUM(riwayat_barang.jumlah * barang.harga)
-         * Dari riwayat_barang dengan jenis_transaksi = 'distribusi'
+         * Perhitungan: SUM(transaksi_distribusi.jumlah * barang.harga_barang)
          */
         $currentYear = (int) date('Y');
         $years = range($currentYear - 9, $currentYear);
@@ -74,10 +73,9 @@ class DashboardController extends Controller
         $totalsPerYear = [];
 
         foreach ($years as $y) {
-            $totalHarga = RiwayatBarang::where('riwayat_barang.jenis_transaksi', 'distribusi')
-                ->join('barang', 'riwayat_barang.barang_id', '=', 'barang.id')
-                ->whereYear('riwayat_barang.tanggal', $y)
-                ->sum(DB::raw('riwayat_barang.jumlah * barang.harga'));
+            $totalHarga = TransaksiDistribusi::join('barang', 'transaksi_distribusi.kode_barang', '=', 'barang.kode_barang')
+                ->whereYear('transaksi_distribusi.tanggal', $y)
+                ->sum(DB::raw('transaksi_distribusi.jumlah * barang.harga_barang'));
 
             $totalsPerYear[] = (float) $totalHarga;
 
@@ -126,14 +124,14 @@ class DashboardController extends Controller
 
     /**
      * Filter Ringkasan berdasarkan gudang
-     * Tetap menggunakan Barang dan JenisBarang (master data)
+     * FIXED: Menggunakan pb_stok dan pj_stok
      */
     private function filterRingkasanData($gudangFilter)
     {
         if ($gudangFilter === 'all') {
-            // Semua gudang
+            // Semua gudang - ambil dari PB Stok (stok pusat)
             $totalJenisBarang = JenisBarang::count();
-            $totalBarang = Barang::sum('stok');
+            $totalBarang = PbStok::sum('stok');
         } else {
             // Filter berdasarkan gudang tertentu
             $gudang = Gudang::where('nama', $gudangFilter)->first();
@@ -150,10 +148,8 @@ class DashboardController extends Controller
                 $query->where('gudang_id', $gudang->id);
             })->count();
 
-            // Hitung total barang berdasarkan gudang
-            $totalBarang = Barang::whereHas('kategori', function ($query) use ($gudang) {
-                $query->where('gudang_id', $gudang->id);
-            })->sum('stok');
+            // Hitung total barang dari PJ Stok untuk gudang tertentu
+            $totalBarang = PjStok::where('id_gudang', $gudang->id)->sum('stok');
         }
 
         return response()->json([
@@ -164,26 +160,24 @@ class DashboardController extends Controller
 
     /**
      * Filter Bagian berdasarkan rentang waktu
-     * Dari riwayat_barang dengan kategori_tujuan sebagai "bagian"
+     * FIXED: Dari transaksi_barang_keluar dengan bagian
      */
     private function filterBagianData($filter)
     {
-        // Ambil semua kategori yang pernah jadi tujuan (baseline labels)
-        $allTimeKategori = RiwayatBarang::whereIn('jenis_transaksi', ['keluar', 'distribusi'])
-            ->whereNotNull('kategori_tujuan_id')
-            ->select('kategori_tujuan_id')
-            ->groupBy('kategori_tujuan_id')
-            ->with('kategoriTujuan')
+        // Ambil semua bagian yang pernah menerima barang (baseline labels)
+        $allTimeBagian = TransaksiBarangKeluar::whereNotNull('bagian_id')
+            ->select('bagian_id')
+            ->groupBy('bagian_id')
+            ->with('bagian')
             ->get()
-            ->map(fn($row) => optional($row->kategoriTujuan)->nama ?? 'Tidak Diketahui')
-            ->filter(fn($nama) => !preg_match('/umum/i', $nama))
+            ->map(fn($row) => optional($row->bagian)->nama ?? 'Tidak Diketahui')
+            ->filter(fn($nama) => !preg_match('/^(umum|gudang|operasional)$/i', $nama))
             ->unique()
             ->sort()
             ->values();
 
         // Query dengan filter waktu
-        $q = RiwayatBarang::whereIn('jenis_transaksi', ['keluar', 'distribusi'])
-            ->whereNotNull('kategori_tujuan_id');
+        $q = TransaksiBarangKeluar::whereNotNull('bagian_id');
 
         $start = null;
         $end = null;
@@ -200,23 +194,23 @@ class DashboardController extends Controller
         }
         $end = Carbon::now();
 
-        // Hitung total per kategori
+        // Hitung total per bagian
         $keluarData = [];
-        foreach ($allTimeKategori as $kategoriNama) {
-            // Cari kategori_id dari nama
-            $kategoriIds = \App\Models\Kategori::where('nama', $kategoriNama)
+        foreach ($allTimeBagian as $bagianNama) {
+            // Cari bagian_id dari nama
+            $bagianIds = \App\Models\Bagian::where('nama', $bagianNama)
                 ->pluck('id')
                 ->toArray();
 
             $total = (clone $q)
-                ->whereIn('kategori_tujuan_id', $kategoriIds)
+                ->whereIn('bagian_id', $bagianIds)
                 ->sum('jumlah');
 
             $keluarData[] = (int) $total;
         }
 
         return response()->json([
-            'labels' => $allTimeKategori,
+            'labels' => $allTimeBagian,
             'keluar' => $keluarData,
             'range' => $start ? ['start' => $start->toDateString(), 'end' => $end->toDateString()] : null,
         ]);
@@ -224,7 +218,7 @@ class DashboardController extends Controller
 
     /**
      * Filter Pengeluaran per Tahun (dalam total harga)
-     * Dari riwayat_barang
+     * FIXED: Dari transaksi_distribusi
      */
     private function filterPengeluaranData($filter)
     {
@@ -243,11 +237,10 @@ class DashboardController extends Controller
         $colors = [];
 
         foreach ($years as $y) {
-            // Hitung total harga: SUM(jumlah * harga)
-            $totalHarga = RiwayatBarang::where('riwayat_barang.jenis_transaksi', 'distribusi')
-                ->join('barang', 'riwayat_barang.barang_id', '=', 'barang.id')
-                ->whereYear('riwayat_barang.tanggal', $y)
-                ->sum(DB::raw('riwayat_barang.jumlah * barang.harga'));
+            // Hitung total harga: SUM(jumlah * harga_barang)
+            $totalHarga = TransaksiDistribusi::join('barang', 'transaksi_distribusi.kode_barang', '=', 'barang.kode_barang')
+                ->whereYear('transaksi_distribusi.tanggal', $y)
+                ->sum(DB::raw('transaksi_distribusi.jumlah * barang.harga_barang'));
 
             $totals[] = (float) $totalHarga;
             $colors[$y] = $this->getColorForYear($y);
