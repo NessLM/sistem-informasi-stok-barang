@@ -1,6 +1,3 @@
-// ==========================================
-// File: app/Models/Kategori.php (Update)
-// ==========================================
 <?php
 
 namespace App\Models;
@@ -35,4 +32,5 @@ class Kategori extends Model
     public function pjStok()
     {
         return $this->hasMany(PjStok::class, 'id_kategori');
-  
+    }
+}

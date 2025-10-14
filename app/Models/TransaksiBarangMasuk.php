@@ -1,6 +1,3 @@
-// ==========================================
-// File: app/Models/TransaksiBarangMasuk.php
-// ==========================================
 <?php
 
 namespace App\Models;
