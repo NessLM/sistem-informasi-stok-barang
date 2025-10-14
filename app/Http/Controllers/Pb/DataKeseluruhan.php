@@ -6,7 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Kategori;
 use App\Models\Barang;
 use App\Models\Gudang;
-use App\Models\StokGudang;
+use App\Models\PbStok;
+use App\Models\PjStok;
 use Illuminate\Http\Request;
 use App\Helpers\MenuHelper;
 
@@ -30,15 +31,14 @@ class DataKeseluruhan extends Controller
             ]);
         }
 
-        // Filter kategori hanya dari Gudang Utama dengan eager load barang dan stokGudang
+        // Filter kategori hanya dari Gudang Utama dengan eager load barang dan stok
         $kategoriQuery = Kategori::with([
             'barang' => function ($q) use ($search) {
                 if ($search) {
-                    $q->where('nama', 'like', "%{$search}%")
-                        ->orWhere('kode', 'like', "%{$search}%");
+                    $q->where('nama_barang', 'like', "%{$search}%")
+                        ->orWhere('kode_barang', 'like', "%{$search}%");
                 }
-                // Eager load stokGudang untuk setiap barang
-                $q->with('stokGudang');
+                $q->with(['pbStok', 'pjStok']);
             },
             'gudang'
         ])->where('gudang_id', $gudangUtama->id);
@@ -98,10 +98,10 @@ class DataKeseluruhan extends Controller
         }
 
         // Query barang dengan relasi kategori dan gudang
-        $barangQuery = Barang::with(['kategori.gudang'])
+        $barangQuery = Barang::with(['kategori.gudang', 'pbStok', 'pjStok'])
             ->where(function ($q) use ($query) {
-                $q->where('nama', 'like', "%{$query}%")
-                    ->orWhere('kode', 'like', "%{$query}%");
+                $q->where('nama_barang', 'like', "%{$query}%")
+                    ->orWhere('kode_barang', 'like', "%{$query}%");
             });
 
         // Filter by gudang jika ada
@@ -114,12 +114,12 @@ class DataKeseluruhan extends Controller
         $barang = $barangQuery->limit(10)->get();
 
         $results = $barang->map(function ($item) use ($gudangId) {
-            // Ambil stok dari tabel stok_gudang berdasarkan gudang_id
-            $stokGudang = StokGudang::where('barang_id', $item->id)
-                ->where('gudang_id', $gudangId)
+            // Ambil stok dari tabel pj_stok berdasarkan id_gudang
+            $pjStok = PjStok::where('kode_barang', $item->kode_barang)
+                ->where('id_gudang', $gudangId)
                 ->first();
             
-            $stok = $stokGudang ? $stokGudang->stok : 0;
+            $stok = $pjStok ? $pjStok->stok : 0;
 
             // Tentukan status stok
             $stockStatus = 'available';
@@ -130,9 +130,9 @@ class DataKeseluruhan extends Controller
             }
 
             return [
-                'id' => $item->id,
-                'nama' => $item->nama,
-                'kode' => $item->kode,
+                'id' => $item->kode_barang,
+                'nama' => $item->nama_barang,
+                'kode' => $item->kode_barang,
                 'stok' => $stok,
                 'kategori' => $item->kategori->nama ?? '-',
                 'gudang' => $item->kategori->gudang->nama ?? '-',
@@ -141,7 +141,7 @@ class DataKeseluruhan extends Controller
         })->filter(function ($item) {
             // Filter: hanya tampilkan barang yang stoknya > 0
             return $item['stok'] > 0;
-        })->values(); // Reset array keys setelah filter
+        })->values();
 
         return response()->json($results);
     }
@@ -169,14 +169,14 @@ class DataKeseluruhan extends Controller
     /**
      * Helper: Mendapatkan stok barang di gudang tertentu
      */
-    private function getStokBarangGudang($barangId, $gudangId)
+    private function getStokBarangGudang($kodeBarang, $gudangId)
     {
         if (!$gudangId) {
             return 0;
         }
 
-        $stok = StokGudang::where('barang_id', $barangId)
-            ->where('gudang_id', $gudangId)
+        $stok = PjStok::where('kode_barang', $kodeBarang)
+            ->where('id_gudang', $gudangId)
             ->first();
 
         return $stok ? $stok->stok : 0;
@@ -187,7 +187,7 @@ class DataKeseluruhan extends Controller
      */
     private function getFilteredBarang(Request $request, $gudangId = null)
     {
-        $query = Barang::with(['kategori.gudang', 'stokGudang']);
+        $query = Barang::with(['kategori.gudang', 'pbStok', 'pjStok']);
 
         // Filter berdasarkan gudang
         if ($gudangId) {
@@ -195,30 +195,29 @@ class DataKeseluruhan extends Controller
                 $q->where('gudang_id', $gudangId);
             });
 
-            // Exclude barang dengan stok 0 di gudang tertentu
-            $query->whereHas('stokGudang', function ($q) use ($gudangId) {
-                $q->where('gudang_id', $gudangId)
+            // Exclude barang dengan stok 0 di gudang tertentu menggunakan PjStok
+            $query->whereHas('pjStok', function ($q) use ($gudangId) {
+                $q->where('id_gudang', $gudangId)
                   ->where('stok', '>', 0);
-            }, '>', 0);
+            }, '>=', 1);
         }
 
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('nama', 'like', "%{$search}%")
-                    ->orWhere('kode', 'like', "%{$search}%");
+                $q->where('nama_barang', 'like', "%{$search}%")
+                    ->orWhere('kode_barang', 'like', "%{$search}%");
             });
         }
 
         if ($request->filled('kode')) {
-            $query->where('kode', 'like', "%{$request->kode}%");
+            $query->where('kode_barang', 'like', "%{$request->kode}%");
         }
 
-        // Filter stok berdasarkan StokGudang
         if ($request->filled('stok_min') || $request->filled('stok_max')) {
-            $query->whereHas('stokGudang', function ($q) use ($request, $gudangId) {
+            $query->whereHas('pjStok', function ($q) use ($request, $gudangId) {
                 if ($gudangId) {
-                    $q->where('gudang_id', $gudangId);
+                    $q->where('id_gudang', $gudangId);
                 }
                 if ($request->filled('stok_min')) {
                     $q->where('stok', '>=', (int) $request->stok_min);
@@ -230,7 +229,7 @@ class DataKeseluruhan extends Controller
         }
 
         if ($request->filled('kategori_id')) {
-            $query->where('kategori_id', $request->kategori_id);
+            $query->where('id_kategori', $request->kategori_id);
         }
 
         if ($request->filled('satuan')) {
@@ -238,21 +237,14 @@ class DataKeseluruhan extends Controller
         }
 
         if ($request->filled('harga_min') && $request->filled('harga_max')) {
-            $query->whereBetween('harga', [
+            $query->whereBetween('harga_barang', [
                 (float) $request->harga_min,
                 (float) $request->harga_max,
             ]);
         } elseif ($request->filled('harga_min')) {
-            $query->where('harga', '>=', (float) $request->harga_min);
+            $query->where('harga_barang', '>=', (float) $request->harga_min);
         } elseif ($request->filled('harga_max')) {
-            $query->where('harga', '<=', (float) $request->harga_max);
-        }
-
-        if ($request->filled('nomor_awal')) {
-            $query->where('id', '>=', (int) $request->nomor_awal);
-        }
-        if ($request->filled('nomor_akhir')) {
-            $query->where('id', '<=', (int) $request->nomor_akhir);
+            $query->where('harga_barang', '<=', (float) $request->harga_max);
         }
 
         return $query->get();

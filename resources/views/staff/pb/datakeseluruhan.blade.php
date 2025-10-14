@@ -149,17 +149,6 @@
                             $title = 'Data Gudang ' . $gudangNama;
                         }
                     }
-                    
-                    $currentPath = request()->path();
-                    if (str_contains($currentPath, '/atk')) {
-                        $title = 'Data Gudang ATK';
-                    } elseif (str_contains($currentPath, '/listrik')) {
-                        $title = 'Data Gudang Listrik';
-                    } elseif (str_contains($currentPath, '/kebersihan')) {
-                        $title = 'Data Gudang Kebersihan';
-                    } elseif (str_contains($currentPath, '/komputer')) {
-                        $title = 'Data Gudang Komputer';
-                    }
                 @endphp
                 <h4>{{ $title }}</h4>
                 <div class="d-flex flex-wrap gap-2">
@@ -192,8 +181,6 @@
                     request()->filled('kategori_id') ||
                     request()->filled('gudang_id') ||
                     request()->filled('satuan') ||
-                    request()->filled('nomor_awal') ||
-                    request()->filled('nomor_akhir') ||
                     request()->filled('harga_min') ||
                     request()->filled('harga_max'))
                 <h5 class="mt-3">Hasil Pencarian</h5>
@@ -214,20 +201,30 @@
                             <tbody>
                                 @foreach ($barang as $i => $b)
                                     @php
-                                        $stokGudang = \App\Models\StokGudang::where('barang_id', $b->id)
-                                            ->where('gudang_id', $selectedGudang->id)
+                                        $pjStok = $b->pjStok()
+                                            ->where('id_gudang', $selectedGudang->id)
                                             ->first();
-                                        $stokTersedia = $stokGudang ? $stokGudang->stok : 0;
+                                        $stokTersedia = $pjStok ? $pjStok->stok : 0;
                                     @endphp
                                     @if ($stokTersedia > 0)
                                         <tr @if ($stokTersedia < 10) class="row-low-stock" @endif>
                                             <td>{{ $i + 1 }}</td>
-                                            <td>{{ $b->nama }}</td>
-                                            <td>{{ $b->kode }}</td>
+                                            <td>{{ $b->nama_barang }}</td>
+                                            <td>{{ $b->kode_barang }}</td>
                                             <td>{{ $stokTersedia }}</td>
                                             <td>{{ $b->satuan }}</td>
                                             <td>{{ $b->kategori->nama ?? '-' }}</td>
-                                            <td>...</td>
+                                            <td>
+                                                <button type="button"
+                                                    class="btn btn-primary btn-sm"
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#modalKelolaBarang"
+                                                    data-id="{{ $b->kode_barang }}"
+                                                    data-nama="{{ $b->nama_barang }}"
+                                                    data-kode="{{ $b->kode_barang }}">
+                                                    <i class="bi bi-box-seam"></i> Kelola
+                                                </button>
+                                            </td>
                                         </tr>
                                     @endif
                                 @endforeach
@@ -248,8 +245,6 @@
                     !request()->filled('kategori_id') &&
                     !request()->filled('gudang_id') &&
                     !request()->filled('satuan') &&
-                    !request()->filled('nomor_awal') &&
-                    !request()->filled('nomor_akhir') &&
                     !request()->filled('harga_min') &&
                     !request()->filled('harga_max'))
                 <div class="table-responsive mt-3">
@@ -277,10 +272,10 @@
                                     <td colspan="2">
                                         @php
                                             $barangFiltered = $k->barang->filter(function($item) use ($k) {
-                                                $stokGudang = \App\Models\StokGudang::where('barang_id', $item->id)
-                                                    ->where('gudang_id', $k->gudang_id)
+                                                $pjStok = $item->pjStok()
+                                                    ->where('id_gudang', $k->gudang_id)
                                                     ->first();
-                                                $stokTersedia = $stokGudang ? $stokGudang->stok : 0;
+                                                $stokTersedia = $pjStok ? $pjStok->stok : 0;
                                                 return $stokTersedia > 0;
                                             });
                                         @endphp
@@ -299,14 +294,14 @@
                                                     <tbody>
                                                         @foreach ($barangFiltered as $item)
                                                             @php
-                                                                $stokGudang = \App\Models\StokGudang::where('barang_id', $item->id)
-                                                                    ->where('gudang_id', $k->gudang_id)
+                                                                $pjStok = $item->pjStok()
+                                                                    ->where('id_gudang', $k->gudang_id)
                                                                     ->first();
-                                                                $stokTersedia = $stokGudang ? $stokGudang->stok : 0;
+                                                                $stokTersedia = $pjStok ? $pjStok->stok : 0;
                                                             @endphp
                                                             <tr @if ($stokTersedia < 10) class="row-low-stock" @endif>
-                                                                <td>{{ $item->kode }}</td>
-                                                                <td>{{ $item->nama }}</td>
+                                                                <td>{{ $item->kode_barang }}</td>
+                                                                <td>{{ $item->nama_barang }}</td>
                                                                 <td>{{ $stokTersedia }}</td>
                                                                 <td>{{ $item->satuan }}</td>
                                                                 <td>
@@ -314,9 +309,9 @@
                                                                         class="btn btn-primary btn-sm"
                                                                         data-bs-toggle="modal" 
                                                                         data-bs-target="#modalKelolaBarang"
-                                                                        data-id="{{ $item->id }}"
-                                                                        data-nama="{{ $item->nama }}"
-                                                                        data-kode="{{ $item->kode }}">
+                                                                        data-id="{{ $item->kode_barang }}"
+                                                                        data-nama="{{ $item->nama_barang }}"
+                                                                        data-kode="{{ $item->kode_barang }}">
                                                                         <i class="bi bi-box-seam"></i> Kelola
                                                                     </button>
                                                                 </td>
@@ -369,7 +364,7 @@
                     <div class="tab-pane fade show active" id="content-barang-masuk" role="tabpanel">
                         <form method="POST" id="formBarangMasuk" enctype="multipart/form-data">
                             @csrf
-                            <input type="hidden" name="barang_id" id="barangMasukId">
+                            <input type="hidden" name="kode_barang" id="barangMasukKode">
                             
                             <div class="row g-3">
                                 <div class="col-md-6">
@@ -414,7 +409,7 @@
                     <div class="tab-pane fade" id="content-distribusi" role="tabpanel">
                         <form method="POST" id="formDistribusi" enctype="multipart/form-data">
                             @csrf
-                            <input type="hidden" name="barang_id" id="distribusiBarangId">
+                            <input type="hidden" name="kode_barang" id="distribusiBarangKode">
                             
                             <div class="row g-3">
                                 <div class="col-md-6">
@@ -533,18 +528,6 @@
                                     placeholder="Stok Maksimal" value="{{ request('stok_max') }}" min="0">
                             </div>
                         </div>
-
-                        <div class="col-md-12">
-                            <label class="form-label">Gudang</label>
-                            <select name="gudang_id" class="form-select">
-                                <option value="">-- Semua Gudang --</option>
-                                @foreach ($gudang as $g)
-                                    <option value="{{ $g->id }}" @if (request('gudang_id') == $g->id) selected @endif>
-                                        {{ $g->nama }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -580,40 +563,12 @@
             }
 
             function getActiveGudangId() {
-                const modalGudangSelect = document.querySelector('#modalFilterBarang select[name="gudang_id"]');
-                if (modalGudangSelect && modalGudangSelect.value) {
-                    return modalGudangSelect.value;
-                }
-
+                // Untuk PB, selalu gunakan Gudang Utama
                 const urlParams = new URLSearchParams(window.location.search);
                 if (urlParams.get('gudang_id')) {
                     return urlParams.get('gudang_id');
                 }
-
-                const currentPath = window.location.pathname;
-                if (currentPath.includes('/atk')) {
-                    return getGudangIdByName('ATK');
-                } else if (currentPath.includes('/listrik')) {
-                    return getGudangIdByName('Listrik');
-                } else if (currentPath.includes('/kebersihan')) {
-                    return getGudangIdByName('Kebersihan');
-                } else if (currentPath.includes('/komputer')) {
-                    return getGudangIdByName('Komputer');
-                }
-
-                return null;
-            }
-
-            function getGudangIdByName(namaGudang) {
-                const gudangSelect = document.querySelector('select[name="gudang_id"]');
-                if (!gudangSelect) return null;
-
-                for (let option of gudangSelect.options) {
-                    if (option.text.toLowerCase().includes(namaGudang.toLowerCase())) {
-                        return option.value;
-                    }
-                }
-                return null;
+                return null; // Akan default ke Gudang Utama di backend
             }
 
             function fetchSuggestions(query) {
@@ -669,7 +624,7 @@
                             <div class="suggestion-name">${item.nama}</div>
                             <div class="suggestion-code">Kode: ${item.kode}</div>
                             <div class="suggestion-meta">
-                                <small>Kategori: ${item.kategori} | Gudang: ${item.gudang} | Stok: ${item.stok} | 
+                                <small>Kategori: ${item.kategori} | Stok: ${item.stok} | 
                                 <span class="stock-status ${stockStatusClass}">${stockText}</span></small>
                             </div>
                         </div>
@@ -699,19 +654,6 @@
                     hideSuggestions();
 
                     const form = document.getElementById('searchForm');
-                    const activeGudangId = getActiveGudangId();
-                    
-                    if (activeGudangId) {
-                        let hiddenGudangInput = form.querySelector('input[name="gudang_id"]');
-                        if (!hiddenGudangInput) {
-                            hiddenGudangInput = document.createElement('input');
-                            hiddenGudangInput.type = 'hidden';
-                            hiddenGudangInput.name = 'gudang_id';
-                            form.appendChild(hiddenGudangInput);
-                        }
-                        hiddenGudangInput.value = activeGudangId;
-                    }
-                    
                     form.submit();
                 }
             }
@@ -764,29 +706,19 @@
                 }
             });
 
-            const gudangSelects = document.querySelectorAll('select[name="gudang_id"]');
-            gudangSelects.forEach(select => {
-                select.addEventListener('change', function() {
-                    if (searchInput.value.trim().length >= 2) {
-                        fetchSuggestions(searchInput.value.trim());
-                    }
-                });
-            });
-
             // Handle Modal Kelola Barang
             const modalKelola = document.getElementById("modalKelolaBarang");
             if (modalKelola) {
                 modalKelola.addEventListener("show.bs.modal", function (event) {
                     const button = event.relatedTarget;
-                    const barangId = button.getAttribute("data-id");
+                    const barangKode = button.getAttribute("data-id");
                     const barangNama = button.getAttribute("data-nama");
-                    const barangKode = button.getAttribute("data-kode") || '';
                     
                     // Set data untuk kedua form
                     document.getElementById("kelolaBarangNama").textContent = barangNama;
-                    document.getElementById("barangMasukId").value = barangId;
+                    document.getElementById("barangMasukKode").value = barangKode;
                     document.getElementById("barangMasukNama").value = barangNama;
-                    document.getElementById("distribusiBarangId").value = barangId;
+                    document.getElementById("distribusiBarangKode").value = barangKode;
                     document.getElementById("distribusiBarangNama").value = barangNama;
                     
                     // Reset ke tab pertama
@@ -805,9 +737,9 @@
                     document.getElementById('formDistribusi').reset();
                     
                     // Set kembali nilai barang setelah reset
-                    document.getElementById("barangMasukId").value = barangId;
+                    document.getElementById("barangMasukKode").value = barangKode;
                     document.getElementById("barangMasukNama").value = barangNama;
-                    document.getElementById("distribusiBarangId").value = barangId;
+                    document.getElementById("distribusiBarangKode").value = barangKode;
                     document.getElementById("distribusiBarangNama").value = barangNama;
                     
                     // Reset kategori dropdown
@@ -883,8 +815,8 @@
             if (formBarangMasuk) {
                 formBarangMasuk.addEventListener('submit', function(e) {
                     e.preventDefault();
-                    const barangId = document.getElementById('barangMasukId').value;
-                    this.action = `/pb/barang-masuk/${barangId}`;
+                    const barangKode = document.getElementById('barangMasukKode').value;
+                    this.action = `/pb/barang-masuk/${barangKode}`;
                     this.submit();
                 });
             }
@@ -893,8 +825,8 @@
             if (formDistribusi) {
                 formDistribusi.addEventListener('submit', function(e) {
                     e.preventDefault();
-                    const barangId = document.getElementById('distribusiBarangId').value;
-                    this.action = `/pb/distribusi/${barangId}`;
+                    const barangKode = document.getElementById('distribusiBarangKode').value;
+                    this.action = `/pb/distribusi/${barangKode}`;
                     this.submit();
                 });
             }

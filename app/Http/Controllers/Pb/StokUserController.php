@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Pb;
 
 use App\Http\Controllers\Controller;
 use App\Models\Barang;
-use App\Models\StokGudang;
-use App\Models\RiwayatBarang;
+use App\Models\PbStok;
+use App\Models\PjStok;
+use App\Models\Gudang;
+use App\Models\TransaksiBarangMasuk;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -26,19 +28,25 @@ class StokUserController extends Controller
             DB::beginTransaction();
 
             $tanggal = $request->tanggal ?: now()->format('Y-m-d');
-            $barang = Barang::with('kategori.gudang')->findOrFail($id);
-            $gudangId = $barang->kategori->gudang_id;
-
-            // Get atau create stok gudang
-            $stokGudang = StokGudang::firstOrCreate(
-                [
-                    'barang_id' => $barang->id,
-                    'gudang_id' => $gudangId
-                ],
-                ['stok' => 0]
-            );
-
-            $stokSebelum = $stokGudang->stok;
+            
+            // Cari barang berdasarkan ID atau kode
+            $barang = null;
+            if (is_numeric($id)) {
+                $barang = Barang::findOrFail($id);
+            } else {
+                $barang = Barang::where('kode_barang', $id)->firstOrFail();
+            }
+            
+            $kodeBarang = $barang->kode_barang;
+            
+            // Cari Gudang Utama
+            $gudangUtama = Gudang::where('nama', 'Gudang Utama')
+                ->orWhere('nama', 'LIKE', '%Utama%')
+                ->first();
+            
+            if (!$gudangUtama) {
+                throw new \Exception('Gudang Utama tidak ditemukan');
+            }
 
             // Upload bukti
             $buktiPath = null;
@@ -46,32 +54,69 @@ class StokUserController extends Controller
                 $buktiPath = $request->file('bukti')->store('bukti-barang-masuk', 'public');
             }
 
-            // Tambah stok di gudang
-            $stokGudang->tambahStok($request->jumlah);
+            Log::info('===== BARANG MASUK START =====');
+            Log::info('Barang Kode: ' . $kodeBarang);
+            Log::info('Jumlah: ' . $request->jumlah);
 
-            // Update stok di tabel barang (opsional)
-            $barang->stok = $stokGudang->stok;
-            $barang->save();
+            // 1. Update stok PB (Pusat Barang)
+            $pbStok = PbStok::where('kode_barang', $kodeBarang)->first();
+            
+            if ($pbStok) {
+                $pbStok->tambahStok($request->jumlah);
+            } else {
+                $pbStok = PbStok::create([
+                    'kode_barang' => $kodeBarang,
+                    'stok' => $request->jumlah,
+                ]);
+            }
 
-            // Simpan riwayat
-            RiwayatBarang::create([
-                'barang_id' => $barang->id,
-                'jenis_transaksi' => 'masuk',
+            Log::info('PB Stok Updated: ' . $pbStok->stok);
+
+            // 2. Update stok PJ (Penyimpanan Gudang) di Gudang Utama
+            if ($barang->kategori) {
+                $pjStok = PjStok::where('kode_barang', $kodeBarang)
+                    ->where('id_gudang', $gudangUtama->id)
+                    ->first();
+                
+                if ($pjStok) {
+                    $pjStok->tambahStok($request->jumlah);
+                } else {
+                    $pjStok = PjStok::create([
+                        'kode_barang' => $kodeBarang,
+                        'id_gudang' => $gudangUtama->id,
+                        'id_kategori' => $barang->id_kategori,
+                        'stok' => $request->jumlah,
+                    ]);
+                }
+                
+                Log::info('PJ Stok Updated: ' . $pjStok->stok);
+            }
+
+            // 3. SIMPAN TRANSAKSI BARANG MASUK - INI ADALAH YANG PENTING
+            Log::info('Menyimpan transaksi barang masuk...');
+            
+            $transaksiData = [
+                'kode_barang' => $kodeBarang,
                 'jumlah' => $request->jumlah,
-                'stok_sebelum' => $stokSebelum,
-                'stok_sesudah' => $stokGudang->stok,
-                'keterangan' => $request->keterangan,
-                'bukti' => $buktiPath,
                 'tanggal' => $tanggal,
                 'user_id' => auth()->id(),
-            ]);
+                'keterangan' => $request->keterangan ?? '',
+                'bukti' => $buktiPath,
+            ];
+
+            Log::info('Data Transaksi:', $transaksiData);
+
+            $transaksi = TransaksiBarangMasuk::create($transaksiData);
+
+            Log::info('Transaksi Berhasil Disimpan ID: ' . $transaksi->id);
+            Log::info('===== BARANG MASUK END =====');
 
             DB::commit();
 
             return back()->with('toast', [
                 'type' => 'success',
                 'title' => 'Berhasil!',
-                'message' => "Stok {$barang->nama} berhasil ditambahkan {$request->jumlah} unit di {$barang->kategori->gudang->nama}"
+                'message' => "Stok {$barang->nama_barang} berhasil ditambahkan {$request->jumlah} {$barang->satuan}"
             ]);
 
         } catch (\Exception $e) {
@@ -81,7 +126,11 @@ class StokUserController extends Controller
                 Storage::disk('public')->delete($buktiPath);
             }
 
-            Log::error('Error barang masuk: ' . $e->getMessage());
+            Log::error('===== ERROR BARANG MASUK =====');
+            Log::error('Error: ' . $e->getMessage());
+            Log::error('File: ' . $e->getFile());
+            Log::error('Line: ' . $e->getLine());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
 
             return back()->with('toast', [
                 'type' => 'error',
