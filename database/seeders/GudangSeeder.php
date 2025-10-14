@@ -7,12 +7,14 @@ use App\Models\Gudang;
 use App\Models\Kategori;
 use App\Models\JenisBarang;
 use App\Models\Barang;
+use App\Models\PbStok;
+use App\Models\PjStok;
 
 class GudangSeeder extends Seeder
 {
     public function run(): void
     {
-        // Daftar kategori per gudang (tanpa Elektronik, Peralatan Kantor, Furnitur)
+        // Daftar kategori per gudang
         $gudangData = [
             'Gudang Utama' => [], // nanti diisi semua kategori
             'Gudang ATK' => [
@@ -138,17 +140,38 @@ class GudangSeeder extends Seeder
                     for ($i = 1; $i <= 3; $i++) {
                         $namaBarang = $jenisNama . ' ' . $i;
                         $satuan = $getSatuan($namaBarang);
+                        $kodeBarang = strtoupper(substr($jenisNama, 0, 2)) . str_pad($i, 3, '0', STR_PAD_LEFT);
 
-                        Barang::firstOrCreate(
-                            ['kode' => strtoupper(substr($jenisNama, 0, 2)) . str_pad($i, 3, '0', STR_PAD_LEFT)],
+                        // FIXED: Gunakan 'kode_barang' bukan 'kode'
+                        // FIXED: Gunakan 'nama_barang' bukan 'nama'
+                        // FIXED: Gunakan 'harga_barang' bukan 'harga'
+                        // FIXED: Gunakan 'id_kategori' bukan 'kategori_id'
+                        // REMOVED: Field 'jenis_barang_id', 'jumlah', 'stok' (tidak ada di tabel barang)
+                        $barang = Barang::firstOrCreate(
+                            ['kode_barang' => $kodeBarang],
                             [
-                                'nama' => $namaBarang,
-                                'kategori_id' => $kategori->id,
-                                'jenis_barang_id' => $jenisBarang->id,
-                                'jumlah' => rand(5, 20),
-                                'stok' => rand(5, 20),
-                                'harga' => rand(10000, 5000000),
+                                'nama_barang' => $namaBarang,
+                                'id_kategori' => $kategori->id,
+                                'harga_barang' => rand(10000, 5000000),
                                 'satuan' => $satuan,
+                            ]
+                        );
+
+                        // Create initial stock for PB (Pengelola Barang)
+                        PbStok::firstOrCreate(
+                            ['kode_barang' => $barang->kode_barang],
+                            ['stok' => rand(5, 20)]
+                        );
+
+                        // Create initial stock for PJ (Penanggung Jawab) per gudang
+                        PjStok::firstOrCreate(
+                            [
+                                'kode_barang' => $barang->kode_barang,
+                                'id_gudang' => $gudang->id,
+                            ],
+                            [
+                                'id_kategori' => $kategori->id,
+                                'stok' => rand(5, 20),
                             ]
                         );
                     }
