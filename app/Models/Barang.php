@@ -1,3 +1,6 @@
+// ==========================================
+// File: app/Models/Barang.php
+// ==========================================
 <?php
 
 namespace App\Models;
@@ -10,115 +13,67 @@ class Barang extends Model
     use HasFactory;
 
     protected $table = 'barang';
+    protected $primaryKey = 'kode_barang';
+    public $incrementing = false;
+    protected $keyType = 'string';
 
     protected $fillable = [
-        'kode',
-        'nama',
-        'harga',
-        'stok', // Bisa dijadikan total stok atau dihapus
+        'kode_barang',
+        'id_kategori',
+        'nama_barang',
+        'harga_barang',
         'satuan',
-        'kategori_id',
-        'jenis_barang_id',
     ];
 
     protected $casts = [
-        'harga' => 'decimal:2',
-        'stok' => 'integer',
+        'harga_barang' => 'decimal:2',
     ];
 
+    // Relasi ke Kategori
     public function kategori()
     {
-        return $this->belongsTo(Kategori::class, 'kategori_id');
+        return $this->belongsTo(Kategori::class, 'id_kategori');
     }
 
-    public function jenisBarang()
+    // Relasi ke PB Stok
+    public function pbStok()
     {
-        return $this->belongsTo(JenisBarang::class, 'jenis_barang_id');
+        return $this->hasOne(PbStok::class, 'kode_barang', 'kode_barang');
     }
 
-    public function riwayat()
+    // Relasi ke PJ Stok
+    public function pjStok()
     {
-        return $this->hasMany(RiwayatBarang::class, 'barang_id');
+        return $this->hasMany(PjStok::class, 'kode_barang', 'kode_barang');
     }
 
-    public function riwayatTujuan()
+    // Relasi ke Transaksi Barang Masuk
+    public function transaksiBarangMasuk()
     {
-        return $this->hasMany(RiwayatBarang::class, 'barang_tujuan_id');
+        return $this->hasMany(TransaksiBarangMasuk::class, 'kode_barang', 'kode_barang');
     }
 
-    /**
-     * Relasi ke stok gudang
-     */
-    public function stokGudang()
+    // Relasi ke Transaksi Distribusi
+    public function transaksiDistribusi()
     {
-        return $this->hasMany(StokGudang::class);
+        return $this->hasMany(TransaksiDistribusi::class, 'kode_barang', 'kode_barang');
     }
 
-    /**
-     * Get stok di gudang tertentu
-     */
-    public function stokDiGudang($gudangId)
+    // Relasi ke Transaksi Barang Keluar
+    public function transaksiBarangKeluar()
     {
-        return $this->stokGudang()->where('gudang_id', $gudangId)->first();
+        return $this->hasMany(TransaksiBarangKeluar::class, 'kode_barang', 'kode_barang');
     }
 
-    /**
-     * Get atau buat stok gudang
-     */
-    public function getOrCreateStokGudang($gudangId)
+    // Accessor untuk total stok PB
+    public function getTotalStokPbAttribute()
     {
-        return StokGudang::firstOrCreate(
-            [
-                'barang_id' => $this->id,
-                'gudang_id' => $gudangId
-            ],
-            ['stok' => 0]
-        );
+        return $this->pbStok ? $this->pbStok->stok : 0;
     }
 
-    /**
-     * Total stok di semua gudang
-     */
-    public function getTotalStokAttribute()
+    // Accessor untuk total stok PJ (semua gudang)
+    public function getTotalStokPjAttribute()
     {
-        return $this->stokGudang()->sum('stok');
-    }
-
-    /**
-     * Stok di gudang utama (kategori barang)
-     */
-    public function getStokGudangUtamaAttribute()
-    {
-        if (!$this->kategori || !$this->kategori->gudang_id) {
-            return 0;
-        }
-        $stok = $this->stokDiGudang($this->kategori->gudang_id);
-        return $stok ? $stok->stok : 0;
-    }
-
-    public function scopeStokRendah($query, $minimum = 10)
-    {
-        return $query->where('stok', '<=', $minimum);
-    }
-
-    public function scopeStokHabis($query)
-    {
-        return $query->where('stok', 0);
-    }
-
-    public function getHargaFormattedAttribute()
-    {
-        return 'Rp ' . number_format($this->harga, 0, ',', '.');
-    }
-
-    public function getStatusStokAttribute()
-    {
-        $totalStok = $this->total_stok;
-        if ($totalStok == 0) {
-            return 'habis';
-        } elseif ($totalStok <= 10) {
-            return 'rendah';
-        }
-        return 'tersedia';
+        return $this->pjStok->sum('stok');
     }
 }

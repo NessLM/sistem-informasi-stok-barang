@@ -1,3 +1,6 @@
+// ==========================================
+// File: app/Models/Bagian.php (Update)
+// ==========================================
 <?php
 
 namespace App\Models;
@@ -15,11 +18,15 @@ class Bagian extends Model
         'nama',
     ];
 
-    /**
-     * Relasi ke BarangKeluar
-     */
-    public function barangKeluars()
+    // Relasi ke User
+    public function users()
     {
-        return $this->hasMany(BarangKeluar::class, 'bagian_id');
+        return $this->hasMany(User::class, 'bagian_id');
+    }
+
+    // Relasi ke Transaksi Barang Keluar
+    public function transaksiBarangKeluar()
+    {
+        return $this->hasMany(TransaksiBarangKeluar::class, 'bagian_id');
     }
 }
