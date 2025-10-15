@@ -180,8 +180,8 @@
                                         <th>Gudang</th>
                                         <th>Nama Barang</th>
                                         <th>Jumlah</th>
-                                        <th>Bukti</th>
                                         <th>Keterangan</th>
+                                        <th>Bukti</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -195,6 +195,9 @@
                                             <td class="fw-medium">{{ $item->nama_barang }}</td>
                                             <td><span class="fw-medium">{{ $item->jumlah }}</span></td>
                                             <td>
+                                                {{ $item->keterangan }}
+                                            </td>
+                                            <td>
                                                 @if ($item->bukti)
                                                     <span class="riwayat-bukti-icon" data-bs-toggle="modal"
                                                         data-bs-target="#buktiModal"
@@ -205,9 +208,7 @@
                                                     <span class="text-muted">-</span>
                                                 @endif
                                             </td>
-                                            <td>
-                                                {{ $item->keterangan }}
-                                            </td>
+
                                         </tr>
                                     @empty
                                         <tr>
@@ -272,8 +273,8 @@
                                         <th>Gudang Tujuan</th>
                                         <th>Nama Barang</th>
                                         <th>Jumlah</th>
-                                        <th>Bukti</th>
                                         <th>Keterangan</th>
+                                        <th>Bukti</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -289,6 +290,9 @@
                                             <td><span class="fw-medium">{{ $item->jumlah }}</span>
                                             </td>
                                             <td>
+                                                {{ $item->keterangan }}
+                                            </td>
+                                            <td>
                                                 @if ($item->bukti)
                                                     <span class="riwayat-bukti-icon" data-bs-toggle="modal"
                                                         data-bs-target="#buktiModal"
@@ -299,9 +303,7 @@
                                                     <span class="text-muted">-</span>
                                                 @endif
                                             </td>
-                                            <td>
-                                                {{ $item->keterangan }}
-                                            </td>
+
                                         </tr>
                                     @empty
                                         <tr>
@@ -368,8 +370,8 @@
                                         <th>Jumlah</th>
                                         <th>Bagian</th>
                                         <th>Penerima</th>
-                                        <th>Bukti</th>
                                         <th>Keterangan</th>
+                                        <th>Bukti</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -385,6 +387,9 @@
                                             <td>{{ $item->bagian }}</td>
                                             <td>{{ $item->penerima }}</td>
                                             <td>
+                                                {{ $item->keterangan }}
+                                            </td>
+                                            <td>
                                                 @if ($item->bukti)
                                                     <span class="riwayat-bukti-icon" data-bs-toggle="modal"
                                                         data-bs-target="#buktiModal"
@@ -395,9 +400,7 @@
                                                     <span class="text-muted">-</span>
                                                 @endif
                                             </td>
-                                            <td>
-                                                {{ $item->keterangan }}
-                                            </td>
+
                                         </tr>
                                     @empty
                                         <tr>

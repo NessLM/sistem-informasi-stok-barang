@@ -266,7 +266,7 @@
         ];
         $bulanRomawi = $bulan[now()->month];
         $tahun = now()->year;
-        
+
         // Hitung jumlah data untuk setiap jenis
         $jumlahMasuk = $riwayat->where('alur_barang', 'Masuk PB')->count();
         $jumlahDistribusi = $riwayat->where('alur_barang', 'Distribusi PJ')->count();
@@ -304,162 +304,144 @@
     </div>
 
     <!-- TABEL BARANG MASUK -->
-    @if($jumlahMasuk > 0)
-    <h3 style="margin-top:30px; text-align:center; font-size:14px;">Barang Masuk</h3>
-    <div class="table-container">
-        <table class="data">
-            <thead>
-                <tr>
-                    <th class="col-no">No</th>
-                    <th class="col-tanggal">Tanggal, Waktu</th>
-                    <th class="col-gudang">Gudang</th>
-                    <th class="col-nama">Nama Barang</th>
-                    <th class="col-jumlah">Jumlah</th>
-                    <th class="col-bukti">Bukti</th>
-                    <th class="col-keterangan">Keterangan</th>
-                </tr>
-            </thead>
-            <tbody>
-                @php
-                    $no = 1;
-                    $totalMasuk = 0;
-                @endphp
-                @foreach ($riwayat->where('alur_barang', 'Masuk PB') as $r)
-                    @php $totalMasuk += $r->jumlah; @endphp
+    @if ($jumlahMasuk > 0)
+        <h3 style="margin-top:30px; text-align:center; font-size:14px;">Barang Masuk</h3>
+        <div class="table-container">
+            <table class="data">
+                <thead>
                     <tr>
-                        <td>{{ $no++ }}</td>
-                        <td>
-                            {{ \Carbon\Carbon::parse($r->tanggal)->format('d/m/Y') }}<br>
-                            {{ \Carbon\Carbon::parse($r->waktu)->format('H:i') }} WIB
-                        </td>
-                        <td>{{ $r->gudang }}</td>
-                        <td>{{ $r->nama_barang }}</td>
-                        <td>{{ $r->jumlah }}</td>
-                        <td>
-                            @if ($r->bukti)
-                                <img src="{{ $r->bukti_path }}" alt="Bukti">
-                            @endif
-                        </td>
-                        <td>{{ $r->keterangan ?? '-' }}</td>
+                        <th class="col-no">No</th>
+                        <th class="col-tanggal">Tanggal, Waktu</th>
+                        <th class="col-gudang">Gudang</th>
+                        <th class="col-nama">Nama Barang</th>
+                        <th class="col-jumlah">Jumlah</th>
+                        <th class="col-keterangan">Keterangan</th>
                     </tr>
-                @endforeach
-                <tr>
-                    <td colspan="4" style="text-align:right; font-weight:bold;">Total Barang Masuk</td>
-                    <td style="font-weight:bold;">{{ $totalMasuk }}</td>
-                    <td></td>
-                    <td></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                    @php
+                        $no = 1;
+                        $totalMasuk = 0;
+                    @endphp
+                    @foreach ($riwayat->where('alur_barang', 'Masuk PB') as $r)
+                        @php $totalMasuk += $r->jumlah; @endphp
+                        <tr>
+                            <td>{{ $no++ }}</td>
+                            <td>
+                                {{ \Carbon\Carbon::parse($r->tanggal)->format('d/m/Y') }}<br>
+                                {{ \Carbon\Carbon::parse($r->waktu)->format('H:i') }} WIB
+                            </td>
+                            <td>{{ $r->gudang }}</td>
+                            <td>{{ $r->nama_barang }}</td>
+                            <td>{{ $r->jumlah }}</td>
+                            <td>{{ $r->keterangan ?? '-' }}</td>
+                        </tr>
+                    @endforeach
+                    <tr>
+                        <td colspan="3" style="text-align:right; font-weight:bold;">Total Barang Masuk</td>
+                        <td style="font-weight:bold;">{{ $totalMasuk }}</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     @endif
 
     <!-- TABEL DISTRIBUSI BARANG -->
-    @if($jumlahDistribusi > 0)
-    <h3 style="margin-top:40px; text-align:center; font-size:14px;" class="distribusi">Distribusi Barang</h3>
-    <div class="table-container">
-        <table class="data">
-            <thead>
-                <tr>
-                    <th class="col-no">No</th>
-                    <th class="col-tanggal">Tanggal, Waktu</th>
-                    <th class="col-gudang">Gudang Tujuan</th>
-                    <th class="col-nama">Nama Barang</th>
-                    <th class="col-jumlah">Jumlah</th>
-                    <th class="col-bukti">Bukti</th>
-                    <th class="col-keterangan">Keterangan</th>
-                </tr>
-            </thead>
-            <tbody>
-                @php
-                    $no = 1;
-                    $totalDistribusi = 0;
-                @endphp
-                @foreach ($riwayat->where('alur_barang', 'Distribusi PJ') as $r)
-                    @php $totalDistribusi += $r->jumlah; @endphp
+    @if ($jumlahDistribusi > 0)
+        <h3 style="margin-top:40px; text-align:center; font-size:14px;" class="distribusi">Distribusi Barang</h3>
+        <div class="table-container">
+            <table class="data">
+                <thead>
                     <tr>
-                        <td>{{ $no++ }}</td>
-                        <td>
-                            {{ \Carbon\Carbon::parse($r->tanggal)->format('d/m/Y') }}<br>
-                            {{ \Carbon\Carbon::parse($r->waktu)->format('H:i') }} WIB
-                        </td>
-                        <td>{{ $r->gudang }}</td>
-                        <td>{{ $r->nama_barang }}</td>
-                        <td>{{ $r->jumlah }}</td>
-                        <td>
-                            @if ($r->bukti)
-                                <img src="{{ $r->bukti_path }}" alt="Bukti">
-                            @endif
-                        </td>
-                        <td>{{ $r->keterangan ?? '-' }}</td>
+                        <th class="col-no">No</th>
+                        <th class="col-tanggal">Tanggal, Waktu</th>
+                        <th class="col-gudang">Gudang Tujuan</th>
+                        <th class="col-nama">Nama Barang</th>
+                        <th class="col-jumlah">Jumlah</th>
+                        <th class="col-keterangan">Keterangan</th>
                     </tr>
-                @endforeach
-                <tr>
-                    <td colspan="4" style="text-align:right; font-weight:bold;">Total Distribusi Barang</td>
-                    <td style="font-weight:bold;">{{ $totalDistribusi }}</td>
-                    <td></td>
-                    <td></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                    @php
+                        $no = 1;
+                        $totalDistribusi = 0;
+                    @endphp
+                    @foreach ($riwayat->where('alur_barang', 'Distribusi PJ') as $r)
+                        @php $totalDistribusi += $r->jumlah; @endphp
+                        <tr>
+                            <td>{{ $no++ }}</td>
+                            <td>
+                                {{ \Carbon\Carbon::parse($r->tanggal)->format('d/m/Y') }}<br>
+                                {{ \Carbon\Carbon::parse($r->waktu)->format('H:i') }} WIB
+                            </td>
+                            <td>{{ $r->gudang }}</td>
+                            <td>{{ $r->nama_barang }}</td>
+                            <td>{{ $r->jumlah }}</td>
+                            <td>{{ $r->keterangan ?? '-' }}</td>
+                        </tr>
+                    @endforeach
+                    <tr>
+                        <td colspan="3" style="text-align:right; font-weight:bold;">Total Distribusi Barang</td>
+                        <td style="font-weight:bold;">{{ $totalDistribusi }}</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     @endif
 
     <!-- TABEL BARANG KELUAR -->
-    @if($jumlahKeluar > 0)
-    <h3 style="margin-top:40px; text-align:center; font-size:14px;" class="barang-keluar">Barang Keluar</h3>
-    <div class="table-container">
-        <table class="data">
-            <thead>
-                <tr>
-                    <th class="col-no">No</th>
-                    <th class="col-tanggal">Tanggal, Waktu</th>
-                    <th class="col-gudang">Gudang Asal</th>
-                    <th class="col-nama">Nama Barang</th>
-                    <th class="col-jumlah">Jumlah</th>
-                    <th class="col-bagian">Bagian</th>
-                    <th class="col-penerima">Penerima</th>
-                    <th class="col-bukti">Bukti</th>
-                    <th class="col-keterangan">Keterangan</th>
-                </tr>
-            </thead>
-            <tbody>
-                @php
-                    $no = 1;
-                    $totalKeluar = 0;
-                @endphp
-                @foreach ($riwayat->where('alur_barang', 'Keluar PJ') as $r)
-                    @php $totalKeluar += $r->jumlah; @endphp
+    @if ($jumlahKeluar > 0)
+        <h3 style="margin-top:40px; text-align:center; font-size:14px;" class="barang-keluar">Barang Keluar</h3>
+        <div class="table-container">
+            <table class="data">
+                <thead>
                     <tr>
-                        <td>{{ $no++ }}</td>
-                        <td>
-                            {{ \Carbon\Carbon::parse($r->tanggal)->format('d/m/Y') }}<br>
-                            {{ \Carbon\Carbon::parse($r->waktu)->format('H:i') }} WIB
-                        </td>
-                        <td>{{ $r->gudang }}</td>
-                        <td>{{ $r->nama_barang }}</td>
-                        <td>{{ $r->jumlah }}</td>
-                        <td>{{ $r->bagian }}</td>
-                        <td>{{ $r->penerima }}</td>
-                        <td>
-                            @if ($r->bukti)
-                                <img src="{{ $r->bukti_path }}" alt="Bukti">
-                            @endif
-                        </td>
-                        <td>{{ $r->keterangan ?? '-' }}</td>
+                        <th class="col-no">No</th>
+                        <th class="col-tanggal">Tanggal, Waktu</th>
+                        <th class="col-gudang">Gudang Asal</th>
+                        <th class="col-nama">Nama Barang</th>
+                        <th class="col-jumlah">Jumlah</th>
+                        <th class="col-bagian">Bagian</th>
+                        <th class="col-penerima">Penerima</th>
+                        <th class="col-keterangan">Keterangan</th>
                     </tr>
-                @endforeach
-                <tr>
-                    <td colspan="4" style="text-align:right; font-weight:bold;">Total Barang Keluar</td>
-                    <td style="font-weight:bold;">{{ $totalKeluar }}</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                    @php
+                        $no = 1;
+                        $totalKeluar = 0;
+                    @endphp
+                    @foreach ($riwayat->where('alur_barang', 'Keluar PJ') as $r)
+                        @php $totalKeluar += $r->jumlah; @endphp
+                        <tr>
+                            <td>{{ $no++ }}</td>
+                            <td>
+                                {{ \Carbon\Carbon::parse($r->tanggal)->format('d/m/Y') }}<br>
+                                {{ \Carbon\Carbon::parse($r->waktu)->format('H:i') }} WIB
+                            </td>
+                            <td>{{ $r->gudang }}</td>
+                            <td>{{ $r->nama_barang }}</td>
+                            <td>{{ $r->jumlah }}</td>
+                            <td>{{ $r->bagian }}</td>
+                            <td>{{ $r->penerima }}</td>
+                            <td>{{ $r->keterangan ?? '-' }}</td>
+                        </tr>
+                    @endforeach
+                    <tr>
+                        <td colspan="3" style="text-align:right; font-weight:bold;">Total Barang Keluar</td>
+                        <td style="font-weight:bold;">{{ $totalKeluar }}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     @endif
 
     <!-- TANDA TANGAN -->
