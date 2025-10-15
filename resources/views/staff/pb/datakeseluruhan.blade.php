@@ -419,23 +419,14 @@
                                     <input type="date" name="tanggal" id="tanggalDistribusi" class="form-control">
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Gudang Tujuan</label>
-                                    <select name="gudang_tujuan_id" id="distribusiGudangTujuan" class="form-select" required>
-                                        <option value="">-- Pilih Gudang --</option>
-                                        @php
-                                            $gudangTujuan = collect($gudang)->reject(function($item) {
-                                                return str_contains(strtolower($item->nama), 'utama');
-                                            });
-                                        @endphp
-                                        @foreach($gudangTujuan as $g)
-                                            <option value="{{ $g->id }}">{{ $g->nama }}</option>
-                                        @endforeach
-                                    </select>
-                                    <small class="text-muted">Barang akan otomatis masuk ke kategori yang sesuai</small>
-                                </div>
-                                <div class="col-md-12">
                                     <label class="form-label">Keterangan</label>
                                     <input type="text" name="keterangan" class="form-control" placeholder="Masukkan keterangan">
+                                </div>
+                                <div class="col-12">
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle"></i> 
+                                        Barang akan otomatis didistribusikan ke gudang yang tersedia dengan kategori yang sesuai
+                                    </div>
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label">Bukti Barang Keluar</label>
@@ -730,9 +721,6 @@
                     document.getElementById("barangMasukNama").value = barangNama;
                     document.getElementById("distribusiBarangKode").value = barangKode;
                     document.getElementById("distribusiBarangNama").value = barangNama;
-                    
-                    // Reset gudang dropdown
-                    document.getElementById('distribusiGudangTujuan').value = '';
                     
                     // Clear file previews
                     document.getElementById('fileNameMasuk').textContent = '';
