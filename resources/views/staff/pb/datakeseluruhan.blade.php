@@ -431,12 +431,7 @@
                                             <option value="{{ $g->id }}">{{ $g->nama }}</option>
                                         @endforeach
                                     </select>
-                                </div>
-                                <div class="col-md-12">
-                                    <label class="form-label">Kategori Tujuan</label>
-                                    <select name="kategori_tujuan_id" id="distribusiKategoriTujuan" class="form-select" required disabled>
-                                        <option value="">-- Pilih Gudang Terlebih Dahulu --</option>
-                                    </select>
+                                    <small class="text-muted">Barang akan otomatis masuk ke kategori yang sesuai</small>
                                 </div>
                                 <div class="col-md-12">
                                     <label class="form-label">Keterangan</label>
@@ -736,54 +731,12 @@
                     document.getElementById("distribusiBarangKode").value = barangKode;
                     document.getElementById("distribusiBarangNama").value = barangNama;
                     
-                    // Reset kategori dropdown
-                    const kategoriSelect = document.getElementById('distribusiKategoriTujuan');
-                    kategoriSelect.innerHTML = '<option value="">-- Pilih Gudang Terlebih Dahulu --</option>';
-                    kategoriSelect.disabled = true;
+                    // Reset gudang dropdown
                     document.getElementById('distribusiGudangTujuan').value = '';
                     
                     // Clear file previews
                     document.getElementById('fileNameMasuk').textContent = '';
                     document.getElementById('fileNameDistribusi').textContent = '';
-                });
-            }
-
-            // Handle perubahan Gudang Tujuan
-            const distribusiGudangTujuan = document.getElementById('distribusiGudangTujuan');
-            if (distribusiGudangTujuan) {
-                distribusiGudangTujuan.addEventListener('change', function() {
-                    const gudangId = this.value;
-                    const kategoriSelect = document.getElementById('distribusiKategoriTujuan');
-                    
-                    if (!gudangId) {
-                        kategoriSelect.innerHTML = '<option value="">-- Pilih Gudang Terlebih Dahulu --</option>';
-                        kategoriSelect.disabled = true;
-                        return;
-                    }
-                    
-                    kategoriSelect.innerHTML = '<option value="">Memuat kategori...</option>';
-                    kategoriSelect.disabled = true;
-                    
-                    fetch(`/pb/api/kategori-by-gudang/${gudangId}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.length === 0) {
-                                kategoriSelect.innerHTML = '<option value="">Tidak ada kategori</option>';
-                                kategoriSelect.disabled = true;
-                            } else {
-                                let options = '<option value="">-- Pilih Kategori --</option>';
-                                data.forEach(kategori => {
-                                    options += `<option value="${kategori.id}">${kategori.nama}</option>`;
-                                });
-                                kategoriSelect.innerHTML = options;
-                                kategoriSelect.disabled = false;
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            kategoriSelect.innerHTML = '<option value="">Error memuat kategori</option>';
-                            kategoriSelect.disabled = true;
-                        });
                 });
             }
 

@@ -25,12 +25,11 @@ class DistribusiController extends Controller
         Log::info("Kode Barang: {$kodeBarang}");
         Log::info("Request Data: " . json_encode($request->all()));
 
-        // Validasi input
+        // Validasi input (kategori_tujuan_id sudah tidak required)
         $validated = $request->validate([
             'jumlah' => 'required|integer|min:1',
             'tanggal' => 'nullable|date',
             'gudang_tujuan_id' => 'required|exists:gudang,id',
-            'kategori_tujuan_id' => 'required|exists:kategori,id',
             'keterangan' => 'nullable|string|max:500',
             'bukti' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
@@ -50,18 +49,38 @@ class DistribusiController extends Controller
                 throw new \Exception("Barang dengan kode {$kodeBarang} tidak ditemukan");
             }
             
-            Log::info("Barang ditemukan: {$barang->nama_barang} (ID Kategori: {$barang->id_kategori})");
+            Log::info("Barang ditemukan: {$barang->nama_barang} (ID Kategori Asal: {$barang->id_kategori})");
 
-            // ===== STEP 2: Validasi kategori tujuan =====
-            $kategoriTujuan = Kategori::where('id', $validated['kategori_tujuan_id'])
-                ->where('gudang_id', $validated['gudang_tujuan_id'])
+            // ===== STEP 2: Cari kategori di gudang tujuan yang SAMA dengan kategori asal =====
+            $kategoriAsal = Kategori::find($barang->id_kategori);
+            
+            if (!$kategoriAsal) {
+                throw new \Exception("Kategori asal barang tidak ditemukan");
+            }
+            
+            Log::info("Kategori asal: {$kategoriAsal->nama} (ID: {$kategoriAsal->id})");
+            
+            // Cari kategori dengan nama yang sama di gudang tujuan
+            $kategoriTujuan = Kategori::where('gudang_id', $validated['gudang_tujuan_id'])
+                ->where('nama', $kategoriAsal->nama)
                 ->first();
 
             if (!$kategoriTujuan) {
-                throw new \Exception("Kategori tujuan tidak valid untuk gudang ini");
+                // Jika tidak ada kategori dengan nama yang sama, buat otomatis
+                Log::info("Kategori '{$kategoriAsal->nama}' tidak ditemukan di gudang tujuan, membuat baru...");
+                
+                $kategoriTujuan = Kategori::create([
+                    'gudang_id' => $validated['gudang_tujuan_id'],
+                    'nama' => $kategoriAsal->nama
+                ]);
+                
+                Log::info("Kategori baru dibuat: {$kategoriTujuan->nama} (ID: {$kategoriTujuan->id})");
+            } else {
+                Log::info("Kategori tujuan ditemukan: {$kategoriTujuan->nama} (ID: {$kategoriTujuan->id})");
             }
             
-            Log::info("Kategori tujuan valid: {$kategoriTujuan->nama} (Gudang: {$kategoriTujuan->gudang->nama})");
+            $gudangTujuan = Gudang::find($validated['gudang_tujuan_id']);
+            Log::info("Gudang tujuan: {$gudangTujuan->nama}");
 
             // ===== STEP 3: Cek stok PB dengan LOCK =====
             Log::info("STEP 3: Mencari PB Stok dengan kode_barang = '{$kodeBarang}'");
@@ -143,6 +162,7 @@ class DistribusiController extends Controller
                     ->where('id', $pjStok->id)
                     ->update([
                         'stok' => $stokBaruPj,
+                        'id_kategori' => $kategoriTujuan->id, // Update kategori juga
                         'updated_at' => now()
                     ]);
                 
@@ -166,13 +186,13 @@ class DistribusiController extends Controller
                 $pjStokId = DB::table('pj_stok')->insertGetId([
                     'kode_barang' => $kodeBarang,
                     'id_gudang' => $validated['gudang_tujuan_id'],
-                    'id_kategori' => $validated['kategori_tujuan_id'],
+                    'id_kategori' => $kategoriTujuan->id, // Gunakan kategori yang sudah ditentukan
                     'stok' => $validated['jumlah'],
                     'created_at' => now(),
                     'updated_at' => now()
                 ]);
                 
-                Log::info("STEP 6: PjStok baru dibuat - ID: {$pjStokId}, Stok: {$validated['jumlah']}");
+                Log::info("STEP 6: PjStok baru dibuat - ID: {$pjStokId}, Stok: {$validated['jumlah']}, Kategori: {$kategoriTujuan->nama}");
                 
                 // Verifikasi
                 $verifikasiPjBaru = DB::table('pj_stok')->where('id', $pjStokId)->first();
@@ -208,7 +228,7 @@ class DistribusiController extends Controller
                 ->first();
             
             Log::info("FINAL PB - ID: {$finalPb->id}, Stok: {$finalPb->stok}");
-            Log::info("FINAL PJ - ID: {$finalPj->id}, Stok: {$finalPj->stok}");
+            Log::info("FINAL PJ - ID: {$finalPj->id}, Stok: {$finalPj->stok}, Kategori ID: {$finalPj->id_kategori}");
             
             // Commit transaksi
             DB::commit();
@@ -222,7 +242,7 @@ class DistribusiController extends Controller
             return back()->with('toast', [
                 'type' => 'success',
                 'title' => 'Berhasil!',
-                'message' => "Barang {$barang->nama_barang} berhasil didistribusikan ke {$kategoriTujuan->gudang->nama}. Jumlah: {$validated['jumlah']}. Stok PB tersisa: {$afterCommitPb->stok}"
+                'message' => "Barang {$barang->nama_barang} berhasil didistribusikan ke {$gudangTujuan->nama} (Kategori: {$kategoriTujuan->nama}). Jumlah: {$validated['jumlah']}. Stok PB tersisa: {$afterCommitPb->stok}"
             ]);
 
         } catch (\Exception $e) {
