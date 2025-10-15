@@ -90,18 +90,15 @@
 
         <!-- Toast notification -->
         @if (session('toast'))
-            <div id="toast-notif"
-                style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-                              z-index: 2000; display: flex; justify-content: center; pointer-events: none;">
+            <div id="toast-notif" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+                                  z-index: 2000; display: flex; justify-content: center; pointer-events: none;">
 
-                <div class="toast-message"
-                    style="background: #fff; border-radius: 12px; padding: 14px 22px;
-                                box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;
-                                min-width: 280px; max-width: 360px; transition: opacity .5s ease;">
+                <div class="toast-message" style="background: #fff; border-radius: 12px; padding: 14px 22px;
+                                    box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;
+                                    min-width: 280px; max-width: 360px; transition: opacity .5s ease;">
 
-                    <div
-                        style="font-weight: 600; font-size: 16px; margin-bottom: 4px;
-                                  color: {{ session('toast.type') === 'success' ? '#28a745' : '#dc3545' }};">
+                    <div style="font-weight: 600; font-size: 16px; margin-bottom: 4px;
+                                      color: {{ session('toast.type') === 'success' ? '#28a745' : '#dc3545' }};">
                         {{ session('toast.title') }}
                     </div>
 
@@ -140,8 +137,7 @@
 
             {{-- Search Form dengan Autocomplete --}}
             <div class="position-relative mb-3">
-                <form action="{{ route('pj.datakeseluruhan.index') }}" method="GET" class="input-group"
-                    id="searchForm">
+                <form action="{{ route('pj.datakeseluruhan.index') }}" method="GET" class="input-group" id="searchForm">
                     <span class="input-group-text"><i class="bi bi-search"></i></span>
                     <input type="text" name="search" id="searchInput" class="form-control"
                         placeholder="Telusuri barang (nama atau kode)" value="{{ request('search') }}"
@@ -155,12 +151,15 @@
             </div>
 
             {{-- Jika ada filter/search --}}
-            @if (request()->filled('search') ||
+            {{-- Jika ada filter/search --}}
+            @if (
+                    request()->filled('search') ||
                     request()->filled('kode') ||
                     request()->filled('stok_min') ||
                     request()->filled('stok_max') ||
                     request()->filled('kategori_id') ||
-                    request()->filled('satuan'))
+                    request()->filled('satuan')
+                )
                 <h5 class="mt-3">Hasil Pencarian</h5>
                 @if ($barang->count() > 0)
                     <div class="table-responsive">
@@ -179,10 +178,8 @@
                             <tbody>
                                 @foreach ($barang as $i => $b)
                                     @php
-                                        $stokGudang = \App\Models\StokGudang::where('barang_id', $b->id)
-                                            ->where('gudang_id', $selectedGudang->id)
-                                            ->first();
-                                        $stokTersedia = $stokGudang ? $stokGudang->stok : 0;
+                                        // UBAH INI: Stok sudah ada di object $b
+                                        $stokTersedia = $b->stok_tersedia ?? 0;
                                     @endphp
                                     @if ($stokTersedia > 0)
                                         <tr @if ($stokTersedia < 10) class="row-low-stock" @endif>
@@ -193,10 +190,10 @@
                                             <td>{{ $b->satuan }}</td>
                                             <td>{{ $b->kategori->nama ?? '-' }}</td>
                                             <td>
-                                                <button type="button" class="btn btn-danger btn-sm"
-                                                    data-bs-toggle="modal" data-bs-target="#modalBarangKeluar"
-                                                    data-id="{{ $b->id }}" data-nama="{{ $b->nama }}"
-                                                    data-kode="{{ $b->kode }}" data-stok="{{ $stokTersedia }}">
+                                                <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                                                    data-bs-target="#modalBarangKeluar" data-id="{{ $b->kode }}"
+                                                    data-nama="{{ $b->nama }}" data-kode="{{ $b->kode }}"
+                                                    data-stok="{{ $stokTersedia }}">
                                                     <i class="bi bi-box-arrow-right"></i> Barang Keluar
                                                 </button>
                                             </td>
@@ -212,108 +209,90 @@
             @endif
 
             {{-- Jika tidak ada filter/search --}}
-            @if (
-                !request()->filled('search') &&
-                    !request()->filled('kode') &&
-                    !request()->filled('stok_min') &&
-                    !request()->filled('stok_max') &&
-                    !request()->filled('kategori_id') &&
-                    !request()->filled('satuan'))
-                <div class="table-responsive mt-3">
-                    <table class="table table-bordered">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>KATEGORI</th>
-                                {{-- <th>GUDANG</th> --}}
-                                <th style="width:180px" class="text-center">AKSI</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($kategori as $k)
-                                <tr>
-                                    <td>{{ $k->nama }}</td>
-                                    {{-- <td>{{ $k->gudang->nama ?? '-' }}</td> --}}
-                                    <td class="text-center">
-                                        <div class="d-flex flex-wrap justify-content-center gap-2">
-                                            <button class="btn btn-sm btn-success"
-                                                onclick="toggleDetail({{ $k->id }})"><i
-                                                    class="bi bi-eye"></i></button>
-                                        </div>
-                                    </td>
-                                </tr>
+            {{-- Jika tidak ada filter/search --}}
+@if (
+    !request()->filled('search') &&
+        !request()->filled('kode') &&
+        !request()->filled('stok_min') &&
+        !request()->filled('stok_max') &&
+        !request()->filled('kategori_id') &&
+        !request()->filled('satuan'))
+    <div class="table-responsive mt-3">
+        <table class="table table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>KATEGORI</th>
+                    <th style="width:180px" class="text-center">AKSI</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($kategori as $k)
+                    <tr>
+                        <td>{{ $k->nama }}</td>
+                        <td class="text-center">
+                            <div class="d-flex flex-wrap justify-content-center gap-2">
+                                <button class="btn btn-sm btn-success"
+                                    onclick="toggleDetail({{ $k->id }})"><i
+                                        class="bi bi-eye"></i></button>
+                            </div>
+                        </td>
+                    </tr>
 
-                                <tr id="detail-{{ $k->id }}" style="display:none;">
-                                    <td colspan="3">
-                                        @php
-                                            $barangFiltered = $k->barang->filter(function ($item) use ($k) {
-                                                $stokGudang = \App\Models\StokGudang::where('barang_id', $item->id)
-                                                    ->where('gudang_id', $k->gudang_id)
-                                                    ->first();
-                                                $stokTersedia = $stokGudang ? $stokGudang->stok : 0;
-                                                return $stokTersedia > 0;
-                                            });
-                                        @endphp
-                                        @if ($barangFiltered->count())
-                                            <div class="table-responsive">
-                                                <table class="table table-bordered">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Kode</th>
-                                                            <th>Nama Barang</th>
-                                                            <th>Stok</th>
-                                                            <th>Satuan</th>
-                                                            {{-- <th>Kategori</th> --}}
-                                                            {{-- <th>Gudang</th> --}}
-                                                            <th>Aksi</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        @foreach ($barangFiltered as $item)
-                                                            @php
-                                                                $stokGudang = \App\Models\StokGudang::where(
-                                                                    'barang_id',
-                                                                    $item->id,
-                                                                )
-                                                                    ->where('gudang_id', $k->gudang_id)
-                                                                    ->first();
-                                                                $stokTersedia = $stokGudang ? $stokGudang->stok : 0;
-                                                            @endphp
-                                                            <tr
-                                                                @if ($stokTersedia < 10) class="row-low-stock" @endif>
-                                                                <td>{{ $item->kode }}</td>
-                                                                <td>{{ $item->nama }}</td>
-                                                                <td>{{ $stokTersedia }}</td>
-                                                                <td>{{ $item->satuan }}</td>
-                                                                {{-- <td>{{ $item->kategori->nama ?? '-' }}</td> --}}
-                                                                {{-- <td>{{ $item->kategori->gudang->nama ?? '-' }}</td> --}}
-                                                                <td>
-                                                                    <button type="button" class="btn btn-danger btn-sm"
-                                                                        data-bs-toggle="modal"
-                                                                        data-bs-target="#modalBarangKeluar"
-                                                                        data-id="{{ $item->id }}"
-                                                                        data-nama="{{ $item->nama }}"
-                                                                        data-kode="{{ $item->kode }}"
-                                                                        data-stok="{{ $stokTersedia }}">
-                                                                        <i class="bi bi-box-arrow-right"></i> Barang
-                                                                        Keluar
-                                                                    </button>
-                                                                </td>
-                                                            </tr>
-                                                        @endforeach
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        @else
-                                            <p class="text-muted">Tidak ada barang pada kategori ini (atau semua barang
-                                                telah habis).</p>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @endif
+                    <tr id="detail-{{ $k->id }}" style="display:none;">
+                        <td colspan="2">
+                            @php
+                                // UBAH INI: barang sudah di-load dengan stok di controller
+                                $barangFiltered = $k->barang;
+                            @endphp
+                            @if ($barangFiltered->count())
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Kode</th>
+                                                <th>Nama Barang</th>
+                                                <th>Stok</th>
+                                                <th>Satuan</th>
+                                                <th>Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($barangFiltered as $item)
+                                                @php
+                                                    // UBAH INI: Stok sudah ada di object
+                                                    $stokTersedia = $item->stok_tersedia ?? 0;
+                                                @endphp
+                                                <tr @if ($stokTersedia < 10) class="row-low-stock" @endif>
+                                                    <td>{{ $item->kode }}</td>
+                                                    <td>{{ $item->nama }}</td>
+                                                    <td>{{ $stokTersedia }}</td>
+                                                    <td>{{ $item->satuan }}</td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-danger btn-sm"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#modalBarangKeluar"
+                                                            data-id="{{ $item->kode }}"
+                                                            data-nama="{{ $item->nama }}"
+                                                            data-kode="{{ $item->kode }}"
+                                                            data-stok="{{ $stokTersedia }}">
+                                                            <i class="bi bi-box-arrow-right"></i> Barang Keluar
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @else
+                                <p class="text-muted">Tidak ada barang pada kategori ini (atau semua barang telah habis).</p>
+                            @endif
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+@endif
         </section>
     </main>
 
@@ -366,7 +345,8 @@
                             <div class="col-12">
                                 <label class="form-label">Keterangan <small
                                         class="text-muted">(Opsional)</small></label>
-                                <textarea name="keterangan" class="form-control" rows="3" placeholder="Masukkan keterangan"></textarea>
+                                <textarea name="keterangan" class="form-control" rows="3"
+                                    placeholder="Masukkan keterangan"></textarea>
                             </div>
                             <div class="col-12">
                                 <label class="form-label">Bukti</label>
@@ -385,8 +365,7 @@
                         </div>
 
                         <div class="d-flex justify-content-end gap-2 mt-4">
-                            <button type="button" class="btn btn-secondary px-4"
-                                data-bs-dismiss="modal">Batal</button>
+                            <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Batal</button>
                             <button type="submit" class="btn btn-danger px-4">
                                 <i class="bi bi-send"></i> Simpan
                             </button>
@@ -424,8 +403,7 @@
                             <select name="kategori_id" class="form-select">
                                 <option value="">-- Semua Kategori --</option>
                                 @foreach ($kategori as $k)
-                                    <option value="{{ $k->id }}"
-                                        @if (request('kategori_id') == $k->id) selected @endif>
+                                    <option value="{{ $k->id }}" @if (request('kategori_id') == $k->id) selected @endif>
                                         {{ $k->nama }}
                                     </option>
                                 @endforeach
@@ -435,10 +413,10 @@
                         <div class="col-md-6">
                             <label class="form-label">Stok</label>
                             <div class="d-flex gap-2">
-                                <input type="number" name="stok_min" class="form-control"
-                                    placeholder="Stok Minimum" value="{{ request('stok_min') }}" min="0">
-                                <input type="number" name="stok_max" class="form-control"
-                                    placeholder="Stok Maksimal" value="{{ request('stok_max') }}" min="0">
+                                <input type="number" name="stok_min" class="form-control" placeholder="Stok Minimum"
+                                    value="{{ request('stok_min') }}" min="0">
+                                <input type="number" name="stok_max" class="form-control" placeholder="Stok Maksimal"
+                                    value="{{ request('stok_max') }}" min="0">
                             </div>
                         </div>
                     </div>
@@ -464,7 +442,7 @@
         }
 
         // Autocomplete search functionality
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const searchInput = document.getElementById('searchInput');
             const suggestionsContainer = document.getElementById('searchSuggestions');
             let currentSuggestions = [];
@@ -534,7 +512,7 @@
                 suggestionsContainer.style.display = 'block';
 
                 suggestionsContainer.querySelectorAll('.search-suggestion-item').forEach(item => {
-                    item.addEventListener('click', function() {
+                    item.addEventListener('click', function () {
                         const index = parseInt(this.dataset.index);
                         selectSuggestion(index);
                     });
@@ -566,11 +544,11 @@
             }
 
             // Event listeners
-            searchInput.addEventListener('input', function() {
+            searchInput.addEventListener('input', function () {
                 fetchSuggestions(this.value.trim());
             });
 
-            searchInput.addEventListener('keydown', function(e) {
+            searchInput.addEventListener('keydown', function (e) {
                 const suggestions = suggestionsContainer.querySelectorAll('.search-suggestion-item');
 
                 if (e.key === 'ArrowDown') {
@@ -591,13 +569,13 @@
                 }
             });
 
-            searchInput.addEventListener('focus', function() {
+            searchInput.addEventListener('focus', function () {
                 if (this.value.trim().length >= 2) {
                     fetchSuggestions(this.value.trim());
                 }
             });
 
-            document.addEventListener('click', function(e) {
+            document.addEventListener('click', function (e) {
                 if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
                     hideSuggestions();
                 }
@@ -606,7 +584,7 @@
             // Handle Modal Barang Keluar
             const modalBarangKeluar = document.getElementById("modalBarangKeluar");
             if (modalBarangKeluar) {
-                modalBarangKeluar.addEventListener("show.bs.modal", function(event) {
+                modalBarangKeluar.addEventListener("show.bs.modal", function (event) {
                     const button = event.relatedTarget;
                     const barangId = button.getAttribute("data-id");
                     const barangNama = button.getAttribute("data-nama");
@@ -637,7 +615,7 @@
             // File preview handler
             const buktiBrgKeluar = document.getElementById('buktiBrgKeluar');
             if (buktiBrgKeluar) {
-                buktiBrgKeluar.addEventListener('change', function() {
+                buktiBrgKeluar.addEventListener('change', function () {
                     const fileName = this.files[0]?.name || '';
                     document.getElementById('fileNameKeluar').textContent = fileName ? `File: ${fileName}` :
                         '';
@@ -647,7 +625,7 @@
             // Form submit handler
             const formBarangKeluar = document.getElementById('formBarangKeluar');
             if (formBarangKeluar) {
-                formBarangKeluar.addEventListener('submit', function(e) {
+                formBarangKeluar.addEventListener('submit', function (e) {
                     e.preventDefault();
                     const barangId = document.getElementById('barangKeluarId').value;
                     const jumlah = parseInt(document.getElementById('jumlahKeluar').value);
