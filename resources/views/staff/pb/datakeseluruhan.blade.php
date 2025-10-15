@@ -201,10 +201,8 @@
                             <tbody>
                                 @foreach ($barang as $i => $b)
                                     @php
-                                        $pjStok = $b->pjStok()
-                                            ->where('id_gudang', $selectedGudang->id)
-                                            ->first();
-                                        $stokTersedia = $pjStok ? $pjStok->stok : 0;
+                                        // Ambil stok dari pb_stok
+                                        $stokTersedia = $b->pbStok ? $b->pbStok->stok : 0;
                                     @endphp
                                     @if ($stokTersedia > 0)
                                         <tr @if ($stokTersedia < 10) class="row-low-stock" @endif>
@@ -271,11 +269,9 @@
                                 <tr id="detail-{{ $k->id }}" style="display:none;">
                                     <td colspan="2">
                                         @php
-                                            $barangFiltered = $k->barang->filter(function($item) use ($k) {
-                                                $pjStok = $item->pjStok()
-                                                    ->where('id_gudang', $k->gudang_id)
-                                                    ->first();
-                                                $stokTersedia = $pjStok ? $pjStok->stok : 0;
+                                            // Filter barang yang stoknya > 0 di pb_stok
+                                            $barangFiltered = $k->barang->filter(function($item) {
+                                                $stokTersedia = $item->pbStok ? $item->pbStok->stok : 0;
                                                 return $stokTersedia > 0;
                                             });
                                         @endphp
@@ -294,10 +290,8 @@
                                                     <tbody>
                                                         @foreach ($barangFiltered as $item)
                                                             @php
-                                                                $pjStok = $item->pjStok()
-                                                                    ->where('id_gudang', $k->gudang_id)
-                                                                    ->first();
-                                                                $stokTersedia = $pjStok ? $pjStok->stok : 0;
+                                                                // Ambil stok dari pb_stok
+                                                                $stokTersedia = $item->pbStok ? $item->pbStok->stok : 0;
                                                             @endphp
                                                             <tr @if ($stokTersedia < 10) class="row-low-stock" @endif>
                                                                 <td>{{ $item->kode_barang }}</td>
@@ -425,28 +419,14 @@
                                     <input type="date" name="tanggal" id="tanggalDistribusi" class="form-control">
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Gudang Tujuan</label>
-                                    <select name="gudang_tujuan_id" id="distribusiGudangTujuan" class="form-select" required>
-                                        <option value="">-- Pilih Gudang --</option>
-                                        @php
-                                            $gudangTujuan = collect($gudang)->reject(function($item) {
-                                                return str_contains(strtolower($item->nama), 'utama');
-                                            });
-                                        @endphp
-                                        @foreach($gudangTujuan as $g)
-                                            <option value="{{ $g->id }}">{{ $g->nama }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="col-md-12">
-                                    <label class="form-label">Kategori Tujuan</label>
-                                    <select name="kategori_tujuan_id" id="distribusiKategoriTujuan" class="form-select" required disabled>
-                                        <option value="">-- Pilih Gudang Terlebih Dahulu --</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-12">
                                     <label class="form-label">Keterangan</label>
                                     <input type="text" name="keterangan" class="form-control" placeholder="Masukkan keterangan">
+                                </div>
+                                <div class="col-12">
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle"></i> 
+                                        Barang akan otomatis didistribusikan ke gudang yang tersedia dengan kategori yang sesuai
+                                    </div>
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label">Bukti Barang Keluar</label>
@@ -742,54 +722,9 @@
                     document.getElementById("distribusiBarangKode").value = barangKode;
                     document.getElementById("distribusiBarangNama").value = barangNama;
                     
-                    // Reset kategori dropdown
-                    const kategoriSelect = document.getElementById('distribusiKategoriTujuan');
-                    kategoriSelect.innerHTML = '<option value="">-- Pilih Gudang Terlebih Dahulu --</option>';
-                    kategoriSelect.disabled = true;
-                    document.getElementById('distribusiGudangTujuan').value = '';
-                    
                     // Clear file previews
                     document.getElementById('fileNameMasuk').textContent = '';
                     document.getElementById('fileNameDistribusi').textContent = '';
-                });
-            }
-
-            // Handle perubahan Gudang Tujuan
-            const distribusiGudangTujuan = document.getElementById('distribusiGudangTujuan');
-            if (distribusiGudangTujuan) {
-                distribusiGudangTujuan.addEventListener('change', function() {
-                    const gudangId = this.value;
-                    const kategoriSelect = document.getElementById('distribusiKategoriTujuan');
-                    
-                    if (!gudangId) {
-                        kategoriSelect.innerHTML = '<option value="">-- Pilih Gudang Terlebih Dahulu --</option>';
-                        kategoriSelect.disabled = true;
-                        return;
-                    }
-                    
-                    kategoriSelect.innerHTML = '<option value="">Memuat kategori...</option>';
-                    kategoriSelect.disabled = true;
-                    
-                    fetch(`/pb/api/kategori-by-gudang/${gudangId}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.length === 0) {
-                                kategoriSelect.innerHTML = '<option value="">Tidak ada kategori</option>';
-                                kategoriSelect.disabled = true;
-                            } else {
-                                let options = '<option value="">-- Pilih Kategori --</option>';
-                                data.forEach(kategori => {
-                                    options += `<option value="${kategori.id}">${kategori.nama}</option>`;
-                                });
-                                kategoriSelect.innerHTML = options;
-                                kategoriSelect.disabled = false;
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            kategoriSelect.innerHTML = '<option value="">Error memuat kategori</option>';
-                            kategoriSelect.disabled = true;
-                        });
                 });
             }
 

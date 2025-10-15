@@ -12,8 +12,8 @@ class PjStok extends Model
     protected $table = 'pj_stok';
 
     protected $fillable = [
-        'id_gudang',
         'kode_barang',
+        'id_gudang',
         'id_kategori',
         'stok',
     ];
@@ -45,6 +45,10 @@ class PjStok extends Model
     {
         $this->stok += $jumlah;
         $this->save();
+        
+        // Force refresh dari database
+        $this->refresh();
+        
         return $this;
     }
 
@@ -54,8 +58,13 @@ class PjStok extends Model
         if ($this->stok < $jumlah) {
             throw new \Exception('Stok tidak mencukupi. Stok tersedia: ' . $this->stok);
         }
+        
         $this->stok -= $jumlah;
         $this->save();
+        
+        // Force refresh dari database
+        $this->refresh();
+        
         return $this;
     }
 

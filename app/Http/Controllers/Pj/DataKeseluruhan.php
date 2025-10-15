@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Kategori;
 use App\Models\Barang;
 use App\Models\Gudang;
-use App\Models\StokGudang;
-use App\Models\BarangKeluar;
+use App\Models\PjStok;
+use App\Models\TransaksiBarangKeluar;
 use App\Models\Bagian;
 use Illuminate\Http\Request;
 use App\Helpers\MenuHelper;
@@ -37,8 +37,8 @@ class DataKeseluruhan extends Controller
         $kategoriQuery = Kategori::with([
             'barang' => function ($q) use ($search) {
                 if ($search) {
-                    $q->where('nama', 'like', "%{$search}%")
-                        ->orWhere('kode', 'like', "%{$search}%");
+                    $q->where('nama_barang', 'like', "%{$search}%")
+                        ->orWhere('kode_barang', 'like', "%{$search}%");
                 }
             },
             'gudang'
@@ -101,8 +101,8 @@ class DataKeseluruhan extends Controller
         $kategoriQuery = Kategori::with([
             'barang' => function ($q) use ($search) {
                 if ($search) {
-                    $q->where('nama', 'like', "%{$search}%")
-                        ->orWhere('kode', 'like', "%{$search}%");
+                    $q->where('nama_barang', 'like', "%{$search}%")
+                        ->orWhere('kode_barang', 'like', "%{$search}%");
                 }
             },
             'gudang'
@@ -189,8 +189,8 @@ class DataKeseluruhan extends Controller
 
         $barangQuery = Barang::with(['kategori.gudang'])
             ->where(function ($q) use ($query) {
-                $q->where('nama', 'like', "%{$query}%")
-                    ->orWhere('kode', 'like', "%{$query}%");
+                $q->where('nama_barang', 'like', "%{$query}%")
+                    ->orWhere('kode_barang', 'like', "%{$query}%");
             })
             ->whereHas('kategori', function ($q) use ($user) {
                 $q->where('gudang_id', $user->gudang_id);
@@ -199,11 +199,11 @@ class DataKeseluruhan extends Controller
         $barang = $barangQuery->limit(10)->get();
 
         $results = $barang->map(function ($item) use ($user) {
-            $stokGudang = StokGudang::where('barang_id', $item->id)
-                ->where('gudang_id', $user->gudang_id)
+            $pjStok = PjStok::where('kode_barang', $item->kode_barang)
+                ->where('id_gudang', $user->gudang_id)
                 ->first();
 
-            $stok = $stokGudang ? $stokGudang->stok : 0;
+            $stok = $pjStok ? $pjStok->stok : 0;
 
             $stockStatus = 'available';
             if ($stok == 0) {
@@ -213,9 +213,9 @@ class DataKeseluruhan extends Controller
             }
 
             return [
-                'id' => $item->id,
-                'nama' => $item->nama,
-                'kode' => $item->kode,
+                'kode_barang' => $item->kode_barang,
+                'nama' => $item->nama_barang,
+                'kode' => $item->kode_barang,
                 'stok' => $stok,
                 'kategori' => $item->kategori->nama ?? '-',
                 'gudang' => $item->kategori->gudang->nama ?? '-',
@@ -227,13 +227,14 @@ class DataKeseluruhan extends Controller
     }
 
     /**
-     * Proses barang keluar - FIXED bagian_id issue
+     * Proses barang keluar - FIXED sesuai model
      */
-    public function barangKeluar(Request $request, Barang $barang)
+    public function barangKeluar(Request $request, $kode_barang)
     {
         // Debug: Log semua data yang diterima dari request
         Log::info('=== BARANG KELUAR REQUEST ===');
         Log::info('All Request Data:', $request->all());
+        Log::info('Kode Barang:', ['kode_barang' => $kode_barang]);
         Log::info('Bagian ID from request:', ['bagian_id' => $request->bagian_id]);
 
         // Validasi input
@@ -250,6 +251,17 @@ class DataKeseluruhan extends Controller
 
         $user = Auth::user();
 
+        // Cari barang berdasarkan kode_barang
+        $barang = Barang::where('kode_barang', $kode_barang)->first();
+
+        if (!$barang) {
+            return back()->with('toast', [
+                'type' => 'error',
+                'title' => 'Error!',
+                'message' => 'Barang tidak ditemukan.'
+            ]);
+        }
+
         // Cek apakah barang ada di gudang user
         if ($barang->kategori->gudang_id != $user->gudang_id) {
             return back()->with('toast', [
@@ -259,16 +271,16 @@ class DataKeseluruhan extends Controller
             ]);
         }
 
-        // Cek stok di gudang
-        $stokGudang = StokGudang::where('barang_id', $barang->id)
-            ->where('gudang_id', $user->gudang_id)
+        // Cek stok di PJ Stok
+        $pjStok = PjStok::where('kode_barang', $kode_barang)
+            ->where('id_gudang', $user->gudang_id)
             ->first();
 
-        if (!$stokGudang || $stokGudang->stok < $request->jumlah) {
+        if (!$pjStok || $pjStok->stok < $request->jumlah) {
             return back()->with('toast', [
                 'type' => 'error',
                 'title' => 'Stok Tidak Cukup!',
-                'message' => 'Stok barang di gudang Anda tidak mencukupi.'
+                'message' => 'Stok barang di gudang Anda tidak mencukupi. Stok tersedia: ' . ($pjStok ? $pjStok->stok : 0)
             ]);
         }
 
@@ -303,8 +315,8 @@ class DataKeseluruhan extends Controller
 
         // Siapkan data untuk disimpan
         $dataToInsert = [
-            'barang_id' => $barang->id,
-            'gudang_id' => $user->gudang_id,
+            'kode_barang' => $kode_barang,
+            'id_gudang' => $user->gudang_id,
             'user_id' => $user->id,
             'bagian_id' => $bagianId,
             'nama_penerima' => $request->nama_penerima,
@@ -316,21 +328,11 @@ class DataKeseluruhan extends Controller
 
         Log::info('Data to be inserted:', $dataToInsert);
 
-        // Simpan data barang keluar
+        // Simpan data barang keluar menggunakan method prosesBarangKeluar
         try {
-            $barangKeluar = BarangKeluar::create($dataToInsert);
+            $barangKeluar = TransaksiBarangKeluar::prosesBarangKeluar($dataToInsert);
 
             Log::info('Barang Keluar Created Successfully:', $barangKeluar->toArray());
-
-            // Kurangi stok gudang
-            $stokGudang->decrement('stok', $request->jumlah);
-
-            Log::info('Stok Gudang Updated:', [
-                'barang_id' => $barang->id,
-                'gudang_id' => $user->gudang_id,
-                'stok_before' => $stokGudang->stok + $request->jumlah,
-                'stok_after' => $stokGudang->stok
-            ]);
 
             return back()->with('toast', [
                 'type' => 'success',
@@ -347,7 +349,7 @@ class DataKeseluruhan extends Controller
             return back()->with('toast', [
                 'type' => 'error',
                 'title' => 'Error!',
-                'message' => 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
             ]);
         }
     }
@@ -367,24 +369,30 @@ class DataKeseluruhan extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('nama', 'like', "%{$search}%")
-                    ->orWhere('kode', 'like', "%{$search}%");
+                $q->where('nama_barang', 'like', "%{$search}%")
+                    ->orWhere('kode_barang', 'like', "%{$search}%");
             });
         }
 
         if ($request->filled('kode')) {
-            $query->where('kode', 'like', "%{$request->kode}%");
+            $query->where('kode_barang', 'like', "%{$request->kode}%");
         }
 
-        if ($request->filled('stok_min')) {
-            $query->where('stok', '>=', (int) $request->stok_min);
-        }
-        if ($request->filled('stok_max')) {
-            $query->where('stok', '<=', (int) $request->stok_max);
+        // Filter stok - menggunakan PjStok
+        if ($request->filled('stok_min') || $request->filled('stok_max')) {
+            $query->whereHas('pjStok', function ($q) use ($request, $gudangId) {
+                $q->where('id_gudang', $gudangId);
+                if ($request->filled('stok_min')) {
+                    $q->where('stok', '>=', (int) $request->stok_min);
+                }
+                if ($request->filled('stok_max')) {
+                    $q->where('stok', '<=', (int) $request->stok_max);
+                }
+            });
         }
 
         if ($request->filled('kategori_id')) {
-            $query->where('kategori_id', $request->kategori_id);
+            $query->where('id_kategori', $request->kategori_id);
         }
 
         if ($request->filled('satuan')) {
@@ -392,21 +400,14 @@ class DataKeseluruhan extends Controller
         }
 
         if ($request->filled('harga_min') && $request->filled('harga_max')) {
-            $query->whereBetween('harga', [
+            $query->whereBetween('harga_barang', [
                 (float) $request->harga_min,
                 (float) $request->harga_max,
             ]);
         } elseif ($request->filled('harga_min')) {
-            $query->where('harga', '>=', (float) $request->harga_min);
+            $query->where('harga_barang', '>=', (float) $request->harga_min);
         } elseif ($request->filled('harga_max')) {
-            $query->where('harga', '<=', (float) $request->harga_max);
-        }
-
-        if ($request->filled('nomor_awal')) {
-            $query->where('id', '>=', (int) $request->nomor_awal);
-        }
-        if ($request->filled('nomor_akhir')) {
-            $query->where('id', '<=', (int) $request->nomor_akhir);
+            $query->where('harga_barang', '<=', (float) $request->harga_max);
         }
 
         return $query->get();
