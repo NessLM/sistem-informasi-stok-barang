@@ -300,9 +300,19 @@
     padding: 6px 12px;
     background: none;
 }
+.btn-toggle-table{
+    background: linear-gradient(135deg, #3498db 25%, #2c3e50 100%);
+    color: white;
+}
+.btn-toggle-table:hover {
+    background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+    color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
 
 .riwayat-header-masuk h5,
-.riwayat-header-keluar h5 {
+.riwayat-header-keluar h5,
+.riwayat-header-distribusi h5 {
     color: black;
     font-weight: 600;
     margin: 0;

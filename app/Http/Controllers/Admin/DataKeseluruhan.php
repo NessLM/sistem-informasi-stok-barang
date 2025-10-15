@@ -10,6 +10,7 @@ use App\Models\PbStok;
 use App\Models\PjStok;
 use Illuminate\Http\Request;
 use App\Helpers\MenuHelper;
+use Illuminate\Support\Facades\DB; // TAMBAHKAN INI
 
 class DataKeseluruhan extends Controller
 {
@@ -192,21 +193,77 @@ class DataKeseluruhan extends Controller
         ));
     }
 
+    /**
+     * Simpan kategori baru dengan auto-sync ke Gudang Utama
+     */
     public function storeKategori(Request $request)
     {
         $request->validate([
-            'nama'      => 'required|string|max:255|unique:kategori,nama',
+            'nama'      => 'required|string|max:255',
             'gudang_id' => 'required|exists:gudang,id',
         ]);
 
-        Kategori::create($request->only(['nama', 'gudang_id']));
+        DB::beginTransaction();
+        try {
+            // Cari Gudang Utama (case insensitive)
+            $gudangUtama = Gudang::whereRaw('LOWER(nama) LIKE ?', ['%utama%'])->first();
 
-        return redirect()->route('admin.datakeseluruhan.index')
-                         ->with('toast', [
-            'type' => 'success',
-            'title' => 'Berhasil!',
-            'message' => 'Kategori berhasil ditambahkan.'
-        ]);
+            $gudangTerpilih = Gudang::find($request->gudang_id);
+            
+            // Cek apakah kategori sudah ada di gudang yang dipilih
+            $existingKategori = Kategori::where('nama', $request->nama)
+                                        ->where('gudang_id', $request->gudang_id)
+                                        ->first();
+            
+            if ($existingKategori) {
+                return back()->with('toast', [
+                    'type' => 'error',
+                    'title' => 'Gagal!',
+                    'message' => 'Kategori dengan nama ini sudah ada di gudang yang dipilih.'
+                ]);
+            }
+            
+            // Buat kategori di gudang yang dipilih
+            $kategori = Kategori::create([
+                'nama' => $request->nama,
+                'gudang_id' => $request->gudang_id
+            ]);
+
+            // Jika gudang yang dipilih BUKAN Gudang Utama, buat kategori duplikat di Gudang Utama
+            if ($gudangUtama && $gudangTerpilih->id != $gudangUtama->id) {
+                // Cek apakah kategori sudah ada di Gudang Utama
+                $existingKategoriUtama = Kategori::where('nama', $request->nama)
+                                                  ->where('gudang_id', $gudangUtama->id)
+                                                  ->first();
+                
+                if (!$existingKategoriUtama) {
+                    Kategori::create([
+                        'nama' => $request->nama,
+                        'gudang_id' => $gudangUtama->id
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->route('admin.datakeseluruhan.index')
+                ->with('toast', [
+                    'type' => 'success',
+                    'title' => 'Berhasil!',
+                    'message' => 'Kategori berhasil ditambahkan' . 
+                        ($gudangUtama && $gudangTerpilih->id != $gudangUtama->id 
+                            ? ' dan otomatis disinkronkan ke Gudang Utama.' 
+                            : '.')
+                ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('toast', [
+                'type' => 'error',
+                'title' => 'Gagal!',
+                'message' => 'Gagal menambahkan kategori: ' . $e->getMessage()
+            ]);
+        }
     }
 
     public function storeBarang(Request $request)
