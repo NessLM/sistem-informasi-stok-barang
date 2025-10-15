@@ -21,6 +21,8 @@
                                     href="#" data-value="Semua">Semua</a></li>
                             <li><a class="dropdown-item {{ request('alur_barang') == 'Masuk' ? 'active' : '' }}"
                                     href="#" data-value="Masuk">Masuk</a></li>
+                            <li><a class="dropdown-item {{ request('alur_barang') == 'Distribusi' ? 'active' : '' }}"
+                                    href="#" data-value="Distribusi">Distribusi</a></li>
                             <li><a class="dropdown-item {{ request('alur_barang') == 'Keluar' ? 'active' : '' }}"
                                     href="#" data-value="Keluar">Keluar</a></li>
                         </ul>
@@ -126,18 +128,24 @@
         <!-- Table Section -->
         @php
             // Pisahkan data berdasarkan alur barang
-            $riwayatMasuk = $riwayat->where('alur_barang', 'Masuk');
-            $riwayatKeluar = $riwayat->where('alur_barang', 'Keluar');
+            $riwayatMasuk = $riwayatBarangMasuk ?? collect();
+            $riwayatDistribusi = $riwayatDistribusi ?? collect();
+            $riwayatKeluar = $riwayatBarangKeluar ?? collect();
             $alurFilter = request('alur_barang', 'Semua');
 
             // Konfigurasi pagination
             $itemsPerPage = 10;
             $currentPageMasuk = request('page_masuk', 1);
+            $currentPageDistribusi = request('page_distribusi', 1);
             $currentPageKeluar = request('page_keluar', 1);
 
             // Paginasi untuk data masuk
             $masukPaginated = $riwayatMasuk->slice(($currentPageMasuk - 1) * $itemsPerPage, $itemsPerPage);
             $totalPagesMasuk = ceil($riwayatMasuk->count() / $itemsPerPage);
+
+            // Paginasi untuk data distribusi
+            $distribusiPaginated = $riwayatDistribusi->slice(($currentPageDistribusi - 1) * $itemsPerPage, $itemsPerPage);
+            $totalPagesDistribusi = ceil($riwayatDistribusi->count() / $itemsPerPage);
 
             // Paginasi untuk data keluar
             $keluarPaginated = $riwayatKeluar->slice(($currentPageKeluar - 1) * $itemsPerPage, $itemsPerPage);
@@ -145,173 +153,295 @@
         @endphp
 
         @if ($alurFilter == 'Semua' || $alurFilter == 'Masuk')
-            <!-- Tabel Barang Masuk -->
+            <!-- Tabel Barang Masuk (Admin -> PB) -->
             <div class="card riwayat-table-card mb-4">
-                <div class="card-header riwayat-header-masuk">
-                    <h5 class="mb-0">Barang Masuk</h5>
+                <div class="card-header riwayat-header-masuk d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-box-arrow-in-down me-2"></i>
+                        Barang Masuk
+                    </h5>
+                    <button class="btn btn-sm btn-toggle-table" data-bs-toggle="collapse" 
+                            data-bs-target="#tableMasuk" aria-expanded="true">
+                        <i class="bi bi-chevron-down"></i>
+                    </button>
                 </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-bordered mb-0">
-                            <thead>
-                                <tr>
-                                    <th>No</th>
-                                    <th>Tanggal</th>
-                                    <th>Waktu</th>
-                                    <th>Gudang</th>
-                                    <th>Nama Barang</th>
-                                    <th>Jumlah</th>
-                                    <th>Bukti</th>
-                                    <th>Alur Barang</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($masukPaginated as $item)
+                <div class="collapse show" id="tableMasuk">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-bordered mb-0">
+                                <thead>
                                     <tr>
-                                        <td class="fw-semibold">
-                                            {{ ($currentPageMasuk - 1) * $itemsPerPage + $loop->iteration }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }} WIB</td>
-                                        <td class="fw-medium">{{ $item->gudang }}</td>
-                                        <td class="fw-medium">{{ $item->nama_barang }}</td>
-                                        <td><span>{{ $item->jumlah }}</span></td>
-                                        <td>
-                                            @if ($item->bukti)
-                                                <span class="riwayat-bukti-icon" data-bs-toggle="modal"
-                                                    data-bs-target="#buktiModal"
-                                                    data-image="{{ asset('storage/bukti/' . $item->bukti) }}">
-                                                    <i class="bi bi-eye-fill"></i>
+                                        <th>No</th>
+                                        <th>Tanggal</th>
+                                        <th>Waktu</th>
+                                        <th>Gudang</th>
+                                        <th>Nama Barang</th>
+                                        <th>Jumlah</th>
+                                        <th>Bagian</th>
+                                        <th>Penerima</th>
+                                        <th>Bukti</th>
+                                        <th>Alur Barang</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($masukPaginated as $item)
+                                        <tr>
+                                            <td class="fw-semibold">
+                                                {{ ($currentPageMasuk - 1) * $itemsPerPage + $loop->iteration }}</td>
+                                            <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
+                                            <td>{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }} WIB</td>
+                                            <td class="fw-medium">{{ $item->gudang }}</td>
+                                            <td class="fw-medium">{{ $item->nama_barang }}</td>
+                                            <td><span class="badge bg-success">{{ $item->jumlah }}</span></td>
+                                            <td>{{ $item->bagian }}</td>
+                                            <td>{{ $item->penerima }}</td>
+                                            <td>
+                                                @if ($item->bukti)
+                                                    <span class="riwayat-bukti-icon" data-bs-toggle="modal"
+                                                        data-bs-target="#buktiModal"
+                                                        data-image="{{ $item->bukti_path }}">
+                                                        <i class="bi bi-eye-fill"></i>
+                                                    </span>
+                                                @else
+                                                    <span class="text-muted">-</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-primary">
+                                                    {{ $item->alur_barang }}
                                                 </span>
-                                            @else
-                                                <span class="text-muted">-</span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            <span class="btn-masuk btn-sm btn-action">
-                                                {{ $item->alur_barang }}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="8" class="riwayat-empty-state text-center py-4">
-                                            <i class="bi bi-inbox"></i>
-                                            <p>Tidak ada data barang masuk ditemukan</p>
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Pagination untuk Barang Masuk -->
-                    @if ($totalPagesMasuk > 1)
-                        <div class="card-footer d-flex justify-content-center align-items-center">
-                            <div class="pagination-controls">
-                                <button class="btn btn-sm btn-outline-primary pagination-btn pagination-prev"
-                                    onclick="changePage('masuk', {{ max(1, $currentPageMasuk - 1) }})"
-                                    {{ $currentPageMasuk <= 1 ? 'disabled' : '' }}>
-                                    <i class="bi bi-chevron-left"></i>
-                                    <span class="pagination-text">Sebelumnya</span>
-                                </button>
-                                <span class="mx-2 pagination-info">Halaman {{ $currentPageMasuk }} dari
-                                    {{ $totalPagesMasuk }}</span>
-                                <button class="btn btn-sm btn-outline-primary pagination-btn pagination-next"
-                                    onclick="changePage('masuk', {{ min($totalPagesMasuk, $currentPageMasuk + 1) }})"
-                                    {{ $currentPageMasuk >= $totalPagesMasuk ? 'disabled' : '' }}>
-                                    <span class="pagination-text">Selanjutnya</span>
-                                    <i class="bi bi-chevron-right"></i>
-                                </button>
-                            </div>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="10" class="riwayat-empty-state text-center py-4">
+                                                <i class="bi bi-inbox"></i>
+                                                <p>Tidak ada data barang masuk ditemukan</p>
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
                         </div>
-                    @endif
+
+                        <!-- Pagination untuk Barang Masuk -->
+                        @if ($totalPagesMasuk > 1)
+                            <div class="card-footer d-flex justify-content-center align-items-center">
+                                <div class="pagination-controls">
+                                    <button class="btn btn-sm btn-outline-primary pagination-btn pagination-prev"
+                                        onclick="changePage('masuk', {{ max(1, $currentPageMasuk - 1) }})"
+                                        {{ $currentPageMasuk <= 1 ? 'disabled' : '' }}>
+                                        <i class="bi bi-chevron-left"></i>
+                                        <span class="pagination-text">Sebelumnya</span>
+                                    </button>
+                                    <span class="mx-2 pagination-info">Halaman {{ $currentPageMasuk }} dari
+                                        {{ $totalPagesMasuk }}</span>
+                                    <button class="btn btn-sm btn-outline-primary pagination-btn pagination-next"
+                                        onclick="changePage('masuk', {{ min($totalPagesMasuk, $currentPageMasuk + 1) }})"
+                                        {{ $currentPageMasuk >= $totalPagesMasuk ? 'disabled' : '' }}>
+                                        <span class="pagination-text">Selanjutnya</span>
+                                        <i class="bi bi-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        @if ($alurFilter == 'Semua' || $alurFilter == 'Distribusi')
+            <!-- Tabel Distribusi (PB -> PJ) -->
+            <div class="card riwayat-table-card mb-4">
+                <div class="card-header riwayat-header-distribusi d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-box-arrow-in-down me-2"></i>
+                        Distribusi Barang
+                    </h5>
+                    <button class="btn btn-sm btn-toggle-table" data-bs-toggle="collapse" 
+                            data-bs-target="#tableDistribusi" aria-expanded="true">
+                        <i class="bi bi-chevron-down"></i>
+                    </button>
+                </div>
+                <div class="collapse show" id="tableDistribusi">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-bordered mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Tanggal</th>
+                                        <th>Waktu</th>
+                                        <th>Gudang Tujuan</th>
+                                        <th>Nama Barang</th>
+                                        <th>Jumlah</th>
+                                        <th>Bagian</th>
+                                        <th>Penerima</th>
+                                        <th>Bukti</th>
+                                        <th>Alur Barang</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($distribusiPaginated as $item)
+                                        <tr>
+                                            <td class="fw-semibold">
+                                                {{ ($currentPageDistribusi - 1) * $itemsPerPage + $loop->iteration }}</td>
+                                            <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
+                                            <td>{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }} WIB</td>
+                                            <td class="fw-medium">{{ $item->gudang }}</td>
+                                            <td class="fw-medium">{{ $item->nama_barang }}</td>
+                                            <td><span class="badge bg-warning text-dark">{{ $item->jumlah }}</span></td>
+                                            <td>{{ $item->bagian }}</td>
+                                            <td>{{ $item->penerima }}</td>
+                                            <td>
+                                                @if ($item->bukti)
+                                                    <span class="riwayat-bukti-icon" data-bs-toggle="modal"
+                                                        data-bs-target="#buktiModal"
+                                                        data-image="{{ $item->bukti_path }}">
+                                                        <i class="bi bi-eye-fill"></i>
+                                                    </span>
+                                                @else
+                                                    <span class="text-muted">-</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">
+                                                    {{ $item->alur_barang }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="10" class="riwayat-empty-state text-center py-4">
+                                                <i class="bi bi-arrow-left-right"></i>
+                                                <p>Tidak ada data distribusi barang ditemukan</p>
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination untuk Distribusi -->
+                        @if ($totalPagesDistribusi > 1)
+                            <div class="card-footer d-flex justify-content-center align-items-center">
+                                <div class="pagination-controls">
+                                    <button class="btn btn-sm btn-outline-primary pagination-btn pagination-prev"
+                                        onclick="changePage('distribusi', {{ max(1, $currentPageDistribusi - 1) }})"
+                                        {{ $currentPageDistribusi <= 1 ? 'disabled' : '' }}>
+                                        <i class="bi bi-chevron-left"></i>
+                                        <span class="pagination-text">Sebelumnya</span>
+                                    </button>
+                                    <span class="mx-2 pagination-info">Halaman {{ $currentPageDistribusi }} dari
+                                        {{ $totalPagesDistribusi }}</span>
+                                    <button class="btn btn-sm btn-outline-primary pagination-btn pagination-next"
+                                        onclick="changePage('distribusi', {{ min($totalPagesDistribusi, $currentPageDistribusi + 1) }})"
+                                        {{ $currentPageDistribusi >= $totalPagesDistribusi ? 'disabled' : '' }}>
+                                        <span class="pagination-text">Selanjutnya</span>
+                                        <i class="bi bi-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
                 </div>
             </div>
         @endif
 
         @if ($alurFilter == 'Semua' || $alurFilter == 'Keluar')
-            <!-- Tabel Barang Keluar -->
+            <!-- Tabel Barang Keluar (PJ -> Bagian) -->
             <div class="card riwayat-table-card mb-4">
-                <div class="card-header riwayat-header-keluar">
-                    <h5 class="mb-0">Barang Keluar</h5>
+                <div class="card-header riwayat-header-keluar d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-box-arrow-up me-2"></i>
+                        Barang Keluar
+                    </h5>
+                    <button class="btn btn-sm btn-toggle-table" data-bs-toggle="collapse" 
+                            data-bs-target="#tableKeluar" aria-expanded="true">
+                        <i class="bi bi-chevron-down"></i>
+                    </button>
                 </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-bordered mb-0">
-                            <thead>
-                                <tr>
-                                    <th>No</th>
-                                    <th>Tanggal</th>
-                                    <th>Waktu</th>
-                                    <th>Gudang</th>
-                                    <th>Nama Barang</th>
-                                    <th>Jumlah</th>
-                                    <th>Bagian</th>
-                                    <th>Bukti</th>
-                                    <th>Alur Barang</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($keluarPaginated as $item)
+                <div class="collapse show" id="tableKeluar">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-bordered mb-0">
+                                <thead>
                                     <tr>
-                                        <td class="fw-semibold">
-                                            {{ ($currentPageKeluar - 1) * $itemsPerPage + $loop->iteration }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }} WIB</td>
-                                        <td class="fw-medium">{{ $item->gudang }}</td>
-                                        <td class="fw-medium">{{ $item->nama_barang }}</td>
-                                        <td><span>{{ $item->jumlah }}</span></td>
-                                        <td>{{ $item->bagian }}</td>
-                                        <td>
-                                            @if ($item->bukti)
-                                                <span class="riwayat-bukti-icon" data-bs-toggle="modal"
-                                                    data-bs-target="#buktiModal"
-                                                    data-image="{{ asset('storage/bukti/' . $item->bukti) }}">
-                                                    <i class="bi bi-eye-fill"></i>
+                                        <th>No</th>
+                                        <th>Tanggal</th>
+                                        <th>Waktu</th>
+                                        <th>Gudang</th>
+                                        <th>Nama Barang</th>
+                                        <th>Jumlah</th>
+                                        <th>Bagian</th>
+                                        <th>Penerima</th>
+                                        <th>Bukti</th>
+                                        <th>Alur Barang</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($keluarPaginated as $item)
+                                        <tr>
+                                            <td class="fw-semibold">
+                                                {{ ($currentPageKeluar - 1) * $itemsPerPage + $loop->iteration }}</td>
+                                            <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
+                                            <td>{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }} WIB</td>
+                                            <td class="fw-medium">{{ $item->gudang }}</td>
+                                            <td class="fw-medium">{{ $item->nama_barang }}</td>
+                                            <td><span class="badge bg-danger">{{ $item->jumlah }}</span></td>
+                                            <td>{{ $item->bagian }}</td>
+                                            <td>{{ $item->penerima }}</td>
+                                            <td>
+                                                @if ($item->bukti)
+                                                    <span class="riwayat-bukti-icon" data-bs-toggle="modal"
+                                                        data-bs-target="#buktiModal"
+                                                        data-image="{{ $item->bukti_path }}">
+                                                        <i class="bi bi-eye-fill"></i>
+                                                    </span>
+                                                @else
+                                                    <span class="text-muted">-</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-secondary">
+                                                    {{ $item->alur_barang }}
                                                 </span>
-                                            @else
-                                                <span class="text-muted">-</span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            <span class="btn-keluar btn-sm btn-action">
-                                                {{ $item->alur_barang }}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="9" class="riwayat-empty-state text-center py-4">
-                                            <i class="bi bi-inbox"></i>
-                                            <p>Tidak ada data barang keluar ditemukan</p>
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Pagination untuk Barang Keluar -->
-                    @if ($totalPagesKeluar > 1)
-                        <div class="card-footer d-flex justify-content-center align-items-center">
-                            <div class="pagination-controls">
-                                <button class="btn btn-sm btn-outline-primary pagination-btn pagination-prev"
-                                    onclick="changePage('keluar', {{ max(1, $currentPageKeluar - 1) }})"
-                                    {{ $currentPageKeluar <= 1 ? 'disabled' : '' }}>
-                                    <i class="bi bi-chevron-left"></i>
-                                    <span class="pagination-text">Sebelumnya</span>
-                                </button>
-                                <span class="mx-2 pagination-info">Halaman {{ $currentPageKeluar }} dari
-                                    {{ $totalPagesKeluar }}</span>
-                                <button class="btn btn-sm btn-outline-primary pagination-btn pagination-next"
-                                    onclick="changePage('keluar', {{ min($totalPagesKeluar, $currentPageKeluar + 1) }})"
-                                    {{ $currentPageKeluar >= $totalPagesKeluar ? 'disabled' : '' }}>
-                                    <span class="pagination-text">Selanjutnya</span>
-                                    <i class="bi bi-chevron-right"></i>
-                                </button>
-                            </div>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="10" class="riwayat-empty-state text-center py-4">
+                                                <i class="bi bi-inbox"></i>
+                                                <p>Tidak ada data barang keluar ditemukan</p>
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
                         </div>
-                    @endif
+
+                        <!-- Pagination untuk Barang Keluar -->
+                        @if ($totalPagesKeluar > 1)
+                            <div class="card-footer d-flex justify-content-center align-items-center">
+                                <div class="pagination-controls">
+                                    <button class="btn btn-sm btn-outline-primary pagination-btn pagination-prev"
+                                        onclick="changePage('keluar', {{ max(1, $currentPageKeluar - 1) }})"
+                                        {{ $currentPageKeluar <= 1 ? 'disabled' : '' }}>
+                                        <i class="bi bi-chevron-left"></i>
+                                        <span class="pagination-text">Sebelumnya</span>
+                                    </button>
+                                    <span class="mx-2 pagination-info">Halaman {{ $currentPageKeluar }} dari
+                                        {{ $totalPagesKeluar }}</span>
+                                    <button class="btn btn-sm btn-outline-primary pagination-btn pagination-next"
+                                        onclick="changePage('keluar', {{ min($totalPagesKeluar, $currentPageKeluar + 1) }})"
+                                        {{ $currentPageKeluar >= $totalPagesKeluar ? 'disabled' : '' }}>
+                                        <span class="pagination-text">Selanjutnya</span>
+                                        <i class="bi bi-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
                 </div>
             </div>
         @endif
@@ -368,16 +498,16 @@
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 initEventListeners();
+                initTableToggleButtons();
 
                 function initEventListeners() {
                     // Filter untuk alur barang dan gudang
                     document.querySelectorAll('.riwayat-filter-dropdown .dropdown-item').forEach(item => {
-                        // Hapus event listener lama dan tambahkan yang baru
                         item.removeEventListener('click', handleFilterClick);
                         item.addEventListener('click', handleFilterClick);
                     });
 
-                    // Handle custom period modal - khusus untuk item custom period
+                    // Handle custom period modal
                     const customPeriodItem = document.querySelector('.custom-period-item');
                     if (customPeriodItem) {
                         customPeriodItem.removeEventListener('click', handleCustomPeriodClick);
@@ -404,18 +534,61 @@
                     });
                 }
 
+                // Fungsi untuk inisialisasi tombol buka/tutup tabel
+                function initTableToggleButtons() {
+                    // Inisialisasi icon berdasarkan status awal collapse
+                    document.querySelectorAll('.btn-toggle-table').forEach(button => {
+                        const target = button.getAttribute('data-bs-target');
+                        const targetElement = document.querySelector(target);
+                        const icon = button.querySelector('i');
+                        
+                        if (targetElement.classList.contains('show')) {
+                            // Jika tabel terbuka, set icon ke chevron-up
+                            icon.classList.remove('bi-chevron-up');
+                            icon.classList.add('bi-chevron-down');
+                        } else {
+                            // Jika tabel tertutup, set icon ke chevron-down
+                            icon.classList.remove('bi-chevron-down');
+                            icon.classList.add('bi-chevron-up');
+                        }
+                    });
+
+                    // Event listener untuk perubahan status collapse
+                    document.querySelectorAll('.collapse').forEach(collapse => {
+                        collapse.addEventListener('show.bs.collapse', function() {
+                            const button = document.querySelector(`[data-bs-target="#${this.id}"]`);
+                            const icon = button.querySelector('i');
+                            icon.classList.remove('bi-chevron-up');
+                            icon.classList.add('bi-chevron-down');
+                        });
+
+                        collapse.addEventListener('hide.bs.collapse', function() {
+                            const button = document.querySelector(`[data-bs-target="#${this.id}"]`);
+                            const icon = button.querySelector('i');
+                            icon.classList.remove('bi-chevron-down');
+                            icon.classList.add('bi-chevron-up');
+                        });
+                    });
+
+                    // Event listener untuk klik tombol (sebagai backup)
+                    document.querySelectorAll('.btn-toggle-table').forEach(button => {
+                        button.addEventListener('click', function() {
+                            // Biarkan Bootstrap collapse yang menangani perubahan status
+                            // Icon akan diupdate oleh event listener di atas
+                        });
+                    });
+                }
+
                 // Fungsi khusus untuk menangani klik pada custom period item
                 function handleCustomPeriodClick(e) {
                     e.preventDefault();
                     // Hanya buka modal, jangan submit form
-                    // Biarkan modal Bootstrap menangani pembukaan modal
                 }
 
                 // Fungsi untuk menangani klik filter regular (bukan custom period)
                 function handleFilterClick(e) {
                     e.preventDefault();
 
-                    // Jika ini adalah custom period item, biarkan handleCustomPeriodClick yang menanganinya
                     if (this.classList.contains('custom-period-item')) {
                         return;
                     }
@@ -432,7 +605,6 @@
                     if (hiddenInput) {
                         hiddenInput.value = value;
 
-                        // Jika ini dropdown periode dan bukan custom, reset tanggal custom
                         if (dropdown.id === 'periodeDropdown' && value !== 'custom') {
                             document.getElementById('dariTanggalInput').value = '';
                             document.getElementById('sampaiTanggalInput').value = '';
@@ -483,7 +655,7 @@
                     document.querySelector('#periodeDropdown + .dropdown-menu .custom-period-item').classList.add(
                         'active');
 
-                    // Close modal dengan getOrCreateInstance
+                    // Close modal
                     const modalEl = document.getElementById('customPeriodModal');
                     const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
                     modal.hide();
@@ -516,10 +688,7 @@
 
                 // Fungsi untuk submit form filter
                 function submitFilterForm() {
-                    // Reset pagination saat filter berubah
                     resetPagination();
-
-                    // Submit form
                     document.getElementById('filterForm').submit();
                 }
 
@@ -527,6 +696,7 @@
                 function resetPagination() {
                     const url = new URL(window.location.href);
                     url.searchParams.delete('page_masuk');
+                    url.searchParams.delete('page_distribusi');
                     url.searchParams.delete('page_keluar');
                     window.history.replaceState({}, '', url);
                 }
@@ -536,7 +706,6 @@
                     const url = new URL(window.location.href);
                     url.searchParams.set(`page_${type}`, page);
 
-                    // Scroll ke bagian atas tabel
                     const tableElement = document.querySelector(`.riwayat-header-${type}`)?.closest('.card');
                     if (tableElement) {
                         tableElement.scrollIntoView({
@@ -545,7 +714,6 @@
                         });
                     }
 
-                    // AJAX request
                     fetch(url, {
                             headers: {
                                 'X-Requested-With': 'XMLHttpRequest',
@@ -572,6 +740,7 @@
 
                                 window.history.pushState({}, '', url);
                                 initEventListeners();
+                                initTableToggleButtons();
                             } else {
                                 window.location.href = url;
                             }
@@ -601,50 +770,77 @@
                 if (sampaiTanggalInput) sampaiTanggalInput.max = today;
             });
 
-            // PERBAIKAN: Fungsi downloadReport yang baru
+            // Fungsi downloadReport
             function downloadReport(format) {
-                // Ambil semua parameter filter yang aktif
                 const form = document.getElementById('filterForm');
                 const formData = new FormData(form);
                 
-                // Buat URL dengan parameter filter yang aktif
                 const params = new URLSearchParams();
                 
-                // Tambahkan semua parameter filter
                 for (let [key, value] of formData) {
                     if (value && value !== 'Semua' && value !== '') {
                         params.append(key, value);
                     }
                 }
                 
-                // Tambahkan parameter download
                 params.append('download', format);
                 
-                // Redirect ke URL dengan parameter yang sudah difilter
                 const url = `{{ route('admin.riwayat.index') }}?${params.toString()}`;
                 window.location.href = url;
-            }
-
-            // Alternatif: Jika ingin menggunakan form submission
-            function downloadReportAlternative(format) {
-                const form = document.getElementById('filterForm');
-                const downloadInput = document.createElement('input');
-                downloadInput.type = 'hidden';
-                downloadInput.name = 'download';
-                downloadInput.value = format;
-                
-                // Hapus input download lama jika ada
-                const oldDownloadInput = form.querySelector('input[name="download"]');
-                if (oldDownloadInput) {
-                    oldDownloadInput.remove();
-                }
-                
-                form.appendChild(downloadInput);
-                form.submit();
             }
         </script>
     @endpush
 
     @push('styles')
+        <style>
+            .btn-toggle-table {
+                background: transparent;
+                border: 1px solid #dee2e6;
+                color: #6c757d;
+                transition: all 0.3s ease;
+                width: 32px;
+                height: 32px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0;
+            }
+
+            .btn-toggle-table:hover {
+                background: #f8f9fa;
+                color: #495057;
+            }
+
+            .riwayat-header-masuk {
+                background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+                border-bottom: 3px solid #2196f3;
+            }
+
+            .riwayat-header-distribusi {
+                background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
+                border-bottom: 3px solid #4caf50;
+            }
+
+            .riwayat-header-keluar {
+                background: linear-gradient(135deg, #ffebee, #ffcdd2);
+                border-bottom: 3px solid #f44336;
+            }
+
+            .badge.bg-primary { background-color: #2196f3 !important; }
+            .badge.bg-info { background-color: #17a2b8 !important; }
+            .badge.bg-secondary { background-color: #6c757d !important; }
+
+            /* Smooth transition untuk icon */
+            .btn-toggle-table i {
+                transition: transform 0.3s ease;
+            }
+        </style>
     @endpush
 </x-layouts.app>
+
+
+
+
+<button class="btn btn-sm btn-toggle-table collapsed" data-bs-toggle="collapse" data-bs-target="#tableMasuk" aria-expanded="false">
+                        <i class="bi bi-chevron-down"></i>
+                    </button>
