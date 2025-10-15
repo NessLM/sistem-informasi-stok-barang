@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use App\Helpers\MenuHelper;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class DataKeseluruhan extends Controller
 {
@@ -22,10 +23,8 @@ class DataKeseluruhan extends Controller
         $search = $request->input('search');
         $user = Auth::user();
 
-        // Ambil gudang berdasarkan user yang login
-        $gudangUser = $user->gudang;
-
-        if (!$gudangUser) {
+        // Cek gudang user
+        if (!$user->gudang_id) {
             return back()->with('toast', [
                 'type' => 'error',
                 'title' => 'Error!',
@@ -33,63 +32,9 @@ class DataKeseluruhan extends Controller
             ]);
         }
 
-        // Filter kategori hanya dari gudang user
-        $kategoriQuery = Kategori::with([
-            'barang' => function ($q) use ($search) {
-                if ($search) {
-                    $q->where('nama_barang', 'like', "%{$search}%")
-                        ->orWhere('kode_barang', 'like', "%{$search}%");
-                }
-            },
-            'gudang'
-        ])->where('gudang_id', $gudangUser->id);
+        $gudangUser = Gudang::find($user->gudang_id);
 
-        $kategori = $kategoriQuery->get();
-
-        $selectedGudang = $gudangUser;
-
-        // Ambil semua bagian untuk dropdown
-        $bagian = Bagian::orderBy('nama')->get();
-
-        $request->validate([
-            'harga_min' => 'nullable|numeric|min:0',
-            'harga_max' => 'nullable|numeric|min:0',
-        ]);
-
-        if (
-            $request->filled('harga_min') &&
-            $request->filled('harga_max') &&
-            $request->harga_min > $request->harga_max
-        ) {
-            return back()->withErrors([
-                'harga_min' => 'Harga minimum tidak boleh lebih besar dari harga maksimum'
-            ]);
-        }
-
-        // Filter barang hanya dari gudang user
-        $barang = $this->getFilteredBarang($request, $gudangUser->id);
-
-        return view('staff.pj.datakeseluruhan', compact(
-            'kategori',
-            'barang',
-            'menu',
-            'selectedGudang',
-            'bagian'
-        ));
-    }
-
-    /**
-     * Tampilkan data keseluruhan berdasarkan gudang (untuk admin)
-     */
-    public function byGudang(Request $request, $slug)
-    {
-        $menu = MenuHelper::adminMenu();
-        $search = $request->input('search');
-
-        // Cari gudang berdasarkan slug
-        $gudang = $this->findGudangBySlug($slug);
-
-        if (!$gudang) {
+        if (!$gudangUser) {
             return back()->with('toast', [
                 'type' => 'error',
                 'title' => 'Error!',
@@ -97,24 +42,43 @@ class DataKeseluruhan extends Controller
             ]);
         }
 
-        // Filter kategori dari gudang yang dipilih
-        $kategoriQuery = Kategori::with([
-            'barang' => function ($q) use ($search) {
-                if ($search) {
-                    $q->where('nama_barang', 'like', "%{$search}%")
-                        ->orWhere('kode_barang', 'like', "%{$search}%");
-                }
-            },
-            'gudang'
-        ])->where('gudang_id', $gudang->id);
+        // Ambil kategori berdasarkan gudang
+        $kategori = Kategori::where('gudang_id', $gudangUser->id)
+            ->with('gudang')
+            ->get();
 
-        $kategori = $kategoriQuery->get();
+        // CARA BARU: Ambil barang langsung dari pj_stok
+        foreach ($kategori as $k) {
+            // Query barang yang ada di pj_stok untuk gudang ini
+            $k->barang = DB::table('pj_stok')
+                ->join('barang', 'pj_stok.kode_barang', '=', 'barang.kode_barang')
+                ->where('pj_stok.id_gudang', $gudangUser->id)
+                ->where('pj_stok.id_kategori', $k->id)
+                ->where('pj_stok.stok', '>', 0)
+                ->select(
+                    'barang.kode_barang as kode',
+                    'barang.nama_barang as nama',
+                    'barang.satuan',
+                    'pj_stok.stok',
+                    'barang.id_kategori'
+                )
+                ->get()
+                ->map(function ($item) {
+                    // Convert stdClass to object with properties
+                    return (object) [
+                        'kode' => $item->kode,
+                        'nama' => $item->nama,
+                        'satuan' => $item->satuan,
+                        'stok_tersedia' => $item->stok,
+                        'id_kategori' => $item->id_kategori
+                    ];
+                });
+        }
 
-        $selectedGudang = $gudang;
-
-        // Ambil semua bagian untuk dropdown
+        $selectedGudang = $gudangUser;
         $bagian = Bagian::orderBy('nama')->get();
 
+        // Validasi filter harga
         $request->validate([
             'harga_min' => 'nullable|numeric|min:0',
             'harga_max' => 'nullable|numeric|min:0',
@@ -130,8 +94,26 @@ class DataKeseluruhan extends Controller
             ]);
         }
 
-        // Filter barang dari gudang yang dipilih
-        $barang = $this->getFilteredBarang($request, $gudang->id);
+        // Filter barang untuk search
+        $barang = $this->getFilteredBarang($request, $gudangUser->id);
+
+        // Debug log
+        Log::info('=== PJ DataKeseluruhan Debug ===', [
+            'user_id' => $user->id,
+            'user_name' => $user->nama,
+            'gudang_id' => $gudangUser->id,
+            'gudang_nama' => $gudangUser->nama,
+            'total_kategori' => $kategori->count(),
+            'kategori_details' => $kategori->map(function ($k) {
+                return [
+                    'id' => $k->id,
+                    'nama' => $k->nama,
+                    'jumlah_barang' => $k->barang->count(),
+                    'barang' => $k->barang->pluck('nama')->toArray()
+                ];
+            })->toArray(),
+            'total_barang_filtered' => $barang->count(),
+        ]);
 
         return view('staff.pj.datakeseluruhan', compact(
             'kategori',
@@ -140,35 +122,6 @@ class DataKeseluruhan extends Controller
             'selectedGudang',
             'bagian'
         ));
-    }
-
-    /**
-     * Cari gudang berdasarkan slug
-     */
-    private function findGudangBySlug($slug)
-    {
-        $gudangs = Gudang::all();
-
-        foreach ($gudangs as $gudang) {
-            $gudangSlug = $this->createSlugFromGudangName($gudang->nama);
-            if ($gudangSlug === $slug) {
-                return $gudang;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Buat slug dari nama gudang (sama seperti di MenuHelper)
-     */
-    private function createSlugFromGudangName($gudangName)
-    {
-        $cleaned = preg_replace('/^gudang\s+/i', '', $gudangName);
-        $slug = strtolower(str_replace([' ', '_'], '-', $cleaned));
-        $slug = preg_replace('/[^a-z0-9\-]/', '', $slug);
-        $slug = preg_replace('/-+/', '-', $slug);
-        return trim($slug, '-');
     }
 
     /**
@@ -187,55 +140,56 @@ class DataKeseluruhan extends Controller
             return response()->json([]);
         }
 
-        $barangQuery = Barang::with(['kategori.gudang'])
+        // Query dengan JOIN pj_stok
+        $results = DB::table('barang')
+            ->join('pj_stok', 'barang.kode_barang', '=', 'pj_stok.kode_barang')
+            ->join('kategori', 'barang.id_kategori', '=', 'kategori.id')
+            ->join('gudang', 'kategori.gudang_id', '=', 'gudang.id')
+            ->where('pj_stok.id_gudang', $user->gudang_id)
+            ->where('pj_stok.stok', '>', 0)
             ->where(function ($q) use ($query) {
-                $q->where('nama_barang', 'like', "%{$query}%")
-                    ->orWhere('kode_barang', 'like', "%{$query}%");
+                $q->where('barang.nama_barang', 'like', "%{$query}%")
+                    ->orWhere('barang.kode_barang', 'like', "%{$query}%");
             })
-            ->whereHas('kategori', function ($q) use ($user) {
-                $q->where('gudang_id', $user->gudang_id);
+            ->select(
+                'barang.kode_barang',
+                'barang.nama_barang as nama',
+                'pj_stok.stok',
+                'kategori.nama as kategori',
+                'gudang.nama as gudang'
+            )
+            ->limit(10)
+            ->get()
+            ->map(function ($item) {
+                $stockStatus = 'available';
+                if ($item->stok == 0) {
+                    $stockStatus = 'empty';
+                } elseif ($item->stok <= 10) {
+                    $stockStatus = 'low';
+                }
+
+                return [
+                    'kode_barang' => $item->kode_barang,
+                    'nama' => $item->nama,
+                    'kode' => $item->kode_barang,
+                    'stok' => $item->stok,
+                    'kategori' => $item->kategori,
+                    'gudang' => $item->gudang,
+                    'stock_status' => $stockStatus
+                ];
             });
-
-        $barang = $barangQuery->limit(10)->get();
-
-        $results = $barang->map(function ($item) use ($user) {
-            $pjStok = PjStok::where('kode_barang', $item->kode_barang)
-                ->where('id_gudang', $user->gudang_id)
-                ->first();
-
-            $stok = $pjStok ? $pjStok->stok : 0;
-
-            $stockStatus = 'available';
-            if ($stok == 0) {
-                $stockStatus = 'empty';
-            } elseif ($stok <= 10) {
-                $stockStatus = 'low';
-            }
-
-            return [
-                'kode_barang' => $item->kode_barang,
-                'nama' => $item->nama_barang,
-                'kode' => $item->kode_barang,
-                'stok' => $stok,
-                'kategori' => $item->kategori->nama ?? '-',
-                'gudang' => $item->kategori->gudang->nama ?? '-',
-                'stock_status' => $stockStatus
-            ];
-        });
 
         return response()->json($results);
     }
 
     /**
-     * Proses barang keluar - FIXED sesuai model
+     * Proses barang keluar
      */
     public function barangKeluar(Request $request, $kode_barang)
     {
-        // Debug: Log semua data yang diterima dari request
         Log::info('=== BARANG KELUAR REQUEST ===');
         Log::info('All Request Data:', $request->all());
         Log::info('Kode Barang:', ['kode_barang' => $kode_barang]);
-        Log::info('Bagian ID from request:', ['bagian_id' => $request->bagian_id]);
 
         // Validasi input
         $validated = $request->validate([
@@ -246,8 +200,6 @@ class DataKeseluruhan extends Controller
             'keterangan' => 'nullable|string',
             'bukti' => 'nullable|file|mimes:jpeg,jpg,png,pdf|max:2048',
         ]);
-
-        Log::info('Validated Data:', $validated);
 
         $user = Auth::user();
 
@@ -262,25 +214,32 @@ class DataKeseluruhan extends Controller
             ]);
         }
 
-        // Cek apakah barang ada di gudang user
-        if ($barang->kategori->gudang_id != $user->gudang_id) {
-            return back()->with('toast', [
-                'type' => 'error',
-                'title' => 'Error!',
-                'message' => 'Barang tidak ditemukan di gudang Anda.'
-            ]);
-        }
-
         // Cek stok di PJ Stok
         $pjStok = PjStok::where('kode_barang', $kode_barang)
             ->where('id_gudang', $user->gudang_id)
             ->first();
 
-        if (!$pjStok || $pjStok->stok < $request->jumlah) {
+        Log::info('Stok Check:', [
+            'kode_barang' => $kode_barang,
+            'gudang_id' => $user->gudang_id,
+            'stok_found' => $pjStok ? 'Yes' : 'No',
+            'stok_value' => $pjStok ? $pjStok->stok : 0,
+            'requested_qty' => $request->jumlah
+        ]);
+
+        if (!$pjStok) {
+            return back()->with('toast', [
+                'type' => 'error',
+                'title' => 'Stok Tidak Ditemukan!',
+                'message' => 'Barang tidak ditemukan di gudang Anda.'
+            ]);
+        }
+
+        if ($pjStok->stok < $request->jumlah) {
             return back()->with('toast', [
                 'type' => 'error',
                 'title' => 'Stok Tidak Cukup!',
-                'message' => 'Stok barang di gudang Anda tidak mencukupi. Stok tersedia: ' . ($pjStok ? $pjStok->stok : 0)
+                'message' => "Stok barang di gudang Anda tidak mencukupi. Stok tersedia: {$pjStok->stok}"
             ]);
         }
 
@@ -293,25 +252,18 @@ class DataKeseluruhan extends Controller
             Log::info('Bukti uploaded:', ['path' => $buktiPath]);
         }
 
-        // Proses bagian_id - pastikan null jika kosong
+        // Proses bagian_id
         $bagianId = $request->input('bagian_id');
-
-        // Jika bagian_id adalah string kosong atau "null", set ke null
         if ($bagianId === '' || $bagianId === 'null' || empty($bagianId)) {
             $bagianId = null;
         } else {
-            // Pastikan bagian_id adalah integer
             $bagianId = (int) $bagianId;
-
-            // Double check apakah bagian benar-benar ada
             $bagianExists = Bagian::find($bagianId);
             if (!$bagianExists) {
                 Log::warning('Bagian ID tidak ditemukan:', ['bagian_id' => $bagianId]);
                 $bagianId = null;
             }
         }
-
-        Log::info('Processed Bagian ID:', ['bagian_id' => $bagianId]);
 
         // Siapkan data untuk disimpan
         $dataToInsert = [
@@ -328,19 +280,31 @@ class DataKeseluruhan extends Controller
 
         Log::info('Data to be inserted:', $dataToInsert);
 
-        // Simpan data barang keluar menggunakan method prosesBarangKeluar
+        // Simpan data barang keluar
         try {
-            $barangKeluar = TransaksiBarangKeluar::prosesBarangKeluar($dataToInsert);
+            DB::beginTransaction();
 
-            Log::info('Barang Keluar Created Successfully:', $barangKeluar->toArray());
+            $barangKeluar = TransaksiBarangKeluar::create($dataToInsert);
+
+            // Kurangi stok di pj_stok
+            $pjStok->kurangiStok($request->jumlah);
+
+            DB::commit();
+
+            Log::info('Barang Keluar Created Successfully:', [
+                'transaksi_id' => $barangKeluar->id,
+                'stok_baru' => $pjStok->stok
+            ]);
 
             return back()->with('toast', [
                 'type' => 'success',
                 'title' => 'Berhasil!',
-                'message' => 'Barang keluar berhasil dicatat.'
+                'message' => "Barang keluar berhasil dicatat. Stok tersisa: {$pjStok->stok}"
             ]);
 
         } catch (\Exception $e) {
+            DB::rollBack();
+
             Log::error('Error creating Barang Keluar:', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -359,57 +323,62 @@ class DataKeseluruhan extends Controller
      */
     private function getFilteredBarang(Request $request, $gudangId)
     {
-        $query = Barang::with(['kategori.gudang']);
+        if (!$request->hasAny(['search', 'kode', 'stok_min', 'stok_max', 'kategori_id', 'satuan'])) {
+            return collect([]);
+        }
 
-        // Filter berdasarkan gudang user
-        $query->whereHas('kategori', function ($q) use ($gudangId) {
-            $q->where('gudang_id', $gudangId);
-        });
+        $query = DB::table('pj_stok')
+            ->join('barang', 'pj_stok.kode_barang', '=', 'barang.kode_barang')
+            ->join('kategori', 'pj_stok.id_kategori', '=', 'kategori.id')
+            ->where('pj_stok.id_gudang', $gudangId)
+            ->where('pj_stok.stok', '>', 0);
 
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('nama_barang', 'like', "%{$search}%")
-                    ->orWhere('kode_barang', 'like', "%{$search}%");
+                $q->where('barang.nama_barang', 'like', "%{$search}%")
+                    ->orWhere('barang.kode_barang', 'like', "%{$search}%");
             });
         }
 
         if ($request->filled('kode')) {
-            $query->where('kode_barang', 'like', "%{$request->kode}%");
+            $query->where('barang.kode_barang', 'like', "%{$request->kode}%");
         }
 
-        // Filter stok - menggunakan PjStok
-        if ($request->filled('stok_min') || $request->filled('stok_max')) {
-            $query->whereHas('pjStok', function ($q) use ($request, $gudangId) {
-                $q->where('id_gudang', $gudangId);
-                if ($request->filled('stok_min')) {
-                    $q->where('stok', '>=', (int) $request->stok_min);
-                }
-                if ($request->filled('stok_max')) {
-                    $q->where('stok', '<=', (int) $request->stok_max);
-                }
-            });
+        if ($request->filled('stok_min')) {
+            $query->where('pj_stok.stok', '>=', (int) $request->stok_min);
+        }
+
+        if ($request->filled('stok_max')) {
+            $query->where('pj_stok.stok', '<=', (int) $request->stok_max);
         }
 
         if ($request->filled('kategori_id')) {
-            $query->where('id_kategori', $request->kategori_id);
+            $query->where('pj_stok.id_kategori', $request->kategori_id);
         }
 
         if ($request->filled('satuan')) {
-            $query->where('satuan', $request->satuan);
+            $query->where('barang.satuan', $request->satuan);
         }
 
-        if ($request->filled('harga_min') && $request->filled('harga_max')) {
-            $query->whereBetween('harga_barang', [
-                (float) $request->harga_min,
-                (float) $request->harga_max,
-            ]);
-        } elseif ($request->filled('harga_min')) {
-            $query->where('harga_barang', '>=', (float) $request->harga_min);
-        } elseif ($request->filled('harga_max')) {
-            $query->where('harga_barang', '<=', (float) $request->harga_max);
-        }
-
-        return $query->get();
+        return $query->select(
+            'barang.kode_barang as kode',
+            'barang.nama_barang as nama',
+            'barang.satuan',
+            'pj_stok.stok as stok_tersedia',
+            'kategori.nama as kategori_nama',
+            'pj_stok.id_kategori'
+        )
+            ->get()
+            ->map(function ($item) {
+                return (object) [
+                    'id' => null,
+                    'kode' => $item->kode,
+                    'nama' => $item->nama,
+                    'satuan' => $item->satuan,
+                    'stok_tersedia' => $item->stok_tersedia,
+                    'kategori' => (object) ['nama' => $item->kategori_nama]
+                ];
+            });
     }
 }
