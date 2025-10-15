@@ -144,7 +144,10 @@
             $totalPagesMasuk = ceil($riwayatMasuk->count() / $itemsPerPage);
 
             // Paginasi untuk data distribusi
-            $distribusiPaginated = $riwayatDistribusi->slice(($currentPageDistribusi - 1) * $itemsPerPage, $itemsPerPage);
+            $distribusiPaginated = $riwayatDistribusi->slice(
+                ($currentPageDistribusi - 1) * $itemsPerPage,
+                $itemsPerPage,
+            );
             $totalPagesDistribusi = ceil($riwayatDistribusi->count() / $itemsPerPage);
 
             // Paginasi untuk data keluar
@@ -160,8 +163,8 @@
                         <i class="bi bi-box-arrow-in-down me-2"></i>
                         Barang Masuk
                     </h5>
-                    <button class="btn btn-sm btn-toggle-table" data-bs-toggle="collapse" 
-                            data-bs-target="#tableMasuk" aria-expanded="true">
+                    <button class="btn btn-sm btn-toggle-table" data-bs-toggle="collapse"
+                        data-bs-target="#tableMasuk" aria-expanded="true">
                         <i class="bi bi-chevron-down"></i>
                     </button>
                 </div>
@@ -177,10 +180,8 @@
                                         <th>Gudang</th>
                                         <th>Nama Barang</th>
                                         <th>Jumlah</th>
-                                        <th>Bagian</th>
-                                        <th>Penerima</th>
                                         <th>Bukti</th>
-                                        <th>Alur Barang</th>
+                                        <th>Keterangan</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -192,9 +193,7 @@
                                             <td>{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }} WIB</td>
                                             <td class="fw-medium">{{ $item->gudang }}</td>
                                             <td class="fw-medium">{{ $item->nama_barang }}</td>
-                                            <td><span class="badge bg-success">{{ $item->jumlah }}</span></td>
-                                            <td>{{ $item->bagian }}</td>
-                                            <td>{{ $item->penerima }}</td>
+                                            <td><span class="fw-medium">{{ $item->jumlah }}</span></td>
                                             <td>
                                                 @if ($item->bukti)
                                                     <span class="riwayat-bukti-icon" data-bs-toggle="modal"
@@ -207,14 +206,12 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                <span class="badge bg-primary">
-                                                    {{ $item->alur_barang }}
-                                                </span>
+                                                {{ $item->keterangan }}
                                             </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="10" class="riwayat-empty-state text-center py-4">
+                                            <td colspan="8" class="riwayat-empty-state text-center py-4">
                                                 <i class="bi bi-inbox"></i>
                                                 <p>Tidak ada data barang masuk ditemukan</p>
                                             </td>
@@ -255,11 +252,11 @@
             <div class="card riwayat-table-card mb-4">
                 <div class="card-header riwayat-header-distribusi d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">
-                        <i class="bi bi-box-arrow-in-down me-2"></i>
+                        <i class="bi bi-arrow-left-right me-2"></i>
                         Distribusi Barang
                     </h5>
-                    <button class="btn btn-sm btn-toggle-table" data-bs-toggle="collapse" 
-                            data-bs-target="#tableDistribusi" aria-expanded="true">
+                    <button class="btn btn-sm btn-toggle-table" data-bs-toggle="collapse"
+                        data-bs-target="#tableDistribusi" aria-expanded="true">
                         <i class="bi bi-chevron-down"></i>
                     </button>
                 </div>
@@ -275,24 +272,22 @@
                                         <th>Gudang Tujuan</th>
                                         <th>Nama Barang</th>
                                         <th>Jumlah</th>
-                                        <th>Bagian</th>
-                                        <th>Penerima</th>
                                         <th>Bukti</th>
-                                        <th>Alur Barang</th>
+                                        <th>Keterangan</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @forelse($distribusiPaginated as $item)
                                         <tr>
                                             <td class="fw-semibold">
-                                                {{ ($currentPageDistribusi - 1) * $itemsPerPage + $loop->iteration }}</td>
+                                                {{ ($currentPageDistribusi - 1) * $itemsPerPage + $loop->iteration }}
+                                            </td>
                                             <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
                                             <td>{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }} WIB</td>
                                             <td class="fw-medium">{{ $item->gudang }}</td>
                                             <td class="fw-medium">{{ $item->nama_barang }}</td>
-                                            <td><span class="badge bg-warning text-dark">{{ $item->jumlah }}</span></td>
-                                            <td>{{ $item->bagian }}</td>
-                                            <td>{{ $item->penerima }}</td>
+                                            <td><span class="fw-medium">{{ $item->jumlah }}</span>
+                                            </td>
                                             <td>
                                                 @if ($item->bukti)
                                                     <span class="riwayat-bukti-icon" data-bs-toggle="modal"
@@ -305,14 +300,12 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                <span class="badge bg-info">
-                                                    {{ $item->alur_barang }}
-                                                </span>
+                                                {{ $item->keterangan }}
                                             </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="10" class="riwayat-empty-state text-center py-4">
+                                            <td colspan="8" class="riwayat-empty-state text-center py-4">
                                                 <i class="bi bi-arrow-left-right"></i>
                                                 <p>Tidak ada data distribusi barang ditemukan</p>
                                             </td>
@@ -356,8 +349,8 @@
                         <i class="bi bi-box-arrow-up me-2"></i>
                         Barang Keluar
                     </h5>
-                    <button class="btn btn-sm btn-toggle-table" data-bs-toggle="collapse" 
-                            data-bs-target="#tableKeluar" aria-expanded="true">
+                    <button class="btn btn-sm btn-toggle-table" data-bs-toggle="collapse"
+                        data-bs-target="#tableKeluar" aria-expanded="true">
                         <i class="bi bi-chevron-down"></i>
                     </button>
                 </div>
@@ -370,13 +363,13 @@
                                         <th>No</th>
                                         <th>Tanggal</th>
                                         <th>Waktu</th>
-                                        <th>Gudang</th>
+                                        <th>Gudang Asal</th>
                                         <th>Nama Barang</th>
                                         <th>Jumlah</th>
                                         <th>Bagian</th>
                                         <th>Penerima</th>
                                         <th>Bukti</th>
-                                        <th>Alur Barang</th>
+                                        <th>Keterangan</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -388,7 +381,7 @@
                                             <td>{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }} WIB</td>
                                             <td class="fw-medium">{{ $item->gudang }}</td>
                                             <td class="fw-medium">{{ $item->nama_barang }}</td>
-                                            <td><span class="badge bg-danger">{{ $item->jumlah }}</span></td>
+                                            <td><span class="fw-medium">{{ $item->jumlah }}</span></td>
                                             <td>{{ $item->bagian }}</td>
                                             <td>{{ $item->penerima }}</td>
                                             <td>
@@ -403,9 +396,7 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                <span class="badge bg-secondary">
-                                                    {{ $item->alur_barang }}
-                                                </span>
+                                                {{ $item->keterangan }}
                                             </td>
                                         </tr>
                                     @empty
@@ -541,7 +532,7 @@
                         const target = button.getAttribute('data-bs-target');
                         const targetElement = document.querySelector(target);
                         const icon = button.querySelector('i');
-                        
+
                         if (targetElement.classList.contains('show')) {
                             // Jika tabel terbuka, set icon ke chevron-up
                             icon.classList.remove('bi-chevron-up');
@@ -774,17 +765,17 @@
             function downloadReport(format) {
                 const form = document.getElementById('filterForm');
                 const formData = new FormData(form);
-                
+
                 const params = new URLSearchParams();
-                
+
                 for (let [key, value] of formData) {
                     if (value && value !== 'Semua' && value !== '') {
                         params.append(key, value);
                     }
                 }
-                
+
                 params.append('download', format);
-                
+
                 const url = `{{ route('admin.riwayat.index') }}?${params.toString()}`;
                 window.location.href = url;
             }
@@ -826,9 +817,17 @@
                 border-bottom: 3px solid #f44336;
             }
 
-            .badge.bg-primary { background-color: #2196f3 !important; }
-            .badge.bg-info { background-color: #17a2b8 !important; }
-            .badge.bg-secondary { background-color: #6c757d !important; }
+            .badge.bg-primary {
+                background-color: #2196f3 !important;
+            }
+
+            .badge.bg-info {
+                background-color: #17a2b8 !important;
+            }
+
+            .badge.bg-secondary {
+                background-color: #6c757d !important;
+            }
 
             /* Smooth transition untuk icon */
             .btn-toggle-table i {
@@ -837,10 +836,3 @@
         </style>
     @endpush
 </x-layouts.app>
-
-
-
-
-<button class="btn btn-sm btn-toggle-table collapsed" data-bs-toggle="collapse" data-bs-target="#tableMasuk" aria-expanded="false">
-                        <i class="bi bi-chevron-down"></i>
-                    </button>

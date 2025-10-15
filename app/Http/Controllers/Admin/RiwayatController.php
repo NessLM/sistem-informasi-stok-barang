@@ -27,14 +27,13 @@ class RiwayatController extends Controller
         return (object) [
             'tanggal'     => $item->tanggal ?? optional($item->created_at)->toDateString(),
             'waktu'       => optional($item->created_at)->format('H:i:s'),
-            'alur_barang' => 'Masuk PB',
+            'alur_barang' => 'Masuk',
             'gudang'      => 'Gudang Utama',
             'nama_barang' => optional($item->barang)->nama_barang ?? '-',
             'jumlah'      => (int) ($item->jumlah ?? 0),
-            'bagian'      => 'Admin',
-            'penerima'    => 'Pengelola Barang',
             'bukti'       => $item->bukti,
             'bukti_path'  => $item->bukti ? asset('storage/' . $item->bukti) : null,
+            'keterangan'  => $item->keterangan ?? 'Barang masuk dari Admin ke Gudang Utama' // PERBAIKAN DI SINI
         ];
     }
 
@@ -46,14 +45,13 @@ class RiwayatController extends Controller
         return (object) [
             'tanggal'     => $item->tanggal ?? optional($item->created_at)->toDateString(),
             'waktu'       => optional($item->created_at)->format('H:i:s'),
-            'alur_barang' => 'Distribusi PJ',
+            'alur_barang' => 'Distribusi',
             'gudang'      => optional($item->gudangTujuan)->nama ?? '-',
             'nama_barang' => optional($item->barang)->nama_barang ?? '-',
             'jumlah'      => (int) ($item->jumlah ?? 0),
-            'bagian'      => 'Pengelola Barang',
-            'penerima'    => optional($item->gudangTujuan)->nama ?? '-',
             'bukti'       => $item->bukti,
             'bukti_path'  => $item->bukti ? asset('storage/' . $item->bukti) : null,
+            'keterangan'  => $item->keterangan ?? 'Distribusi barang ke Gudang ' . (optional($item->gudangTujuan)->nama ?? '-') // PERBAIKAN DI SINI
         ];
     }
 
@@ -65,7 +63,7 @@ class RiwayatController extends Controller
         return (object) [
             'tanggal'     => $item->tanggal ?? optional($item->created_at)->toDateString(),
             'waktu'       => optional($item->created_at)->format('H:i:s'),
-            'alur_barang' => 'Keluar PJ',
+            'alur_barang' => 'Keluar',
             'gudang'      => optional($item->gudang)->nama ?? '-',
             'nama_barang' => optional($item->barang)->nama_barang ?? '-',
             'jumlah'      => (int) ($item->jumlah ?? 0),
@@ -73,6 +71,7 @@ class RiwayatController extends Controller
             'penerima'    => $item->nama_penerima ?? '-',
             'bukti'       => $item->bukti,
             'bukti_path'  => $item->bukti ? asset('storage/' . $item->bukti) : null,
+            'keterangan'  => $item->keterangan ?? 'Barang keluar untuk ' . (optional($item->bagian)->nama ?? '-') // PERBAIKAN DI SINI
         ];
     }
 
