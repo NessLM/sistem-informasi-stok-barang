@@ -201,10 +201,8 @@
                             <tbody>
                                 @foreach ($barang as $i => $b)
                                     @php
-                                        $pjStok = $b->pjStok()
-                                            ->where('id_gudang', $selectedGudang->id)
-                                            ->first();
-                                        $stokTersedia = $pjStok ? $pjStok->stok : 0;
+                                        // Ambil stok dari pb_stok
+                                        $stokTersedia = $b->pbStok ? $b->pbStok->stok : 0;
                                     @endphp
                                     @if ($stokTersedia > 0)
                                         <tr @if ($stokTersedia < 10) class="row-low-stock" @endif>
@@ -271,11 +269,9 @@
                                 <tr id="detail-{{ $k->id }}" style="display:none;">
                                     <td colspan="2">
                                         @php
-                                            $barangFiltered = $k->barang->filter(function($item) use ($k) {
-                                                $pjStok = $item->pjStok()
-                                                    ->where('id_gudang', $k->gudang_id)
-                                                    ->first();
-                                                $stokTersedia = $pjStok ? $pjStok->stok : 0;
+                                            // Filter barang yang stoknya > 0 di pb_stok
+                                            $barangFiltered = $k->barang->filter(function($item) {
+                                                $stokTersedia = $item->pbStok ? $item->pbStok->stok : 0;
                                                 return $stokTersedia > 0;
                                             });
                                         @endphp
@@ -294,10 +290,8 @@
                                                     <tbody>
                                                         @foreach ($barangFiltered as $item)
                                                             @php
-                                                                $pjStok = $item->pjStok()
-                                                                    ->where('id_gudang', $k->gudang_id)
-                                                                    ->first();
-                                                                $stokTersedia = $pjStok ? $pjStok->stok : 0;
+                                                                // Ambil stok dari pb_stok
+                                                                $stokTersedia = $item->pbStok ? $item->pbStok->stok : 0;
                                                             @endphp
                                                             <tr @if ($stokTersedia < 10) class="row-low-stock" @endif>
                                                                 <td>{{ $item->kode_barang }}</td>
