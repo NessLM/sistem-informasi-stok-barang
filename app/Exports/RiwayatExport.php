@@ -2,7 +2,6 @@
 
 namespace App\Exports;
 
-use App\Models\Riwayat;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
@@ -26,18 +25,28 @@ class RiwayatExport implements WithMultipleSheets
         $sheets = [];
         
         // Sheet untuk barang masuk
-        $masuk = $this->riwayat->where('alur_barang', 'Masuk')->sortByDesc('tanggal')->sortByDesc('waktu');
-        $sheets[] = new RiwayatSheet($masuk, 'Barang Masuk');
+        $masuk = $this->riwayat->where('alur_barang', 'Masuk PB')->sortByDesc('tanggal')->sortByDesc('waktu');
+        if ($masuk->count() > 0) {
+            $sheets[] = new RiwayatMasukSheet($masuk, 'Barang Masuk');
+        }
+        
+        // Sheet untuk distribusi
+        $distribusi = $this->riwayat->where('alur_barang', 'Distribusi PJ')->sortByDesc('tanggal')->sortByDesc('waktu');
+        if ($distribusi->count() > 0) {
+            $sheets[] = new RiwayatDistribusiSheet($distribusi, 'Distribusi Barang');
+        }
         
         // Sheet untuk barang keluar
-        $keluar = $this->riwayat->where('alur_barang', 'Keluar')->sortByDesc('tanggal')->sortByDesc('waktu');
-        $sheets[] = new RiwayatSheet($keluar, 'Barang Keluar');
+        $keluar = $this->riwayat->where('alur_barang', 'Keluar PJ')->sortByDesc('tanggal')->sortByDesc('waktu');
+        if ($keluar->count() > 0) {
+            $sheets[] = new RiwayatKeluarSheet($keluar, 'Barang Keluar');
+        }
         
         return $sheets;
     }
 }
 
-class RiwayatSheet implements FromCollection, WithHeadings, WithMapping, WithStyles
+class RiwayatMasukSheet implements FromCollection, WithHeadings, WithMapping, WithStyles
 {
     protected $riwayat;
     protected $sheetTitle;
@@ -47,7 +56,7 @@ class RiwayatSheet implements FromCollection, WithHeadings, WithMapping, WithSty
     {
         $this->riwayat = $riwayat;
         $this->sheetTitle = $sheetTitle;
-        $this->counter = 0; // Inisialisasi counter untuk setiap sheet
+        $this->counter = 0;
     }
 
     public function collection()
@@ -64,8 +73,7 @@ class RiwayatSheet implements FromCollection, WithHeadings, WithMapping, WithSty
             'Gudang',
             'Nama Barang',
             'Jumlah',
-            'Bagian',
-            'Alur Barang'
+            'Keterangan'
         ];
     }
 
@@ -74,30 +82,153 @@ class RiwayatSheet implements FromCollection, WithHeadings, WithMapping, WithSty
         $this->counter++;
         
         return [
-            $this->counter, // Gunakan counter instance, bukan static
+            $this->counter,
+            \Carbon\Carbon::parse($riwayat->tanggal)->format('d/m/Y'),
+            \Carbon\Carbon::parse($riwayat->waktu)->format('H:i'),
+            $riwayat->gudang,
+            $riwayat->nama_barang,
+            $riwayat->jumlah,
+            $riwayat->keterangan ?? '-'
+        ];
+    }
+
+    public function styles(Worksheet $sheet)
+    {
+        $sheet->setTitle(substr($this->sheetTitle, 0, 31));
+        
+        // Auto size columns
+        foreach(range('A', 'G') as $column) {
+            $sheet->getColumnDimension($column)->setAutoSize(true);
+        }
+        
+        return [
+            1 => ['font' => ['bold' => true]],
+        ];
+    }
+}
+
+class RiwayatDistribusiSheet implements FromCollection, WithHeadings, WithMapping, WithStyles
+{
+    protected $riwayat;
+    protected $sheetTitle;
+    protected $counter;
+
+    public function __construct($riwayat, $sheetTitle)
+    {
+        $this->riwayat = $riwayat;
+        $this->sheetTitle = $sheetTitle;
+        $this->counter = 0;
+    }
+
+    public function collection()
+    {
+        return $this->riwayat;
+    }
+
+    public function headings(): array
+    {
+        return [
+            'No',
+            'Tanggal',
+            'Waktu',
+            'Gudang Tujuan',
+            'Nama Barang',
+            'Jumlah',
+            'Keterangan'
+        ];
+    }
+
+    public function map($riwayat): array
+    {
+        $this->counter++;
+        
+        return [
+            $this->counter,
+            \Carbon\Carbon::parse($riwayat->tanggal)->format('d/m/Y'),
+            \Carbon\Carbon::parse($riwayat->waktu)->format('H:i'),
+            $riwayat->gudang,
+            $riwayat->nama_barang,
+            $riwayat->jumlah,
+            $riwayat->keterangan ?? '-'
+        ];
+    }
+
+    public function styles(Worksheet $sheet)
+    {
+        $sheet->setTitle(substr($this->sheetTitle, 0, 31));
+        
+        // Auto size columns
+        foreach(range('A', 'G') as $column) {
+            $sheet->getColumnDimension($column)->setAutoSize(true);
+        }
+        
+        return [
+            1 => ['font' => ['bold' => true]],
+        ];
+    }
+}
+
+class RiwayatKeluarSheet implements FromCollection, WithHeadings, WithMapping, WithStyles
+{
+    protected $riwayat;
+    protected $sheetTitle;
+    protected $counter;
+
+    public function __construct($riwayat, $sheetTitle)
+    {
+        $this->riwayat = $riwayat;
+        $this->sheetTitle = $sheetTitle;
+        $this->counter = 0;
+    }
+
+    public function collection()
+    {
+        return $this->riwayat;
+    }
+
+    public function headings(): array
+    {
+        return [
+            'No',
+            'Tanggal',
+            'Waktu',
+            'Gudang Asal',
+            'Nama Barang',
+            'Jumlah',
+            'Bagian',
+            'Penerima',
+            'Keterangan'
+        ];
+    }
+
+    public function map($riwayat): array
+    {
+        $this->counter++;
+        
+        return [
+            $this->counter,
             \Carbon\Carbon::parse($riwayat->tanggal)->format('d/m/Y'),
             \Carbon\Carbon::parse($riwayat->waktu)->format('H:i'),
             $riwayat->gudang,
             $riwayat->nama_barang,
             $riwayat->jumlah,
             $riwayat->bagian,
-            $riwayat->alur_barang
+            $riwayat->penerima,
+            $riwayat->keterangan ?? '-'
         ];
     }
 
     public function styles(Worksheet $sheet)
     {
-        // Set title for the sheet
-        $sheet->setTitle(substr($this->sheetTitle, 0, 31)); // Excel sheet title max 31 chars
+        $sheet->setTitle(substr($this->sheetTitle, 0, 31));
+        
+        // Auto size columns
+        foreach(range('A', 'I') as $column) {
+            $sheet->getColumnDimension($column)->setAutoSize(true);
+        }
         
         return [
-            // Style the first row as bold text
             1 => ['font' => ['bold' => true]],
         ];
-    }
-
-    public function title(): string
-    {
-        return $this->sheetTitle;
     }
 }

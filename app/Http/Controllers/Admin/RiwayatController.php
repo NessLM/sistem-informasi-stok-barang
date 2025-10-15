@@ -27,13 +27,13 @@ class RiwayatController extends Controller
         return (object) [
             'tanggal'     => $item->tanggal ?? optional($item->created_at)->toDateString(),
             'waktu'       => optional($item->created_at)->format('H:i:s'),
-            'alur_barang' => 'Masuk',
+            'alur_barang' => 'Masuk PB', // PERBAIKAN: Sesuaikan dengan filter di PDF
             'gudang'      => 'Gudang Utama',
             'nama_barang' => optional($item->barang)->nama_barang ?? '-',
             'jumlah'      => (int) ($item->jumlah ?? 0),
             'bukti'       => $item->bukti,
             'bukti_path'  => $item->bukti ? asset('storage/' . $item->bukti) : null,
-            'keterangan'  => $item->keterangan ?? 'Barang masuk dari Admin ke Gudang Utama' // PERBAIKAN DI SINI
+            'keterangan'  => $item->keterangan ?? 'Barang masuk dari Admin ke Gudang Utama'
         ];
     }
 
@@ -45,13 +45,13 @@ class RiwayatController extends Controller
         return (object) [
             'tanggal'     => $item->tanggal ?? optional($item->created_at)->toDateString(),
             'waktu'       => optional($item->created_at)->format('H:i:s'),
-            'alur_barang' => 'Distribusi',
+            'alur_barang' => 'Distribusi PJ', // PERBAIKAN: Sesuaikan dengan filter di PDF
             'gudang'      => optional($item->gudangTujuan)->nama ?? '-',
             'nama_barang' => optional($item->barang)->nama_barang ?? '-',
             'jumlah'      => (int) ($item->jumlah ?? 0),
             'bukti'       => $item->bukti,
             'bukti_path'  => $item->bukti ? asset('storage/' . $item->bukti) : null,
-            'keterangan'  => $item->keterangan ?? 'Distribusi barang ke Gudang ' . (optional($item->gudangTujuan)->nama ?? '-') // PERBAIKAN DI SINI
+            'keterangan'  => $item->keterangan ?? 'Distribusi barang ke Gudang ' . (optional($item->gudangTujuan)->nama ?? '-')
         ];
     }
 
@@ -63,7 +63,7 @@ class RiwayatController extends Controller
         return (object) [
             'tanggal'     => $item->tanggal ?? optional($item->created_at)->toDateString(),
             'waktu'       => optional($item->created_at)->format('H:i:s'),
-            'alur_barang' => 'Keluar',
+            'alur_barang' => 'Keluar PJ', // PERBAIKAN: Sesuaikan dengan filter di PDF
             'gudang'      => optional($item->gudang)->nama ?? '-',
             'nama_barang' => optional($item->barang)->nama_barang ?? '-',
             'jumlah'      => (int) ($item->jumlah ?? 0),
@@ -71,7 +71,7 @@ class RiwayatController extends Controller
             'penerima'    => $item->nama_penerima ?? '-',
             'bukti'       => $item->bukti,
             'bukti_path'  => $item->bukti ? asset('storage/' . $item->bukti) : null,
-            'keterangan'  => $item->keterangan ?? 'Barang keluar untuk ' . (optional($item->bagian)->nama ?? '-') // PERBAIKAN DI SINI
+            'keterangan'  => $item->keterangan ?? 'Barang keluar untuk ' . (optional($item->bagian)->nama ?? '-')
         ];
     }
 
@@ -198,7 +198,7 @@ class RiwayatController extends Controller
 
         if ($request->download === 'pdf') {
             $pdf = Pdf::loadView('staff.admin.riwayat-pdf', compact('riwayat', 'filter'))
-                ->setPaper('a4', 'landscape')
+                ->setPaper('a4', 'portrait') // PERBAIKAN: Ubah ke portrait untuk PDF
                 ->setOption('isHtml5ParserEnabled', true)
                 ->setOption('isRemoteEnabled', true);
 
