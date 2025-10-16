@@ -32,6 +32,7 @@ class DataKeseluruhan extends Controller
         }
 
         // Filter kategori hanya dari Gudang Utama dengan eager load barang dan stok
+        // PERUBAHAN: Hapus whereHas pbStok agar barang stok 0 juga tampil
         $kategoriQuery = Kategori::with([
             'barang' => function ($q) use ($search) {
                 if ($search) {
@@ -40,10 +41,6 @@ class DataKeseluruhan extends Controller
                 }
                 // Eager load pbStok untuk mendapatkan stok PB
                 $q->with(['pbStok']);
-                // Hanya ambil barang yang ada di pb_stok dengan stok > 0
-                $q->whereHas('pbStok', function($query) {
-                    $query->where('stok', '>', 0);
-                });
             },
             'gudang'
         ])->where('gudang_id', $gudangUtama->id);
@@ -117,11 +114,7 @@ class DataKeseluruhan extends Controller
             });
         }
 
-        // Hanya ambil barang yang ada di pb_stok
-        $barangQuery->whereHas('pbStok', function($q) {
-            $q->where('stok', '>', 0);
-        });
-
+        // PERUBAHAN: Hapus whereHas pbStok agar barang stok 0 juga tampil
         $barang = $barangQuery->limit(10)->get();
 
         $results = $barang->map(function ($item) {
@@ -145,9 +138,6 @@ class DataKeseluruhan extends Controller
                 'gudang' => $item->kategori->gudang->nama ?? '-',
                 'stock_status' => $stockStatus
             ];
-        })->filter(function ($item) {
-            // Filter: hanya tampilkan barang yang stoknya > 0
-            return $item['stok'] > 0;
         })->values();
 
         return response()->json($results);
@@ -195,10 +185,7 @@ class DataKeseluruhan extends Controller
                 $q->where('gudang_id', $gudangId);
             });
 
-            // Hanya ambil barang yang ada di pb_stok dengan stok > 0
-            $query->whereHas('pbStok', function ($q) {
-                $q->where('stok', '>', 0);
-            });
+            // PERUBAHAN: Hapus whereHas pbStok agar barang stok 0 juga tampil
         }
 
         if ($request->filled('search')) {
