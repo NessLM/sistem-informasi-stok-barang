@@ -94,10 +94,19 @@
             page-break-inside: avoid;
         }
 
-        /* distribusi dan keluar harus di halaman baru */
-        .distribusi,
-        .barang-keluar {
+        /* distribusi dan keluar harus di halaman baru - hanya untuk h3 */
+        h3.distribusi,
+        h3.barang-keluar {
             page-break-before: always;
+        }
+
+        /* Pastikan judul dan tabel tidak terpisah */
+        h3 {
+            page-break-after: avoid;
+        }
+
+        .table-container {
+            page-break-before: avoid;
         }
 
         table.data th {
@@ -108,37 +117,99 @@
             background: #f9f9f9;
         }
 
-        /* Perbaikan lebar kolom */
-        .col-no {
-            width: 5%;
+        /* Perbaikan lebar kolom - TABEL BARANG MASUK */
+        table.data.masuk .col-no {
+            width: 4%;
         }
 
-        .col-tanggal {
-            width: 12%;
+        table.data.masuk .col-tanggal {
+            width: 13%;
         }
 
-        .col-gudang {
-            width: 12%;
+        table.data.masuk .col-gudang {
+            width: 13%;
         }
 
-        .col-nama {
-            width: 18%;
+        table.data.masuk .col-nama {
+            width: 22%;
         }
 
-        .col-jumlah {
+        table.data.masuk .col-jumlah {
+            width: 8%;
+        }
+
+        table.data.masuk .col-satuan {
+            width: 8%;
+        }
+
+        table.data.masuk .col-keterangan {
+            width: 32%;
+        }
+
+        /* Perbaikan lebar kolom - TABEL DISTRIBUSI */
+        table.data.distribusi .col-no {
+            width: 4%;
+        }
+
+        table.data.distribusi .col-tanggal {
+            width: 13%;
+        }
+
+        table.data.distribusi .col-gudang {
+            width: 13%;
+        }
+
+        table.data.distribusi .col-nama {
+            width: 22%;
+        }
+
+        table.data.distribusi .col-jumlah {
+            width: 8%;
+        }
+
+        table.data.distribusi .col-satuan {
+            width: 8%;
+        }
+
+        table.data.distribusi .col-keterangan {
+            width: 32%;
+        }
+
+        /* Perbaikan lebar kolom - TABEL BARANG KELUAR */
+        table.data.keluar .col-no {
+            width: 4%;
+        }
+
+        table.data.keluar .col-tanggal {
+            width: 11%;
+        }
+
+        table.data.keluar .col-gudang {
+            width: 11%;
+        }
+
+        table.data.keluar .col-nama {
+            width: 15%;
+        }
+
+        table.data.keluar .col-jumlah {
             width: 7%;
         }
 
-        .col-bagian {
-            width: 12%;
+        table.data.keluar .col-satuan {
+            width: 7%;
         }
 
-        .col-penerima {
-            width: 12%;
+        table.data.keluar .col-bagian {
+            width: 14%;
         }
 
-        .col-keterangan {
-            width: 12%;
+        table.data.keluar .col-penerima {
+            width: 13%;
+        }
+
+        table.data.keluar .col-keterangan {
+            width: 18%;
         }
 
         .col-bukti {
@@ -307,7 +378,7 @@
     @if ($jumlahMasuk > 0)
         <h3 style="margin-top:30px; text-align:center; font-size:14px;">Barang Masuk</h3>
         <div class="table-container">
-            <table class="data">
+            <table class="data masuk">
                 <thead>
                     <tr>
                         <th class="col-no">No</th>
@@ -315,6 +386,7 @@
                         <th class="col-gudang">Gudang</th>
                         <th class="col-nama">Nama Barang</th>
                         <th class="col-jumlah">Jumlah</th>
+                        <th class="col-satuan">Satuan</th>
                         <th class="col-keterangan">Keterangan</th>
                     </tr>
                 </thead>
@@ -334,14 +406,15 @@
                             <td>{{ $r->gudang }}</td>
                             <td>{{ $r->nama_barang }}</td>
                             <td>{{ $r->jumlah }}</td>
+                            <td>{{ $r->satuan }}</td>
                             <td>{{ $r->keterangan ?? '-' }}</td>
                         </tr>
                     @endforeach
                     <tr>
-                        <td colspan="3" style="text-align:right; font-weight:bold;">Total Barang Masuk</td>
-                        <td style="font-weight:bold;">{{ $totalMasuk }}</td>
-                        <td></td>
-                        <td></td>
+                        <td colspan="4" style="text-align:center; font-weight:bold;">Total Barang Masuk</td>
+                        <td style="font-weight:bold; text-align:center;">{{ $totalMasuk }}</td>
+                        <td style="text-align:center; font-weight:bold;">{{ $r->satuan }}</td>
+                        <td colspan="1"></td>
                     </tr>
                 </tbody>
             </table>
@@ -352,7 +425,7 @@
     @if ($jumlahDistribusi > 0)
         <h3 style="margin-top:40px; text-align:center; font-size:14px;" class="distribusi">Distribusi Barang</h3>
         <div class="table-container">
-            <table class="data">
+            <table class="data distribusi">
                 <thead>
                     <tr>
                         <th class="col-no">No</th>
@@ -360,6 +433,7 @@
                         <th class="col-gudang">Gudang Tujuan</th>
                         <th class="col-nama">Nama Barang</th>
                         <th class="col-jumlah">Jumlah</th>
+                        <th class="col-satuan">Satuan</th>
                         <th class="col-keterangan">Keterangan</th>
                     </tr>
                 </thead>
@@ -379,14 +453,15 @@
                             <td>{{ $r->gudang }}</td>
                             <td>{{ $r->nama_barang }}</td>
                             <td>{{ $r->jumlah }}</td>
+                            <td>{{ $r->satuan }}</td>
                             <td>{{ $r->keterangan ?? '-' }}</td>
                         </tr>
                     @endforeach
                     <tr>
-                        <td colspan="3" style="text-align:right; font-weight:bold;">Total Distribusi Barang</td>
-                        <td style="font-weight:bold;">{{ $totalDistribusi }}</td>
-                        <td></td>
-                        <td></td>
+                        <td colspan="4" style="text-align:center; font-weight:bold;">Total Distribusi Barang</td>
+                        <td style="font-weight:bold; text-align:center;">{{ $totalDistribusi }}</td>
+                        <td style="text-align:center; font-weight:bold;">{{ $r->satuan }}</td>
+                        <td colspan="1"></td>
                     </tr>
                 </tbody>
             </table>
@@ -397,7 +472,7 @@
     @if ($jumlahKeluar > 0)
         <h3 style="margin-top:40px; text-align:center; font-size:14px;" class="barang-keluar">Barang Keluar</h3>
         <div class="table-container">
-            <table class="data">
+            <table class="data keluar">
                 <thead>
                     <tr>
                         <th class="col-no">No</th>
@@ -405,6 +480,7 @@
                         <th class="col-gudang">Gudang Asal</th>
                         <th class="col-nama">Nama Barang</th>
                         <th class="col-jumlah">Jumlah</th>
+                        <th class="col-satuan">Satuan</th>
                         <th class="col-bagian">Bagian</th>
                         <th class="col-penerima">Penerima</th>
                         <th class="col-keterangan">Keterangan</th>
@@ -426,18 +502,17 @@
                             <td>{{ $r->gudang }}</td>
                             <td>{{ $r->nama_barang }}</td>
                             <td>{{ $r->jumlah }}</td>
+                            <td>{{ $r->satuan }}</td>
                             <td>{{ $r->bagian }}</td>
                             <td>{{ $r->penerima }}</td>
                             <td>{{ $r->keterangan ?? '-' }}</td>
                         </tr>
                     @endforeach
                     <tr>
-                        <td colspan="3" style="text-align:right; font-weight:bold;">Total Barang Keluar</td>
-                        <td style="font-weight:bold;">{{ $totalKeluar }}</td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
+                        <td colspan="4" style="text-align:center; font-weight:bold;">Total Barang Keluar</td>
+                        <td style="font-weight:bold; text-align:center;">{{ $totalKeluar }}</td>
+                        <td style="text-align:center; font-weight:bold;">{{ $r->satuan }}</td>
+                        <td colspan="3"></td>
                     </tr>
                 </tbody>
             </table>
