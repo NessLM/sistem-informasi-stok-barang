@@ -444,19 +444,28 @@ class DataKeseluruhan extends Controller
         }
     }
 
-    public function destroyBarang($id)
-    {
-        // Support both kode_barang and id for backwards compatibility
-        $barang = Barang::where('id', $id)
-                       ->orWhere('kode_barang', $id)
-                       ->firstOrFail();
+public function destroyBarang($kode_barang)
+{
+    DB::beginTransaction();
+    try {
+        // Cari barang berdasarkan kode_barang (primary key)
+        $barang = Barang::where('kode_barang', $kode_barang)->firstOrFail();
+        
+        $namaBarang = $barang->nama_barang;
+        
+        // Hapus semua relasi transaksi terlebih dahulu
+        $barang->transaksiBarangMasuk()->delete();
+        $barang->transaksiDistribusi()->delete();
+        $barang->transaksiBarangKeluar()->delete();
         
         // Hapus stok terkait
         $barang->pbStok()->delete();
         $barang->pjStok()->delete();
         
-        $namaBarang = $barang->nama_barang;
+        // Hapus barang
         $barang->delete();
+        
+        DB::commit();
 
         return redirect()->route('admin.datakeseluruhan.index')
                         ->with('toast', [
@@ -464,29 +473,141 @@ class DataKeseluruhan extends Controller
             'title' => 'Berhasil!',
             'message' => "Barang {$namaBarang} berhasil dihapus."
         ]);
-    }
-
-    public function destroyKategori($id)
-    {
-        $kategori = Kategori::findOrFail($id);
-
-        // Hapus stok untuk semua barang dalam kategori
-        foreach ($kategori->barang as $barang) {
-            $barang->pbStok()->delete();
-            $barang->pjStok()->delete();
-        }
-
-        // Hapus semua barang dalam kategori
-        $kategori->barang()->delete();
-        $kategori->delete();
-
+        
+    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        DB::rollBack();
         return redirect()->route('admin.datakeseluruhan.index')
-                         ->with('toast', [
-            'type' => 'success',
-            'title' => 'Berhasil!',
-            'message' => 'Kategori Berhasil Dihapus.'
+                        ->with('toast', [
+            'type' => 'error',
+            'title' => 'Gagal!',
+            'message' => 'Barang tidak ditemukan.'
+        ]);
+        
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return redirect()->route('admin.datakeseluruhan.index')
+                        ->with('toast', [
+            'type' => 'error',
+            'title' => 'Gagal!',
+            'message' => 'Gagal menghapus barang: ' . $e->getMessage()
         ]);
     }
+}
+
+
+public function destroyKategori($id)
+{
+    DB::beginTransaction();
+
+    try {
+        $kategori = Kategori::findOrFail($id);
+        $namaKategori = $kategori->nama;
+        $gudangSaat = $kategori->gudang ?? null;
+        $isGudangUtama = $gudangSaat && stripos(strtolower($gudangSaat->nama), 'utama') !== false;
+
+        $this->deleteKategoriWithBarang($kategori);
+        $deletedCount = 1;
+
+        // Jika bukan gudang utama → hapus juga di Gudang Utama
+        if ($gudangSaat && !$isGudangUtama) {
+            $gudangUtama = Gudang::whereRaw('LOWER(nama) LIKE ?', ['%utama%'])->first();
+
+            if ($gudangUtama) {
+                $kategoriUtama = Kategori::whereRaw('LOWER(nama) = ?', [strtolower($namaKategori)])
+                    ->where('gudang_id', $gudangUtama->id)
+                    ->first();
+
+                if ($kategoriUtama) {
+                    $this->deleteKategoriWithBarang($kategoriUtama);
+                    $deletedCount++;
+                }
+            }
+        }
+        // Jika dari Gudang Utama → hapus juga semua kategori dengan nama sama di gudang lain
+        elseif ($isGudangUtama) {
+            $allGudangs = Gudang::whereRaw('LOWER(nama) NOT LIKE ?', ['%utama%'])->get();
+
+            foreach ($allGudangs as $gudang) {
+                $kategoriGudang = Kategori::whereRaw('LOWER(nama) = ?', [strtolower($namaKategori)])
+                    ->where('gudang_id', $gudang->id)
+                    ->first();
+
+                if ($kategoriGudang) {
+                    $this->deleteKategoriWithBarang($kategoriGudang);
+                    $deletedCount++;
+                }
+            }
+        }
+
+        DB::commit();
+
+        $message = "Kategori '{$namaKategori}' berhasil dihapus";
+
+        if ($deletedCount > 1) {
+            if ($isGudangUtama) {
+                $others = $deletedCount - 1; // lakukan pengurangan di luar string
+                $message .= " dari Gudang Utama dan " . $others . " gudang lainnya.";
+            } else {
+                $message .= " dari gudang ini dan Gudang Utama.";
+            }
+        } else {
+            $message .= ".";
+        }
+
+        return redirect()->route('admin.datakeseluruhan.index')->with('toast', [
+            'type' => 'success',
+            'title' => 'Berhasil!',
+            'message' => $message,
+        ]);
+    } 
+    catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        DB::rollBack();
+        return redirect()->route('admin.datakeseluruhan.index')->with('toast', [
+            'type' => 'error',
+            'title' => 'Gagal!',
+            'message' => 'Kategori tidak ditemukan.',
+        ]);
+    } 
+    catch (\Throwable $e) {
+        DB::rollBack();
+        return redirect()->route('admin.datakeseluruhan.index')->with('toast', [
+            'type' => 'error',
+            'title' => 'Gagal!',
+            'message' => 'Gagal menghapus kategori: ' . $e->getMessage(),
+        ]);
+    }
+}
+
+
+/**
+ * Helper method untuk menghapus kategori beserta semua barang dan transaksinya
+ */
+private function deleteKategoriWithBarang(Kategori $kategori)
+{
+    // Hapus stok untuk semua barang
+    foreach ($kategori->barang as $barang) {
+        // Hapus transaksi terlebih dahulu (foreign key constraint)
+        if (method_exists($barang, 'transaksiBarangMasuk')) {
+            $barang->transaksiBarangMasuk()->delete();
+        }
+        if (method_exists($barang, 'transaksiDistribusi')) {
+            $barang->transaksiDistribusi()->delete();
+        }
+        if (method_exists($barang, 'transaksiBarangKeluar')) {
+            $barang->transaksiBarangKeluar()->delete();
+        }
+        
+        // Hapus stok PB dan PJ
+        $barang->pbStok()->delete();
+        $barang->pjStok()->delete();
+    }
+    
+    // Hapus semua barang
+    $kategori->barang()->delete();
+    
+    // Hapus kategori
+    $kategori->delete();
+}
 
     /**
      * API untuk search suggestions dengan filter gudang
