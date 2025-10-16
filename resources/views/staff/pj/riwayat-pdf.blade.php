@@ -300,7 +300,8 @@
                     <th class="col-gudang">Gudang</th>
                     <th class="col-nama">Nama Barang</th>
                     <th class="col-jumlah">Jumlah</th>
-                    <th class="col-bukti">Bukti</th>
+                    <th class="col-satuan">Satuan</th>
+                    <th class="col-keterangan">Keterangan</th>
                 </tr>
             </thead>
             <tbody>
@@ -319,17 +320,14 @@
                         <td>{{ $r->gudang }}</td>
                         <td>{{ $r->nama_barang }}</td>
                         <td>{{ $r->jumlah }}</td>
-                        <td>
-                            @if ($r->bukti)
-                                <img src="{{ asset('storage/bukti/' . $r->bukti) }}" alt="Bukti">
-                            @endif
-                        </td>
+                        <td>{{ $r->satuan }}</td>
+                        <td>{{ $r->keterangan ?? '-' }}</td>
                     </tr>
                 @endforeach
                 <tr>
-                    <td colspan="4" style="text-align:right; font-weight:bold;">Total Barang Masuk</td>
+                    <td colspan="4" style="text-align:center; font-weight:bold;">Total Barang Masuk</td>
                     <td style="font-weight:bold;">{{ $totalMasuk }}</td>
-                    <td></td>
+                    <td colspan="2"></td>
                 </tr>
             </tbody>
         </table>
@@ -346,8 +344,9 @@
                     <th class="col-gudang">Gudang</th>
                     <th class="col-nama">Nama Barang</th>
                     <th class="col-jumlah">Jumlah</th>
+                    <th class="col-satuan">Satuan</th>
                     <th class="col-bagian">Bagian</th>
-                    <th class="col-bukti">Bukti</th>
+                    <th class="col-keterangan">Keterangan</th>
                 </tr>
             </thead>
             <tbody>
@@ -366,18 +365,15 @@
                         <td>{{ $r->gudang }}</td>
                         <td>{{ $r->nama_barang }}</td>
                         <td>{{ $r->jumlah }}</td>
+                        <td>{{ $r->satuan }}</td>
                         <td>{{ $r->bagian }}</td>
-                        <td>
-                            @if ($r->bukti)
-                                <img src="{{ asset('storage/bukti/' . $r->bukti) }}" alt="Bukti">
-                            @endif
-                        </td>
+                        <td>{{ $r->keterangan ?? '-' }}</td>
                     </tr>
                 @endforeach
                 <tr>
-                    <td colspan="5" style="text-align:right; font-weight:bold;">Total Barang Keluar</td>
+                    <td colspan="4" style="text-align:center; font-weight:bold;">Total Barang Keluar</td>
                     <td style="font-weight:bold;">{{ $totalKeluar }}</td>
-                    <td></td>
+                    <td colspan="3"></td>
                 </tr>
             </tbody>
         </table>

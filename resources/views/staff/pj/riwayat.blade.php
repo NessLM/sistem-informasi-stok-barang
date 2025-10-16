@@ -145,11 +145,11 @@
                             <thead>
                                 <tr>
                                     <th>No</th>
-                                    <th>Tanggal</th>
-                                    <th>Waktu</th>
+                                    <th>Tanggal <br> Waktu </th>
                                     <th>Nama Barang</th>
                                     <th>Jumlah</th>
                                     <th>Satuan</th>
+                                    <th>Keterangan</th>
                                     <th>Bukti</th>
                                 </tr>
                             </thead>
@@ -158,11 +158,16 @@
                                     <tr>
                                         <td class="fw-semibold">
                                             {{ ($currentPageMasuk - 1) * $itemsPerPage + $loop->iteration }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }} WIB</td>
+                                        <td data-label="Tanggal/Waktu">
+                                            {{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }} <br>
+                                            <small
+                                                class="text-muted">{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }}
+                                                WIB</small>
+                                        </td>
                                         <td class="fw-medium">{{ $item->nama_barang }}</td>
                                         <td><span>{{ $item->jumlah }}</span></td>
                                         <td>{{ $item->satuan ?? '-' }}</td>
+                                        <td>{{ $item->keterangan ?? '-' }}</td>
                                         <td>
                                             @if ($item->bukti)
                                                 <span class="riwayat-bukti-icon" data-bs-toggle="modal"
@@ -224,12 +229,12 @@
                             <thead>
                                 <tr>
                                     <th>No</th>
-                                    <th>Tanggal</th>
-                                    <th>Waktu</th>
+                                    <th>Tanggal <br> Waktu </th>
                                     <th>Nama Barang</th>
                                     <th>Jumlah</th>
                                     <th>Satuan</th>
                                     <th>Bagian</th>
+                                    <th>Keterangan</th>
                                     <th>Bukti</th>
                                 </tr>
                             </thead>
@@ -238,12 +243,17 @@
                                     <tr>
                                         <td class="fw-semibold">
                                             {{ ($currentPageKeluar - 1) * $itemsPerPage + $loop->iteration }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }} WIB</td>
+                                        <td data-label="Tanggal/Waktu">
+                                            {{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }} <br>
+                                            <small
+                                                class="text-muted">{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }}
+                                                WIB</small>
+                                        </td>
                                         <td class="fw-medium">{{ $item->nama_barang }}</td>
                                         <td><span>{{ $item->jumlah }}</span></td>
                                         <td>{{ $item->satuan ?? '-' }}</td>
                                         <td>{{ $item->bagian ?? '-' }}</td>
+                                        <td>{{ $item->keterangan ?? '-' }}</td>
                                         <td>
                                             @if ($item->bukti)
                                                 <span class="riwayat-bukti-icon" data-bs-toggle="modal"
@@ -435,7 +445,8 @@
                     document.querySelectorAll('#periodeDropdown + .dropdown-menu .dropdown-item').forEach(i => {
                         i.classList.remove('active');
                     });
-                    document.querySelector('#periodeDropdown + .dropdown-menu .custom-period-item').classList.add('active');
+                    document.querySelector('#periodeDropdown + .dropdown-menu .custom-period-item').classList.add(
+                        'active');
 
                     const modalEl = document.getElementById('customPeriodModal');
                     const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
@@ -506,7 +517,8 @@
                             const newTable = doc.querySelector(`.riwayat-header-${type}`)?.closest('.card');
 
                             if (newTable) {
-                                const oldTable = document.querySelector(`.riwayat-header-${type}`)?.closest('.card');
+                                const oldTable = document.querySelector(`.riwayat-header-${type}`)?.closest(
+                                    '.card');
                                 if (oldTable) {
                                     oldTable.replaceWith(newTable);
                                 }
@@ -543,17 +555,17 @@
             function downloadReport(format) {
                 const form = document.getElementById('filterForm');
                 const formData = new FormData(form);
-                
+
                 const params = new URLSearchParams();
-                
+
                 for (let [key, value] of formData) {
                     if (value && value !== 'Semua' && value !== '') {
                         params.append(key, value);
                     }
                 }
-                
+
                 params.append('download', format);
-                
+
                 const url = `{{ route('pj.riwayat.index') }}?${params.toString()}`;
                 window.location.href = url;
             }

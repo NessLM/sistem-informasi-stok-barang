@@ -51,7 +51,7 @@ class RiwayatController extends Controller
             'jumlah'          => (int) ($item->jumlah ?? 0),
             'satuan'          => optional($item->barang)->satuan ?? '-',
             'gudang_tujuan'   => optional($item->gudangTujuan)->nama ?? '-',
-            'keterangan'      => $item->keterangan ?? 'Barang masuk',
+            'keterangan'      => $item->keterangan ?? 'Barang Keluar',
             'bukti'           => $item->bukti,
             'bukti_path'      => $item->bukti ? asset('storage/' . $item->bukti) : null,
             // Tambahkan properti untuk konsistensi dengan view
