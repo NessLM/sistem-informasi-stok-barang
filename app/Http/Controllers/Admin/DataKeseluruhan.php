@@ -311,55 +311,138 @@ class DataKeseluruhan extends Controller
     }
 
     public function updateBarang(Request $request, $kode)
-{
-    // Cari barang berdasarkan primary key (kode_barang)
-    $barang = Barang::where('kode_barang', $kode)->firstOrFail();
+    {
+        // Cari barang berdasarkan primary key (kode_barang)
+        $barang = Barang::where('kode_barang', $kode)->firstOrFail();
 
-    $request->validate([
-        'nama_barang'  => 'required|string|max:255',
-        'harga_barang' => 'nullable|numeric|min:0',
-        'satuan'       => 'nullable|string|max:50',
-        'id_kategori'  => 'required|exists:kategori,id',
-    ]);
+        $request->validate([
+            'kode_barang'  => 'required|string|max:255|unique:barang,kode_barang,' . $barang->kode_barang . ',kode_barang',
+            'nama_barang'  => 'required|string|max:255',
+            'harga_barang' => 'nullable|numeric|min:0',
+            'satuan'       => 'nullable|string|max:50',
+            'id_kategori'  => 'required|exists:kategori,id',
+        ], [
+            'kode_barang.unique' => 'Kode barang sudah digunakan!',
+            'kode_barang.required' => 'Kode barang harus diisi!',
+        ]);
 
-    // Simpan kategori lama untuk pengecekan
-    $kategoriLama = $barang->id_kategori;
+        // Simpan kategori dan kode lama untuk pengecekan
+        $kategoriLama = $barang->id_kategori;
+        $kodeLama = $barang->kode_barang;
+        $kodeBaruDibuat = false;
 
-    // Update data barang
-    $barang->update([
-        'nama_barang'  => $request->nama_barang,
-        'harga_barang' => $request->harga_barang ?? 0,
-        'satuan'       => $request->satuan,
-        'id_kategori'  => $request->id_kategori,
-    ]);
+        DB::beginTransaction();
+        try {
+            // Jika kode barang berubah, perlu handle relasi
+            if ($kodeLama !== $request->kode_barang) {
+                // Buat barang baru dengan kode baru
+                $barangBaru = Barang::create([
+                    'kode_barang'  => $request->kode_barang,
+                    'nama_barang'  => $request->nama_barang,
+                    'harga_barang' => $request->harga_barang ?? 0,
+                    'satuan'       => $request->satuan,
+                    'id_kategori'  => $request->id_kategori,
+                ]);
+                $kodeBaruDibuat = true;
 
-    // Update PJ Stok jika kategori berubah
-    if ($kategoriLama != $request->id_kategori) {
-        $gudangLama = Kategori::find($kategoriLama)->gudang_id ?? null;
-        $gudangBaru = Kategori::find($request->id_kategori)->gudang_id ?? null;
-        
-        if ($gudangLama && $gudangBaru && $gudangLama != $gudangBaru) {
-            // Update gudang di semua PJ Stok yang terkait
-            PjStok::where('kode_barang', $barang->kode_barang)
-                  ->where('id_gudang', $gudangLama)
-                  ->update([
-                      'id_gudang' => $gudangBaru,
-                      'id_kategori' => $request->id_kategori
-                  ]);
-        } else {
-            // Hanya update id_kategori jika gudang sama
-            PjStok::where('kode_barang', $barang->kode_barang)
-                  ->update(['id_kategori' => $request->id_kategori]);
+                // Transfer PB Stok
+                $pbStokLama = PbStok::where('kode_barang', $kodeLama)->first();
+                if ($pbStokLama) {
+                    PbStok::create([
+                        'kode_barang' => $request->kode_barang,
+                        'stok' => $pbStokLama->stok
+                    ]);
+                }
+
+                // Transfer PJ Stok
+                $pjStokLama = PjStok::where('kode_barang', $kodeLama)->get();
+                foreach ($pjStokLama as $pj) {
+                    PjStok::create([
+                        'kode_barang' => $request->kode_barang,
+                        'id_gudang' => $pj->id_gudang,
+                        'id_kategori' => $request->id_kategori,
+                        'stok' => $pj->stok
+                    ]);
+                }
+
+                // PERBAIKAN: Periksa apakah class ada sebelum update
+                // Jika class tidak ada, skip tahap ini
+                try {
+                    if (class_exists('App\Models\TransaksiBarangMasuk')) {
+                        \App\Models\TransaksiBarangMasuk::where('kode_barang', $kodeLama)
+                            ->update(['kode_barang' => $request->kode_barang]);
+                    }
+                    
+                    if (class_exists('App\Models\TransaksiDistribusi')) {
+                        \App\Models\TransaksiDistribusi::where('kode_barang', $kodeLama)
+                            ->update(['kode_barang' => $request->kode_barang]);
+                    }
+                    
+                    if (class_exists('App\Models\TransaksiBarangKeluar')) {
+                        \App\Models\TransaksiBarangKeluar::where('kode_barang', $kodeLama)
+                            ->update(['kode_barang' => $request->kode_barang]);
+                    }
+                } catch (\Exception $e) {
+                    // Log jika ada error saat update transaksi
+                    \Log::warning('Error updating transaksi: ' . $e->getMessage());
+                }
+
+                // Hapus data lama
+                $pbStokLama?->delete();
+                PjStok::where('kode_barang', $kodeLama)->delete();
+                $barang->delete();
+
+                $barang = $barangBaru;
+            } else {
+                // Jika kode tidak berubah, update biasa
+                $barang->update([
+                    'nama_barang'  => $request->nama_barang,
+                    'harga_barang' => $request->harga_barang ?? 0,
+                    'satuan'       => $request->satuan,
+                    'id_kategori'  => $request->id_kategori,
+                ]);
+            }
+
+            // Update PJ Stok jika kategori berubah
+            if ($kategoriLama != $request->id_kategori) {
+                $gudangLama = Kategori::find($kategoriLama)->gudang_id ?? null;
+                $gudangBaru = Kategori::find($request->id_kategori)->gudang_id ?? null;
+                
+                if ($gudangLama && $gudangBaru && $gudangLama != $gudangBaru) {
+                    // Update gudang di semua PJ Stok yang terkait
+                    PjStok::where('kode_barang', $barang->kode_barang)
+                          ->where('id_gudang', $gudangLama)
+                          ->update([
+                              'id_gudang' => $gudangBaru,
+                              'id_kategori' => $request->id_kategori
+                          ]);
+                } else {
+                    // Hanya update id_kategori jika gudang sama
+                    PjStok::where('kode_barang', $barang->kode_barang)
+                          ->update(['id_kategori' => $request->id_kategori]);
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->route('admin.datakeseluruhan.index')
+                             ->with('toast', [
+                'type' => 'success',
+                'title' => 'Update Sukses!',
+                'message' => $kodeBaruDibuat 
+                    ? 'Barang berhasil diperbarui dengan kode baru.' 
+                    : 'Barang berhasil diperbarui.'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('toast', [
+                'type' => 'error',
+                'title' => 'Gagal!',
+                'message' => 'Gagal memperbarui barang: ' . $e->getMessage()
+            ])->withInput();
         }
     }
-
-    return redirect()->route('admin.datakeseluruhan.index')
-                     ->with('toast', [
-        'type' => 'success',
-        'title' => 'Update Sukses!',
-        'message' => 'Barang berhasil diperbarui.'
-    ]);
-}
 
     public function destroyBarang($id)
     {
