@@ -31,9 +31,10 @@ class RiwayatController extends Controller
             'gudang'      => 'Gudang Utama',
             'nama_barang' => optional($item->barang)->nama_barang ?? '-',
             'jumlah'      => (int) ($item->jumlah ?? 0),
+            'satuan'      => optional($item->barang)->satuan ?? '-',
             'bukti'       => $item->bukti,
             'bukti_path'  => $item->bukti ? asset('storage/' . $item->bukti) : null,
-            'keterangan'  => $item->keterangan ?? 'Barang masuk dari Admin ke Gudang Utama'
+            'keterangan'  => $item->keterangan ?? 'Barang masuk'
         ];
     }
 
@@ -49,9 +50,10 @@ class RiwayatController extends Controller
             'gudang'      => optional($item->gudangTujuan)->nama ?? '-',
             'nama_barang' => optional($item->barang)->nama_barang ?? '-',
             'jumlah'      => (int) ($item->jumlah ?? 0),
+            'satuan'      => optional($item->barang)->satuan ?? '-',
             'bukti'       => $item->bukti,
             'bukti_path'  => $item->bukti ? asset('storage/' . $item->bukti) : null,
-            'keterangan'  => $item->keterangan ?? 'Distribusi barang ke Gudang ' . (optional($item->gudangTujuan)->nama ?? '-')
+            'keterangan'  => $item->keterangan ?? 'Distribusi barang  '
         ];
     }
 
@@ -67,11 +69,12 @@ class RiwayatController extends Controller
             'gudang'      => optional($item->gudang)->nama ?? '-',
             'nama_barang' => optional($item->barang)->nama_barang ?? '-',
             'jumlah'      => (int) ($item->jumlah ?? 0),
+            'satuan'      => optional($item->barang)->satuan ?? '-',
             'bagian'      => optional($item->bagian)->nama ?? '-',
             'penerima'    => $item->nama_penerima ?? '-',
             'bukti'       => $item->bukti,
             'bukti_path'  => $item->bukti ? asset('storage/' . $item->bukti) : null,
-            'keterangan'  => $item->keterangan ?? 'Barang keluar untuk ' . (optional($item->bagian)->nama ?? '-')
+            'keterangan'  => $item->keterangan ?? 'Barang keluar ' 
         ];
     }
 

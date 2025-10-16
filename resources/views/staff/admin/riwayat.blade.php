@@ -175,11 +175,11 @@
                                 <thead>
                                     <tr>
                                         <th>No</th>
-                                        <th>Tanggal</th>
-                                        <th>Waktu</th>
+                                        <th>Tanggal <br> Waktu</th>
                                         <th>Gudang</th>
                                         <th>Nama Barang</th>
                                         <th>Jumlah</th>
+                                        <th>Satuan</th>
                                         <th>Keterangan</th>
                                         <th>Bukti</th>
                                     </tr>
@@ -189,11 +189,15 @@
                                         <tr>
                                             <td class="fw-semibold">
                                                 {{ ($currentPageMasuk - 1) * $itemsPerPage + $loop->iteration }}</td>
-                                            <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
-                                            <td>{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }} WIB</td>
+                                            <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }} <br>
+                                                <small
+                                                    class="text-muted">{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }}
+                                                    WIB</small>
+                                            </td>
                                             <td class="fw-medium">{{ $item->gudang }}</td>
                                             <td class="fw-medium">{{ $item->nama_barang }}</td>
                                             <td><span class="fw-medium">{{ $item->jumlah }}</span></td>
+                                            <td><span class="fw-medium">{{ $item->satuan }}</span></td>
                                             <td>
                                                 {{ $item->keterangan }}
                                             </td>
@@ -268,11 +272,11 @@
                                 <thead>
                                     <tr>
                                         <th>No</th>
-                                        <th>Tanggal</th>
-                                        <th>Waktu</th>
+                                        <th>Tanggal <br> Waktu </th>
                                         <th>Gudang Tujuan</th>
                                         <th>Nama Barang</th>
                                         <th>Jumlah</th>
+                                        <th>Satuan</th>
                                         <th>Keterangan</th>
                                         <th>Bukti</th>
                                     </tr>
@@ -283,12 +287,16 @@
                                             <td class="fw-semibold">
                                                 {{ ($currentPageDistribusi - 1) * $itemsPerPage + $loop->iteration }}
                                             </td>
-                                            <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
-                                            <td>{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }} WIB</td>
+                                            <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }} <br>
+                                                <small
+                                                    class="text-muted">{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }}
+                                                    WIB</small>
+                                            </td>
                                             <td class="fw-medium">{{ $item->gudang }}</td>
                                             <td class="fw-medium">{{ $item->nama_barang }}</td>
                                             <td><span class="fw-medium">{{ $item->jumlah }}</span>
                                             </td>
+                                            <td class="fw-medium">{{ $item->satuan }}</td>
                                             <td>
                                                 {{ $item->keterangan }}
                                             </td>
@@ -363,11 +371,11 @@
                                 <thead>
                                     <tr>
                                         <th>No</th>
-                                        <th>Tanggal</th>
-                                        <th>Waktu</th>
+                                        <th>Tanggal <br> Waktu </th>
                                         <th>Gudang Asal</th>
                                         <th>Nama Barang</th>
                                         <th>Jumlah</th>
+                                        <th>Satuan</th>
                                         <th>Bagian</th>
                                         <th>Penerima</th>
                                         <th>Keterangan</th>
@@ -379,11 +387,15 @@
                                         <tr>
                                             <td class="fw-semibold">
                                                 {{ ($currentPageKeluar - 1) * $itemsPerPage + $loop->iteration }}</td>
-                                            <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
-                                            <td>{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }} WIB</td>
+                                            <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }} <br>
+                                                <small
+                                                    class="text-muted">{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }}
+                                                    WIB</small>
+                                            </td>
                                             <td class="fw-medium">{{ $item->gudang }}</td>
                                             <td class="fw-medium">{{ $item->nama_barang }}</td>
                                             <td><span class="fw-medium">{{ $item->jumlah }}</span></td>
+                                            <td>{{ $item->satuan }}</td>
                                             <td>{{ $item->bagian }}</td>
                                             <td>{{ $item->penerima }}</td>
                                             <td>
@@ -400,7 +412,6 @@
                                                     <span class="text-muted">-</span>
                                                 @endif
                                             </td>
-
                                         </tr>
                                     @empty
                                         <tr>

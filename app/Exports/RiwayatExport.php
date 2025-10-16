@@ -73,6 +73,7 @@ class RiwayatMasukSheet implements FromCollection, WithHeadings, WithMapping, Wi
             'Gudang',
             'Nama Barang',
             'Jumlah',
+            'Satuan',
             'Keterangan'
         ];
     }
@@ -88,6 +89,7 @@ class RiwayatMasukSheet implements FromCollection, WithHeadings, WithMapping, Wi
             $riwayat->gudang,
             $riwayat->nama_barang,
             $riwayat->jumlah,
+            $riwayat->satuan,
             $riwayat->keterangan ?? '-'
         ];
     }
@@ -134,6 +136,7 @@ class RiwayatDistribusiSheet implements FromCollection, WithHeadings, WithMappin
             'Gudang Tujuan',
             'Nama Barang',
             'Jumlah',
+            'Satuan',
             'Keterangan'
         ];
     }
@@ -149,6 +152,7 @@ class RiwayatDistribusiSheet implements FromCollection, WithHeadings, WithMappin
             $riwayat->gudang,
             $riwayat->nama_barang,
             $riwayat->jumlah,
+            $riwayat->satuan,
             $riwayat->keterangan ?? '-'
         ];
     }
@@ -195,6 +199,7 @@ class RiwayatKeluarSheet implements FromCollection, WithHeadings, WithMapping, W
             'Gudang Asal',
             'Nama Barang',
             'Jumlah',
+            'Satuan',
             'Bagian',
             'Penerima',
             'Keterangan'
@@ -212,6 +217,7 @@ class RiwayatKeluarSheet implements FromCollection, WithHeadings, WithMapping, W
             $riwayat->gudang,
             $riwayat->nama_barang,
             $riwayat->jumlah,
+            $riwayat->satuan,
             $riwayat->bagian,
             $riwayat->penerima,
             $riwayat->keterangan ?? '-'
