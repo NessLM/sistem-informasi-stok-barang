@@ -311,50 +311,55 @@ class DataKeseluruhan extends Controller
     }
 
     public function updateBarang(Request $request, $kode)
-    {
-        $barang = Barang::where('kode_barang', $kode)->firstOrFail();
+{
+    // Cari barang berdasarkan primary key (kode_barang)
+    $barang = Barang::where('kode_barang', $kode)->firstOrFail();
 
-        $request->validate([
-            'nama_barang'  => 'required|string|max:255',
-            'harga_barang' => 'nullable|numeric|min:0',
-            'satuan'       => 'nullable|string|max:50',
-            'id_kategori'  => 'required|exists:kategori,id',
-        ]);
+    $request->validate([
+        'nama_barang'  => 'required|string|max:255',
+        'harga_barang' => 'nullable|numeric|min:0',
+        'satuan'       => 'nullable|string|max:50',
+        'id_kategori'  => 'required|exists:kategori,id',
+    ]);
 
-        // Update data barang
-        $barang->update([
-            'nama_barang'  => $request->nama_barang,
-            'harga_barang' => $request->harga_barang,
-            'satuan'       => $request->satuan,
-            'id_kategori'  => $request->id_kategori,
-        ]);
+    // Simpan kategori lama untuk pengecekan
+    $kategoriLama = $barang->id_kategori;
 
-        // Update PJ Stok jika kategori berubah
-        if ($barang->isDirty('id_kategori')) {
-            $kategoriLama = $barang->getOriginal('id_kategori');
-            $kategoriBaru = $request->id_kategori;
-            
-            $gudangLama = Kategori::find($kategoriLama)->gudang_id ?? null;
-            $gudangBaru = Kategori::find($kategoriBaru)->gudang_id ?? null;
-            
-            if ($gudangLama && $gudangBaru && $gudangLama != $gudangBaru) {
-                // Update gudang di PJ Stok
-                PjStok::where('kode_barang', $barang->kode_barang)
-                      ->where('id_gudang', $gudangLama)
-                      ->update([
-                          'id_gudang' => $gudangBaru,
-                          'id_kategori' => $kategoriBaru
-                      ]);
-            }
+    // Update data barang
+    $barang->update([
+        'nama_barang'  => $request->nama_barang,
+        'harga_barang' => $request->harga_barang ?? 0,
+        'satuan'       => $request->satuan,
+        'id_kategori'  => $request->id_kategori,
+    ]);
+
+    // Update PJ Stok jika kategori berubah
+    if ($kategoriLama != $request->id_kategori) {
+        $gudangLama = Kategori::find($kategoriLama)->gudang_id ?? null;
+        $gudangBaru = Kategori::find($request->id_kategori)->gudang_id ?? null;
+        
+        if ($gudangLama && $gudangBaru && $gudangLama != $gudangBaru) {
+            // Update gudang di semua PJ Stok yang terkait
+            PjStok::where('kode_barang', $barang->kode_barang)
+                  ->where('id_gudang', $gudangLama)
+                  ->update([
+                      'id_gudang' => $gudangBaru,
+                      'id_kategori' => $request->id_kategori
+                  ]);
+        } else {
+            // Hanya update id_kategori jika gudang sama
+            PjStok::where('kode_barang', $barang->kode_barang)
+                  ->update(['id_kategori' => $request->id_kategori]);
         }
-
-        return redirect()->route('admin.datakeseluruhan.index')
-                         ->with('toast', [
-            'type' => 'success',
-            'title' => 'Update Sukses!',
-            'message' => 'Barang berhasil diperbarui.'
-        ]);
     }
+
+    return redirect()->route('admin.datakeseluruhan.index')
+                     ->with('toast', [
+        'type' => 'success',
+        'title' => 'Update Sukses!',
+        'message' => 'Barang berhasil diperbarui.'
+    ]);
+}
 
     public function destroyBarang($id)
     {
@@ -551,4 +556,6 @@ class DataKeseluruhan extends Controller
         
         return $query->get();
     }
+
+    
 }

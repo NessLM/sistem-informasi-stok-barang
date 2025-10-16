@@ -77,6 +77,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:Admin'])->grou
     Route::get('/datakeseluruhan/{slug}', [AdminDataKeseluruhanController::class, 'byGudang'])
         ->name('datakeseluruhan.gudang');
 
+    // Di dalam Route::prefix('admin')->name('admin.')->middleware...
+    Route::put('/barang/{kode}', [AdminDataKeseluruhanController::class, 'updateBarang'])
+        ->name('barang.update');
+
     Route::get('/datakeseluruhan/id/{id}', [AdminDataKeseluruhanController::class, 'show'])
         ->name('datakeseluruhan.show');
 

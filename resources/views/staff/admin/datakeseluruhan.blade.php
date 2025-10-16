@@ -344,26 +344,6 @@
     </div>
 </div>
 
-    @php
-    // Kita cek: ini konteks "satu gudang" atau "multi gudang"?
-    $isSingleGudang = false;
-
-    if ($kategori->isNotEmpty()) {
-        $firstGudang = optional($kategori->first()->gudang)->nama;
-        $isSingleGudang = $firstGudang && $kategori->every(fn($k) => optional($k->gudang)->nama === $firstGudang);
-    }
-
-    // kalau ada filter gudang/halaman khusus gudang → paksa single
-    if (isset($selectedGudang) && $selectedGudang) {
-        $isSingleGudang = true;
-    }
-    $path = request()->path();
-    if (str_contains($path, '/atk') || str_contains($path, '/listrik')
-        || str_contains($path, '/kebersihan') || str_contains($path, '/komputer')) {
-        $isSingleGudang = true;
-    }
-    @endphp
-
     {{-- Modal Tambah Barang --}}
     <div class="modal fade" id="modalTambahBarang" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -444,7 +424,7 @@
         @foreach ($k->barang as $b)
             <div class="modal fade" id="modalEditBarang-{{ $b->kode_barang }}" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered modal-lg">
-                    <form action="{{ route('admin.barang.update', $b->kode_barang) }}" method="POST" class="modal-content" id="formEditBarang-{{ $b->kode_barang }}">
+                    <form action="{{ route('admin.barang.update', $b->kode_barang) }}" method="POST" class="modal-content">
                         @csrf
                         @method('PUT')
                         <div class="modal-header">
@@ -481,9 +461,16 @@
                                     <label>Harga / Satuan</label>
                                     <div class="input-group">
                                         <span class="input-group-text">Rp</span>
-                                        <input type="text" name="harga_display" id="hargaEdit-{{ $b->kode_barang }}"
-                                            class="form-control" value="{{ number_format($b->harga_barang ?? 0, 0, ',', '.') }}">
-                                        <input type="hidden" name="harga_barang" id="hargaEditHidden-{{ $b->kode_barang }}" value="{{ $b->harga_barang }}">
+                                        <input type="text" 
+                                               name="harga_display" 
+                                               id="hargaEdit-{{ $b->kode_barang }}"
+                                               class="form-control" 
+                                               value="{{ intval($b->harga_barang ?? 0) }}"
+                                               data-original-value="{{ intval($b->harga_barang ?? 0) }}">
+                                        <input type="hidden" 
+                                               name="harga_barang" 
+                                               id="hargaEditHidden-{{ $b->kode_barang }}" 
+                                               value="{{ intval($b->harga_barang ?? 0) }}">
                                         <select name="satuan" class="form-select">
                                             <option value="Pcs" @if ($b->satuan == 'Pcs') selected @endif>Pcs</option>
                                             <option value="Box" @if ($b->satuan == 'Box') selected @endif>Box</option>
@@ -627,63 +614,80 @@
             modal.show();
         }
 
-        // Format Rupiah function
+        // Format Rupiah function - FIXED
         function formatRupiah(angka) {
-            return angka.replace(/\D/g, "")
-                .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            // Konversi ke string dan hapus semua non-digit
+            let numberString = angka.toString().replace(/[^\d]/g, '');
+            
+            // Jika kosong, return kosong
+            if (!numberString) return '';
+            
+            // Reverse string untuk memudahkan grouping
+            let reverse = numberString.split('').reverse().join('');
+            let ribuan = '';
+            
+            // Tambahkan titik setiap 3 digit
+            for (let i = 0; i < reverse.length; i++) {
+                if (i > 0 && i % 3 === 0) {
+                    ribuan += '.';
+                }
+                ribuan += reverse[i];
+            }
+            
+            // Reverse kembali
+            return ribuan.split('').reverse().join('');
         }
 
         function unformatRupiah(formatted) {
-            return formatted.replace(/\./g, "");
+            // Hapus semua titik pemisah ribuan
+            return formatted.replace(/\./g, '');
         }
 
         // Handle Tambah Barang Price Format
-        const hargaTambahInput = document.getElementById('hargaTambah');
-        const hargaTambahHidden = document.getElementById('hargaTambahHidden');
-        
-        if (hargaTambahInput && hargaTambahHidden) {
-            hargaTambahInput.addEventListener('input', function() {
-                const formatted = formatRupiah(this.value);
-                this.value = formatted;
-                hargaTambahHidden.value = unformatRupiah(formatted);
-            });
-
-            // Set initial value if exists
-            if (hargaTambahInput.value) {
-                const initialValue = unformatRupiah(hargaTambahInput.value);
-                hargaTambahHidden.value = initialValue;
-                hargaTambahInput.value = formatRupiah(initialValue);
-            }
-        }
-
-        // Handle Edit Barang Price Format
-        document.querySelectorAll('[id^="hargaEdit-"]').forEach(input => {
-            const kodeBarang = input.id.replace('hargaEdit-', '');
-            const hiddenInput = document.getElementById('hargaEditHidden-' + kodeBarang);
+        document.addEventListener('DOMContentLoaded', function() {
+            const hargaTambahInput = document.getElementById('hargaTambah');
+            const hargaTambahHidden = document.getElementById('hargaTambahHidden');
             
-            if (hiddenInput) {
-                input.addEventListener('input', function() {
+            if (hargaTambahInput && hargaTambahHidden) {
+                hargaTambahInput.addEventListener('input', function() {
                     const formatted = formatRupiah(this.value);
                     this.value = formatted;
-                    hiddenInput.value = unformatRupiah(formatted);
+                    hargaTambahHidden.value = unformatRupiah(formatted);
                 });
 
-                // Set initial formatted value
-                if (hiddenInput.value) {
-                    input.value = formatRupiah(hiddenInput.value.toString());
+                // Set initial value if exists
+                if (hargaTambahInput.value) {
+                    const initialValue = unformatRupiah(hargaTambahInput.value);
+                    hargaTambahHidden.value = initialValue;
+                    hargaTambahInput.value = formatRupiah(initialValue);
                 }
             }
-        });
 
-        // Auto-clean form before submit (backup solution)
-        document.querySelectorAll('form').forEach(form => {
-            form.addEventListener('submit', function() {
-                // Clean any remaining display price inputs
-                const displayInputs = form.querySelectorAll('input[name="harga_display"]');
-                displayInputs.forEach(input => {
-                    const hiddenInput = form.querySelector('input[name="harga_barang"]');
-                    if (hiddenInput) {
-                        hiddenInput.value = unformatRupiah(input.value);
+            // Handle Edit Barang Price Format - Setup saat modal dibuka
+            document.querySelectorAll('[id^="modalEditBarang-"]').forEach(modal => {
+                modal.addEventListener('shown.bs.modal', function() {
+                    const kodeBarang = this.id.replace('modalEditBarang-', '');
+                    const displayInput = document.getElementById('hargaEdit-' + kodeBarang);
+                    const hiddenInput = document.getElementById('hargaEditHidden-' + kodeBarang);
+                    
+                    if (displayInput && hiddenInput) {
+                        // Ambil nilai original dari data attribute
+                        const originalValue = displayInput.dataset.originalValue || hiddenInput.value;
+                        
+                        // Set nilai awal (format saat tampil)
+                        displayInput.value = formatRupiah(originalValue.toString());
+                        hiddenInput.value = originalValue;
+                        
+                        // Remove existing listener jika ada
+                        const newDisplayInput = displayInput.cloneNode(true);
+                        displayInput.parentNode.replaceChild(newDisplayInput, displayInput);
+                        
+                        // Handler untuk input
+                        newDisplayInput.addEventListener('input', function() {
+                            const formatted = formatRupiah(this.value);
+                            this.value = formatted;
+                            hiddenInput.value = unformatRupiah(formatted);
+                        });
                     }
                 });
             });
