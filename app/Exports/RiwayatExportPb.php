@@ -77,6 +77,7 @@ class BarangMasukSheet implements FromCollection, WithHeadings, WithMapping, Wit
             'Gudang',
             'Nama Barang',
             'Jumlah',
+            'Satuan',
             'Keterangan'
         ];
     }
@@ -97,6 +98,7 @@ class BarangMasukSheet implements FromCollection, WithHeadings, WithMapping, Wit
             $riwayat->gudang ?? '-',
             $riwayat->nama_barang ?? '-',
             $riwayat->jumlah ?? 0,
+            $riwayat->satuan ?? '-',
             $riwayat->keterangan ?? '-'
         ];
     }
@@ -104,10 +106,10 @@ class BarangMasukSheet implements FromCollection, WithHeadings, WithMapping, Wit
     public function styles(Worksheet $sheet)
     {
         $lastRow = max(1, $this->riwayat->count() + 1);
-        $dataRange = 'A1:G' . $lastRow;
+        $dataRange = 'A1:H' . $lastRow;
         
         // Style untuk header
-        $sheet->getStyle('A1:G1')->applyFromArray([
+        $sheet->getStyle('A1:H1')->applyFromArray([
             'font' => ['bold' => true],
             'fill' => [
                 'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
@@ -122,7 +124,7 @@ class BarangMasukSheet implements FromCollection, WithHeadings, WithMapping, Wit
 
         // Style untuk data
         if ($lastRow > 1) {
-            $sheet->getStyle('A2:G' . $lastRow)->applyFromArray([
+            $sheet->getStyle('A2:H' . $lastRow)->applyFromArray([
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
@@ -138,13 +140,15 @@ class BarangMasukSheet implements FromCollection, WithHeadings, WithMapping, Wit
         $sheet->getColumnDimension('D')->setWidth(15);
         $sheet->getColumnDimension('E')->setWidth(20);
         $sheet->getColumnDimension('F')->setWidth(12);
-        $sheet->getColumnDimension('G')->setWidth(20);
+        $sheet->getColumnDimension('G')->setWidth(15);
+        $sheet->getColumnDimension('H')->setWidth(30);
 
         // Center align untuk kolom tertentu
         $sheet->getStyle('A:A')->getAlignment()->setHorizontal('center');
         $sheet->getStyle('F:F')->getAlignment()->setHorizontal('center');
         $sheet->getStyle('B:B')->getAlignment()->setHorizontal('center');
         $sheet->getStyle('C:C')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('G:G')->getAlignment()->setHorizontal('center');
 
         return [];
     }
@@ -178,6 +182,7 @@ class DistribusiBarangSheet implements FromCollection, WithHeadings, WithMapping
             'Gudang Tujuan',
             'Nama Barang', 
             'Jumlah',
+            'Satuan',
             'Keterangan'
         ];
     }
@@ -198,6 +203,7 @@ class DistribusiBarangSheet implements FromCollection, WithHeadings, WithMapping
             $riwayat->gudang_tujuan ?? '-',
             $riwayat->nama_barang ?? '-',
             $riwayat->jumlah ?? 0,
+            $riwayat->satuan ?? '-',
             $riwayat->keterangan ?? '-'
         ];
     }
@@ -205,10 +211,10 @@ class DistribusiBarangSheet implements FromCollection, WithHeadings, WithMapping
     public function styles(Worksheet $sheet)
     {
         $lastRow = max(1, $this->riwayat->count() + 1);
-        $dataRange = 'A1:G' . $lastRow;
+        $dataRange = 'A1:H' . $lastRow;
         
         // Style untuk header
-        $sheet->getStyle('A1:G1')->applyFromArray([
+        $sheet->getStyle('A1:H1')->applyFromArray([
             'font' => ['bold' => true],
             'fill' => [
                 'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
@@ -223,7 +229,7 @@ class DistribusiBarangSheet implements FromCollection, WithHeadings, WithMapping
 
         // Style untuk data
         if ($lastRow > 1) {
-            $sheet->getStyle('A2:G' . $lastRow)->applyFromArray([
+            $sheet->getStyle('A2:H' . $lastRow)->applyFromArray([
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
@@ -239,13 +245,15 @@ class DistribusiBarangSheet implements FromCollection, WithHeadings, WithMapping
         $sheet->getColumnDimension('D')->setWidth(15);
         $sheet->getColumnDimension('E')->setWidth(20);
         $sheet->getColumnDimension('F')->setWidth(12);
-        $sheet->getColumnDimension('G')->setWidth(20);
+        $sheet->getColumnDimension('G')->setWidth(15);
+        $sheet->getColumnDimension('H')->setWidth(30);
 
         // Center align untuk kolom tertentu
         $sheet->getStyle('A:A')->getAlignment()->setHorizontal('center');
         $sheet->getStyle('F:F')->getAlignment()->setHorizontal('center');
         $sheet->getStyle('B:B')->getAlignment()->setHorizontal('center');
         $sheet->getStyle('C:C')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('G:G')->getAlignment()->setHorizontal('center');
 
         return [];
     }
