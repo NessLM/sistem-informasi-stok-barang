@@ -1,6 +1,14 @@
 {{-- resources/views/staff/pj/riwayat.blade.php --}}
 
-<x-layouts.app title="Riwayat" :menu="$menu">
+@php
+    $gudangName = $userGudang->nama ?? ($gudangList[0]->gudang ?? '-');
+
+    // Header final
+    $pageHeading = "Riwayat {$gudangName}";
+@endphp
+
+<x-layouts.app title="Riwayat" :menu="$menu" :heading="$pageHeading">
+
 
     <div class="container-fluid riwayat-container">
 

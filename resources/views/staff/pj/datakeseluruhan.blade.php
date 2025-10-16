@@ -1,4 +1,12 @@
-<x-layouts.app title="Data Keseluruhan" :menu="$menu">
+{{-- resources/views/staff/pj/datakeseluruhan.blade.php --}}
+
+@php
+    // Controller sudah mengirim $selectedGudang
+    $gudangName = $selectedGudang->nama ?? '-';
+    $pageHeading = "Data {$gudangName}";
+@endphp
+
+<x-layouts.app title="Data Gudang" :menu="$menu" :heading="$pageHeading">
 
     @php
         $barang = $barang ?? collect();
