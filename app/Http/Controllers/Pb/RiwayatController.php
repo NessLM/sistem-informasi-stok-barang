@@ -30,6 +30,9 @@ class RiwayatController extends Controller
             'keterangan'    => $item->keterangan ?? '-',
             'bukti'         => $item->bukti,
             'bukti_path'    => $item->bukti ? asset('storage/' . $item->bukti) : null,
+            // Tambahkan properti untuk konsistensi dengan view
+            'kategori_asal' => 'Admin', // Barang berasal dari Admin
+            'kategori_tujuan' => 'Gudang Utama', // Barang menuju ke Gudang Utama
         ];
     }
 
@@ -42,15 +45,19 @@ class RiwayatController extends Controller
             'tanggal'         => $item->tanggal ?? optional($item->created_at)->toDateString(),
             'waktu'           => optional($item->created_at)->format('H:i:s'),
             'alur_barang'     => 'Keluar',
-            'gudang'          => optional($item->gudangTujuan)->nama ?? '-',
+            'gudang'          => 'Gudang Utama', // Selalu dari Gudang Utama (PB)
             'nama_barang'     => optional($item->barang)->nama_barang ?? '-',
             'jumlah'          => (int) ($item->jumlah ?? 0),
             'gudang_tujuan'   => optional($item->gudangTujuan)->nama ?? '-',
             'keterangan'      => $item->keterangan ?? '-',
             'bukti'           => $item->bukti,
             'bukti_path'      => $item->bukti ? asset('storage/' . $item->bukti) : null,
+            // Tambahkan properti untuk konsistensi dengan view
+            'kategori_asal'   => 'Gudang Utama', // Selalu dari Gudang Utama
+            'kategori_tujuan' => optional($item->gudangTujuan)->nama ?? '-', // Sama dengan gudang_tujuan
         ];
     }
+
 
     public function index(Request $request)
     {

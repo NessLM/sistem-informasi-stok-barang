@@ -8,6 +8,8 @@
         body {
             font-family: 'Times New Roman', Times, serif;
             font-size: 12px;
+            margin: 0;
+            padding: 0;
         }
 
         .kop-surat {
@@ -16,9 +18,9 @@
             justify-content: center;
             border-bottom: 3px double #000;
             padding: 10px 0;
-            margin-top: -30px;
             margin-bottom: 20px;
             position: relative;
+            page-break-inside: avoid;
         }
 
         .kop-logo {
@@ -58,8 +60,8 @@
         table.data {
             border-collapse: collapse;
             font-size: 12px;
-            margin: auto;
             width: 100%;
+            margin-bottom: 20px;
         }
 
         table.data th,
@@ -69,28 +71,11 @@
             text-align: center;
             vertical-align: middle;
             word-wrap: break-word;
-            word-break: break-word;
-        }
-
-        table.data thead {
-            display: table-row-group;
-        }
-
-        table.data tfoot {
-            display: table-row-group;
-        }
-
-        table.data tr {
-            page-break-inside: avoid;
-        }
-
-        /* barang keluar harus di halaman baru */
-        .barang-keluar {
-            page-break-before: always;
         }
 
         table.data th {
             background: #f2f2f2;
+            font-weight: bold;
         }
 
         table.data tbody tr:nth-child(even) {
@@ -117,6 +102,12 @@
             width: 50px;
         }
 
+        /* barang keluar harus di halaman baru */
+        .barang-keluar {
+            page-break-before: always;
+            margin-top: 30px;
+        }
+
         /* tanda tangan */
         .ttd {
             margin-top: 60px;
@@ -131,28 +122,69 @@
             border: none;
         }
 
+        .judul-laporan {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .judul-laporan h2 {
+            margin: 0;
+            font-weight: bold;
+            text-decoration: underline;
+        }
+
+        .info-surat {
+            margin: 20px 0;
+            font-size: 14px;
+        }
+
+        .info-surat table {
+            border-collapse: collapse;
+        }
+
+        .info-surat td {
+            padding: 2px 5px;
+            vertical-align: top;
+        }
+
+        .total-row {
+            font-weight: bold;
+            background-color: #e8e8e8 !important;
+        }
+
         /* biar konsisten pas di-print */
         @media print {
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                margin: 0;
+                padding: 0;
+            }
+
             .kop-surat {
                 page-break-inside: avoid;
             }
 
-            body {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-
             table.data th {
-                -webkit-print-color-adjust: exact;
                 background-color: #f2f2f2 !important;
             }
 
             table.data tbody tr:nth-child(even) {
                 background-color: #f9f9f9 !important;
             }
+
+            .total-row {
+                background-color: #e8e8e8 !important;
+            }
+
+            .barang-keluar {
+                page-break-before: always;
+                margin-top: 0;
+            }
         }
+
         @page {
-            size: A4 portrait; /* Pastikan mode portrait */
+            size: A4 portrait;
             margin: 20mm;
         }
     </style>
@@ -161,7 +193,14 @@
 <body>
     <div class="kop-surat">
         <div class="kop-logo">
-            <img src="{{ public_path('assets/banner/logo_bupati.png') }}" alt="Logo Bupati">
+            <!-- Logo akan ditampilkan jika ada, jika tidak tetap berjalan -->
+            @if (file_exists(public_path('assets/banner/logo_bupati.png')))
+                <img src="{{ public_path('assets/banner/logo_bupati.png') }}" alt="Logo Bupati">
+            @else
+                <div style="width: 80px; height: 100px; border: 1px solid #000; text-align: center; line-height: 100px;">
+                    LOGO
+                </div>
+            @endif
         </div>
         <div class="kop-text">
             <h1>PEMERINTAH KABUPATEN BANGKA</h1>
@@ -187,96 +226,126 @@
             11 => 'XI',
             12 => 'XII',
         ];
-        $bulanRomawi = $bulan[now()->month];
+        $bulanRomawi = $bulan[now()->month] ?? 'XII';
         $tahun = now()->year;
-        $nomorSurat = "LAPORAN-RIWAYAT-KELOLABARANG/SETDA-BANGKA/{$bulanRomawi}/{$tahun}";
     @endphp
 
-    <div style="margin:20px 0;">
-        <br>
-        <h2 style="margin:0; font-weight:bold; text-decoration:underline; text-align:center;">
-            BERITA ACARA LAPORAN RIWAYAT PENGELOLAAN BARANG
-        </h2>
+    <div class="judul-laporan">
+        <h2>BERITA ACARA LAPORAN RIWAYAT PENGELOLAAN BARANG</h2>
+    </div>
 
-        <!-- Info Surat (polosan tanpa border, kiri) -->
-        <div style="margin:40px 5px; font-size:14px; text-align:left;">
-            <table style="border-collapse:collapse; font-size:14px;">
+    <!-- Info Surat -->
+    <div class="info-surat">
+        <table>
+            <tr>
+                <td style="width: 80px;">Dari</td>
+                <td style="width: 10px;">:</td>
+                <td>Plt. Kepala Bagian Umum dan Rumah Tangga</td>
+            </tr>
+            <tr>
+                <td>Tanggal</td>
+                <td>:</td>
+                <td>{{ now()->format('d F Y') }}</td>
+            </tr>
+            <tr>
+                <td>Sifat</td>
+                <td>:</td>
+                <td>Laporan</td>
+            </tr>
+            <tr>
+                <td>Hal</td>
+                <td>:</td>
+                <td>Laporan Riwayat Pengelolaan Barang</td>
+            </tr>
+            @if (isset($filter) && ($filter['periode'] || $filter['alur_barang']))
                 <tr>
-                    <td style="width:80px;">Dari</td>
-                    <td style="width:40px;">:</td>
-                    <td>Plt. Kepala Bagian Umum dan Rumah Tangga</td>
-                </tr>
-                <tr>
-                    <td>Tanggal</td>
+                    <td>Filter</td>
                     <td>:</td>
-                    <td>{{ now()->format('d F Y') }}</td>
+                    <td>
+                        @if ($filter['alur_barang'] && $filter['alur_barang'] !== 'Semua')
+                            Alur: {{ $filter['alur_barang'] }}
+                        @endif
+                        @if ($filter['periode'])
+                            @if ($filter['alur_barang'] && $filter['alur_barang'] !== 'Semua')
+                                ,
+                            @endif
+                            @if ($filter['periode'] == 'custom' && $filter['dari_tanggal'] && $filter['sampai_tanggal'])
+                                Periode: {{ \Carbon\Carbon::parse($filter['dari_tanggal'])->format('d/m/Y') }} -
+                                {{ \Carbon\Carbon::parse($filter['sampai_tanggal'])->format('d/m/Y') }}
+                            @else
+                                Periode: {{ str_replace('_', ' ', $filter['periode']) }}
+                            @endif
+                        @endif
+                    </td>
                 </tr>
-                <tr>
-                    <td>Sifat</td>
-                    <td>:</td>
-                    <td>Laporan</td>
-                </tr>
-                <tr>
-                    <td>Hal</td>
-                    <td>:</td>
-                    <td>Laporan Riwayat Pengelolaan Barang</td>
-                </tr>
-            </table>
-        </div>
+            @endif
+        </table>
     </div>
 
     <!-- TABEL BARANG MASUK -->
-    @if($riwayat->where('alur_barang', 'Masuk')->count() > 0)
-    <h3 style="margin-top:30px; text-align:center;">Barang Masuk</h3>
-    <table class="data">
-        <thead>
-            <tr>
-                <th class="col-no">No</th>
-                <th class="col-tanggal">Tanggal, Waktu</th>
-                <th class="col-gudang">Gudang</th>
-                <th class="col-nama">Nama Barang</th>
-                <th class="col-jumlah">Jumlah</th>
-            </tr>
-        </thead>
-        <tbody>
-            @php
-                $no = 1;
-                $totalMasuk = 0;
-            @endphp
-            @foreach ($riwayat->where('alur_barang', 'Masuk') as $r)
-                @php $totalMasuk += $r->jumlah; @endphp
-                <tr>
-                    <td>{{ $no++ }}</td>
-                    <td>
-                        {{ \Carbon\Carbon::parse($r->tanggal)->format('d/m/Y') }}<br>
-                        {{ $r->waktu }} WIB
-                    </td>
-                    <td>{{ $r->gudang }}</td>
-                    <td>{{ $r->nama_barang }}</td>
-                    <td>{{ $r->jumlah }}</td>
-                </tr>
-            @endforeach
-            <tr>
-                <td colspan="4" style="text-align:right; font-weight:bold;">Total Barang Masuk</td>
-                <td style="font-weight:bold;">{{ $totalMasuk }}</td>
-            </tr>
-        </tbody>
-    </table>
-    @endif
+    @php
+        $riwayatMasuk = $riwayat->where('alur_barang', 'Masuk');
+    @endphp
 
-    <!-- TABEL BARANG KELUAR -->
-    @if($riwayat->where('alur_barang', 'Keluar')->count() > 0)
-    <div class="barang-keluar">
-        <h3 style="margin-top:30px; text-align:center;">Barang Keluar (Distribusi)</h3>
+    @if ($riwayatMasuk->count() > 0)
+        <h3 style="margin-top:20px; text-align:center;">Barang Masuk</h3>
         <table class="data">
             <thead>
                 <tr>
                     <th class="col-no">No</th>
                     <th class="col-tanggal">Tanggal, Waktu</th>
-                    <th class="col-gudang">Gudang Asal</th>
+                    <th class="col-gudang">Gudang</th>
                     <th class="col-nama">Nama Barang</th>
                     <th class="col-jumlah">Jumlah</th>
+                    <th class="col-keterangan">Keterangan</th>
+                </tr>
+            </thead>
+            <tbody>
+                @php
+                    $no = 1;
+                    $totalMasuk = 0;
+                @endphp
+                @foreach ($riwayatMasuk as $r)
+                    @php $totalMasuk += $r->jumlah; @endphp
+                    <tr>
+                        <td>{{ $no++ }}</td>
+                        <td>
+                            {{ \Carbon\Carbon::parse($r->tanggal)->format('d/m/Y') }}<br>
+                            {{ $r->waktu }} WIB
+                        </td>
+                        <td>{{ $r->gudang }}</td>
+                        <td>{{ $r->nama_barang }}</td>
+                        <td>{{ $r->jumlah }}</td>
+                        <td>{{ $r->keterangan }}</td>
+                    </tr>
+                @endforeach
+                <tr class="total-row">
+                    <td colspan="5" style="text-align:right;">Total Barang Masuk</td>
+                    <td>{{ $totalMasuk }}</td>
+                </tr>
+            </tbody>
+        </table>
+    @endif
+
+    <!-- TABEL BARANG KELUAR -->
+    @php
+        $riwayatKeluar = $riwayat->where('alur_barang', 'Keluar');
+    @endphp
+
+    @if ($riwayatKeluar->count() > 0)
+        @if ($riwayatMasuk->count() > 0)
+            <div class="barang-keluar">
+        @endif
+        <h3 style="text-align:center;">Barang Keluar</h3>
+        <table class="data">
+            <thead>
+                <tr>
+                    <th class="col-no">No</th>
+                    <th class="col-tanggal">Tanggal, Waktu</th>
                     <th class="col-gudang">Gudang Tujuan</th>
+                    <th class="col-nama">Nama Barang</th>
+                    <th class="col-jumlah">Jumlah</th>
+                    <th class="col-keterangan">Keterangan</th>
                 </tr>
             </thead>
             <tbody>
@@ -284,7 +353,7 @@
                     $no = 1;
                     $totalKeluar = 0;
                 @endphp
-                @foreach ($riwayat->where('alur_barang', 'Keluar') as $r)
+                @foreach ($riwayatKeluar as $r)
                     @php $totalKeluar += $r->jumlah; @endphp
                     <tr>
                         <td>{{ $no++ }}</td>
@@ -293,39 +362,50 @@
                             {{ $r->waktu }} WIB
                         </td>
                         <td>
-                            {{ $r->gudang }}<br>
-                            <small style="font-size:10px;">{{ $r->kategori_asal }}</small>
+                            {{ $r->gudang_tujuan }}
+                            @if (isset($r->kategori_tujuan) && $r->kategori_tujuan)
+                            @endif
                         </td>
                         <td>{{ $r->nama_barang }}</td>
                         <td>{{ $r->jumlah }}</td>
-                        <td>
-                            {{ $r->gudang_tujuan }}<br>
-                            <small style="font-size:10px;">{{ $r->kategori_tujuan }}</small>
-                        </td>
+                        <td>{{ $r->keterangan }}</td>
                     </tr>
                 @endforeach
-                <tr>
-                    <td colspan="4" style="text-align:right; font-weight:bold;">Total Barang Keluar</td>
-                    <td style="font-weight:bold;">{{ $totalKeluar }}</td>
+                <tr class="total-row">
+                    <td colspan="4" style="text-align:right;">Total Barang Keluar</td>
+                    <td>{{ $totalKeluar }}</td>
                     <td></td>
                 </tr>
             </tbody>
         </table>
-    </div>
+        @if ($riwayatMasuk->count() > 0)
+            </div>
+        @endif
+    @endif
+
+    <!-- Kondisi jika tidak ada data sama sekali -->
+    @if ($riwayatMasuk->count() == 0 && $riwayatKeluar->count() == 0)
+        <div style="text-align: center; margin: 50px 0;">
+            <h3>Tidak Ada Data Riwayat Barang</h3>
+            <p>Tidak ditemukan data riwayat barang untuk periode yang dipilih.</p>
+        </div>
     @endif
 
     <!-- TANDA TANGAN -->
-    <table class="ttd">
-        <tr>
-            <td style="width:50%;"></td>
-            <td style="width:50%;">
-                Sungailiat, {{ now()->format('d F Y') }} <br>
-                Plt. Kepala Bagian Umum dan Rumah Tangga <br><br><br><br><br>
-                <span style="font-weight:bold; text-decoration:underline;">Nama Pejabat</span><br>
-                NIP. 1975xxxxxxxxx
-            </td>
-        </tr>
-    </table>
+    <!-- Hanya tampilkan tanda tangan jika ada data -->
+    @if ($riwayatMasuk->count() > 0 || $riwayatKeluar->count() > 0)
+        <table class="ttd">
+            <tr>
+                <td style="width:60%;"></td>
+                <td style="width:40%;">
+                    Sungailiat, {{ now()->format('d F Y') }} <br>
+                    Plt. Kepala Bagian Umum dan Rumah Tangga <br><br><br><br><br>
+                    <span style="font-weight:bold; text-decoration:underline;">Nama Pejabat</span><br>
+                    NIP. 1975xxxxxxxxx
+                </td>
+            </tr>
+        </table>
+    @endif
 
 </body>
 

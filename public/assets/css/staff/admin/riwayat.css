@@ -951,3 +951,250 @@
         border: 1px solid #000;
     }
 }
+
+/* Tambahkan CSS ini ke file riwayat-responsive.css Anda */
+
+/* Fix untuk kolom Keterangan di tabel Barang Masuk */
+.riwayat-header-masuk ~ .collapse .table th:nth-child(7),
+.riwayat-header-masuk ~ .collapse .table td:nth-child(7) {
+    white-space: normal !important;
+    word-wrap: break-word;
+    word-break: break-word;
+    max-width: 150px;
+    min-width: 100px;
+}
+
+/* Opsional: Batasi lebar kolom lain di tabel Barang Masuk */
+.riwayat-header-masuk ~ .collapse .table th:nth-child(1),
+.riwayat-header-masuk ~ .collapse .table td:nth-child(1) {
+    min-width: 40px;
+    max-width: 50px;
+}
+
+.riwayat-header-masuk ~ .collapse .table th:nth-child(2),
+.riwayat-header-masuk ~ .collapse .table td:nth-child(2) {
+    min-width: 80px;
+    max-width: 100px;
+}
+
+.riwayat-header-masuk ~ .collapse .table th:nth-child(3),
+.riwayat-header-masuk ~ .collapse .table td:nth-child(3),
+.riwayat-header-masuk ~ .collapse .table th:nth-child(4),
+.riwayat-header-masuk ~ .collapse .table td:nth-child(4) {
+    min-width: 100px;
+    max-width: 150px;
+    white-space: normal !important;
+    word-wrap: break-word;
+}
+
+.riwayat-header-masuk ~ .collapse .table th:nth-child(5),
+.riwayat-header-masuk ~ .collapse .table td:nth-child(5),
+.riwayat-header-masuk ~ .collapse .table th:nth-child(6),
+.riwayat-header-masuk ~ .collapse .table td:nth-child(6) {
+    min-width: 60px;
+    max-width: 80px;
+}
+
+.riwayat-header-masuk ~ .collapse .table th:nth-child(8),
+.riwayat-header-masuk ~ .collapse .table td:nth-child(8) {
+    min-width: 60px;
+    max-width: 80px;
+}
+
+/* Kurangi min-width tabel untuk tabel barang masuk */
+.riwayat-header-masuk ~ .collapse .table {
+    min-width: 800px !important;
+}
+
+/* Fix untuk kolom Keterangan di tabel Distribusi Barang */
+.riwayat-header-distribusi ~ .collapse .table th:nth-child(7),
+.riwayat-header-distribusi ~ .collapse .table td:nth-child(7) {
+    white-space: normal !important;
+    word-wrap: break-word;
+    word-break: break-word;
+    max-width: 150px;
+    min-width: 100px;
+}
+
+/* Opsional: Batasi lebar kolom lain di tabel Distribusi */
+.riwayat-header-distribusi ~ .collapse .table th:nth-child(1),
+.riwayat-header-distribusi ~ .collapse .table td:nth-child(1) {
+    min-width: 40px;
+    max-width: 50px;
+}
+
+.riwayat-header-distribusi ~ .collapse .table th:nth-child(2),
+.riwayat-header-distribusi ~ .collapse .table td:nth-child(2) {
+    min-width: 80px;
+    max-width: 100px;
+}
+
+.riwayat-header-distribusi ~ .collapse .table th:nth-child(3),
+.riwayat-header-distribusi ~ .collapse .table td:nth-child(3),
+.riwayat-header-distribusi ~ .collapse .table th:nth-child(4),
+.riwayat-header-distribusi ~ .collapse .table td:nth-child(4) {
+    min-width: 100px;
+    max-width: 150px;
+    white-space: normal !important;
+    word-wrap: break-word;
+}
+
+.riwayat-header-distribusi ~ .collapse .table th:nth-child(5),
+.riwayat-header-distribusi ~ .collapse .table td:nth-child(5),
+.riwayat-header-distribusi ~ .collapse .table th:nth-child(6),
+.riwayat-header-distribusi ~ .collapse .table td:nth-child(6) {
+    min-width: 60px;
+    max-width: 80px;
+}
+
+.riwayat-header-distribusi ~ .collapse .table th:nth-child(8),
+.riwayat-header-distribusi ~ .collapse .table td:nth-child(8) {
+    min-width: 60px;
+    max-width: 80px;
+}
+
+/* Kurangi min-width tabel untuk tabel distribusi */
+.riwayat-header-distribusi ~ .collapse .table {
+    min-width: 800px !important;
+}
+
+/* Fix untuk kolom Bagian dan Keterangan di tabel Barang Keluar */
+.riwayat-header-keluar ~ .collapse .table th:nth-child(7),
+.riwayat-header-keluar ~ .collapse .table td:nth-child(7),
+.riwayat-header-keluar ~ .collapse .table th:nth-child(9),
+.riwayat-header-keluar ~ .collapse .table td:nth-child(9) {
+    white-space: normal !important;
+    word-wrap: break-word;
+    word-break: break-word;
+    max-width: 150px;
+    min-width: 100px;
+}
+
+/* Opsional: Batasi lebar kolom lain agar lebih proporsional */
+.riwayat-header-keluar ~ .collapse .table th:nth-child(1),
+.riwayat-header-keluar ~ .collapse .table td:nth-child(1) {
+    min-width: 40px;
+    max-width: 50px;
+}
+
+.riwayat-header-keluar ~ .collapse .table th:nth-child(2),
+.riwayat-header-keluar ~ .collapse .table td:nth-child(2) {
+    min-width: 80px;
+    max-width: 100px;
+}
+
+.riwayat-header-keluar ~ .collapse .table th:nth-child(3),
+.riwayat-header-keluar ~ .collapse .table td:nth-child(3),
+.riwayat-header-keluar ~ .collapse .table th:nth-child(4),
+.riwayat-header-keluar ~ .collapse .table td:nth-child(4) {
+    min-width: 100px;
+    max-width: 150px;
+    white-space: normal !important;
+    word-wrap: break-word;
+}
+
+.riwayat-header-keluar ~ .collapse .table th:nth-child(5),
+.riwayat-header-keluar ~ .collapse .table td:nth-child(5),
+.riwayat-header-keluar ~ .collapse .table th:nth-child(6),
+.riwayat-header-keluar ~ .collapse .table td:nth-child(6) {
+    min-width: 60px;
+    max-width: 80px;
+}
+
+.riwayat-header-keluar ~ .collapse .table th:nth-child(8),
+.riwayat-header-keluar ~ .collapse .table td:nth-child(8) {
+    min-width: 100px;
+    max-width: 120px;
+    white-space: normal !important;
+    word-wrap: break-word;
+}
+
+.riwayat-header-keluar ~ .collapse .table th:nth-child(10),
+.riwayat-header-keluar ~ .collapse .table td:nth-child(10) {
+    min-width: 60px;
+    max-width: 80px;
+}
+
+/* Kurangi min-width tabel untuk tabel barang keluar */
+.riwayat-header-keluar ~ .collapse .table {
+    min-width: 900px !important;
+}
+
+/* Responsive adjustment untuk mobile */
+@media (max-width: 767px) {
+    /* Barang Masuk */
+    .riwayat-header-masuk ~ .collapse .table {
+        min-width: 600px !important;
+    }
+    
+    .riwayat-header-masuk ~ .collapse .table th:nth-child(7),
+    .riwayat-header-masuk ~ .collapse .table td:nth-child(7) {
+        max-width: 120px;
+        min-width: 80px;
+        font-size: 0.75rem;
+    }
+    
+    /* Distribusi */
+    .riwayat-header-distribusi ~ .collapse .table {
+        min-width: 600px !important;
+    }
+    
+    .riwayat-header-distribusi ~ .collapse .table th:nth-child(7),
+    .riwayat-header-distribusi ~ .collapse .table td:nth-child(7) {
+        max-width: 120px;
+        min-width: 80px;
+        font-size: 0.75rem;
+    }
+    
+    /* Barang Keluar */
+    .riwayat-header-keluar ~ .collapse .table {
+        min-width: 650px !important;
+    }
+    
+    .riwayat-header-keluar ~ .collapse .table th:nth-child(7),
+    .riwayat-header-keluar ~ .collapse .table td:nth-child(7),
+    .riwayat-header-keluar ~ .collapse .table th:nth-child(9),
+    .riwayat-header-keluar ~ .collapse .table td:nth-child(9) {
+        max-width: 120px;
+        min-width: 80px;
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 575px) {
+    /* Barang Masuk */
+    .riwayat-header-masuk ~ .collapse .table {
+        min-width: 550px !important;
+    }
+    
+    .riwayat-header-masuk ~ .collapse .table th:nth-child(7),
+    .riwayat-header-masuk ~ .collapse .table td:nth-child(7) {
+        max-width: 100px;
+        min-width: 70px;
+    }
+    
+    /* Distribusi */
+    .riwayat-header-distribusi ~ .collapse .table {
+        min-width: 550px !important;
+    }
+    
+    .riwayat-header-distribusi ~ .collapse .table th:nth-child(7),
+    .riwayat-header-distribusi ~ .collapse .table td:nth-child(7) {
+        max-width: 100px;
+        min-width: 70px;
+    }
+    
+    /* Barang Keluar */
+    .riwayat-header-keluar ~ .collapse .table {
+        min-width: 600px !important;
+    }
+    
+    .riwayat-header-keluar ~ .collapse .table th:nth-child(7),
+    .riwayat-header-keluar ~ .collapse .table td:nth-child(7),
+    .riwayat-header-keluar ~ .collapse .table th:nth-child(9),
+    .riwayat-header-keluar ~ .collapse .table td:nth-child(9) {
+        max-width: 100px;
+        min-width: 70px;
+    }
+    
+}
