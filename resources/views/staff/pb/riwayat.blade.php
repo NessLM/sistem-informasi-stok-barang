@@ -1,5 +1,4 @@
 {{-- resources/views/staff/pb/riwayat.blade.php --}}
-
 <x-layouts.app title="Riwayat" :menu="$menu">
 
     <div class="container-fluid riwayat-container">
@@ -144,6 +143,7 @@
                                     <th>Gudang</th>
                                     <th>Nama Barang</th>
                                     <th>Jumlah</th>
+                                    <th>Keterangan</th>
                                     <th>Bukti</th>
                                 </tr>
                             </thead>
@@ -156,12 +156,13 @@
                                         <td>{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }} WIB</td>
                                         <td class="fw-medium">{{ $item->gudang }}</td>
                                         <td class="fw-medium">{{ $item->nama_barang }}</td>
-                                        <td><span class="badge bg-success">+{{ $item->jumlah }}</span></td>
+                                        <td><span class="fw-medium">{{ $item->jumlah }}</span></td>
+                                        <td class="fw-medium">{{ $item->keterangan }}</td>
                                         <td class="text-center">
                                             @if ($item->bukti_path)
                                                 <span class="riwayat-bukti-icon" style="cursor: pointer;"
                                                     data-bs-toggle="modal" data-bs-target="#buktiModal"
-                                                    data-image="{{ asset('storage/' . $item->bukti_path) }}">
+                                                    data-image="{{ $item->bukti_path }}">
                                                     <i class="bi bi-eye-fill"></i>
                                                 </span>
                                             @else
@@ -171,7 +172,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="riwayat-empty-state text-center py-4">
+                                        <td colspan="8" class="riwayat-empty-state text-center py-4">
                                             <i class="bi bi-inbox"></i>
                                             <p>Tidak ada data barang masuk ditemukan</p>
                                         </td>
@@ -210,7 +211,7 @@
             <!-- Tabel Barang Keluar -->
             <div class="card riwayat-table-card mb-4">
                 <div class="card-header riwayat-header-keluar">
-                    <h5 class="mb-0">Barang Keluar (Distribusi)</h5>
+                    <h5 class="mb-0">Barang Keluar</h5>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -220,10 +221,10 @@
                                     <th>No</th>
                                     <th>Tanggal</th>
                                     <th>Waktu</th>
-                                    <th>Gudang Asal</th>
+                                    <th>Gudang Tujuan</th>
                                     <th>Nama Barang</th>
                                     <th>Jumlah</th>
-                                    <th>Gudang Tujuan</th>
+                                    <th>Keterangan</th>
                                     <th>Bukti</th>
                                 </tr>
                             </thead>
@@ -235,20 +236,16 @@
                                         <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
                                         <td>{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }} WIB</td>
                                         <td class="fw-medium">
-                                            {{ $item->gudang }}<br>
-                                            <small class="text-muted">{{ $item->kategori_asal }}</small>
+                                            {{ $item->gudang_tujuan }}<br>
                                         </td>
                                         <td class="fw-medium">{{ $item->nama_barang }}</td>
-                                        <td><span class="badge bg-danger">-{{ $item->jumlah }}</span></td>
-                                        <td class="fw-medium">
-                                            {{ $item->gudang_tujuan }}<br>
-                                            <small class="text-muted">{{ $item->kategori_tujuan }}</small>
-                                        </td>
+                                        <td><span class="fw-medium">{{ $item->jumlah }}</span></td>
+                                        <td class="fw-medium">{{ $item->keterangan }}</td>
                                         <td class="text-center">
                                             @if ($item->bukti_path)
                                                 <span class="riwayat-bukti-icon" style="cursor: pointer;"
                                                     data-bs-toggle="modal" data-bs-target="#buktiModal"
-                                                    data-image="{{ asset('storage/' . $item->bukti_path) }}">
+                                                    data-image="{{ $item->bukti_path }}">
                                                     <i class="bi bi-eye-fill"></i>
                                                 </span>
                                             @else
@@ -522,5 +519,4 @@
             }
         </style>
     @endpush
-</x-layouts.app></parameter>
-</invoke>
+</x-layouts.app>
