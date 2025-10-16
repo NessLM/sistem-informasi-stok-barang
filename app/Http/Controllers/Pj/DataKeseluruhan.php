@@ -17,11 +17,17 @@ use Illuminate\Support\Facades\DB;
 
 class DataKeseluruhan extends Controller
 {
+    /**
+     * Halaman Data Keseluruhan (PJ)
+     *
+     * - Menampilkan kategori + barang dengan stok > 0 (seperti sebelumnya).
+     * - Tambahan: Ringkasan ketersediaan & tabel "Barang Habis" (stok = 0).
+     */
     public function index(Request $request)
     {
-        $menu = MenuHelper::pjMenu();
+        $menu   = MenuHelper::pjMenu();
         $search = $request->input('search');
-        $user = Auth::user();
+        $user   = Auth::user();
 
         // Cek gudang user
         if (!$user->gudang_id) {
@@ -33,7 +39,6 @@ class DataKeseluruhan extends Controller
         }
 
         $gudangUser = Gudang::find($user->gudang_id);
-
         if (!$gudangUser) {
             return back()->with('toast', [
                 'type' => 'error',
@@ -47,9 +52,8 @@ class DataKeseluruhan extends Controller
             ->with('gudang')
             ->get();
 
-        // CARA BARU: Ambil barang langsung dari pj_stok
+        // CARA BARU: Ambil barang langsung dari pj_stok (hanya stok > 0, sesuai tampilan sebelumnya)
         foreach ($kategori as $k) {
-            // Query barang yang ada di pj_stok untuk gudang ini
             $k->barang = DB::table('pj_stok')
                 ->join('barang', 'pj_stok.kode_barang', '=', 'barang.kode_barang')
                 ->where('pj_stok.id_gudang', $gudangUser->id)
@@ -64,13 +68,13 @@ class DataKeseluruhan extends Controller
                 )
                 ->get()
                 ->map(function ($item) {
-                    // Convert stdClass to object with properties
+                    // Bentuk objek sederhana untuk Blade
                     return (object) [
-                        'kode' => $item->kode,
-                        'nama' => $item->nama,
-                        'satuan' => $item->satuan,
-                        'stok_tersedia' => $item->stok,
-                        'id_kategori' => $item->id_kategori
+                        'kode'           => $item->kode,
+                        'nama'           => $item->nama,
+                        'satuan'         => $item->satuan,
+                        'stok_tersedia'  => $item->stok,
+                        'id_kategori'    => $item->id_kategori
                     ];
                 });
         }
@@ -78,12 +82,11 @@ class DataKeseluruhan extends Controller
         $selectedGudang = $gudangUser;
         $bagian = Bagian::orderBy('nama')->get();
 
-        // Validasi filter harga
+        // Validasi filter harga (jika sewaktu-waktu dipakai)
         $request->validate([
             'harga_min' => 'nullable|numeric|min:0',
             'harga_max' => 'nullable|numeric|min:0',
         ]);
-
         if (
             $request->filled('harga_min') &&
             $request->filled('harga_max') &&
@@ -94,8 +97,40 @@ class DataKeseluruhan extends Controller
             ]);
         }
 
-        // Filter barang untuk search
+        // Filter barang untuk search (tetap stok > 0)
         $barang = $this->getFilteredBarang($request, $gudangUser->id);
+
+        /**
+         * ===========================
+         * TAMBAHAN: Ringkasan & Habis
+         * ===========================
+         */
+        $lowThreshold = 10; // ambang "menipis" ditampilkan di badge
+
+        // Ambil semua rows pj_stok untuk gudang ini (untuk ringkasan)
+        $allRows = DB::table('pj_stok')
+            ->join('barang', 'pj_stok.kode_barang', '=', 'barang.kode_barang')
+            ->join('kategori', 'pj_stok.id_kategori', '=', 'kategori.id')
+            ->where('pj_stok.id_gudang', $gudangUser->id)
+            ->select('pj_stok.stok', 'barang.kode_barang', 'barang.nama_barang', 'barang.satuan', 'kategori.nama as kategori_nama')
+            ->get();
+
+        // Hitung ringkasan
+        $countEmpty = $allRows->where('stok', 0)->count();
+        $countLow   = $allRows->filter(fn($r) => $r->stok > 0 && $r->stok < $lowThreshold)->count();
+        $countOk    = max($allRows->count() - $countEmpty - $countLow, 0);
+        $ringkasanCounts = ['ok' => $countOk, 'low' => $countLow, 'empty' => $countEmpty];
+
+        // Kumpulkan barang habis (stok = 0) untuk tabel baru
+        $barangHabis = $allRows->where('stok', 0)->map(function ($item) {
+            return (object) [
+                'kode'          => $item->kode_barang,
+                'nama'          => $item->nama_barang,
+                'satuan'        => $item->satuan,
+                'stok_tersedia' => 0,
+                'kategori'      => (object) ['nama' => $item->kategori_nama],
+            ];
+        })->values();
 
         // Debug log
         Log::info('=== PJ DataKeseluruhan Debug ===', [
@@ -113,6 +148,8 @@ class DataKeseluruhan extends Controller
                 ];
             })->toArray(),
             'total_barang_filtered' => $barang->count(),
+            'ringkasan' => $ringkasanCounts,
+            'barang_habis_count' => $barangHabis->count(),
         ]);
 
         return view('staff.pj.datakeseluruhan', compact(
@@ -120,12 +157,17 @@ class DataKeseluruhan extends Controller
             'barang',
             'menu',
             'selectedGudang',
-            'bagian'
+            'bagian',
+            // tambahan:
+            'barangHabis',
+            'lowThreshold',
+            'ringkasanCounts'
         ));
     }
 
     /**
      * API: Search suggestions untuk autocomplete
+     * - Hanya mengembalikan stok > 0 (agar tombol "Barang Keluar" valid).
      */
     public function searchSuggestions(Request $request)
     {
@@ -149,7 +191,7 @@ class DataKeseluruhan extends Controller
             ->where('pj_stok.stok', '>', 0)
             ->where(function ($q) use ($query) {
                 $q->where('barang.nama_barang', 'like', "%{$query}%")
-                    ->orWhere('barang.kode_barang', 'like', "%{$query}%");
+                  ->orWhere('barang.kode_barang', 'like', "%{$query}%");
             })
             ->select(
                 'barang.kode_barang',
@@ -170,12 +212,12 @@ class DataKeseluruhan extends Controller
 
                 return [
                     'kode_barang' => $item->kode_barang,
-                    'nama' => $item->nama,
-                    'kode' => $item->kode_barang,
-                    'stok' => $item->stok,
-                    'kategori' => $item->kategori,
-                    'gudang' => $item->gudang,
-                    'stock_status' => $stockStatus
+                    'nama'        => $item->nama,
+                    'kode'        => $item->kode_barang,
+                    'stok'        => $item->stok,
+                    'kategori'    => $item->kategori,
+                    'gudang'      => $item->gudang,
+                    'stock_status'=> $stockStatus
                 ];
             });
 
@@ -193,19 +235,18 @@ class DataKeseluruhan extends Controller
 
         // Validasi input
         $validated = $request->validate([
-            'jumlah' => 'required|integer|min:1',
+            'jumlah'        => 'required|integer|min:1',
             'nama_penerima' => 'required|string|max:255',
-            'tanggal' => 'nullable|date',
-            'bagian_id' => 'nullable|exists:bagian,id',
-            'keterangan' => 'nullable|string',
-            'bukti' => 'nullable|file|mimes:jpeg,jpg,png,pdf|max:2048',
+            'tanggal'       => 'nullable|date',
+            'bagian_id'     => 'nullable|exists:bagian,id',
+            'keterangan'    => 'nullable|string',
+            'bukti'         => 'nullable|file|mimes:jpeg,jpg,png,pdf|max:2048',
         ]);
 
         $user = Auth::user();
 
         // Cari barang berdasarkan kode_barang
         $barang = Barang::where('kode_barang', $kode_barang)->first();
-
         if (!$barang) {
             return back()->with('toast', [
                 'type' => 'error',
@@ -220,11 +261,11 @@ class DataKeseluruhan extends Controller
             ->first();
 
         Log::info('Stok Check:', [
-            'kode_barang' => $kode_barang,
-            'gudang_id' => $user->gudang_id,
-            'stok_found' => $pjStok ? 'Yes' : 'No',
-            'stok_value' => $pjStok ? $pjStok->stok : 0,
-            'requested_qty' => $request->jumlah
+            'kode_barang'  => $kode_barang,
+            'gudang_id'    => $user->gudang_id,
+            'stok_found'   => $pjStok ? 'Yes' : 'No',
+            'stok_value'   => $pjStok ? $pjStok->stok : 0,
+            'requested_qty'=> $request->jumlah
         ]);
 
         if (!$pjStok) {
@@ -252,7 +293,7 @@ class DataKeseluruhan extends Controller
             Log::info('Bukti uploaded:', ['path' => $buktiPath]);
         }
 
-        // Proses bagian_id
+        // Proses bagian_id (boleh null)
         $bagianId = $request->input('bagian_id');
         if ($bagianId === '' || $bagianId === 'null' || empty($bagianId)) {
             $bagianId = null;
@@ -267,15 +308,15 @@ class DataKeseluruhan extends Controller
 
         // Siapkan data untuk disimpan
         $dataToInsert = [
-            'kode_barang' => $kode_barang,
-            'id_gudang' => $user->gudang_id,
-            'user_id' => $user->id,
-            'bagian_id' => $bagianId,
-            'nama_penerima' => $request->nama_penerima,
-            'jumlah' => $request->jumlah,
-            'tanggal' => $request->tanggal ?? now()->format('Y-m-d'),
-            'keterangan' => $request->keterangan,
-            'bukti' => $buktiPath,
+            'kode_barang'  => $kode_barang,
+            'id_gudang'    => $user->gudang_id,
+            'user_id'      => $user->id,
+            'bagian_id'    => $bagianId,
+            'nama_penerima'=> $request->nama_penerima,
+            'jumlah'       => $request->jumlah,
+            'tanggal'      => $request->tanggal ?? now()->format('Y-m-d'),
+            'keterangan'   => $request->keterangan,
+            'bukti'        => $buktiPath,
         ];
 
         Log::info('Data to be inserted:', $dataToInsert);
@@ -293,7 +334,7 @@ class DataKeseluruhan extends Controller
 
             Log::info('Barang Keluar Created Successfully:', [
                 'transaksi_id' => $barangKeluar->id,
-                'stok_baru' => $pjStok->stok
+                'stok_baru'    => $pjStok->stok
             ]);
 
             return back()->with('toast', [
@@ -307,7 +348,7 @@ class DataKeseluruhan extends Controller
 
             Log::error('Error creating Barang Keluar:', [
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace'   => $e->getTraceAsString()
             ]);
 
             return back()->with('toast', [
@@ -319,7 +360,7 @@ class DataKeseluruhan extends Controller
     }
 
     /**
-     * Filter barang berdasarkan kriteria
+     * Filter barang berdasarkan kriteria (stok > 0)
      */
     private function getFilteredBarang(Request $request, $gudangId)
     {
@@ -337,7 +378,7 @@ class DataKeseluruhan extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('barang.nama_barang', 'like', "%{$search}%")
-                    ->orWhere('barang.kode_barang', 'like', "%{$search}%");
+                  ->orWhere('barang.kode_barang', 'like', "%{$search}%");
             });
         }
 
@@ -362,22 +403,22 @@ class DataKeseluruhan extends Controller
         }
 
         return $query->select(
-            'barang.kode_barang as kode',
-            'barang.nama_barang as nama',
-            'barang.satuan',
-            'pj_stok.stok as stok_tersedia',
-            'kategori.nama as kategori_nama',
-            'pj_stok.id_kategori'
-        )
+                'barang.kode_barang as kode',
+                'barang.nama_barang as nama',
+                'barang.satuan',
+                'pj_stok.stok as stok_tersedia',
+                'kategori.nama as kategori_nama',
+                'pj_stok.id_kategori'
+            )
             ->get()
             ->map(function ($item) {
                 return (object) [
-                    'id' => null,
-                    'kode' => $item->kode,
-                    'nama' => $item->nama,
-                    'satuan' => $item->satuan,
-                    'stok_tersedia' => $item->stok_tersedia,
-                    'kategori' => (object) ['nama' => $item->kategori_nama]
+                    'id'             => null,
+                    'kode'           => $item->kode,
+                    'nama'           => $item->nama,
+                    'satuan'         => $item->satuan,
+                    'stok_tersedia'  => $item->stok_tersedia,
+                    'kategori'       => (object) ['nama' => $item->kategori_nama]
                 ];
             });
     }

@@ -9,8 +9,12 @@
 <x-layouts.app title="Data Gudang" :menu="$menu" :heading="$pageHeading">
 
     @php
-        $barang = $barang ?? collect();
-        $kategori = $kategori ?? collect();
+        $barang   = $barang ?? collect();     // hasil filter/search (bisa kosong)
+        $kategori = $kategori ?? collect();   // kategori + barang (stok > 0)
+        // Tambahan dari controller:
+        $barangHabis       = $barangHabis ?? collect();  // list barang stok = 0
+        $lowThreshold      = $lowThreshold ?? 10;         // ambang "menipis"
+        $ringkasanCounts   = $ringkasanCounts ?? ['ok'=>0,'low'=>0,'empty'=>0];
     @endphp
 
     <head>
@@ -24,73 +28,33 @@
                 border-bottom: 1px solid #f0f0f0;
                 transition: background-color 0.2s;
             }
-
             .search-suggestion-item:hover,
-            .search-suggestion-item.active {
-                background-color: #f8f9fa;
-            }
+            .search-suggestion-item.active { background-color: #f8f9fa; }
+            .search-suggestion-item:last-child { border-bottom: none; }
 
-            .search-suggestion-item:last-child {
-                border-bottom: none;
-            }
+            .suggestion-name { font-weight: 600; color: #2c3e50; margin-bottom: 4px; }
+            .suggestion-code { font-size: 0.875rem; color: #6c757d; margin-bottom: 4px; }
+            .suggestion-meta { font-size: 0.8rem; color: #95a5a6; }
 
-            .suggestion-name {
-                font-weight: 600;
-                color: #2c3e50;
-                margin-bottom: 4px;
-            }
+            .stock-status { padding: 2px 8px; border-radius: 4px; font-weight: 500; font-size: 0.75rem; }
+            .stock-available { background-color: #d4edda; color: #155724; }
+            .stock-low { background-color: #fff3cd; color: #856404; }
+            .stock-empty { background-color: #f8d7da; color: #721c24; }
 
-            .suggestion-code {
-                font-size: 0.875rem;
-                color: #6c757d;
-                margin-bottom: 4px;
-            }
+            .loading-suggestion { padding: 12px 16px; text-align: center; color: #6c757d; font-style: italic; }
 
-            .suggestion-meta {
-                font-size: 0.8rem;
-                color: #95a5a6;
-            }
+            #searchSuggestions { max-height: 400px; overflow-y: auto; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); border-radius: 0 0 0.375rem 0.375rem; }
 
-            .stock-status {
-                padding: 2px 8px;
-                border-radius: 4px;
-                font-weight: 500;
-                font-size: 0.75rem;
-            }
+            .row-low-stock { background-color: #ffcccc !important; border-left: 8px solid #dc3545 !important; }
 
-            .stock-available {
-                background-color: #d4edda;
-                color: #155724;
-            }
-
-            .stock-low {
-                background-color: #fff3cd;
-                color: #856404;
-            }
-
-            .stock-empty {
-                background-color: #f8d7da;
-                color: #721c24;
-            }
-
-            .loading-suggestion {
-                padding: 12px 16px;
-                text-align: center;
-                color: #6c757d;
-                font-style: italic;
-            }
-
-            #searchSuggestions {
-                max-height: 400px;
-                overflow-y: auto;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                border-radius: 0 0 0.375rem 0.375rem;
-            }
-
-            .row-low-stock {
-                background-color: #ffcccc !important;
-                border-left: 8px solid #dc3545 !important;
-            }
+            /* === Tambahan untuk ringkasan & "Barang Habis" === */
+            .summary-badges .badge { padding: .6rem .8rem; font-weight:600; }
+            .badge-dot { width:10px; height:10px; display:inline-block; border-radius:50%; margin-right:.35rem; }
+            .badge-ok   { background:#e9f7ef; color:#1e7e34; }
+            .badge-low  { background:#fff4e5; color:#b26b00; }
+            .badge-empty{ background:#fdecea; color:#a71d2a; }
+            .row-empty { background-color:#ffe6e6 !important; border-left:8px solid #dc3545 !important; }
+            .empty-card { border-left:6px solid #dc3545; }
         </style>
     </head>
 
@@ -135,12 +99,28 @@
                         $title = 'Data Gudang ' . $gudangNama;
                     }
                 @endphp
-                <h4>{{ $title }}</h4>
+                <h4 class="mb-0">{{ $title }}</h4>
                 <div class="d-flex flex-wrap gap-2">
                     <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalFilterBarang">
                         <i class="bi bi-funnel"></i> Filter
                     </button>
                 </div>
+            </div>
+
+            {{-- === RINGKASAN KETERSEDIAAN (baru) === --}}
+            <div class="summary-badges d-flex flex-wrap gap-2 mb-3">
+                <a href="#sec-empty" class="badge badge-empty text-decoration-none">
+                    <span class="badge-dot" style="background:#dc3545"></span>
+                    Habis: {{ $ringkasanCounts['empty'] ?? 0 }}
+                </a>
+                <a href="#sec-low" class="badge badge-low text-decoration-none">
+                    <span class="badge-dot" style="background:#fd7e14"></span>
+                    Menipis (&lt;{{ $lowThreshold }}): {{ $ringkasanCounts['low'] ?? 0 }}
+                </a>
+                <span class="badge badge-ok">
+                    <span class="badge-dot" style="background:#28a745"></span>
+                    Tersedia: {{ $ringkasanCounts['ok'] ?? 0 }}
+                </span>
             </div>
 
             {{-- Search Form dengan Autocomplete --}}
@@ -158,7 +138,6 @@
                 </div>
             </div>
 
-            {{-- Jika ada filter/search --}}
             {{-- Jika ada filter/search --}}
             @if (
                     request()->filled('search') ||
@@ -186,7 +165,6 @@
                             <tbody>
                                 @foreach ($barang as $i => $b)
                                     @php
-                                        // UBAH INI: Stok sudah ada di object $b
                                         $stokTersedia = $b->stok_tersedia ?? 0;
                                     @endphp
                                     @if ($stokTersedia > 0)
@@ -217,7 +195,6 @@
             @endif
 
             {{-- Jika tidak ada filter/search --}}
-            {{-- Jika tidak ada filter/search --}}
 @if (
     !request()->filled('search') &&
         !request()->filled('kode') &&
@@ -225,6 +202,9 @@
         !request()->filled('stok_max') &&
         !request()->filled('kategori_id') &&
         !request()->filled('satuan'))
+    {{-- Anchor untuk badge "Menipis" --}}
+    <div id="sec-low"></div>
+
     <div class="table-responsive mt-3">
         <table class="table table-bordered">
             <thead class="table-dark">
@@ -249,7 +229,7 @@
                     <tr id="detail-{{ $k->id }}" style="display:none;">
                         <td colspan="2">
                             @php
-                                // UBAH INI: barang sudah di-load dengan stok di controller
+                                // barang sudah di-load (stok > 0) di controller
                                 $barangFiltered = $k->barang;
                             @endphp
                             @if ($barangFiltered->count())
@@ -267,7 +247,6 @@
                                         <tbody>
                                             @foreach ($barangFiltered as $item)
                                                 @php
-                                                    // UBAH INI: Stok sudah ada di object
                                                     $stokTersedia = $item->stok_tersedia ?? 0;
                                                 @endphp
                                                 <tr @if ($stokTersedia < 10) class="row-low-stock" @endif>
@@ -302,6 +281,50 @@
     </div>
 @endif
         </section>
+
+        {{-- =========================
+             SEKS I BARANG HABIS (BARU)
+           ========================= --}}
+        @if(($barangHabis ?? collect())->count())
+        <section id="sec-empty" class="card empty-card mt-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="m-0">
+                        <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                        Barang Habis - {{ $selectedGudang->nama ?? 'Gudang' }}
+                        <span class="badge bg-danger ms-2">{{ $barangHabis->count() }}</span>
+                    </h5>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead class="table-danger">
+                            <tr>
+                                <th style="width:120px">Kode</th>
+                                <th>Nama Barang</th>
+                                <th style="width:220px">Kategori</th>
+                                <th style="width:120px">Satuan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($barangHabis as $item)
+                                <tr class="row-empty">
+                                    <td>{{ $item->kode }}</td>
+                                    <td>
+                                        {{ $item->nama }}
+                                        <span class="ms-2 badge text-bg-danger">Habis</span>
+                                    </td>
+                                    <td>{{ $item->kategori->nama ?? '-' }}</td>
+                                    <td>{{ $item->satuan ?? '-' }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+        @endif
+
     </main>
 
     <!-- Modal Barang Keluar -->
@@ -457,32 +480,19 @@
             let activeSuggestionIndex = -1;
             let searchTimeout;
 
-            if (!searchInput || !suggestionsContainer) {
-                return;
-            }
+            if (!searchInput || !suggestionsContainer) { return; }
 
             function fetchSuggestions(query) {
-                if (query.length < 2) {
-                    hideSuggestions();
-                    return;
-                }
-
+                if (query.length < 2) { hideSuggestions(); return; }
                 showLoading();
                 clearTimeout(searchTimeout);
 
                 searchTimeout = setTimeout(() => {
                     let searchUrl = `/pj/api/search-barang?q=${encodeURIComponent(query)}`;
-
                     fetch(searchUrl)
                         .then(response => response.json())
-                        .then(data => {
-                            currentSuggestions = data;
-                            displaySuggestions(data);
-                        })
-                        .catch(error => {
-                            console.error('Search error:', error);
-                            hideSuggestions();
-                        });
+                        .then(data => { currentSuggestions = data; displaySuggestions(data); })
+                        .catch(error => { console.error('Search error:', error); hideSuggestions(); });
                 }, 300);
             }
 
@@ -493,8 +503,7 @@
 
             function displaySuggestions(suggestions) {
                 if (suggestions.length === 0) {
-                    suggestionsContainer.innerHTML =
-                        '<div class="loading-suggestion">Tidak ada barang ditemukan</div>';
+                    suggestionsContainer.innerHTML = '<div class="loading-suggestion">Tidak ada barang ditemukan</div>';
                     return;
                 }
 
@@ -509,7 +518,7 @@
                             <div class="suggestion-name">${item.nama}</div>
                             <div class="suggestion-code">Kode: ${item.kode}</div>
                             <div class="suggestion-meta">
-                                <small>Kategori: ${item.kategori} | Gudang: ${item.gudang} | Stok: ${item.stok} | 
+                                <small>Kategori: ${item.kategori} | Gudang: ${item.gudang} | Stok: ${item.stok} |
                                 <span class="stock-status ${stockStatusClass}">${stockText}</span></small>
                             </div>
                         </div>
@@ -527,10 +536,7 @@
                 });
             }
 
-            function hideSuggestions() {
-                suggestionsContainer.style.display = 'none';
-                activeSuggestionIndex = -1;
-            }
+            function hideSuggestions() { suggestionsContainer.style.display = 'none'; activeSuggestionIndex = -1; }
 
             function selectSuggestion(index) {
                 if (currentSuggestions[index]) {
@@ -543,18 +549,13 @@
 
             function updateActiveSuggestion(suggestions) {
                 suggestions.forEach((item, index) => {
-                    if (index === activeSuggestionIndex) {
-                        item.classList.add('active');
-                    } else {
-                        item.classList.remove('active');
-                    }
+                    if (index === activeSuggestionIndex) item.classList.add('active');
+                    else item.classList.remove('active');
                 });
             }
 
             // Event listeners
-            searchInput.addEventListener('input', function () {
-                fetchSuggestions(this.value.trim());
-            });
+            searchInput.addEventListener('input', function () { fetchSuggestions(this.value.trim()); });
 
             searchInput.addEventListener('keydown', function (e) {
                 const suggestions = suggestionsContainer.querySelectorAll('.search-suggestion-item');
@@ -578,15 +579,11 @@
             });
 
             searchInput.addEventListener('focus', function () {
-                if (this.value.trim().length >= 2) {
-                    fetchSuggestions(this.value.trim());
-                }
+                if (this.value.trim().length >= 2) { fetchSuggestions(this.value.trim()); }
             });
 
             document.addEventListener('click', function (e) {
-                if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
-                    hideSuggestions();
-                }
+                if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) { hideSuggestions(); }
             });
 
             // Handle Modal Barang Keluar
@@ -599,23 +596,19 @@
                     const barangKode = button.getAttribute("data-kode") || '';
                     const stokTersedia = button.getAttribute("data-stok") || '0';
 
-                    // Set data
                     document.getElementById("barangKeluarId").value = barangId;
                     document.getElementById("barangKeluarNama").value = barangNama;
                     document.getElementById("barangKeluarKode").value = barangKode;
                     document.getElementById("stokTersedia").textContent = stokTersedia;
 
-                    // Set max jumlah
                     const jumlahInput = document.getElementById("jumlahKeluar");
                     jumlahInput.max = stokTersedia;
 
-                    // Reset form
                     document.getElementById('formBarangKeluar').reset();
                     document.getElementById("barangKeluarId").value = barangId;
                     document.getElementById("barangKeluarNama").value = barangNama;
                     document.getElementById("barangKeluarKode").value = barangKode;
 
-                    // Clear file preview
                     document.getElementById('fileNameKeluar').textContent = '';
                 });
             }
@@ -625,8 +618,7 @@
             if (buktiBrgKeluar) {
                 buktiBrgKeluar.addEventListener('change', function () {
                     const fileName = this.files[0]?.name || '';
-                    document.getElementById('fileNameKeluar').textContent = fileName ? `File: ${fileName}` :
-                        '';
+                    document.getElementById('fileNameKeluar').textContent = fileName ? `File: ${fileName}` : '';
                 });
             }
 

@@ -439,10 +439,19 @@
                                         value="{{ $b->nama_barang }}" required>
                                 </div>
                                 <div class="col-md-6">
-                                    <label>Kode Barang</label>
-                                    <input type="text" class="form-control"
-                                        value="{{ $b->kode_barang }}" disabled>
-                                    <small class="text-muted">Kode barang tidak dapat diubah</small>
+                                    <label>
+                                        Kode Barang 
+                                        <i class="bi bi-info-circle text-primary" 
+                                           data-bs-toggle="tooltip" 
+                                           data-bs-placement="top" 
+                                           title="Hati-hati mengubah kode barang, akan mempengaruhi riwayat transaksi"
+                                           style="cursor: help;"></i>
+                                    </label>
+                                    <input type="text" 
+                                           name="kode_barang"
+                                           class="form-control"
+                                           value="{{ $b->kode_barang }}" 
+                                           required>
                                 </div>
                                 <div class="col-md-6">
                                     <label>Kategori</label>
@@ -645,6 +654,12 @@
 
         // Handle Tambah Barang Price Format
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Bootstrap tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+
             const hargaTambahInput = document.getElementById('hargaTambah');
             const hargaTambahHidden = document.getElementById('hargaTambahHidden');
             
@@ -671,8 +686,9 @@
                     const hiddenInput = document.getElementById('hargaEditHidden-' + kodeBarang);
                     
                     if (displayInput && hiddenInput) {
-                        // Ambil nilai original dari data attribute
-                        const originalValue = displayInput.dataset.originalValue || hiddenInput.value;
+                        // Ambil nilai original dan konversi ke integer (buang desimal)
+                        let originalValue = displayInput.dataset.originalValue || hiddenInput.value;
+                        originalValue = parseInt(originalValue) || 0;
                         
                         // Set nilai awal (format saat tampil)
                         displayInput.value = formatRupiah(originalValue.toString());
