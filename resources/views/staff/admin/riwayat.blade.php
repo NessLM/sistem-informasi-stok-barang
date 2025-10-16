@@ -199,7 +199,17 @@
                                             <td><span class="fw-medium">{{ $item->jumlah }}</span></td>
                                             <td><span class="fw-medium">{{ $item->satuan }}</span></td>
                                             <td>
-                                                {{ $item->keterangan }}
+                                                @if ($item->keterangan && strlen($item->keterangan) > 40)
+                                                    <div class="keterangan-wrapper">
+                                                        <span class="keterangan-text collapsed"
+                                                            data-full-text="{{ $item->keterangan }}">
+                                                            {{ Str::limit($item->keterangan, 40, '') }}
+                                                        </span>
+                                                        <span class="keterangan-dots keterangan-toggle">...</span>
+                                                    </div>
+                                                @else
+                                                    {{ $item->keterangan ?? '-' }}
+                                                @endif
                                             </td>
                                             <td>
                                                 @if ($item->bukti)
@@ -298,7 +308,17 @@
                                             </td>
                                             <td class="fw-medium">{{ $item->satuan }}</td>
                                             <td>
-                                                {{ $item->keterangan }}
+                                                @if ($item->keterangan && strlen($item->keterangan) > 40)
+                                                    <div class="keterangan-wrapper">
+                                                        <span class="keterangan-text collapsed"
+                                                            data-full-text="{{ $item->keterangan }}">
+                                                            {{ Str::limit($item->keterangan, 40, '') }}
+                                                        </span>
+                                                        <span class="keterangan-dots keterangan-toggle">...</span>
+                                                    </div>
+                                                @else
+                                                    {{ $item->keterangan ?? '-' }}
+                                                @endif
                                             </td>
                                             <td>
                                                 @if ($item->bukti)
@@ -399,7 +419,17 @@
                                             <td>{{ $item->bagian }}</td>
                                             <td>{{ $item->penerima }}</td>
                                             <td>
-                                                {{ $item->keterangan }}
+                                                @if ($item->keterangan && strlen($item->keterangan) > 55)
+                                                    <div class="keterangan-wrapper">
+                                                        <span class="keterangan-text collapsed"
+                                                            data-full-text="{{ $item->keterangan }}">
+                                                            {{ Str::limit($item->keterangan, 55, '') }}
+                                                        </span>
+                                                        <span class="keterangan-dots keterangan-toggle">...</span>
+                                                    </div>
+                                                @else
+                                                    {{ $item->keterangan ?? '-' }}
+                                                @endif
                                             </td>
                                             <td>
                                                 @if ($item->bukti)
@@ -504,6 +534,42 @@
             document.addEventListener('DOMContentLoaded', function() {
                 initEventListeners();
                 initTableToggleButtons();
+
+                // Inisialisasi keterangan toggle
+                initKeteranganToggle();
+
+                function initKeteranganToggle() {
+                    document.querySelectorAll('.keterangan-toggle').forEach(toggle => {
+                        toggle.removeEventListener('click', handleKeteranganToggle);
+                        toggle.addEventListener('click', handleKeteranganToggle);
+                    });
+                }
+
+                function handleKeteranganToggle(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const toggle = this;
+                    const wrapper = toggle.closest('.keterangan-wrapper');
+                    const textSpan = wrapper.querySelector('.keterangan-text');
+
+                    if (textSpan.classList.contains('collapsed')) {
+                        // Expand - tampilkan teks penuh
+                        const fullText = textSpan.getAttribute('data-full-text');
+                        textSpan.textContent = fullText;
+                        textSpan.classList.remove('collapsed');
+                        textSpan.classList.add('expanded');
+                        toggle.textContent = 'tutup';
+                    } else {
+                        // Collapse - kembalikan ke 2 baris
+                        const fullText = textSpan.getAttribute('data-full-text');
+                        const limitedText = fullText.substring(0, 100);
+                        textSpan.textContent = limitedText;
+                        textSpan.classList.remove('expanded');
+                        textSpan.classList.add('collapsed');
+                        toggle.textContent = '...';
+                    }
+                }
 
                 function initEventListeners() {
                     // Filter untuk alur barang dan gudang
@@ -846,6 +912,61 @@
             /* Smooth transition untuk icon */
             .btn-toggle-table i {
                 transition: transform 0.3s ease;
+            }
+
+            /* Styling untuk keterangan yang bisa di-expand */
+            .keterangan-wrapper {
+                position: relative;
+                display: block;
+                max-width: 100%;
+                text-align: left;
+            }
+
+            .keterangan-text {
+                display: inline;
+                word-wrap: break-word;
+                word-break: break-word;
+            }
+
+            .keterangan-text.collapsed {
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-height: 3em;
+                line-height: 1.5em;
+            }
+
+            .keterangan-text.expanded {
+                display: block;
+                max-height: none;
+            }
+
+            .keterangan-dots {
+                display: inline;
+            }
+
+            .keterangan-text.expanded+.keterangan-dots {
+                display: none;
+            }
+
+            .keterangan-toggle {
+                color: #3498db;
+                cursor: pointer;
+                text-decoration: none;
+                font-weight: bold;
+                font-size: 1.2rem;
+                vertical-align: middle;
+                transition: all 0.3s ease;
+                display: inline-block;
+                padding: 0 4px;
+                user-select: none;
+            }
+
+            .keterangan-toggle:hover {
+                color: #2c3e50;
+                transform: scale(1.2);
             }
         </style>
     @endpush
