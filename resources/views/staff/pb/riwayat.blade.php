@@ -1,7 +1,7 @@
 {{-- resources/views/staff/pb/riwayat.blade.php --}}
 <x-layouts.app title="Riwayat" :menu="$menu">
 
-    <div class="container-fluid riwayat-container">
+    <div class="container-fluid riwayat-container riwayat-page">
 
         <!-- Filter Section -->
         <div class="card riwayat-filter-card mb-4">
@@ -133,32 +133,49 @@
                     <h5 class="mb-0">Barang Masuk</h5>
                 </div>
                 <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-bordered mb-0">
+                    <div class="table-responsive-vertical"> <!-- Ganti class untuk scroll vertikal -->
+                        <table class="table table-bordered mb-0 riwayat-table">
                             <thead>
                                 <tr>
-                                    <th>No</th>
-                                    <th>Tanggal</th>
-                                    <th>Waktu</th>
-                                    <th>Gudang</th>
-                                    <th>Nama Barang</th>
-                                    <th>Jumlah</th>
-                                    <th>Keterangan</th>
-                                    <th>Bukti</th>
+                                    <th width="5%">No</th>
+                                    <th width="12%">Tanggal <br> Waktu </th>
+                                    <th width="15%">Gudang</th>
+                                    <th width="18%">Nama Barang</th>
+                                    <th width="8%">Jumlah</th>
+                                    <th width="8%">Satuan</th>
+                                    <th width="24%">Keterangan</th> <!-- Lebar lebih untuk keterangan -->
+                                    <th width="10%">Bukti</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($masukPaginated as $item)
                                     <tr>
-                                        <td class="fw-semibold">
+                                        <td class="fw-semibold" data-label="No">
                                             {{ ($currentPageMasuk - 1) * $itemsPerPage + $loop->iteration }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }} WIB</td>
-                                        <td class="fw-medium">{{ $item->gudang }}</td>
-                                        <td class="fw-medium">{{ $item->nama_barang }}</td>
-                                        <td><span class="fw-medium">{{ $item->jumlah }}</span></td>
-                                        <td class="fw-medium">{{ $item->keterangan }}</td>
-                                        <td class="text-center">
+                                        <td data-label="Tanggal/Waktu">{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }} <br>
+                                            <small
+                                                class="text-muted">{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }}
+                                                WIB</small>
+                                        </td>
+                                        <td class="fw-medium" data-label="Gudang">{{ $item->gudang }}</td>
+                                        <td class="fw-medium" data-label="Nama Barang">{{ $item->nama_barang }}</td>
+                                        <td data-label="Jumlah"><span class="fw-medium">{{ $item->jumlah }}</span></td>
+                                        <td class="fw-medium" data-label="Satuan">{{ $item->satuan }}</td>
+                                        <td class="keterangan-cell" data-label="Keterangan">
+                                            @if ($item->keterangan && strlen($item->keterangan) > 50)
+                                                <div class="keterangan-wrapper">
+                                                    <span class="keterangan-text collapsed"
+                                                        data-full-text="{{ $item->keterangan }}">
+                                                        {{ Str::limit($item->keterangan, 50, '') }}
+                                                    </span>
+                                                    <span
+                                                        class="keterangan-dots keterangan-toggle">...</span>
+                                                </div>
+                                            @else
+                                                <span class="text-wrap">{{ $item->keterangan ?? '-' }}</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-center" data-label="Bukti">
                                             @if ($item->bukti_path)
                                                 <span class="riwayat-bukti-icon" style="cursor: pointer;"
                                                     data-bs-toggle="modal" data-bs-target="#buktiModal"
@@ -214,34 +231,51 @@
                     <h5 class="mb-0">Barang Keluar</h5>
                 </div>
                 <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-bordered mb-0">
+                    <div class="table-responsive-vertical"> <!-- Ganti class untuk scroll vertikal -->
+                        <table class="table table-bordered mb-0 riwayat-table">
                             <thead>
                                 <tr>
-                                    <th>No</th>
-                                    <th>Tanggal</th>
-                                    <th>Waktu</th>
-                                    <th>Gudang Tujuan</th>
-                                    <th>Nama Barang</th>
-                                    <th>Jumlah</th>
-                                    <th>Keterangan</th>
-                                    <th>Bukti</th>
+                                    <th width="5%">No</th>
+                                    <th width="12%">Tanggal <br> Waktu </th>
+                                    <th width="15%">Gudang Tujuan</th>
+                                    <th width="18%">Nama Barang</th>
+                                    <th width="8%">Jumlah</th>
+                                    <th width="8%">Satuan</th>
+                                    <th width="24%">Keterangan</th> <!-- Lebar lebih untuk keterangan -->
+                                    <th width="10%">Bukti</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($keluarPaginated as $item)
                                     <tr>
-                                        <td class="fw-semibold">
+                                        <td class="fw-semibold" data-label="No">
                                             {{ ($currentPageKeluar - 1) * $itemsPerPage + $loop->iteration }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }} WIB</td>
-                                        <td class="fw-medium">
+                                        <td data-label="Tanggal/Waktu">{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }} <br>
+                                            <small
+                                                class="text-muted">{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }}
+                                                WIB</small>
+                                        </td>
+                                        <td class="fw-medium" data-label="Gudang Tujuan">
                                             {{ $item->gudang_tujuan }}<br>
                                         </td>
-                                        <td class="fw-medium">{{ $item->nama_barang }}</td>
-                                        <td><span class="fw-medium">{{ $item->jumlah }}</span></td>
-                                        <td class="fw-medium">{{ $item->keterangan }}</td>
-                                        <td class="text-center">
+                                        <td class="fw-medium" data-label="Nama Barang">{{ $item->nama_barang }}</td>
+                                        <td data-label="Jumlah"><span class="fw-medium">{{ $item->jumlah }}</span></td>
+                                        <td class="fw-medium" data-label="Satuan">{{ $item->satuan }}</td>
+                                        <td class="keterangan-cell" data-label="Keterangan">
+                                            @if ($item->keterangan && strlen($item->keterangan) > 100)
+                                                <div class="keterangan-wrapper">
+                                                    <span class="keterangan-text collapsed"
+                                                        data-full-text="{{ $item->keterangan }}">
+                                                        {{ Str::limit($item->keterangan, 100, '') }}
+                                                    </span>
+                                                    <span
+                                                        class="keterangan-dots keterangan-toggle">...</span>
+                                                </div>
+                                            @else
+                                                <span class="text-wrap">{{ $item->keterangan ?? '-' }}</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-center" data-label="Bukti">
                                             @if ($item->bukti_path)
                                                 <span class="riwayat-bukti-icon" style="cursor: pointer;"
                                                     data-bs-toggle="modal" data-bs-target="#buktiModal"
@@ -342,33 +376,65 @@
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 initEventListeners();
+                initKeteranganToggle();
 
                 function initEventListeners() {
                     // Filter untuk alur barang dan gudang
                     document.querySelectorAll('.riwayat-filter-dropdown .dropdown-item').forEach(item => {
-                        item.removeEventListener('click', handleFilterClick);
                         item.addEventListener('click', handleFilterClick);
                     });
 
                     // Handle custom period modal
                     const customPeriodItem = document.querySelector('.custom-period-item');
                     if (customPeriodItem) {
-                        customPeriodItem.removeEventListener('click', handleCustomPeriodClick);
                         customPeriodItem.addEventListener('click', handleCustomPeriodClick);
                     }
 
                     // Handle apply button di modal custom period
                     const applyCustomPeriodBtn = document.getElementById('applyCustomPeriod');
                     if (applyCustomPeriodBtn) {
-                        applyCustomPeriodBtn.removeEventListener('click', applyCustomPeriod);
                         applyCustomPeriodBtn.addEventListener('click', applyCustomPeriod);
                     }
 
                     // Inisialisasi modal bukti
                     document.querySelectorAll('.riwayat-bukti-icon').forEach(icon => {
-                        icon.removeEventListener('click', handleBuktiClick);
                         icon.addEventListener('click', handleBuktiClick);
                     });
+                }
+
+                function initKeteranganToggle() {
+                    document.querySelectorAll('.keterangan-toggle').forEach(toggle => {
+                        toggle.removeEventListener('click', handleKeteranganToggle);
+                        toggle.addEventListener('click', handleKeteranganToggle);
+                    });
+                }
+
+                function handleKeteranganToggle(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const toggle = this;
+                    const wrapper = toggle.closest('.keterangan-wrapper');
+                    const textSpan = wrapper.querySelector('.keterangan-text');
+
+                    if (textSpan.classList.contains('collapsed')) {
+                        // Expand - tampilkan teks penuh
+                        const fullText = textSpan.getAttribute('data-full-text');
+                        textSpan.textContent = fullText;
+                        textSpan.classList.remove('collapsed');
+                        textSpan.classList.add('expanded');
+                        toggle.textContent = ' tutup';
+                    } else {
+                        // Collapse - kembalikan ke text pendek
+                        const fullText = textSpan.getAttribute('data-full-text');
+                        const isMasuk = wrapper.closest('table').querySelector('.riwayat-header-masuk');
+                        const limit = isMasuk ? 50 : 100;
+                        const limitedText = fullText.length > limit ? fullText.substring(0, limit) : fullText;
+                        textSpan.textContent = limitedText;
+                        textSpan.classList.remove('expanded');
+                        textSpan.classList.add('collapsed');
+                        toggle.textContent = '...';
+                    }
                 }
 
                 function handleCustomPeriodClick(e) {
@@ -482,7 +548,49 @@
             function changePage(type, page) {
                 const url = new URL(window.location.href);
                 url.searchParams.set(`page_${type}`, page);
-                window.location.href = url.toString();
+
+                // Scroll ke tabel yang bersangkutan
+                const tableElement = document.querySelector(`.riwayat-header-${type}`)?.closest('.card');
+                if (tableElement) {
+                    tableElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+
+                // Gunakan fetch untuk AJAX pagination
+                fetch(url, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'text/html'
+                        }
+                    })
+                    .then(response => response.text())
+                    .then(html => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        const newTable = doc.querySelector(`.riwayat-header-${type}`)?.closest('.card');
+
+                        if (newTable) {
+                            const oldTable = document.querySelector(`.riwayat-header-${type}`)?.closest('.card');
+                            if (oldTable) {
+                                oldTable.replaceWith(newTable);
+                            }
+
+                            window.history.pushState({}, '', url);
+
+                            // Re-init semua event listeners
+                            setTimeout(() => {
+                                initKeteranganToggle();
+                            }, 100);
+                        } else {
+                            window.location.href = url.toString();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        window.location.href = url.toString();
+                    });
             }
 
             function downloadReport(format) {
@@ -503,20 +611,244 @@
                 // Redirect untuk download
                 window.location.href = `{{ route('pb.riwayat.index') }}?${params.toString()}`;
             }
+
+            // Export function untuk bisa dipanggil dari luar
+            window.initKeteranganToggle = initKeteranganToggle;
         </script>
     @endpush
 
     @push('styles')
         <style>
-            .riwayat-bukti-icon {
-                cursor: pointer;
-                color: #0d6efd;
-                font-size: 1.2rem;
+            /* === STYLE KHUSUS HALAMAN RIWAYAT (PERBAIKAN SCROLL HORIZONTAL) === */
+            .riwayat-page {
+                padding: 20px;
+                background-color: #f8f9fa;
+                font-family: "Poppins", sans-serif;
+                overflow-x: hidden !important;
             }
 
-            .riwayat-bukti-icon:hover {
-                color: #0a58ca;
+            /* --- Header --- */
+            .riwayat-page .riwayat-title {
+                font-size: 22px;
+                font-weight: 600;
+                margin-bottom: 15px;
+                color: #333;
+            }
+
+            /* --- Card & Table Container --- */
+            .riwayat-page .riwayat-table-card {
+                background: #fff;
+                border-radius: 10px;
+                box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+                overflow: hidden;
+                margin-bottom: 20px;
+            }
+
+            /* PERBAIKAN: Ganti class untuk scroll vertikal saja */
+            .riwayat-page .table-responsive-vertical {
+                overflow-x: hidden !important;
+                overflow-y: auto;
+                max-height: none;
+                width: 100%;
+            }
+
+            /* --- Table --- */
+            .riwayat-page .riwayat-table {
+                width: 100%;
+                border-collapse: collapse;
+                table-layout: fixed; /* Penting untuk mencegah overflow */
+            }
+
+            .riwayat-page .riwayat-table th,
+            .riwayat-page .riwayat-table td {
+                padding: 10px 12px;
+                border: 1px solid #e0e0e0;
+                font-size: 13.5px;
+                text-align: left;
+                vertical-align: top;
+                word-wrap: break-word;
+                word-break: break-word;
+                white-space: normal;
+            }
+
+            /* Header tabel */
+            .riwayat-page .riwayat-table thead th {
+                background: #007bff;
+                color: #fff;
+                font-weight: 500;
+                border: none;
+            }
+
+            /* Hover baris */
+            .riwayat-page .riwayat-table tbody tr:hover {
+                background-color: #f3f8ff;
+            }
+
+            /* --- Kolom Keterangan --- */
+            .riwayat-page .keterangan-cell {
+                white-space: normal !important;
+                word-wrap: break-word !important;
+                overflow-wrap: break-word !important;
+                word-break: break-word !important;
+                vertical-align: top;
+            }
+
+            /* Wrapper keterangan */
+            .riwayat-page .keterangan-wrapper {
+                display: block;
+                width: 100%;
+                max-width: 100%;
+            }
+
+            /* Teks keterangan */
+            .riwayat-page .keterangan-text {
+                display: block;
+                white-space: normal;
+                overflow: hidden;
+                word-break: break-word;
+                transition: all 0.3s ease;
+            }
+
+            /* Collapsed (potong 3 baris) */
+            .riwayat-page .keterangan-text.collapsed {
+                display: -webkit-box;
+                -webkit-line-clamp: 3;
+                -webkit-box-orient: vertical;
+            }
+
+            /* Expanded */
+            .riwayat-page .keterangan-text.expanded {
+                display: block !important;
+                overflow: visible !important;
+                white-space: normal !important;
+            }
+
+            /* Tombol toggle */
+            .riwayat-page .keterangan-toggle {
+                color: #007bff;
+                font-size: 12px;
+                cursor: pointer;
+                display: inline-block;
+                margin-top: 4px;
+            }
+
+            .riwayat-page .keterangan-toggle:hover {
+                text-decoration: underline;
+            }
+
+            /* --- Pagination --- */
+            .riwayat-page .pagination {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 10px 0;
+            }
+
+            .riwayat-page .pagination-btn {
+                font-size: 13px;
+            }
+
+            /* --- Responsive Fix --- */
+            @media (max-width: 1200px) {
+                .riwayat-page .riwayat-table {
+                    font-size: 13px;
+                }
+                
+                .riwayat-page .riwayat-table th,
+                .riwayat-page .riwayat-table td {
+                    padding: 8px 10px;
+                }
+            }
+
+            @media (max-width: 992px) {
+                .riwayat-page {
+                    padding: 10px;
+                }
+
+                /* PERBAIKAN: Layout mobile yang lebih baik */
+                .riwayat-page .table-responsive-vertical {
+                    overflow-x: auto !important; /* Izinkan scroll horizontal hanya di mobile */
+                }
+                
+                .riwayat-page .riwayat-table {
+                    table-layout: auto; /* Biarkan tabel menentukan lebar sendiri di mobile */
+                    min-width: 800px; /* Minimum width untuk memastikan konten terbaca */
+                }
+
+                .riwayat-page .riwayat-table thead {
+                    display: none;
+                }
+
+                .riwayat-page .riwayat-table,
+                .riwayat-page .riwayat-table tbody,
+                .riwayat-page .riwayat-table tr,
+                .riwayat-page .riwayat-table td {
+                    display: block;
+                    width: 100%;
+                }
+
+                .riwayat-page .riwayat-table tr {
+                    margin-bottom: 15px;
+                    background: #fff;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+                    padding: 10px;
+                    position: relative;
+                }
+
+                .riwayat-page .riwayat-table td {
+                    border: none;
+                    display: flex;
+                    justify-content: space-between;
+                    padding: 6px 0;
+                    text-align: right;
+                    border-bottom: 1px solid #f0f0f0;
+                }
+
+                .riwayat-page .riwayat-table td:last-child {
+                    border-bottom: none;
+                }
+
+                .riwayat-page .riwayat-table td::before {
+                    content: attr(data-label);
+                    font-weight: 600;
+                    color: #555;
+                    flex: 1;
+                    padding-right: 10px;
+                    text-align: left;
+                }
+
+                /* Pastikan teks panjang tetap turun ke bawah */
+                .riwayat-page .keterangan-text {
+                    white-space: normal !important;
+                    word-break: break-word;
+                    text-align: left !important;
+                }
+                
+                .riwayat-page .keterangan-cell::before {
+                    align-self: flex-start;
+                }
+            }
+
+            @media (max-width: 768px) {
+                .riwayat-page .riwayat-table {
+                    min-width: 600px;
+                }
+            }
+
+            /* --- Hilangkan Scroll Horizontal di Desktop --- */
+            @media (min-width: 993px) {
+                .riwayat-page .table-responsive-vertical {
+                    overflow-x: hidden !important;
+                }
+            }
+
+            /* --- Modal Gambar Bukti --- */
+            .riwayat-page #buktiModal img {
+                max-height: 70vh;
+                object-fit: contain;
             }
         </style>
     @endpush
+
 </x-layouts.app>

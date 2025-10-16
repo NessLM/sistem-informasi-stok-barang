@@ -413,8 +413,7 @@
                     <tr>
                         <td colspan="4" style="text-align:center; font-weight:bold;">Total Barang Masuk</td>
                         <td style="font-weight:bold; text-align:center;">{{ $totalMasuk }}</td>
-                        <td style="text-align:center; font-weight:bold;">{{ $r->satuan }}</td>
-                        <td colspan="1"></td>
+                        <td colspan="2"></td>
                     </tr>
                 </tbody>
             </table>
@@ -460,8 +459,7 @@
                     <tr>
                         <td colspan="4" style="text-align:center; font-weight:bold;">Total Distribusi Barang</td>
                         <td style="font-weight:bold; text-align:center;">{{ $totalDistribusi }}</td>
-                        <td style="text-align:center; font-weight:bold;">{{ $r->satuan }}</td>
-                        <td colspan="1"></td>
+                        <td colspan="2"></td>
                     </tr>
                 </tbody>
             </table>
@@ -511,8 +509,7 @@
                     <tr>
                         <td colspan="4" style="text-align:center; font-weight:bold;">Total Barang Keluar</td>
                         <td style="font-weight:bold; text-align:center;">{{ $totalKeluar }}</td>
-                        <td style="text-align:center; font-weight:bold;">{{ $r->satuan }}</td>
-                        <td colspan="3"></td>
+                        <td colspan="2"></td>
                     </tr>
                 </tbody>
             </table>

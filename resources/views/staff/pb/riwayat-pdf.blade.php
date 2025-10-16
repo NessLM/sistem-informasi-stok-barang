@@ -297,6 +297,7 @@
                     <th class="col-gudang">Gudang</th>
                     <th class="col-nama">Nama Barang</th>
                     <th class="col-jumlah">Jumlah</th>
+                    <th class="col-satuan">Satuan</th>
                     <th class="col-keterangan">Keterangan</th>
                 </tr>
             </thead>
@@ -316,12 +317,14 @@
                         <td>{{ $r->gudang }}</td>
                         <td>{{ $r->nama_barang }}</td>
                         <td>{{ $r->jumlah }}</td>
+                        <td>{{ $r->satuan }}</td>
                         <td>{{ $r->keterangan }}</td>
                     </tr>
                 @endforeach
                 <tr class="total-row">
-                    <td colspan="5" style="text-align:right;">Total Barang Masuk</td>
+                    <td colspan="4" style="text-align:center;">Total Barang Masuk</td>
                     <td>{{ $totalMasuk }}</td>
+                    <td colspan="2"></td>
                 </tr>
             </tbody>
         </table>
@@ -345,6 +348,7 @@
                     <th class="col-gudang">Gudang Tujuan</th>
                     <th class="col-nama">Nama Barang</th>
                     <th class="col-jumlah">Jumlah</th>
+                    <th class="col-satuan">Satuan</th>
                     <th class="col-keterangan">Keterangan</th>
                 </tr>
             </thead>
@@ -368,13 +372,14 @@
                         </td>
                         <td>{{ $r->nama_barang }}</td>
                         <td>{{ $r->jumlah }}</td>
+                        <td>{{ $r->satuan }}</td>
                         <td>{{ $r->keterangan }}</td>
                     </tr>
                 @endforeach
                 <tr class="total-row">
-                    <td colspan="4" style="text-align:right;">Total Barang Keluar</td>
+                    <td colspan="4" style="text-align:center;">Total Barang Keluar</td>
                     <td>{{ $totalKeluar }}</td>
-                    <td></td>
+                    <td colspan="2"></td>
                 </tr>
             </tbody>
         </table>

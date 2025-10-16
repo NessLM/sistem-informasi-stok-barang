@@ -27,7 +27,8 @@ class RiwayatController extends Controller
             'gudang'        => 'Gudang Utama', // Barang masuk ke PB (Gudang Utama)
             'nama_barang'   => optional($item->barang)->nama_barang ?? '-',
             'jumlah'        => (int) ($item->jumlah ?? 0),
-            'keterangan'    => $item->keterangan ?? '-',
+            'satuan'        => optional($item->barang)->satuan ?? '-',
+            'keterangan'  => $item->keterangan ?? 'Barang masuk',
             'bukti'         => $item->bukti,
             'bukti_path'    => $item->bukti ? asset('storage/' . $item->bukti) : null,
             // Tambahkan properti untuk konsistensi dengan view
@@ -48,8 +49,9 @@ class RiwayatController extends Controller
             'gudang'          => 'Gudang Utama', // Selalu dari Gudang Utama (PB)
             'nama_barang'     => optional($item->barang)->nama_barang ?? '-',
             'jumlah'          => (int) ($item->jumlah ?? 0),
+            'satuan'          => optional($item->barang)->satuan ?? '-',
             'gudang_tujuan'   => optional($item->gudangTujuan)->nama ?? '-',
-            'keterangan'      => $item->keterangan ?? '-',
+            'keterangan'      => $item->keterangan ?? 'Barang masuk',
             'bukti'           => $item->bukti,
             'bukti_path'      => $item->bukti ? asset('storage/' . $item->bukti) : null,
             // Tambahkan properti untuk konsistensi dengan view
