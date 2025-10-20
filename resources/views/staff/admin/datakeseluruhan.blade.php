@@ -97,14 +97,40 @@
                         $title = 'Data Gudang Komputer';
                     }
                 @endphp
+                
                 <h4>{{ $title }}</h4>
+                
                 <div class="d-flex flex-wrap gap-2">
-                    <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#modalTambahKategori">
-                        <div class="btn-text">+ Tambah Kategori</div>
-                    </button>
-                    <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#modalTambahBarang">
-                        <div class="btn-text">+ Tambah Barang</div>
-                    </button>
+                    @php
+                        // Tentukan apakah tombol tambah harus ditampilkan
+                        $showAddButtons = false; // Default: TIDAK tampilkan
+                        $currentPath = request()->path();
+                        
+                        // HANYA tampilkan tombol jika:
+                        // 1. Halaman Data Keseluruhan (tidak ada selectedGudang DAN tidak ada segment gudang)
+                        // 2. ATAU di Gudang Utama
+                        
+                        if (!isset($selectedGudang) && !str_contains($currentPath, '/gudang/')) {
+                            // Halaman Data Keseluruhan
+                            $showAddButtons = true;
+                        } elseif (isset($selectedGudang)) {
+                            // Ada gudang terpilih - cek apakah Gudang Utama
+                            $isGudangUtama = stripos($selectedGudang->nama, 'utama') !== false;
+                            if ($isGudangUtama) {
+                                $showAddButtons = true;
+                            }
+                        }
+                    @endphp
+                    
+                    @if($showAddButtons)
+                        <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#modalTambahKategori">
+                            <div class="btn-text">+ Tambah Kategori</div>
+                        </button>
+                        <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#modalTambahBarang">
+                            <div class="btn-text">+ Tambah Barang</div>
+                        </button>
+                    @endif
+                    
                     <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalFilterBarang">
                         <i class="bi bi-funnel"></i> Filter
                     </button>
