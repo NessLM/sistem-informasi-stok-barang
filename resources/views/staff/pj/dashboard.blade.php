@@ -48,7 +48,7 @@
                     <div class="chart-header-horizontal-item">
                         <h2>Grafik Per Bagian</h2>
                     </div>
-                    
+
                     <div class="chart-header-horizontal-item">
                         <span id="rangeHintBagian" class="range-hint" title="Semua Data">Semua Data</span>
                     </div>
@@ -109,7 +109,7 @@
                     <div class="chart-header-horizontal-item">
                         <h2>Grafik Pengeluaran per Tahun - {{ $gudang->nama }}</h2>
                     </div>
-                    
+
                     <div class="chart-header-horizontal-item">
                         <span id="rangeHintPengeluaran" class="range-hint" title="Semua Tahun">Semua Tahun</span>
                     </div>
@@ -149,7 +149,7 @@
     {{-- Chart.js --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const FILTER_URL = "{{ route('pj.dashboard.filter') }}";
 
             /* ====================== Grafik Per Bagian (Keluar only) ====================== */
@@ -303,7 +303,7 @@
             // ===== Helper format tanggal untuk badge (ID locale) =====
             function fmt(d) {
                 const z = n => String(n).padStart(2, '0');
-                return `${z(d.getDate())}/${z(d.getMonth()+1)}/${d.getFullYear()}`;
+                return `${z(d.getDate())}/${z(d.getMonth() + 1)}/${d.getFullYear()}`;
             }
 
             function setRangeHint(el, text, titleText) {
@@ -325,13 +325,13 @@
 
             // ===== Filter dropdown =====
             document.querySelectorAll('.filter-option').forEach(el => {
-                el.addEventListener('click', function(e) {
+                el.addEventListener('click', function (e) {
                     e.preventDefault();
                     const type = this.getAttribute('data-type');
                     const value = this.getAttribute('data-value');
                     const dropdownToggle = this.closest('.dropdown').querySelector('.dropdown-toggle');
                     dropdownToggle.innerHTML = `<i class="bi bi-funnel"></i> ${this.textContent} <i class="bi bi-chevron-right arrow-icon"></i>`;
-                    
+
                     if (type === 'bagian') filterBagian(value);
                     else filterPengeluaran(value);
                 });
@@ -464,44 +464,46 @@
             setRangeHint(document.getElementById('rangeHintBagian'), 'Semua Data', 'Semua Data');
         });
         // ===== ANIMASI TRANSISI SETELAH LOGIN =====
-document.addEventListener('DOMContentLoaded', function() {
-    // Trigger reflow untuk memastikan animasi berjalan
-    const sections = document.querySelectorAll('.summary-section, .chart-section, .wide-chart-section');
-    
-    sections.forEach(section => {
-        // Force reflow
-        void section.offsetWidth;
-    });
+        document.addEventListener('DOMContentLoaded', function () {
+            // Trigger reflow untuk memastikan animasi berjalan
+            const sections = document.querySelectorAll('.summary-section, .chart-section, .wide-chart-section');
 
-    // Animasi untuk counting numbers (jika ada)
-    const numberElements = document.querySelectorAll('.summary-card__number');
-    
-    numberElements.forEach(element => {
-        const finalValue = element.textContent;
-        if (!isNaN(finalValue)) {
-            element.textContent = '0';
-            element.classList.add('number-counting');
-            
-            setTimeout(() => {
-                animateCount(element, 0, parseInt(finalValue), 1000);
-            }, 800);
-        }
-    });
+            sections.forEach(section => {
+                // Force reflow
+                void section.offsetWidth;
+            });
 
-    function animateCount(element, start, end, duration) {
-        let startTimestamp = null;
-        const step = (timestamp) => {
-            if (!startTimestamp) startTimestamp = timestamp;
-            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-            const value = Math.floor(progress * (end - start) + start);
-            element.textContent = value.toLocaleString();
-            
-            if (progress < 1) {
+            // Animasi untuk counting numbers (jika ada)
+            const numberElements = document.querySelectorAll('.summary-card__number');
+
+            numberElements.forEach(element => {
+                const finalValue = element.textContent;
+                if (!isNaN(finalValue)) {
+                    element.textContent = '0';
+                    element.classList.add('number-counting');
+
+                    setTimeout(() => {
+                        animateCount(element, 0, parseInt(finalValue), 1000);
+                    }, 800);
+                }
+            });
+
+            function animateCount(element, start, end, duration) {
+                let startTimestamp = null;
+                const step = (timestamp) => {
+                    if (!startTimestamp) startTimestamp = timestamp;
+                    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                    const value = Math.floor(progress * (end - start) + start);
+                    element.textContent = value.toLocaleString();
+
+                    if (progress < 1) {
+                        window.requestAnimationFrame(step);
+                    }
+                };
                 window.requestAnimationFrame(step);
             }
-        };
-        window.requestAnimationFrame(step);
-    }
-});
+        });
     </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </x-layouts.app>

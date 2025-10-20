@@ -1,6 +1,8 @@
 <x-layouts.app title="Dashboard Admin" :menu="$menu">
-    {{-- CSS khusus dashboard --}}
-    <link rel="stylesheet" href="{{ asset('assets/css/staff/admin/dashboard.css') }}">
+
+    @push('styles')
+        <link rel="stylesheet" href="{{ asset('assets/css/staff/admin/dashboard.css') }}">
+    @endpush
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 
     <div class="dashboard-container">
@@ -551,4 +553,6 @@
             setRangeHint(document.getElementById('rangeHintTahun'), 'Semua Data', 'Semua Data'); // [OPSIONAL-HILANGKAN BADGE TAHUN]
         });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
 </x-layouts.app>

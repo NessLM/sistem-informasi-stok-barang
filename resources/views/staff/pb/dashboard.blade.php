@@ -1,7 +1,10 @@
 <x-layouts.app title="Dashboard Pengelola Barang" :menu="$menu">
 
+  @push('styles')
+    <link rel="stylesheet" href="{{ asset('assets/css/staff/pb/dashboard.css') }}">
+  @endpush
   {{-- CSS khusus dashboard PB --}}
-  <link rel="stylesheet" href="{{ asset('assets/css/staff/pb/dashboard.css') }}">
+
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 
   <div class="dashboard-container">
@@ -562,5 +565,7 @@
       }
     });
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  
 
 </x-layouts.app>
