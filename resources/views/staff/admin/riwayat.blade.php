@@ -1,4 +1,4 @@
-{{-- resources/views/staff/pb/riwayat.blade.php --}}
+{{-- resources/views/staff/admin/riwayat.blade.php --}}
 
 <x-layouts.app title="Riwayat" :menu="$menu">
 
@@ -863,111 +863,6 @@
     @endpush
 
     @push('styles')
-        <style>
-            .btn-toggle-table {
-                background: transparent;
-                border: 1px solid #dee2e6;
-                color: #6c757d;
-                transition: all 0.3s ease;
-                width: 32px;
-                height: 32px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 0;
-            }
-
-            .btn-toggle-table:hover {
-                background: #f8f9fa;
-                color: #495057;
-            }
-
-            .riwayat-header-masuk {
-                background: linear-gradient(135deg, #e3f2fd, #bbdefb);
-                border-bottom: 3px solid #2196f3;
-            }
-
-            .riwayat-header-distribusi {
-                background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
-                border-bottom: 3px solid #4caf50;
-            }
-
-            .riwayat-header-keluar {
-                background: linear-gradient(135deg, #ffebee, #ffcdd2);
-                border-bottom: 3px solid #f44336;
-            }
-
-            .badge.bg-primary {
-                background-color: #2196f3 !important;
-            }
-
-            .badge.bg-info {
-                background-color: #17a2b8 !important;
-            }
-
-            .badge.bg-secondary {
-                background-color: #6c757d !important;
-            }
-
-            /* Smooth transition untuk icon */
-            .btn-toggle-table i {
-                transition: transform 0.3s ease;
-            }
-
-            /* Styling untuk keterangan yang bisa di-expand */
-            .keterangan-wrapper {
-                position: relative;
-                display: block;
-                max-width: 100%;
-                text-align: left;
-            }
-
-            .keterangan-text {
-                display: inline;
-                word-wrap: break-word;
-                word-break: break-word;
-            }
-
-            .keterangan-text.collapsed {
-                display: -webkit-box;
-                -webkit-line-clamp: 2;
-                -webkit-box-orient: vertical;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                max-height: 3em;
-                line-height: 1.5em;
-            }
-
-            .keterangan-text.expanded {
-                display: block;
-                max-height: none;
-            }
-
-            .keterangan-dots {
-                display: inline;
-            }
-
-            .keterangan-text.expanded+.keterangan-dots {
-                display: none;
-            }
-
-            .keterangan-toggle {
-                color: #3498db;
-                cursor: pointer;
-                text-decoration: none;
-                font-weight: bold;
-                font-size: 1.2rem;
-                vertical-align: middle;
-                transition: all 0.3s ease;
-                display: inline-block;
-                padding: 0 4px;
-                user-select: none;
-            }
-
-            .keterangan-toggle:hover {
-                color: #2c3e50;
-                transform: scale(1.2);
-            }
-        </style>
+       <link rel="stylesheet" href="{{ asset('css/staff/admin/riwayat.css') }}">
     @endpush
 </x-layouts.app>
