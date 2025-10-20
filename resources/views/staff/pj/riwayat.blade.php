@@ -167,19 +167,23 @@
                                         <td class="fw-medium">{{ $item->nama_barang }}</td>
                                         <td><span>{{ $item->jumlah }}</span></td>
                                         <td>{{ $item->satuan ?? '-' }}</td>
-                                       <td data-label="Keterangan" style="white-space: normal !important; word-wrap: break-word !important; word-break: break-word !important; max-width: 250px; vertical-align: top;">
-    @if ($item->keterangan && strlen($item->keterangan) > 100)
-        <div class="keterangan-wrapper">
-            <span class="keterangan-text collapsed"
-                data-full-text="{{ $item->keterangan }}">
-                {{ Str::limit($item->keterangan, 100, '') }}
-            </span>
-            <span class="keterangan-dots keterangan-toggle">...</span>
-        </div>
-    @else
-        {{ $item->keterangan ?? '-' }}
-    @endif
-</td><td>
+                                       <td data-label="Keterangan"
+                                            style="white-space: normal !important; word-wrap: break-word !important; word-break: break-word !important; max-width: 200px; vertical-align: top;">
+
+                                            @if ($item->keterangan && strlen($item->keterangan) > 40)
+                                                <div class="keterangan-wrapper">
+                                                    <span class="keterangan-text collapsed"
+                                                        data-full-text="{{ $item->keterangan }}">
+                                                        {{ Str::limit($item->keterangan, 40, '') }}
+                                                    </span>
+                                                    <span class="keterangan-dots keterangan-toggle">...</span>
+                                                </div>
+                                            @else
+                                                {{ $item->keterangan ?? '-' }}
+                                            @endif
+
+                                        </td>
+                                        <td>
                                             @if ($item->bukti)
                                                 <span class="riwayat-bukti-icon" data-bs-toggle="modal"
                                                     data-bs-target="#buktiModal"
@@ -264,19 +268,22 @@
                                         <td><span>{{ $item->jumlah }}</span></td>
                                         <td>{{ $item->satuan ?? '-' }}</td>
                                         <td>{{ $item->bagian ?? '-' }}</td>
-                                        <td data-label="Keterangan" style="white-space: normal !important; word-wrap: break-word !important; word-break: break-word !important; max-width: 250px; vertical-align: top;">
-    @if ($item->keterangan && strlen($item->keterangan) > 100)
-        <div class="keterangan-wrapper">
-            <span class="keterangan-text collapsed"
-                data-full-text="{{ $item->keterangan }}">
-                {{ Str::limit($item->keterangan, 100, '') }}
-            </span>
-            <span class="keterangan-dots keterangan-toggle">...</span>
-        </div>
-    @else
-        {{ $item->keterangan ?? '-' }}
-    @endif
-</td>
+                                        <td data-label="Keterangan"
+                                            style="white-space: normal !important; word-wrap: break-word !important; word-break: break-word !important; max-width: 200px; vertical-align: top;">
+
+                                            @if ($item->keterangan && strlen($item->keterangan) > 40)
+                                                <div class="keterangan-wrapper">
+                                                    <span class="keterangan-text collapsed"
+                                                        data-full-text="{{ $item->keterangan }}">
+                                                        {{ Str::limit($item->keterangan, 40, '') }}
+                                                    </span>
+                                                    <span class="keterangan-dots keterangan-toggle">...</span>
+                                                </div>
+                                            @else
+                                                {{ $item->keterangan ?? '-' }}
+                                            @endif
+
+                                        </td>
                                         <td>
                                             @if ($item->bukti)
                                                 <span class="riwayat-bukti-icon" data-bs-toggle="modal"

@@ -1,4 +1,4 @@
-/* public/css/riwayat-responsive.css */
+/* public/css/riwayat.pb.css */
 
 /* ===== VARIABLES & BASE STYLES ===== */
 .riwayat-container {
@@ -1239,21 +1239,6 @@
     white-space: normal !important;
 }
 
-/* Tombol toggle - posisi di bawah teks */
-.riwayat-page .keterangan-toggle {
-    color: #007bff;
-    font-size: 12px;
-    cursor: pointer;
-    display: block;
-    margin-top: 4px;
-    text-align: left;
-    font-weight: 500;
-}
-
-.riwayat-page .keterangan-toggle:hover {
-    text-decoration: underline;
-    color: #0056b3;
-}
 /* ===== FIX UNTUK KOLOM KETERANGAN - TAMBAHKAN DI AKHIR FILE ===== */
 
 /* Force wrap untuk SEMUA td keterangan */
@@ -1327,8 +1312,10 @@
 }
 
 /* Toggle button styling */
+/* UPDATE: Ubah warna toggle keterangan dari biru ke abu-abu */
+
 .riwayat-page .keterangan-toggle {
-    color: #007bff;
+    color: #6c757d; /* ← Ganti dari #007bff (biru) ke abu-abu */
     font-size: 12px;
     cursor: pointer;
     display: inline-block;
@@ -1338,19 +1325,7 @@
 }
 
 .riwayat-page .keterangan-toggle:hover {
-    text-decoration: underline;
-    color: #0056b3;
-}
-
-/* Fix untuk dots yang inline */
-.riwayat-page .keterangan-dots {
-    display: inline;
-    margin-left: 2px;
-}
-
-/* Hide dots when expanded */
-.riwayat-page .keterangan-text.expanded + .keterangan-dots {
-    display: none !important;
+    color: #495057; /* ← Hover jadi abu-abu lebih gelap */
 }
 
 /* ===== OPTIONAL: Kurangi min-width tabel jika perlu ===== */
