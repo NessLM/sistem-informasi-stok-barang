@@ -22,6 +22,13 @@ class RiwayatExportPj implements WithMultipleSheets
     {
         $this->riwayat = $riwayat;
         $this->filter = $filter;
+        
+        // DEBUG: Log data yang masuk
+        Log::info('RiwayatExportPj Constructor:', [
+            'total' => is_countable($riwayat) ? count($riwayat) : 0,
+            'type' => get_class($riwayat),
+            'sample' => $riwayat->first()
+        ]);
     }
 
     public function sheets(): array
@@ -33,10 +40,29 @@ class RiwayatExportPj implements WithMultipleSheets
             $this->riwayat = collect($this->riwayat);
         }
         
-        // Pisahkan data berdasarkan jenis transaksi
-        // PERBAIKAN: Gunakan 'distribusi' bukan 'keluar'
-        $barangMasuk = $this->riwayat->where('jenis_transaksi', 'masuk')->values();
-        $barangKeluar = $this->riwayat->where('jenis_transaksi', 'distribusi')->values();
+        // DEBUG: Cek field 'alur_barang' atau 'jenis_transaksi'
+        $firstItem = $this->riwayat->first();
+        if ($firstItem) {
+            Log::info('First item fields:', [
+                'alur_barang' => $firstItem->alur_barang ?? 'NOT EXISTS',
+                'jenis_transaksi' => $firstItem->jenis_transaksi ?? 'NOT EXISTS',
+                'all_fields' => array_keys((array)$firstItem)
+            ]);
+        }
+        
+        // PERBAIKAN: Sesuaikan dengan field di PDF (alur_barang: Masuk/Keluar)
+        $barangMasuk = $this->riwayat->filter(function($item) {
+            return ($item->alur_barang ?? $item->jenis_transaksi ?? '') === 'Masuk';
+        })->values();
+        
+        $barangKeluar = $this->riwayat->filter(function($item) {
+            return ($item->alur_barang ?? $item->jenis_transaksi ?? '') === 'Keluar';
+        })->values();
+        
+        Log::info('Data split:', [
+            'masuk' => $barangMasuk->count(),
+            'keluar' => $barangKeluar->count()
+        ]);
         
         $sheets[] = new BarangMasukSheet($barangMasuk);
         $sheets[] = new BarangKeluarSheet($barangKeluar);
@@ -52,6 +78,7 @@ class BarangMasukSheet implements FromCollection, WithHeadings, WithMapping, Wit
     public function __construct($riwayat)
     {
         $this->riwayat = $riwayat;
+        Log::info('BarangMasukSheet:', ['count' => $riwayat->count()]);
     }
 
     public function collection()
@@ -78,38 +105,40 @@ class BarangMasukSheet implements FromCollection, WithHeadings, WithMapping, Wit
         static $rowNumber = 0;
         $rowNumber++;
         
-        // Format tanggal dan waktu
-        $tanggalWaktu = '';
-        if (isset($riwayat->created_at)) {
-            $tanggalWaktu = $riwayat->created_at->format('d/m/Y, H:i:s');
-        } elseif (isset($riwayat->tanggal)) {
-            $tanggalWaktu = $riwayat->tanggal;
-        } else {
-            $tanggalWaktu = '-';
-        }
+        // DEBUG: Log setiap baris
+        Log::info("Mapping row $rowNumber:", [
+            'tanggal' => $riwayat->tanggal ?? 'N/A',
+            'nama_barang' => $riwayat->nama_barang ?? 'N/A',
+            'jumlah' => $riwayat->jumlah ?? 'N/A'
+        ]);
         
-        // Ambil data gudang dan barang
-        $gudangAsal = optional(optional($riwayat->barang)->kategori->gudang)->nama ?? '-';
-        $namaBarang = optional($riwayat->barang)->nama ?? '-';
+        // Ambil langsung dari atribut seperti di PDF
+        $tanggal = isset($riwayat->tanggal) ? 
+                   \Carbon\Carbon::parse($riwayat->tanggal)->format('d/m/Y') : '-';
+        $waktu = isset($riwayat->waktu) ? 
+                 \Carbon\Carbon::parse($riwayat->waktu)->format('H:i') . ' WIB' : '-';
+        $gudang = $riwayat->gudang ?? '-';
+        $namaBarang = $riwayat->nama_barang ?? '-';
         $jumlah = $riwayat->jumlah ?? '0';
-        
-        // Hapus karakter pipe jika ada
-        $gudangAsal = str_replace('|', '', $gudangAsal);
-        $namaBarang = str_replace('|', '', $namaBarang);
+        $satuan = $riwayat->satuan ?? '-';
+        $keterangan = $riwayat->keterangan ?? '-';
         
         return [
             $rowNumber,
-            $tanggalWaktu,
-            $gudangAsal,
+            $tanggal,
+            $waktu,
+            $gudang,
             $namaBarang,
-            $jumlah
+            $jumlah,
+            $satuan,
+            $keterangan
         ];
     }
 
     public function styles(Worksheet $sheet)
     {
         $lastRow = max(1, $this->riwayat->count() + 1);
-        $dataRange = 'A1:E' . $lastRow;
+        $dataRange = 'A1:H' . $lastRow;
         
         $sheet->getStyle($dataRange)->applyFromArray([
             'borders' => [
@@ -119,19 +148,36 @@ class BarangMasukSheet implements FromCollection, WithHeadings, WithMapping, Wit
             ],
         ]);
 
+        // Set semua kolom ke center alignment
+        $sheet->getStyle('A2:H' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A2:H' . $lastRow)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+        
+        // Set Nama Barang (E) dan Keterangan (H) ke left alignment
+        $sheet->getStyle('E2:E' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+        $sheet->getStyle('H2:H' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+
+        // Set column widths
+        $sheet->getColumnDimension('A')->setWidth(8);
+        $sheet->getColumnDimension('B')->setWidth(15);
+        $sheet->getColumnDimension('C')->setWidth(12);
+        $sheet->getColumnDimension('D')->setWidth(20);
+        $sheet->getColumnDimension('E')->setWidth(30);
+        $sheet->getColumnDimension('F')->setWidth(10);
+        $sheet->getColumnDimension('G')->setWidth(10);
+        $sheet->getColumnDimension('H')->setWidth(25);
+
         return [
             1 => [
                 'font' => ['bold' => true],
                 'fill' => [
                     'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
                     'startColor' => ['argb' => 'FFE2E2E2']
+                ],
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                    'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
                 ]
             ],
-            'A' => ['width' => 8, 'alignment' => ['horizontal' => 'center']],
-            'B' => ['width' => 25],
-            'C' => ['width' => 20],
-            'D' => ['width' => 30],
-            'E' => ['width' => 15, 'alignment' => ['horizontal' => 'center']],
         ];
     }
 
@@ -148,6 +194,7 @@ class BarangKeluarSheet implements FromCollection, WithHeadings, WithMapping, Wi
     public function __construct($riwayat)
     {
         $this->riwayat = $riwayat;
+        Log::info('BarangKeluarSheet:', ['count' => $riwayat->count()]);
     }
 
     public function collection()
@@ -161,11 +208,11 @@ class BarangKeluarSheet implements FromCollection, WithHeadings, WithMapping, Wi
             'No',
             'Tanggal',
             'Waktu',
-            'Gudang Asal',
+            'Gudang',
             'Nama Barang', 
             'Jumlah',
             'Satuan',
-            'Gudang Tujuan',
+            'Bagian',
             'Keterangan'
         ];
     }
@@ -175,41 +222,42 @@ class BarangKeluarSheet implements FromCollection, WithHeadings, WithMapping, Wi
         static $rowNumber = 0;
         $rowNumber++;
         
-        // Format tanggal dan waktu
-        $tanggalWaktu = '';
-        if (isset($riwayat->created_at)) {
-            $tanggalWaktu = $riwayat->created_at->format('d/m/Y, H:i:s');
-        } elseif (isset($riwayat->tanggal)) {
-            $tanggalWaktu = $riwayat->tanggal;
-        } else {
-            $tanggalWaktu = '-';
-        }
+        // DEBUG: Log setiap baris
+        Log::info("Mapping row $rowNumber:", [
+            'tanggal' => $riwayat->tanggal ?? 'N/A',
+            'nama_barang' => $riwayat->nama_barang ?? 'N/A',
+            'jumlah' => $riwayat->jumlah ?? 'N/A'
+        ]);
         
-        // Ambil data dengan berbagai fallback
-        $gudangAsal = optional(optional($riwayat->barang)->kategori->gudang)->nama ?? '-';
-        $namaBarang = optional($riwayat->barang)->nama ?? '-';
+        // Ambil langsung dari atribut seperti di PDF
+        $tanggal = isset($riwayat->tanggal) ? 
+                   \Carbon\Carbon::parse($riwayat->tanggal)->format('d/m/Y') : '-';
+        $waktu = isset($riwayat->waktu) ? 
+                 \Carbon\Carbon::parse($riwayat->waktu)->format('H:i') . ' WIB' : '-';
+        $gudang = $riwayat->gudang ?? '-';
+        $namaBarang = $riwayat->nama_barang ?? '-';
         $jumlah = $riwayat->jumlah ?? '0';
-        $gudangTujuan = optional($riwayat->gudangTujuan)->nama ?? '-';
-        
-        // Hapus karakter pipe jika ada
-        $gudangAsal = str_replace('|', '', $gudangAsal);
-        $namaBarang = str_replace('|', '', $namaBarang);
-        $gudangTujuan = str_replace('|', '', $gudangTujuan);
+        $satuan = $riwayat->satuan ?? '-';
+        $bagian = $riwayat->bagian ?? '-';
+        $keterangan = $riwayat->keterangan ?? '-';
         
         return [
             $rowNumber,
-            $tanggalWaktu,
-            $gudangAsal,
+            $tanggal,
+            $waktu,
+            $gudang,
             $namaBarang,
             $jumlah,
-            $gudangTujuan
+            $satuan,
+            $bagian,
+            $keterangan
         ];
     }
 
     public function styles(Worksheet $sheet)
     {
         $lastRow = max(1, $this->riwayat->count() + 1);
-        $dataRange = 'A1:F' . $lastRow;
+        $dataRange = 'A1:I' . $lastRow;
         
         $sheet->getStyle($dataRange)->applyFromArray([
             'borders' => [
@@ -219,25 +267,42 @@ class BarangKeluarSheet implements FromCollection, WithHeadings, WithMapping, Wi
             ],
         ]);
 
+        // Set semua kolom ke center alignment
+        $sheet->getStyle('A2:I' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A2:I' . $lastRow)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+        
+        // Set Nama Barang (E) dan Keterangan (I) ke left alignment
+        $sheet->getStyle('E2:E' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+        $sheet->getStyle('I2:I' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+
+        // Set column widths
+        $sheet->getColumnDimension('A')->setWidth(8);
+        $sheet->getColumnDimension('B')->setWidth(15);
+        $sheet->getColumnDimension('C')->setWidth(12);
+        $sheet->getColumnDimension('D')->setWidth(20);
+        $sheet->getColumnDimension('E')->setWidth(30);
+        $sheet->getColumnDimension('F')->setWidth(10);
+        $sheet->getColumnDimension('G')->setWidth(10);
+        $sheet->getColumnDimension('H')->setWidth(20);
+        $sheet->getColumnDimension('I')->setWidth(25);
+
         return [
             1 => [
                 'font' => ['bold' => true],
                 'fill' => [
                     'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
                     'startColor' => ['argb' => 'FFE2E2E2']
+                ],
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                    'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
                 ]
             ],
-            'A' => ['width' => 8, 'alignment' => ['horizontal' => 'center']],
-            'B' => ['width' => 25],
-            'C' => ['width' => 20],
-            'D' => ['width' => 30],
-            'E' => ['width' => 15, 'alignment' => ['horizontal' => 'center']],
-            'F' => ['width' => 20],
         ];
     }
 
     public function title(): string
     {
-        return 'Barang Keluar (Distribusi)';
+        return 'Barang Keluar';
     }
 }
