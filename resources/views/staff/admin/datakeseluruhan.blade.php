@@ -242,7 +242,7 @@
                         <thead class="table-dark">
                             <tr>
                                 <th>KATEGORI</th>
-                                <th>GUDANG</th>
+                                
                                 <th style="width:180px" class="text-center">AKSI</th>
                             </tr>
                         </thead>
@@ -250,7 +250,7 @@
                             @foreach ($kategori as $k)
                                 <tr>
                                     <td>{{ $k->nama }}</td>
-                                    <td>{{ $k->gudang->nama ?? '-' }}</td>
+                                    
                                     <td class="text-center">
                                         <div class="d-flex flex-wrap justify-content-center gap-2">
                                             <button class="btn btn-sm btn-success"
