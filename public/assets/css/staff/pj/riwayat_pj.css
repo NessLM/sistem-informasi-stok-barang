@@ -1343,15 +1343,6 @@
 }
 
 /* Fix untuk dots yang inline */
-.riwayat-page .keterangan-dots {
-    display: inline;
-    margin-left: 2px;
-}
-
-/* Hide dots when expanded */
-.riwayat-page .keterangan-text.expanded + .keterangan-dots {
-    display: none !important;
-}
 
 /* ===== OPTIONAL: Kurangi min-width tabel jika perlu ===== */
 .riwayat-page .table {

@@ -374,130 +374,67 @@
 
     @push('scripts')
         <script>
-            // ========== GLOBAL FUNCTIONS ==========
-
-            function initKeteranganToggle() {
-                // Gunakan event delegation agar tidak hilang saat pagination
-                document.removeEventListener('click', delegatedKeteranganToggle);
-                document.addEventListener('click', delegatedKeteranganToggle);
-            }
-
-            function delegatedKeteranganToggle(e) {
-                const toggle = e.target.closest('.keterangan-toggle');
-                if (!toggle) return; // klik bukan di toggle
-                e.preventDefault();
-                e.stopPropagation();
-
-                const wrapper = toggle.closest('.keterangan-wrapper');
-                if (!wrapper) return;
-
-                const textSpan = wrapper.querySelector('.keterangan-text');
-                const fullText = textSpan.getAttribute('data-full-text');
-
-                if (textSpan.classList.contains('collapsed')) {
-                    // EXPAND - tampilkan full text
-                    textSpan.textContent = fullText;
-                    textSpan.classList.remove('collapsed');
-                    textSpan.classList.add('expanded');
-                    toggle.textContent = 'tutup';
-                } else {
-                    // COLLAPSE - kembali ke text pendek
-                    const limitedText = fullText.substring(0, 40);
-                    textSpan.textContent = limitedText;
-                    textSpan.classList.remove('expanded');
-                    textSpan.classList.add('collapsed');
-                    toggle.textContent = '...';
-                }
-            }
-
-            function changePage(type, page) {
-                const url = new URL(window.location.href);
-                url.searchParams.set(`page_${type}`, page);
-
-                const tableElement = document.querySelector(`.riwayat-header-${type}`)?.closest('.card');
-                if (tableElement) {
-                    tableElement.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-
-                fetch(url, {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'text/html'
-                    }
-                })
-                    .then(response => response.text())
-                    .then(html => {
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(html, 'text/html');
-                        const newTable = doc.querySelector(`.riwayat-header-${type}`)?.closest('.card');
-
-                        if (newTable) {
-                            const oldTable = document.querySelector(`.riwayat-header-${type}`)?.closest('.card');
-                            if (oldTable) {
-                                oldTable.replaceWith(newTable);
-                            }
-
-                            window.history.pushState({}, '', url);
-
-                            // RE-INIT KETERANGAN TOGGLE SETELAH PAGINATION
-                            initKeteranganToggle();
-                            // RE-INIT EVENT LISTENERS
-                            initEventListeners();
-                        } else {
-                            window.location.href = url.toString();
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        window.location.href = url.toString();
-                    });
-            }
-
-            function downloadReport(format) {
-                const form = document.getElementById('filterForm');
-                const formData = new FormData(form);
-
-                const params = new URLSearchParams();
-                for (let [key, value] of formData.entries()) {
-                    if (value && value !== 'Semua' && value !== '') {
-                        params.append(key, value);
-                    }
-                }
-
-                params.append('download', format);
-                window.location.href = `{{ route('pb.riwayat.index') }}?${params.toString()}`;
-            }
-
-            // ========== DOM READY ==========
             document.addEventListener('DOMContentLoaded', function () {
                 initEventListeners();
                 initKeteranganToggle();
 
                 function initEventListeners() {
+                    // Filter untuk alur barang dan gudang
                     document.querySelectorAll('.riwayat-filter-dropdown .dropdown-item').forEach(item => {
-                        item.removeEventListener('click', handleFilterClick);
                         item.addEventListener('click', handleFilterClick);
                     });
 
+                    // Handle custom period modal
                     const customPeriodItem = document.querySelector('.custom-period-item');
                     if (customPeriodItem) {
-                        customPeriodItem.removeEventListener('click', handleCustomPeriodClick);
                         customPeriodItem.addEventListener('click', handleCustomPeriodClick);
                     }
 
+                    // Handle apply button di modal custom period
                     const applyCustomPeriodBtn = document.getElementById('applyCustomPeriod');
                     if (applyCustomPeriodBtn) {
-                        applyCustomPeriodBtn.removeEventListener('click', applyCustomPeriod);
                         applyCustomPeriodBtn.addEventListener('click', applyCustomPeriod);
                     }
 
+                    // Inisialisasi modal bukti
                     document.querySelectorAll('.riwayat-bukti-icon').forEach(icon => {
-                        icon.removeEventListener('click', handleBuktiClick);
                         icon.addEventListener('click', handleBuktiClick);
                     });
+                }
+
+                // Inisialisasi
+                function initKeteranganToggle() {
+                    document.querySelectorAll('.keterangan-toggle').forEach(toggle => {
+                        // Remove existing listeners to prevent duplicates
+                        toggle.removeEventListener('click', handleKeteranganToggle);
+                        toggle.addEventListener('click', handleKeteranganToggle);
+                    });
+                }
+
+                function handleKeteranganToggle(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const toggle = this;
+                    const wrapper = toggle.closest('.keterangan-wrapper');
+                    const textSpan = wrapper.querySelector('.keterangan-text');
+
+                    if (textSpan.classList.contains('collapsed')) {
+                        // EXPAND - tampilkan full text
+                        const fullText = textSpan.getAttribute('data-full-text');
+                        textSpan.textContent = fullText;
+                        textSpan.classList.remove('collapsed');
+                        textSpan.classList.add('expanded');
+                        toggle.textContent = 'tutup';
+                    } else {
+                        // COLLAPSE - kembalikan ke text pendek
+                        const fullText = textSpan.getAttribute('data-full-text');
+                        const limitedText = fullText.substring(0, 100); // sesuai limit di blade
+                        textSpan.textContent = limitedText;
+                        textSpan.classList.remove('expanded');
+                        textSpan.classList.add('collapsed');
+                        toggle.textContent = '...';
+                    }
                 }
 
                 function handleCustomPeriodClick(e) {
@@ -532,6 +469,7 @@
                     });
 
                     this.classList.add('active');
+
                     submitFilterForm();
                 }
 
@@ -560,7 +498,8 @@
                     document.querySelectorAll('#periodeDropdown + .dropdown-menu .dropdown-item').forEach(i => {
                         i.classList.remove('active');
                     });
-                    document.querySelector('#periodeDropdown + .dropdown-menu .custom-period-item').classList.add('active');
+                    document.querySelector('#periodeDropdown + .dropdown-menu .custom-period-item').classList.add(
+                        'active');
 
                     const modalEl = document.getElementById('customPeriodModal');
                     const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
@@ -605,6 +544,76 @@
                 if (dariTanggalInput) dariTanggalInput.max = today;
                 if (sampaiTanggalInput) sampaiTanggalInput.max = today;
             });
+
+            function changePage(type, page) {
+                const url = new URL(window.location.href);
+                url.searchParams.set(`page_${type}`, page);
+
+                // Scroll ke tabel yang bersangkutan
+                const tableElement = document.querySelector(`.riwayat-header-${type}`)?.closest('.card');
+                if (tableElement) {
+                    tableElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+
+                // Gunakan fetch untuk AJAX pagination
+                fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'text/html'
+                    }
+                })
+                    .then(response => response.text())
+                    .then(html => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        const newTable = doc.querySelector(`.riwayat-header-${type}`)?.closest('.card');
+
+                        if (newTable) {
+                            const oldTable = document.querySelector(`.riwayat-header-${type}`)?.closest('.card');
+                            if (oldTable) {
+                                oldTable.replaceWith(newTable);
+                            }
+
+                            window.history.pushState({}, '', url);
+
+                            // Re-init semua event listeners
+                            setTimeout(() => {
+                                initKeteranganToggle();
+                            }, 100);
+                        } else {
+                            window.location.href = url.toString();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        window.location.href = url.toString();
+                    });
+            }
+
+            function downloadReport(format) {
+                const form = document.getElementById('filterForm');
+                const formData = new FormData(form);
+
+                // Buat URL dengan semua parameter filter
+                const params = new URLSearchParams();
+                for (let [key, value] of formData.entries()) {
+                    if (value && value !== 'Semua' && value !== '') {
+                        params.append(key, value);
+                    }
+                }
+
+                // Tambahkan parameter download
+                params.append('download', format);
+
+                // Redirect untuk download
+                window.location.href = `{{ route('pb.riwayat.index') }}?${params.toString()}`;
+            }
+
+            // Export function untuk bisa dipanggil dari luar
+            window.initKeteranganToggle = initKeteranganToggle;
         </script>
     @endpush
 
