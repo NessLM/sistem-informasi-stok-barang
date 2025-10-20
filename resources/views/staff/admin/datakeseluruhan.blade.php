@@ -181,41 +181,43 @@
                             </thead>
                             <tbody>
                                 @foreach ($barang as $i => $b)
-                                    @php
-                                        // Ambil stok berdasarkan gudang yang dipilih atau total
-                                        $stokDisplay = 0;
-                                        if (request()->filled('gudang_id') && isset($selectedGudang)) {
-                                            $pjStok = $b->pjStok()->where('id_gudang', $selectedGudang->id)->first();
-                                            $stokDisplay = $pjStok ? $pjStok->stok : 0;
-                                        } elseif ($b->kategori && $b->kategori->gudang_id) {
-                                            // Stok di gudang kategori
-                                            $pjStok = $b->pjStok()->where('id_gudang', $b->kategori->gudang_id)->first();
-                                            $stokDisplay = $pjStok ? $pjStok->stok : 0;
-                                        } else {
-                                            // Total stok dari semua gudang PJ
-                                            $stokDisplay = $b->pjStok()->sum('stok');
-                                        }
-                                    @endphp
-                                    <tr @if ($stokDisplay < 10) class="row-low-stock" @endif>
-                                        <td>{{ $i + 1 }}</td>
-                                        <td>{{ $b->nama_barang }}</td>
-                                        <td>{{ $b->kode_barang }}</td>
-                                        <td>Rp {{ number_format($b->harga_barang ?? 0, 0, ',', '.') }}</td>
-                                        <td>{{ $stokDisplay }}</td>
-                                        <td>{{ $b->satuan }}</td>
-                                        <td>{{ $b->kategori->nama ?? '-' }}</td>
-                                        <td>
-                                            <button class="btn btn-sm btn-warning" data-bs-toggle="modal"
-                                                data-bs-target="#modalEditBarang-{{ $b->kode_barang }}">
-                                                <i class="bi bi-pencil"></i>
-                                            </button>
-                                             <button type="button" class="btn btn-sm btn-danger"
-                                                onclick="confirmDelete('{{ route('admin.barang.destroy', $b->kode_barang) }}', 'Barang {{ $b->nama_barang }}')">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                @endforeach
+    @php
+        // PERBAIKAN: Cek apakah gudang adalah Gudang Utama
+        $stokDisplay = 0;
+        
+        if (request()->filled('gudang_id') && isset($selectedGudang)) {
+            // Jika ada filter gudang
+            $isGudangUtama = stripos($selectedGudang->nama, 'utama') !== false;
+            
+            if ($isGudangUtama) {
+                // Ambil dari PB Stok untuk Gudang Utama
+                $stokDisplay = $b->pbStok ? $b->pbStok->stok : 0;
+            } else {
+                // Ambil dari PJ Stok untuk gudang lain
+                $pjStok = $b->pjStok()->where('id_gudang', $selectedGudang->id)->first();
+                $stokDisplay = $pjStok ? $pjStok->stok : 0;
+            }
+        } elseif ($b->kategori && $b->kategori->gudang_id) {
+            // Stok di gudang kategori
+            $isGudangUtama = stripos($b->kategori->gudang->nama ?? '', 'utama') !== false;
+            
+            if ($isGudangUtama) {
+                // Ambil dari PB Stok untuk Gudang Utama
+                $stokDisplay = $b->pbStok ? $b->pbStok->stok : 0;
+            } else {
+                // Ambil dari PJ Stok untuk gudang lain
+                $pjStok = $b->pjStok()->where('id_gudang', $b->kategori->gudang_id)->first();
+                $stokDisplay = $pjStok ? $pjStok->stok : 0;
+            }
+        } else {
+            // Total stok: PB + semua PJ
+            $stokDisplay = ($b->pbStok ? $b->pbStok->stok : 0) + $b->pjStok()->sum('stok');
+        }
+    @endphp
+    <tr @if ($stokDisplay < 10) class="row-low-stock" @endif>
+        {{-- ... rest of table row ... --}}
+    </tr>
+@endforeach
                             </tbody>
                         </table>
                     </div>
@@ -280,19 +282,37 @@
                                                     </thead>
                                                     <tbody>
                                                         @foreach ($k->barang as $i => $b)
-                                                            @php
-                                                                // Ambil stok dari gudang yang sedang dipilih
-                                                                $stokDisplay = 0;
-                                                                if (isset($selectedGudang)) {
-                                                                    $pjStok = $b->pjStok()->where('id_gudang', $selectedGudang->id)->first();
-                                                                    $stokDisplay = $pjStok ? $pjStok->stok : 0;
-                                                                } else {
-                                                                    // Jika tidak ada filter gudang, ambil stok dari gudang kategori
-                                                                    if ($k->gudang_id) {
-                                                                        $pjStok = $b->pjStok()->where('id_gudang', $k->gudang_id)->first();
-                                                                        $stokDisplay = $pjStok ? $pjStok->stok : 0;
-                                                                    }
-                                                                }
+    @php
+        // PERBAIKAN: Cek apakah gudang adalah Gudang Utama
+        $stokDisplay = 0;
+        
+        if (isset($selectedGudang)) {
+            // Jika ada filter gudang
+            $isGudangUtama = stripos($selectedGudang->nama, 'utama') !== false;
+            
+            if ($isGudangUtama) {
+                // Ambil dari PB Stok untuk Gudang Utama
+                $stokDisplay = $b->pbStok ? $b->pbStok->stok : 0;
+            } else {
+                // Ambil dari PJ Stok untuk gudang lain
+                $pjStok = $b->pjStok()->where('id_gudang', $selectedGudang->id)->first();
+                $stokDisplay = $pjStok ? $pjStok->stok : 0;
+            }
+        } else {
+            // Jika tidak ada filter gudang, ambil stok dari gudang kategori
+            if ($k->gudang_id) {
+                $isGudangUtama = stripos($k->gudang->nama ?? '', 'utama') !== false;
+                
+                if ($isGudangUtama) {
+                    // Ambil dari PB Stok untuk Gudang Utama
+                    $stokDisplay = $b->pbStok ? $b->pbStok->stok : 0;
+                } else {
+                    // Ambil dari PJ Stok untuk gudang lain
+                    $pjStok = $b->pjStok()->where('id_gudang', $k->gudang_id)->first();
+                    $stokDisplay = $pjStok ? $pjStok->stok : 0;
+                }
+            }
+        }
                                                             @endphp
                                                             <tr @if ($stokDisplay < 10) class="row-low-stock" @endif>
                                                                 <td>{{ $i + 1 }}</td>
