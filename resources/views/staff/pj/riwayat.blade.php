@@ -167,8 +167,19 @@
                                         <td class="fw-medium">{{ $item->nama_barang }}</td>
                                         <td><span>{{ $item->jumlah }}</span></td>
                                         <td>{{ $item->satuan ?? '-' }}</td>
-                                        <td>{{ $item->keterangan ?? '-' }}</td>
-                                        <td>
+                                       <td data-label="Keterangan" style="white-space: normal !important; word-wrap: break-word !important; word-break: break-word !important; max-width: 250px; vertical-align: top;">
+    @if ($item->keterangan && strlen($item->keterangan) > 100)
+        <div class="keterangan-wrapper">
+            <span class="keterangan-text collapsed"
+                data-full-text="{{ $item->keterangan }}">
+                {{ Str::limit($item->keterangan, 100, '') }}
+            </span>
+            <span class="keterangan-dots keterangan-toggle">...</span>
+        </div>
+    @else
+        {{ $item->keterangan ?? '-' }}
+    @endif
+</td><td>
                                             @if ($item->bukti)
                                                 <span class="riwayat-bukti-icon" data-bs-toggle="modal"
                                                     data-bs-target="#buktiModal"
@@ -253,7 +264,19 @@
                                         <td><span>{{ $item->jumlah }}</span></td>
                                         <td>{{ $item->satuan ?? '-' }}</td>
                                         <td>{{ $item->bagian ?? '-' }}</td>
-                                        <td>{{ $item->keterangan ?? '-' }}</td>
+                                        <td data-label="Keterangan" style="white-space: normal !important; word-wrap: break-word !important; word-break: break-word !important; max-width: 250px; vertical-align: top;">
+    @if ($item->keterangan && strlen($item->keterangan) > 100)
+        <div class="keterangan-wrapper">
+            <span class="keterangan-text collapsed"
+                data-full-text="{{ $item->keterangan }}">
+                {{ Str::limit($item->keterangan, 100, '') }}
+            </span>
+            <span class="keterangan-dots keterangan-toggle">...</span>
+        </div>
+    @else
+        {{ $item->keterangan ?? '-' }}
+    @endif
+</td>
                                         <td>
                                             @if ($item->bukti)
                                                 <span class="riwayat-bukti-icon" data-bs-toggle="modal"
@@ -355,8 +378,44 @@
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 initEventListeners();
+initKeteranganToggle();
+
+function initKeteranganToggle() {
+    document.querySelectorAll('.keterangan-toggle').forEach(toggle => {
+        // Remove existing listeners to prevent duplicates
+        toggle.removeEventListener('click', handleKeteranganToggle);
+        toggle.addEventListener('click', handleKeteranganToggle);
+    });
+}
+
+function handleKeteranganToggle(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const toggle = this;
+    const wrapper = toggle.closest('.keterangan-wrapper');
+    const textSpan = wrapper.querySelector('.keterangan-text');
+
+    if (textSpan.classList.contains('collapsed')) {
+        // EXPAND - tampilkan full text
+        const fullText = textSpan.getAttribute('data-full-text');
+        textSpan.textContent = fullText;
+        textSpan.classList.remove('collapsed');
+        textSpan.classList.add('expanded');
+        toggle.textContent = 'tutup';
+    } else {
+        // COLLAPSE - kembalikan ke text pendek
+        const fullText = textSpan.getAttribute('data-full-text');
+        const limitedText = fullText.substring(0, 100); // sesuai limit di blade
+        textSpan.textContent = limitedText;
+        textSpan.classList.remove('expanded');
+        textSpan.classList.add('collapsed');
+        toggle.textContent = '...';
+    }
+}
 
                 function initEventListeners() {
+                    
                     document.querySelectorAll('.riwayat-filter-dropdown .dropdown-item').forEach(item => {
                         item.removeEventListener('click', handleFilterClick);
                         item.addEventListener('click', handleFilterClick);
@@ -573,5 +632,6 @@
     @endpush
 
     @push('styles')
+     <link rel="stylesheet" href="{{ asset('css/staff/pj/riwayat_pj.css') }}">
     @endpush
 </x-layouts.app>
