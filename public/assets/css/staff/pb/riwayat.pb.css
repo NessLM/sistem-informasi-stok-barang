@@ -1,0 +1,182 @@
+/* --- Kolom Keterangan --- */
+.riwayat-page .keterangan-cell {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
+    vertical-align: top;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+/* Wrapper keterangan */
+.riwayat-page .keterangan-wrapper {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    position: relative;
+}
+
+/* Teks keterangan */
+.riwayat-page .keterangan-text {
+    display: block;
+    white-space: normal;
+    word-break: break-word;
+    max-width: 100%;
+    transition: max-height 0.3s ease;
+}
+
+/* Collapsed (potong 3 baris) */
+.riwayat-page .keterangan-text.collapsed {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    max-height: 4.5em; /* ~3 lines */
+}
+
+/* Expanded - turun ke bawah */
+.riwayat-page .keterangan-text.expanded {
+    display: block !important;
+    -webkit-line-clamp: unset !important;
+    -webkit-box-orient: unset !important;
+    overflow: visible !important;
+    max-height: none !important;
+    white-space: normal !important;
+}
+
+/* Tombol toggle - posisi di bawah teks */
+.riwayat-page .keterangan-toggle {
+    color: #007bff;
+    font-size: 12px;
+    cursor: pointer;
+    display: block;
+    margin-top: 4px;
+    text-align: left;
+    font-weight: 500;
+}
+
+.riwayat-page .keterangan-toggle:hover {
+    text-decoration: underline;
+    color: #0056b3;
+}
+/* ===== FIX UNTUK KOLOM KETERANGAN - TAMBAHKAN DI AKHIR FILE ===== */
+
+/* Force wrap untuk SEMUA td keterangan */
+.riwayat-page .table td:nth-child(7),
+.riwayat-page .table th:nth-child(7) {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
+    max-width: 200px;
+    min-width: 120px;
+    vertical-align: top;
+}
+
+/* Override untuk mobile */
+@media (max-width: 767px) {
+    .riwayat-page .table td:nth-child(7),
+    .riwayat-page .table th:nth-child(7) {
+        max-width: 150px;
+        min-width: 100px;
+    }
+}
+
+/* Pastikan keterangan-cell wrap dengan benar */
+.riwayat-page .keterangan-cell {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
+    vertical-align: top !important;
+    max-width: 200px;
+    min-width: 120px;
+}
+
+/* Wrapper keterangan - pastikan full width */
+.riwayat-page .keterangan-wrapper {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    position: relative;
+}
+
+/* Teks keterangan - force block display */
+.riwayat-page .keterangan-text {
+    display: block !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+/* Collapsed state - 3 lines with ellipsis */
+.riwayat-page .keterangan-text.collapsed {
+    display: -webkit-box !important;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: 4.5em; /* 3 lines x 1.5em line-height */
+    line-height: 1.5em;
+}
+
+/* Expanded state - show all */
+.riwayat-page .keterangan-text.expanded {
+    display: block !important;
+    -webkit-line-clamp: unset !important;
+    -webkit-box-orient: unset !important;
+    overflow: visible !important;
+    max-height: none !important;
+    white-space: normal !important;
+}
+
+/* Toggle button styling */
+.riwayat-page .keterangan-toggle {
+    color: #007bff;
+    font-size: 12px;
+    cursor: pointer;
+    display: inline-block;
+    margin-left: 4px;
+    font-weight: 600;
+    user-select: none;
+}
+
+.riwayat-page .keterangan-toggle:hover {
+    text-decoration: underline;
+    color: #0056b3;
+}
+
+/* Fix untuk dots yang inline */
+.riwayat-page .keterangan-dots {
+    display: inline;
+    margin-left: 2px;
+}
+
+/* Hide dots when expanded */
+.riwayat-page .keterangan-text.expanded + .keterangan-dots {
+    display: none !important;
+}
+
+/* ===== OPTIONAL: Kurangi min-width tabel jika perlu ===== */
+.riwayat-page .table {
+    min-width: 800px !important;
+}
+
+@media (max-width: 767px) {
+    .riwayat-page .table {
+        min-width: 650px !important;
+    }
+}
+
+@media (max-width: 575px) {
+    .riwayat-page .table {
+        min-width: 550px !important;
+    }
+
+    .riwayat-page .keterangan-cell {
+        max-width: 120px;
+        min-width: 80px;
+    }
+}
