@@ -63,10 +63,13 @@ class BarangMasukSheet implements FromCollection, WithHeadings, WithMapping, Wit
     {
         return [
             'No',
-            'Tanggal, Waktu',
+            'Tanggal',
+            'Waktu',
             'Gudang',
             'Nama Barang',
-            'Jumlah'
+            'Jumlah',
+            'Satuan',
+            'Keterangan'
         ];
     }
 
@@ -156,11 +159,14 @@ class BarangKeluarSheet implements FromCollection, WithHeadings, WithMapping, Wi
     {
         return [
             'No',
-            'Tanggal, Waktu',
+            'Tanggal',
+            'Waktu',
             'Gudang Asal',
             'Nama Barang', 
             'Jumlah',
-            'Gudang Tujuan'
+            'Satuan',
+            'Gudang Tujuan',
+            'Keterangan'
         ];
     }
 
