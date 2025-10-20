@@ -9,68 +9,41 @@
 <x-layouts.app title="Data Gudang" :menu="$menu" :heading="$pageHeading">
 
     @php
-        $barang   = $barang ?? collect();     // hasil filter/search (bisa kosong)
+        $barang = $barang ?? collect();     // hasil filter/search (bisa kosong)
         $kategori = $kategori ?? collect();   // kategori + barang (stok > 0)
         // Tambahan dari controller:
-        $barangHabis       = $barangHabis ?? collect();  // list barang stok = 0
-        $lowThreshold      = $lowThreshold ?? 10;         // ambang "menipis"
-        $ringkasanCounts   = $ringkasanCounts ?? ['ok'=>0,'low'=>0,'empty'=>0];
+        $barangHabis = $barangHabis ?? collect();  // list barang stok = 0
+        $lowThreshold = $lowThreshold ?? 10;         // ambang "menipis"
+        $ringkasanCounts = $ringkasanCounts ?? ['ok' => 0, 'low' => 0, 'empty' => 0];
     @endphp
 
-    <head>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
+    @push('styles')
+        <link rel="stylesheet" href="{{ asset('assets/css/staff/pj/data_keseluruhan_pj.css') }}">
         <style>
-            .search-suggestion-item {
-                padding: 12px 16px;
-                cursor: pointer;
-                border-bottom: 1px solid #f0f0f0;
-                transition: background-color 0.2s;
+            .row-low-stock {
+                background-color: #ffcccc !important;
+                border-left: 4px solid #dc3545 !important;
             }
-            .search-suggestion-item:hover,
-            .search-suggestion-item.active { background-color: #f8f9fa; }
-            .search-suggestion-item:last-child { border-bottom: none; }
-
-            .suggestion-name { font-weight: 600; color: #2c3e50; margin-bottom: 4px; }
-            .suggestion-code { font-size: 0.875rem; color: #6c757d; margin-bottom: 4px; }
-            .suggestion-meta { font-size: 0.8rem; color: #95a5a6; }
-
-            .stock-status { padding: 2px 8px; border-radius: 4px; font-weight: 500; font-size: 0.75rem; }
-            .stock-available { background-color: #d4edda; color: #155724; }
-            .stock-low { background-color: #fff3cd; color: #856404; }
-            .stock-empty { background-color: #f8d7da; color: #721c24; }
-
-            .loading-suggestion { padding: 12px 16px; text-align: center; color: #6c757d; font-style: italic; }
-
-            #searchSuggestions { max-height: 400px; overflow-y: auto; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); border-radius: 0 0 0.375rem 0.375rem; }
-
-            .row-low-stock { background-color: #ffcccc !important; border-left: 8px solid #dc3545 !important; }
-
-            /* === Tambahan untuk ringkasan & "Barang Habis" === */
-            .summary-badges .badge { padding: .6rem .8rem; font-weight:600; }
-            .badge-dot { width:10px; height:10px; display:inline-block; border-radius:50%; margin-right:.35rem; }
-            .badge-ok   { background:#e9f7ef; color:#1e7e34; }
-            .badge-low  { background:#fff4e5; color:#b26b00; }
-            .badge-empty{ background:#fdecea; color:#a71d2a; }
-            .row-empty { background-color:#ffe6e6 !important; border-left:8px solid #dc3545 !important; }
-            .empty-card { border-left:6px solid #dc3545; }
         </style>
-    </head>
+
+    @endpush
 
     <main class="page-wrap container py-4">
 
         <!-- Toast notification -->
         @if (session('toast'))
-            <div id="toast-notif" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-                                  z-index: 2000; display: flex; justify-content: center; pointer-events: none;">
+            <div id="toast-notif"
+                style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+                                              z-index: 2000; display: flex; justify-content: center; pointer-events: none;">
 
                 <div class="toast-message" style="background: #fff; border-radius: 12px; padding: 14px 22px;
-                                    box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;
-                                    min-width: 280px; max-width: 360px; transition: opacity .5s ease;">
+                                                box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;
+                                                min-width: 280px; max-width: 360px; transition: opacity .5s ease;">
 
-                    <div style="font-weight: 600; font-size: 16px; margin-bottom: 4px;
-                                      color: {{ session('toast.type') === 'success' ? '#28a745' : '#dc3545' }};">
+                    <div
+                        style="font-weight: 600; font-size: 16px; margin-bottom: 4px;
+                                                  color: {{ session('toast.type') === 'success' ? '#28a745' : '#dc3545' }};">
                         {{ session('toast.title') }}
                     </div>
 
@@ -195,134 +168,132 @@
             @endif
 
             {{-- Jika tidak ada filter/search --}}
-@if (
-    !request()->filled('search') &&
-        !request()->filled('kode') &&
-        !request()->filled('stok_min') &&
-        !request()->filled('stok_max') &&
-        !request()->filled('kategori_id') &&
-        !request()->filled('satuan'))
-    {{-- Anchor untuk badge "Menipis" --}}
-    <div id="sec-low"></div>
+            @if (
+                    !request()->filled('search') &&
+                    !request()->filled('kode') &&
+                    !request()->filled('stok_min') &&
+                    !request()->filled('stok_max') &&
+                    !request()->filled('kategori_id') &&
+                    !request()->filled('satuan')
+                )
+                {{-- Anchor untuk badge "Menipis" --}}
+                <div id="sec-low"></div>
 
-    <div class="table-responsive mt-3">
-        <table class="table table-bordered">
-            <thead class="table-dark">
-                <tr>
-                    <th>KATEGORI</th>
-                    <th style="width:180px" class="text-center">AKSI</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($kategori as $k)
-                    <tr>
-                        <td>{{ $k->nama }}</td>
-                        <td class="text-center">
-                            <div class="d-flex flex-wrap justify-content-center gap-2">
-                                <button class="btn btn-sm btn-success"
-                                    onclick="toggleDetail({{ $k->id }})"><i
-                                        class="bi bi-eye"></i></button>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <tr id="detail-{{ $k->id }}" style="display:none;">
-                        <td colspan="2">
-                            @php
-                                // barang sudah di-load (stok > 0) di controller
-                                $barangFiltered = $k->barang;
-                            @endphp
-                            @if ($barangFiltered->count())
-                                <div class="table-responsive">
-                                    <table class="table table-bordered">
-                                        <thead>
-                                            <tr>
-                                                <th>Kode</th>
-                                                <th>Nama Barang</th>
-                                                <th>Stok</th>
-                                                <th>Satuan</th>
-                                                <th>Aksi</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach ($barangFiltered as $item)
-                                                @php
-                                                    $stokTersedia = $item->stok_tersedia ?? 0;
-                                                @endphp
-                                                <tr @if ($stokTersedia < 10) class="row-low-stock" @endif>
-                                                    <td>{{ $item->kode }}</td>
-                                                    <td>{{ $item->nama }}</td>
-                                                    <td>{{ $stokTersedia }}</td>
-                                                    <td>{{ $item->satuan }}</td>
-                                                    <td>
-                                                        <button type="button" class="btn btn-danger btn-sm"
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target="#modalBarangKeluar"
-                                                            data-id="{{ $item->kode }}"
-                                                            data-nama="{{ $item->nama }}"
-                                                            data-kode="{{ $item->kode }}"
-                                                            data-stok="{{ $stokTersedia }}">
-                                                            <i class="bi bi-box-arrow-right"></i> Barang Keluar
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            @else
-                                <p class="text-muted">Tidak ada barang pada kategori ini (atau semua barang telah habis).</p>
-                            @endif
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-@endif
-        </section>
-
-        {{-- =========================
-             SEKS I BARANG HABIS (BARU)
-           ========================= --}}
-        @if(($barangHabis ?? collect())->count())
-        <section id="sec-empty" class="card empty-card mt-4">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h5 class="m-0">
-                        <i class="bi bi-exclamation-triangle-fill me-1"></i>
-                        Barang Habis - {{ $selectedGudang->nama ?? 'Gudang' }}
-                        <span class="badge bg-danger ms-2">{{ $barangHabis->count() }}</span>
-                    </h5>
-                </div>
-
-                <div class="table-responsive">
-                    <table class="table table-bordered align-middle">
-                        <thead class="table-danger">
+                <div class="table-responsive mt-3">
+                    <table class="table table-bordered">
+                        <thead class="table-dark">
                             <tr>
-                                <th style="width:120px">Kode</th>
-                                <th>Nama Barang</th>
-                                <th style="width:220px">Kategori</th>
-                                <th style="width:120px">Satuan</th>
+                                <th>KATEGORI</th>
+                                <th style="width:180px" class="text-center">AKSI</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($barangHabis as $item)
-                                <tr class="row-empty">
-                                    <td>{{ $item->kode }}</td>
-                                    <td>
-                                        {{ $item->nama }}
-                                        <span class="ms-2 badge text-bg-danger">Habis</span>
+                            @foreach ($kategori as $k)
+                                <tr>
+                                    <td>{{ $k->nama }}</td>
+                                    <td class="text-center">
+                                        <div class="d-flex flex-wrap justify-content-center gap-2">
+                                            <button class="btn btn-sm btn-success" onclick="toggleDetail({{ $k->id }})"><i
+                                                    class="bi bi-eye"></i></button>
+                                        </div>
                                     </td>
-                                    <td>{{ $item->kategori->nama ?? '-' }}</td>
-                                    <td>{{ $item->satuan ?? '-' }}</td>
+                                </tr>
+
+                                <tr id="detail-{{ $k->id }}" style="display:none;">
+                                    <td colspan="2">
+                                        @php
+                                            // barang sudah di-load (stok > 0) di controller
+                                            $barangFiltered = $k->barang;
+                                        @endphp
+                                        @if ($barangFiltered->count())
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Kode</th>
+                                                            <th>Nama Barang</th>
+                                                            <th>Stok</th>
+                                                            <th>Satuan</th>
+                                                            <th>Aksi</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach ($barangFiltered as $item)
+                                                            @php
+                                                                $stokTersedia = $item->stok_tersedia ?? 0;
+                                                            @endphp
+                                                            <tr @if ($stokTersedia < 10) class="row-low-stock" @endif>
+                                                                <td>{{ $item->kode }}</td>
+                                                                <td>{{ $item->nama }}</td>
+                                                                <td>{{ $stokTersedia }}</td>
+                                                                <td>{{ $item->satuan }}</td>
+                                                                <td>
+                                                                    <button type="button" class="btn btn-danger btn-sm"
+                                                                        data-bs-toggle="modal" data-bs-target="#modalBarangKeluar"
+                                                                        data-id="{{ $item->kode }}" data-nama="{{ $item->nama }}"
+                                                                        data-kode="{{ $item->kode }}" data-stok="{{ $stokTersedia }}">
+                                                                        <i class="bi bi-box-arrow-right"></i> Barang Keluar
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        @else
+                                            <p class="text-muted">Tidak ada barang pada kategori ini (atau semua barang telah
+                                                habis).</p>
+                                        @endif
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
                 </div>
-            </div>
+            @endif
         </section>
+
+        {{-- =========================
+        SEKS I BARANG HABIS (BARU)
+        ========================= --}}
+        @if(($barangHabis ?? collect())->count())
+            <section id="sec-empty" class="card empty-card mt-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="m-0">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                            Barang Habis - {{ $selectedGudang->nama ?? 'Gudang' }}
+                            <span class="badge bg-danger ms-2">{{ $barangHabis->count() }}</span>
+                        </h5>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle">
+                            <thead class="table-danger">
+                                <tr>
+                                    <th style="width:120px">Kode</th>
+                                    <th>Nama Barang</th>
+                                    <th style="width:220px">Kategori</th>
+                                    <th style="width:120px">Satuan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($barangHabis as $item)
+                                    <tr class="row-empty">
+                                        <td>{{ $item->kode }}</td>
+                                        <td>
+                                            {{ $item->nama }}
+                                            <span class="ms-2 badge text-bg-danger">Habis</span>
+                                        </td>
+                                        <td>{{ $item->kategori->nama ?? '-' }}</td>
+                                        <td>{{ $item->satuan ?? '-' }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
         @endif
 
     </main>
@@ -459,189 +430,188 @@
             </form>
         </div>
     </div>
-
-    {{-- JavaScript --}}
-    <script>
-        // Toggle detail function
-        function toggleDetail(id) {
-            let el = document.getElementById('detail-' + id);
-            if (el.style.display === 'none') {
-                el.style.display = 'table-row';
-            } else {
-                el.style.display = 'none';
-            }
-        }
-
-        // Autocomplete search functionality
-        document.addEventListener('DOMContentLoaded', function () {
-            const searchInput = document.getElementById('searchInput');
-            const suggestionsContainer = document.getElementById('searchSuggestions');
-            let currentSuggestions = [];
-            let activeSuggestionIndex = -1;
-            let searchTimeout;
-
-            if (!searchInput || !suggestionsContainer) { return; }
-
-            function fetchSuggestions(query) {
-                if (query.length < 2) { hideSuggestions(); return; }
-                showLoading();
-                clearTimeout(searchTimeout);
-
-                searchTimeout = setTimeout(() => {
-                    let searchUrl = `/pj/api/search-barang?q=${encodeURIComponent(query)}`;
-                    fetch(searchUrl)
-                        .then(response => response.json())
-                        .then(data => { currentSuggestions = data; displaySuggestions(data); })
-                        .catch(error => { console.error('Search error:', error); hideSuggestions(); });
-                }, 300);
-            }
-
-            function showLoading() {
-                suggestionsContainer.innerHTML = '<div class="loading-suggestion">Mencari...</div>';
-                suggestionsContainer.style.display = 'block';
-            }
-
-            function displaySuggestions(suggestions) {
-                if (suggestions.length === 0) {
-                    suggestionsContainer.innerHTML = '<div class="loading-suggestion">Tidak ada barang ditemukan</div>';
-                    return;
-                }
-
-                let html = '';
-                suggestions.forEach((item, index) => {
-                    const stockStatusClass = `stock-${item.stock_status}`;
-                    const stockText = item.stock_status === 'empty' ? 'Habis' :
-                        item.stock_status === 'low' ? 'Sedikit' : 'Tersedia';
-
-                    html += `
-                        <div class="search-suggestion-item" data-index="${index}">
-                            <div class="suggestion-name">${item.nama}</div>
-                            <div class="suggestion-code">Kode: ${item.kode}</div>
-                            <div class="suggestion-meta">
-                                <small>Kategori: ${item.kategori} | Gudang: ${item.gudang} | Stok: ${item.stok} |
-                                <span class="stock-status ${stockStatusClass}">${stockText}</span></small>
-                            </div>
-                        </div>
-                    `;
-                });
-
-                suggestionsContainer.innerHTML = html;
-                suggestionsContainer.style.display = 'block';
-
-                suggestionsContainer.querySelectorAll('.search-suggestion-item').forEach(item => {
-                    item.addEventListener('click', function () {
-                        const index = parseInt(this.dataset.index);
-                        selectSuggestion(index);
-                    });
-                });
-            }
-
-            function hideSuggestions() { suggestionsContainer.style.display = 'none'; activeSuggestionIndex = -1; }
-
-            function selectSuggestion(index) {
-                if (currentSuggestions[index]) {
-                    const suggestion = currentSuggestions[index];
-                    searchInput.value = suggestion.nama;
-                    hideSuggestions();
-                    document.getElementById('searchForm').submit();
+    @push('scripts')
+        {{-- JavaScript --}}
+        <script>
+            // Toggle detail function
+            function toggleDetail(id) {
+                let el = document.getElementById('detail-' + id);
+                if (el.style.display === 'none') {
+                    el.style.display = 'table-row';
+                } else {
+                    el.style.display = 'none';
                 }
             }
 
-            function updateActiveSuggestion(suggestions) {
-                suggestions.forEach((item, index) => {
-                    if (index === activeSuggestionIndex) item.classList.add('active');
-                    else item.classList.remove('active');
-                });
-            }
+            // Autocomplete search functionality
+            document.addEventListener('DOMContentLoaded', function () {
+                const searchInput = document.getElementById('searchInput');
+                const suggestionsContainer = document.getElementById('searchSuggestions');
+                let currentSuggestions = [];
+                let activeSuggestionIndex = -1;
+                let searchTimeout;
 
-            // Event listeners
-            searchInput.addEventListener('input', function () { fetchSuggestions(this.value.trim()); });
+                if (!searchInput || !suggestionsContainer) { return; }
 
-            searchInput.addEventListener('keydown', function (e) {
-                const suggestions = suggestionsContainer.querySelectorAll('.search-suggestion-item');
+                function fetchSuggestions(query) {
+                    if (query.length < 2) { hideSuggestions(); return; }
+                    showLoading();
+                    clearTimeout(searchTimeout);
 
-                if (e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    activeSuggestionIndex = Math.min(activeSuggestionIndex + 1, suggestions.length - 1);
-                    updateActiveSuggestion(suggestions);
-                } else if (e.key === 'ArrowUp') {
-                    e.preventDefault();
-                    activeSuggestionIndex = Math.max(activeSuggestionIndex - 1, -1);
-                    updateActiveSuggestion(suggestions);
-                } else if (e.key === 'Enter') {
-                    if (activeSuggestionIndex >= 0) {
-                        e.preventDefault();
-                        selectSuggestion(activeSuggestionIndex);
-                    }
-                } else if (e.key === 'Escape') {
-                    hideSuggestions();
+                    searchTimeout = setTimeout(() => {
+                        let searchUrl = `/pj/api/search-barang?q=${encodeURIComponent(query)}`;
+                        fetch(searchUrl)
+                            .then(response => response.json())
+                            .then(data => { currentSuggestions = data; displaySuggestions(data); })
+                            .catch(error => { console.error('Search error:', error); hideSuggestions(); });
+                    }, 300);
                 }
-            });
 
-            searchInput.addEventListener('focus', function () {
-                if (this.value.trim().length >= 2) { fetchSuggestions(this.value.trim()); }
-            });
+                function showLoading() {
+                    suggestionsContainer.innerHTML = '<div class="loading-suggestion">Mencari...</div>';
+                    suggestionsContainer.style.display = 'block';
+                }
 
-            document.addEventListener('click', function (e) {
-                if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) { hideSuggestions(); }
-            });
-
-            // Handle Modal Barang Keluar
-            const modalBarangKeluar = document.getElementById("modalBarangKeluar");
-            if (modalBarangKeluar) {
-                modalBarangKeluar.addEventListener("show.bs.modal", function (event) {
-                    const button = event.relatedTarget;
-                    const barangId = button.getAttribute("data-id");
-                    const barangNama = button.getAttribute("data-nama");
-                    const barangKode = button.getAttribute("data-kode") || '';
-                    const stokTersedia = button.getAttribute("data-stok") || '0';
-
-                    document.getElementById("barangKeluarId").value = barangId;
-                    document.getElementById("barangKeluarNama").value = barangNama;
-                    document.getElementById("barangKeluarKode").value = barangKode;
-                    document.getElementById("stokTersedia").textContent = stokTersedia;
-
-                    const jumlahInput = document.getElementById("jumlahKeluar");
-                    jumlahInput.max = stokTersedia;
-
-                    document.getElementById('formBarangKeluar').reset();
-                    document.getElementById("barangKeluarId").value = barangId;
-                    document.getElementById("barangKeluarNama").value = barangNama;
-                    document.getElementById("barangKeluarKode").value = barangKode;
-
-                    document.getElementById('fileNameKeluar').textContent = '';
-                });
-            }
-
-            // File preview handler
-            const buktiBrgKeluar = document.getElementById('buktiBrgKeluar');
-            if (buktiBrgKeluar) {
-                buktiBrgKeluar.addEventListener('change', function () {
-                    const fileName = this.files[0]?.name || '';
-                    document.getElementById('fileNameKeluar').textContent = fileName ? `File: ${fileName}` : '';
-                });
-            }
-
-            // Form submit handler
-            const formBarangKeluar = document.getElementById('formBarangKeluar');
-            if (formBarangKeluar) {
-                formBarangKeluar.addEventListener('submit', function (e) {
-                    e.preventDefault();
-                    const barangId = document.getElementById('barangKeluarId').value;
-                    const jumlah = parseInt(document.getElementById('jumlahKeluar').value);
-                    const stokMax = parseInt(document.getElementById('stokTersedia').textContent);
-
-                    if (jumlah > stokMax) {
-                        alert(`Jumlah tidak boleh melebihi stok tersedia (${stokMax})`);
+                function displaySuggestions(suggestions) {
+                    if (suggestions.length === 0) {
+                        suggestionsContainer.innerHTML = '<div class="loading-suggestion">Tidak ada barang ditemukan</div>';
                         return;
                     }
 
-                    this.action = `/pj/barang-keluar/${barangId}`;
-                    this.submit();
-                });
-            }
-        });
-    </script>
+                    let html = '';
+                    suggestions.forEach((item, index) => {
+                        const stockStatusClass = `stock-${item.stock_status}`;
+                        const stockText = item.stock_status === 'empty' ? 'Habis' :
+                            item.stock_status === 'low' ? 'Sedikit' : 'Tersedia';
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+                        html += `
+                            <div class="search-suggestion-item" data-index="${index}">
+                                <div class="suggestion-name">${item.nama}</div>
+                                <div class="suggestion-code">Kode: ${item.kode}</div>
+                                <div class="suggestion-meta">
+                                    <small>Kategori: ${item.kategori} | Gudang: ${item.gudang} | Stok: ${item.stok} |
+                                    <span class="stock-status ${stockStatusClass}">${stockText}</span></small>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    suggestionsContainer.innerHTML = html;
+                    suggestionsContainer.style.display = 'block';
+
+                    suggestionsContainer.querySelectorAll('.search-suggestion-item').forEach(item => {
+                        item.addEventListener('click', function () {
+                            const index = parseInt(this.dataset.index);
+                            selectSuggestion(index);
+                        });
+                    });
+                }
+
+                function hideSuggestions() { suggestionsContainer.style.display = 'none'; activeSuggestionIndex = -1; }
+
+                function selectSuggestion(index) {
+                    if (currentSuggestions[index]) {
+                        const suggestion = currentSuggestions[index];
+                        searchInput.value = suggestion.nama;
+                        hideSuggestions();
+                        document.getElementById('searchForm').submit();
+                    }
+                }
+
+                function updateActiveSuggestion(suggestions) {
+                    suggestions.forEach((item, index) => {
+                        if (index === activeSuggestionIndex) item.classList.add('active');
+                        else item.classList.remove('active');
+                    });
+                }
+
+                // Event listeners
+                searchInput.addEventListener('input', function () { fetchSuggestions(this.value.trim()); });
+
+                searchInput.addEventListener('keydown', function (e) {
+                    const suggestions = suggestionsContainer.querySelectorAll('.search-suggestion-item');
+
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        activeSuggestionIndex = Math.min(activeSuggestionIndex + 1, suggestions.length - 1);
+                        updateActiveSuggestion(suggestions);
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        activeSuggestionIndex = Math.max(activeSuggestionIndex - 1, -1);
+                        updateActiveSuggestion(suggestions);
+                    } else if (e.key === 'Enter') {
+                        if (activeSuggestionIndex >= 0) {
+                            e.preventDefault();
+                            selectSuggestion(activeSuggestionIndex);
+                        }
+                    } else if (e.key === 'Escape') {
+                        hideSuggestions();
+                    }
+                });
+
+                searchInput.addEventListener('focus', function () {
+                    if (this.value.trim().length >= 2) { fetchSuggestions(this.value.trim()); }
+                });
+
+                document.addEventListener('click', function (e) {
+                    if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) { hideSuggestions(); }
+                });
+
+                // Handle Modal Barang Keluar
+                const modalBarangKeluar = document.getElementById("modalBarangKeluar");
+                if (modalBarangKeluar) {
+                    modalBarangKeluar.addEventListener("show.bs.modal", function (event) {
+                        const button = event.relatedTarget;
+                        const barangId = button.getAttribute("data-id");
+                        const barangNama = button.getAttribute("data-nama");
+                        const barangKode = button.getAttribute("data-kode") || '';
+                        const stokTersedia = button.getAttribute("data-stok") || '0';
+
+                        document.getElementById("barangKeluarId").value = barangId;
+                        document.getElementById("barangKeluarNama").value = barangNama;
+                        document.getElementById("barangKeluarKode").value = barangKode;
+                        document.getElementById("stokTersedia").textContent = stokTersedia;
+
+                        const jumlahInput = document.getElementById("jumlahKeluar");
+                        jumlahInput.max = stokTersedia;
+
+                        document.getElementById('formBarangKeluar').reset();
+                        document.getElementById("barangKeluarId").value = barangId;
+                        document.getElementById("barangKeluarNama").value = barangNama;
+                        document.getElementById("barangKeluarKode").value = barangKode;
+
+                        document.getElementById('fileNameKeluar').textContent = '';
+                    });
+                }
+
+                // File preview handler
+                const buktiBrgKeluar = document.getElementById('buktiBrgKeluar');
+                if (buktiBrgKeluar) {
+                    buktiBrgKeluar.addEventListener('change', function () {
+                        const fileName = this.files[0]?.name || '';
+                        document.getElementById('fileNameKeluar').textContent = fileName ? `File: ${fileName}` : '';
+                    });
+                }
+
+                // Form submit handler
+                const formBarangKeluar = document.getElementById('formBarangKeluar');
+                if (formBarangKeluar) {
+                    formBarangKeluar.addEventListener('submit', function (e) {
+                        e.preventDefault();
+                        const barangId = document.getElementById('barangKeluarId').value;
+                        const jumlah = parseInt(document.getElementById('jumlahKeluar').value);
+                        const stokMax = parseInt(document.getElementById('stokTersedia').textContent);
+
+                        if (jumlah > stokMax) {
+                            alert(`Jumlah tidak boleh melebihi stok tersedia (${stokMax})`);
+                            return;
+                        }
+
+                        this.action = `/pj/barang-keluar/${barangId}`;
+                        this.submit();
+                    });
+                }
+            });
+        </script>
+    @endpush
 </x-layouts.app>

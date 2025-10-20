@@ -1,3 +1,1197 @@
+/* public/css/riwayat-responsive.css */
+
+/* ===== VARIABLES & BASE STYLES ===== */
+.riwayat-container {
+    padding: 10px;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+/* ===== FILTER CARD COMPONENT ===== */
+.riwayat-filter-card {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    margin-bottom: 10px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    overflow: visible !important;
+    position: relative;
+    z-index: 1;
+}
+
+.riwayat-filter-title {
+    font-weight: 600;
+    font-size: 1.2rem;
+    margin-bottom: 0;
+    color: white;
+}
+
+.riwayat-filter-body {
+    padding: 10px;
+    overflow: visible !important;
+    position: relative;
+}
+
+.riwayat-filter-body h3 {
+    margin-bottom: 15px;
+    color: #2c3e50;
+    font-weight: 600;
+    font-size: 25px;
+}
+
+.riwayat-filter-form {
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    overflow: visible !important;
+    position: relative;
+    z-index: 1;
+}
+
+.riwayat-filter-group {
+    display: flex;
+    flex-direction: column;
+    min-width: 180px;
+    flex: 1;
+    position: relative;
+    z-index: auto;
+}
+
+.riwayat-filter-group.show {
+    z-index: 1070;
+}
+
+.riwayat-filter-group-reset {
+    display: flex;
+    flex-direction: column;
+    min-width: 100px;
+    flex: 0 0 auto;
+}
+
+/* ===== BUTTON STYLES ===== */
+.riwayat-btn-filter,
+.riwayat-btn-download,
+.riwayat-btn-reset {
+    border: none;
+    border-radius: 6px;
+    padding: 10px 20px;
+    color: white;
+    font-weight: 300;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
+.riwayat-btn-filter {
+    background: linear-gradient(135deg, #3498db 25%, #2c3e50 100%);
+    justify-content: space-between;
+    min-width: 180px;
+    position: relative;
+    text-align: left;
+    width: 100%;
+    font-size: 14px;
+}
+
+.riwayat-btn-filter:hover {
+    background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+    transform: translateY(-2px);
+    color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.riwayat-btn-filter:focus {
+    box-shadow: 0 0 0 3px rgba(78, 115, 223, 0.25);
+    color: white;
+}
+
+.riwayat-btn-reset {
+    background: linear-gradient(135deg, #e74a3b 0%, #be2617 100%);
+    height: fit-content;
+    width: 100%;
+    font-size: 14px;
+}
+
+.riwayat-btn-reset:hover {
+    background: linear-gradient(135deg, #be2617 0%, #e74a3b 100%);
+    transform: translateY(-2px);
+    color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.riwayat-btn-download {
+    background: linear-gradient(135deg, #1cc88a 0%, #13855c 100%);
+    justify-content: flex-start;
+    width: 100%;
+    font-size: 14px;
+}
+
+.riwayat-btn-download:hover {
+    background: linear-gradient(135deg, #13855c 0%, #1cc88a 100%);
+    transform: translateY(-2px);
+    color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.riwayat-btn-download:focus {
+    color: white;
+    box-shadow: 0 0 0 3px rgba(28, 200, 138, 0.25);
+}
+
+/* ===== DROPDOWN STYLES ===== */
+.riwayat-btn-filter::after,
+.riwayat-btn-download::after {
+    display: none !important;
+}
+
+.dropdown-arrow {
+    transition: transform 0.3s ease;
+    font-size: 0.9rem;
+    margin-left: 8px;
+    flex-shrink: 0;
+}
+
+.dropdown-arrow.rotated,
+.riwayat-btn-filter[aria-expanded="true"] .dropdown-arrow,
+.riwayat-btn-download[aria-expanded="true"] .dropdown-arrow {
+    transform: rotate(90deg);
+}
+
+.riwayat-filter-dropdown .dropdown-menu,
+.riwayat-download-dropdown .dropdown-menu {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 8px 0;
+    min-width: 180px;
+    width: 100%;
+    z-index: 1060 !important;
+    position: absolute !important;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.riwayat-filter-dropdown .dropdown-item,
+.riwayat-download-dropdown .dropdown-item {
+    padding: 8px 16px;
+    transition: all 0.2s ease;
+    color: #2c3e50;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.riwayat-filter-dropdown .dropdown-item {
+    font-size: 15px;
+}
+
+.riwayat-download-dropdown .dropdown-item {
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+}
+
+.riwayat-filter-dropdown .dropdown-item:hover,
+.riwayat-filter-dropdown .dropdown-item:focus {
+    background-color: #f8f9fa;
+    color: #3498db;
+}
+
+.riwayat-download-dropdown .dropdown-item:hover {
+    background-color: #f8f9fa;
+    color: #1cc88a;
+}
+
+.riwayat-filter-dropdown .dropdown-item.active {
+    background-color: #3498db;
+    color: white;
+}
+
+/* ===== TABLE & DATA STYLES ===== */
+.table-responsive {
+    border-radius: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table {
+    margin-bottom: 0;
+    min-width: 600px;
+}
+
+.table th,
+.table td {
+    vertical-align: middle;
+    text-align: center;
+    padding: 12px 8px;
+    border-color: #dee2e6;
+    white-space: nowrap;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #2c3e50;
+    border-top: none;
+}
+
+.riwayat-table-card {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+.riwayat-table-card .card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    padding: 15px 20px;
+}
+
+.riwayat-table-card .card-body {
+    padding: 0;
+}
+
+.card-footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    padding: 15px 20px;
+}
+
+.riwayat-status-icon {
+    font-size: 1.3rem;
+    display: inline-block;
+    text-align: center;
+    width: 24px;
+}
+
+.riwayat-bukti-icon {
+    color: #000000;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-block;
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.riwayat-bukti-icon:hover {
+    color: #2a3f9d;
+    background-color: #f8f9fa;
+    transform: scale(1.1);
+}
+
+.btn-keluar {
+    border: none;
+    color: #be2617;
+    font-weight: 600;
+    border-radius: 6px;
+    font-size: 20px;
+    padding: 6px 12px;
+    background: none;
+}
+
+.btn-masuk {
+    border: none;
+    color: #13855c;
+    font-weight: 600;
+    border-radius: 6px;
+    font-size: 20px;
+    padding: 6px 12px;
+    background: none;
+}
+.btn-toggle-table {
+    background: linear-gradient(135deg, #3498db 25%, #2c3e50 100%);
+    color: white;
+}
+.btn-toggle-table:hover {
+    background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+    color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.riwayat-header-masuk h5,
+.riwayat-header-keluar h5,
+.riwayat-header-distribusi h5 {
+    color: black;
+    font-weight: 600;
+    margin: 0;
+}
+
+.riwayat-empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+}
+
+.riwayat-empty-state i {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    display: block;
+    opacity: 0.5;
+}
+
+.riwayat-empty-state p {
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+/* ===== MODAL STYLES ===== */
+#buktiModal .modal-content {
+    margin-top: 100px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#buktiModal .modal-header {
+    background: linear-gradient(135deg, #3498db 0%, #2c3e50 80%, #0f2027 100%);
+    color: white;
+}
+
+#buktiModal .btn-close {
+    filter: invert(1);
+    opacity: 1;
+}
+
+#buktiModal .btn-close:hover {
+    filter: invert(23%) sepia(96%) saturate(7492%) hue-rotate(356deg)
+        brightness(95%) contrast(108%);
+    transform: scale(1.1);
+}
+
+/* ===== ACTION BUTTONS CONTAINER ===== */
+.riwayat-action-buttons {
+    display: flex;
+    gap: 12px;
+    margin-left: auto;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.riwayat-download-dropdown {
+    position: relative;
+    z-index: auto;
+    overflow: visible !important;
+}
+
+.riwayat-download-dropdown.show {
+    z-index: 1070;
+}
+
+/* ===== PAGINATION STYLES ===== */
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px 0;
+}
+
+.pagination-btn {
+    color: #3498db;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.875rem;
+    white-space: nowrap;
+    border: 1px solid #3498db;
+    border-radius: 4px;
+    background: white;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background-color: #3498db;
+    color: white;
+}
+
+.pagination-btn:disabled {
+    color: #6c757d;
+    border-color: #dee2e6;
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-text {
+    display: inline;
+}
+
+.pagination-info {
+    display: inline;
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+/* ===== ANIMATIONS & STATES ===== */
+.riwayat-loading {
+    opacity: 0.7;
+    pointer-events: none;
+    position: relative;
+}
+
+.riwayat-loading::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.dropdown-menu {
+    transform-origin: top center;
+}
+
+/* CUSTOM PERIODE */
+.custom-period-item {
+    color: #3498db;
+    font-weight: 500;
+}
+
+.custom-period-item:hover {
+    background-color: #f8f9fa;
+    color: #2c3e50;
+}
+
+.custom-period-item.active {
+    background-color: #3498db !important;
+    color: white !important;
+}
+
+#customPeriodModal .modal-content {
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+#customPeriodModal .modal-header {
+    background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+    color: white;
+    border-bottom: none;
+}
+
+#customPeriodModal .btn-close {
+    filter: invert(1);
+}
+
+#customPeriodModal .form-label {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+#customPeriodModal .form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 6px;
+    padding: 10px;
+    transition: all 0.3s ease;
+}
+
+#customPeriodModal .form-control:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+
+/* ===== RESPONSIVE STYLES ===== */
+
+/* Large screens (desktops) */
+@media (min-width: 1200px) {
+    .riwayat-container {
+        padding: 20px;
+    }
+
+    .riwayat-filter-form {
+        justify-content: flex-start;
+    }
+
+    .riwayat-filter-group {
+        max-width: 220px;
+    }
+}
+
+/* Medium screens (tablets landscape) */
+@media (max-width: 1199px) and (min-width: 992px) {
+    .riwayat-filter-form {
+        gap: 12px;
+    }
+
+    .riwayat-filter-group {
+        min-width: 160px;
+    }
+
+    .riwayat-btn-filter,
+    .riwayat-btn-download,
+    .riwayat-btn-reset {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+}
+
+/* Small tablets and large phones (landscape) */
+@media (max-width: 991px) and (min-width: 768px) {
+    .riwayat-container {
+        padding: 15px;
+    }
+
+    .riwayat-filter-form {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto auto;
+        gap: 15px;
+        align-items: stretch;
+    }
+
+    .riwayat-filter-group {
+        min-width: 100%;
+        max-width: none;
+    }
+
+    .riwayat-filter-group-reset {
+        grid-column: 1;
+        grid-row: 3;
+    }
+
+    .riwayat-action-buttons {
+        grid-column: 2;
+        grid-row: 3;
+        margin-left: 0;
+    }
+
+    .riwayat-btn-filter,
+    .riwayat-btn-download,
+    .riwayat-btn-reset {
+        justify-content: center;
+    }
+
+    .table {
+        font-size: 0.9rem;
+    }
+
+    .table th,
+    .table td {
+        padding: 10px 6px;
+    }
+
+    .btn-keluar,
+    .btn-masuk {
+        font-size: 16px;
+        padding: 4px 8px;
+    }
+}
+
+/* Mobile phones (portrait) */
+@media (max-width: 767px) {
+    .riwayat-container {
+        padding: 10px;
+        overflow-x: hidden;
+    }
+
+    .riwayat-filter-card {
+        margin-bottom: 20px;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .riwayat-filter-body {
+        padding: 15px;
+    }
+
+    .riwayat-filter-body h3 {
+        font-size: 20px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .riwayat-filter-form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+    }
+
+    .riwayat-filter-group,
+    .riwayat-filter-group-reset {
+        width: 100%;
+        min-width: 100%;
+        margin-bottom: 0;
+    }
+
+    .riwayat-action-buttons {
+        flex-direction: column;
+        width: 100%;
+        margin-left: 0;
+        gap: 10px;
+    }
+
+    .riwayat-btn-filter,
+    .riwayat-btn-download,
+    .riwayat-btn-reset {
+        width: 100%;
+        justify-content: center;
+        padding: 12px 20px;
+        font-size: 14px;
+    }
+
+    .riwayat-btn-filter {
+        min-width: 100%;
+    }
+
+    .riwayat-download-dropdown {
+        width: 100%;
+    }
+
+    /* Dropdown positioning for mobile */
+    .riwayat-filter-dropdown .dropdown-menu,
+    .riwayat-download-dropdown .dropdown-menu {
+        position: absolute !important;
+        top: 100% !important;
+        left: 0 !important;
+        right: 0 !important;
+        transform: none !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-top: 5px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .riwayat-filter-dropdown,
+    .riwayat-download-dropdown {
+        position: relative !important;
+    }
+
+    .dropdown-menu {
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    /* Table improvements */
+    .table-responsive {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        margin: 0 -5px;
+    }
+
+    .table {
+        min-width: 700px;
+        font-size: 0.8rem;
+    }
+
+    .table th,
+    .table td {
+        padding: 8px 4px;
+        font-size: 0.8rem;
+    }
+
+    .table th {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .btn-keluar,
+    .btn-masuk {
+        font-size: 12px;
+        padding: 3px 6px;
+    }
+
+    .riwayat-bukti-icon {
+        font-size: 1rem;
+        padding: 3px;
+    }
+
+    /* Card adjustments */
+    .riwayat-table-card .card-header {
+        padding: 10px 15px;
+    }
+
+    .riwayat-table-card .card-header h5 {
+        font-size: 1rem;
+    }
+
+    /* Pagination adjustments */
+    .pagination-controls {
+        flex-direction: row;
+        justify-content: space-between;
+        gap: 5px;
+        padding: 15px 10px;
+        flex-wrap: nowrap;
+        width: 100%;
+        align-items: center;
+    }
+
+    .pagination-text {
+        display: none !important;
+    }
+
+    .pagination-info {
+        display: inline !important;
+        font-size: 0.8rem;
+        margin: 0 8px;
+        white-space: nowrap;
+        order: 2;
+    }
+
+    .pagination-btn {
+        width: 100%;
+        max-width: 200px;
+        padding: 8px 16px;
+        min-width: 40px;
+        justify-content: center;
+    }
+
+    .pagination-prev {
+        order: 1;
+    }
+
+    .pagination-next {
+        order: 3;
+    }
+
+    .pagination-btn .bi {
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    /* Modal adjustments */
+    #buktiModal .modal-content {
+        margin: 20px 10px;
+        margin-top: 60px;
+    }
+
+    #buktiModal .modal-body {
+        padding: 15px;
+    }
+
+    #buktiModal .modal-body img {
+        max-height: 50vh;
+        width: 100%;
+        object-fit: contain;
+    }
+}
+
+/* Extra small phones */
+@media (max-width: 575px) {
+    .riwayat-container {
+        padding: 8px;
+    }
+
+    .riwayat-filter-body {
+        padding: 10px;
+    }
+
+    .riwayat-filter-body h3 {
+        font-size: 18px;
+    }
+
+    .table {
+        min-width: 650px;
+        font-size: 0.75rem;
+    }
+
+    .table th,
+    .table td {
+        padding: 6px 3px;
+        font-size: 0.75rem;
+    }
+
+    .btn-keluar,
+    .btn-masuk {
+        font-size: 10px;
+        padding: 2px 4px;
+    }
+
+    .riwayat-empty-state {
+        padding: 40px 15px;
+    }
+
+    .riwayat-empty-state i {
+        font-size: 3rem;
+    }
+
+    .riwayat-empty-state p {
+        font-size: 1rem;
+    }
+
+    .pagination-btn {
+        padding: 0.3rem 0.4rem;
+        min-width: 35px;
+    }
+
+    .pagination-btn .bi {
+        font-size: 0.9rem;
+    }
+
+    .pagination-info {
+        font-size: 0.75rem;
+        margin: 0 5px;
+    }
+
+    .pagination-controls {
+        gap: 3px;
+    }
+}
+
+/* Landscape orientation adjustments */
+@media (max-width: 767px) and (orientation: landscape) {
+    .riwayat-filter-body h3 {
+        font-size: 18px;
+        margin-bottom: 15px;
+    }
+
+    .riwayat-filter-form {
+        gap: 10px;
+    }
+
+    .riwayat-btn-filter,
+    .riwayat-btn-download,
+    .riwayat-btn-reset {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+
+    .riwayat-filter-dropdown .dropdown-menu,
+    .riwayat-download-dropdown .dropdown-menu {
+        max-height: 150px;
+    }
+
+    #buktiModal .modal-content {
+        margin-top: 30px;
+    }
+
+    #buktiModal .modal-body img {
+        max-height: 70vh;
+    }
+
+    .pagination-controls {
+        gap: 8px;
+    }
+
+    .pagination-info {
+        font-size: 0.75rem;
+    }
+}
+
+/* Very small phones optimization */
+@media (max-width: 400px) {
+    .pagination-info {
+        font-size: 0.7rem;
+        margin: 0 3px;
+    }
+
+    .pagination-btn {
+        min-width: 30px;
+        padding: 0.25rem 0.3rem;
+    }
+}
+
+/* High DPI screens */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .riwayat-bukti-icon,
+    .riwayat-status-icon {
+        transform: translateZ(0);
+    }
+}
+
+/* Desktop styles for pagination */
+@media (min-width: 768px) {
+    .pagination-text {
+        display: inline !important;
+    }
+
+    .pagination-info {
+        display: inline !important;
+    }
+
+    .pagination-btn {
+        padding: 0.35rem 0.75rem;
+    }
+
+    .pagination-controls {
+        justify-content: center;
+        gap: 10px;
+    }
+}
+
+/* Print styles */
+@media print {
+    .riwayat-filter-card,
+    .riwayat-action-buttons,
+    .pagination-controls,
+    .card-footer {
+        display: none !important;
+    }
+
+    .riwayat-container {
+        padding: 0;
+        background: white;
+    }
+
+    .riwayat-table-card {
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+
+    .table {
+        font-size: 10px;
+    }
+
+    .table th,
+    .table td {
+        padding: 4px;
+        border: 1px solid #000;
+    }
+}
+
+/* Tambahkan CSS ini ke file riwayat-responsive.css Anda */
+
+/* Fix untuk kolom Keterangan di tabel Barang Masuk */
+.riwayat-header-masuk ~ .collapse .table th:nth-child(7),
+.riwayat-header-masuk ~ .collapse .table td:nth-child(7) {
+    white-space: normal !important;
+    word-wrap: break-word;
+    word-break: break-word;
+    max-width: 150px;
+    min-width: 100px;
+}
+
+/* Opsional: Batasi lebar kolom lain di tabel Barang Masuk */
+.riwayat-header-masuk ~ .collapse .table th:nth-child(1),
+.riwayat-header-masuk ~ .collapse .table td:nth-child(1) {
+    min-width: 40px;
+    max-width: 50px;
+}
+
+.riwayat-header-masuk ~ .collapse .table th:nth-child(2),
+.riwayat-header-masuk ~ .collapse .table td:nth-child(2) {
+    min-width: 80px;
+    max-width: 100px;
+}
+
+.riwayat-header-masuk ~ .collapse .table th:nth-child(3),
+.riwayat-header-masuk ~ .collapse .table td:nth-child(3),
+.riwayat-header-masuk ~ .collapse .table th:nth-child(4),
+.riwayat-header-masuk ~ .collapse .table td:nth-child(4) {
+    min-width: 100px;
+    max-width: 150px;
+    white-space: normal !important;
+    word-wrap: break-word;
+}
+
+.riwayat-header-masuk ~ .collapse .table th:nth-child(5),
+.riwayat-header-masuk ~ .collapse .table td:nth-child(5),
+.riwayat-header-masuk ~ .collapse .table th:nth-child(6),
+.riwayat-header-masuk ~ .collapse .table td:nth-child(6) {
+    min-width: 60px;
+    max-width: 80px;
+}
+
+.riwayat-header-masuk ~ .collapse .table th:nth-child(8),
+.riwayat-header-masuk ~ .collapse .table td:nth-child(8) {
+    min-width: 60px;
+    max-width: 80px;
+}
+
+/* Kurangi min-width tabel untuk tabel barang masuk */
+.riwayat-header-masuk ~ .collapse .table {
+    min-width: 800px !important;
+}
+
+/* Fix untuk kolom Keterangan di tabel Distribusi Barang */
+.riwayat-header-distribusi ~ .collapse .table th:nth-child(7),
+.riwayat-header-distribusi ~ .collapse .table td:nth-child(7) {
+    white-space: normal !important;
+    word-wrap: break-word;
+    word-break: break-word;
+    max-width: 150px;
+    min-width: 100px;
+}
+
+/* Opsional: Batasi lebar kolom lain di tabel Distribusi */
+.riwayat-header-distribusi ~ .collapse .table th:nth-child(1),
+.riwayat-header-distribusi ~ .collapse .table td:nth-child(1) {
+    min-width: 40px;
+    max-width: 50px;
+}
+
+.riwayat-header-distribusi ~ .collapse .table th:nth-child(2),
+.riwayat-header-distribusi ~ .collapse .table td:nth-child(2) {
+    min-width: 80px;
+    max-width: 100px;
+}
+
+.riwayat-header-distribusi ~ .collapse .table th:nth-child(3),
+.riwayat-header-distribusi ~ .collapse .table td:nth-child(3),
+.riwayat-header-distribusi ~ .collapse .table th:nth-child(4),
+.riwayat-header-distribusi ~ .collapse .table td:nth-child(4) {
+    min-width: 100px;
+    max-width: 150px;
+    white-space: normal !important;
+    word-wrap: break-word;
+}
+
+.riwayat-header-distribusi ~ .collapse .table th:nth-child(5),
+.riwayat-header-distribusi ~ .collapse .table td:nth-child(5),
+.riwayat-header-distribusi ~ .collapse .table th:nth-child(6),
+.riwayat-header-distribusi ~ .collapse .table td:nth-child(6) {
+    min-width: 60px;
+    max-width: 80px;
+}
+
+.riwayat-header-distribusi ~ .collapse .table th:nth-child(8),
+.riwayat-header-distribusi ~ .collapse .table td:nth-child(8) {
+    min-width: 60px;
+    max-width: 80px;
+}
+
+/* Kurangi min-width tabel untuk tabel distribusi */
+.riwayat-header-distribusi ~ .collapse .table {
+    min-width: 800px !important;
+}
+
+/* Fix untuk kolom Bagian dan Keterangan di tabel Barang Keluar */
+.riwayat-header-keluar ~ .collapse .table th:nth-child(7),
+.riwayat-header-keluar ~ .collapse .table td:nth-child(7),
+.riwayat-header-keluar ~ .collapse .table th:nth-child(9),
+.riwayat-header-keluar ~ .collapse .table td:nth-child(9) {
+    white-space: normal !important;
+    word-wrap: break-word;
+    word-break: break-word;
+    max-width: 150px;
+    min-width: 100px;
+}
+
+/* Opsional: Batasi lebar kolom lain agar lebih proporsional */
+.riwayat-header-keluar ~ .collapse .table th:nth-child(1),
+.riwayat-header-keluar ~ .collapse .table td:nth-child(1) {
+    min-width: 40px;
+    max-width: 50px;
+}
+
+.riwayat-header-keluar ~ .collapse .table th:nth-child(2),
+.riwayat-header-keluar ~ .collapse .table td:nth-child(2) {
+    min-width: 80px;
+    max-width: 100px;
+}
+
+.riwayat-header-keluar ~ .collapse .table th:nth-child(3),
+.riwayat-header-keluar ~ .collapse .table td:nth-child(3),
+.riwayat-header-keluar ~ .collapse .table th:nth-child(4),
+.riwayat-header-keluar ~ .collapse .table td:nth-child(4) {
+    min-width: 100px;
+    max-width: 150px;
+    white-space: normal !important;
+    word-wrap: break-word;
+}
+
+.riwayat-header-keluar ~ .collapse .table th:nth-child(5),
+.riwayat-header-keluar ~ .collapse .table td:nth-child(5),
+.riwayat-header-keluar ~ .collapse .table th:nth-child(6),
+.riwayat-header-keluar ~ .collapse .table td:nth-child(6) {
+    min-width: 60px;
+    max-width: 80px;
+}
+
+.riwayat-header-keluar ~ .collapse .table th:nth-child(8),
+.riwayat-header-keluar ~ .collapse .table td:nth-child(8) {
+    min-width: 100px;
+    max-width: 120px;
+    white-space: normal !important;
+    word-wrap: break-word;
+}
+
+.riwayat-header-keluar ~ .collapse .table th:nth-child(10),
+.riwayat-header-keluar ~ .collapse .table td:nth-child(10) {
+    min-width: 60px;
+    max-width: 80px;
+}
+
+/* Kurangi min-width tabel untuk tabel barang keluar */
+.riwayat-header-keluar ~ .collapse .table {
+    min-width: 900px !important;
+}
+
+/* Responsive adjustment untuk mobile */
+@media (max-width: 767px) {
+    /* Barang Masuk */
+    .riwayat-header-masuk ~ .collapse .table {
+        min-width: 600px !important;
+    }
+
+    .riwayat-header-masuk ~ .collapse .table th:nth-child(7),
+    .riwayat-header-masuk ~ .collapse .table td:nth-child(7) {
+        max-width: 120px;
+        min-width: 80px;
+        font-size: 0.75rem;
+    }
+
+    /* Distribusi */
+    .riwayat-header-distribusi ~ .collapse .table {
+        min-width: 600px !important;
+    }
+
+    .riwayat-header-distribusi ~ .collapse .table th:nth-child(7),
+    .riwayat-header-distribusi ~ .collapse .table td:nth-child(7) {
+        max-width: 120px;
+        min-width: 80px;
+        font-size: 0.75rem;
+    }
+
+    /* Barang Keluar */
+    .riwayat-header-keluar ~ .collapse .table {
+        min-width: 650px !important;
+    }
+
+    .riwayat-header-keluar ~ .collapse .table th:nth-child(7),
+    .riwayat-header-keluar ~ .collapse .table td:nth-child(7),
+    .riwayat-header-keluar ~ .collapse .table th:nth-child(9),
+    .riwayat-header-keluar ~ .collapse .table td:nth-child(9) {
+        max-width: 120px;
+        min-width: 80px;
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 575px) {
+    /* Barang Masuk */
+    .riwayat-header-masuk ~ .collapse .table {
+        min-width: 550px !important;
+    }
+
+    .riwayat-header-masuk ~ .collapse .table th:nth-child(7),
+    .riwayat-header-masuk ~ .collapse .table td:nth-child(7) {
+        max-width: 100px;
+        min-width: 70px;
+    }
+
+    /* Distribusi */
+    .riwayat-header-distribusi ~ .collapse .table {
+        min-width: 550px !important;
+    }
+
+    .riwayat-header-distribusi ~ .collapse .table th:nth-child(7),
+    .riwayat-header-distribusi ~ .collapse .table td:nth-child(7) {
+        max-width: 100px;
+        min-width: 70px;
+    }
+
+    /* Barang Keluar */
+    .riwayat-header-keluar ~ .collapse .table {
+        min-width: 600px !important;
+    }
+
+    .riwayat-header-keluar ~ .collapse .table th:nth-child(7),
+    .riwayat-header-keluar ~ .collapse .table td:nth-child(7),
+    .riwayat-header-keluar ~ .collapse .table th:nth-child(9),
+    .riwayat-header-keluar ~ .collapse .table td:nth-child(9) {
+        max-width: 100px;
+        min-width: 70px;
+    }
+}
+
 /* --- Kolom Keterangan --- */
 .riwayat-page .keterangan-cell {
     white-space: normal !important;
@@ -178,5 +1372,483 @@
     .riwayat-page .keterangan-cell {
         max-width: 120px;
         min-width: 80px;
+    }
+}
+/* ==== CONTENT AREA ==== */
+.content {
+    margin-left: 20px;
+    background: #f5f7fb;
+    min-height: 100vh;
+}
+
+/* ==== HEADER TITLE ==== */
+.content h2 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #1d2433;
+}
+
+/* ==== CARD STYLE ==== */
+.card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e5e9f2;
+    margin-top: 20px;
+}
+
+/* ==== Page body khusus Data Pengguna ==== */
+.page-body {
+    padding: 5px 15px 15px 15px;
+    width: 100%;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+.page-body h2 {
+    margin-bottom: 20px;
+    font-weight: 600;
+    font-size: 22px;
+    color: #1d2433;
+}
+
+/* ==== TABLE STYLE ==== */
+.table {
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table thead th {
+    background: #343a40;
+    color: #fff;
+    text-align: center;
+    font-weight: 600;
+    padding: 12px;
+    font-size: 14px;
+}
+
+.table tbody td {
+    text-align: center;
+    vertical-align: middle;
+    padding: 10px;
+    font-size: 14px;
+    color: #333;
+}
+
+.table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.table tbody tr:hover {
+    background-color: #f8f9fa;
+    transform: translateX(4px);
+}
+
+/* ==== BUTTON STYLE ==== */
+.btn-primary {
+    background: #2072b7;
+    border: none;
+    font-weight: 500;
+    border-radius: 8px;
+    padding: 8px 16px;
+    transition: background 0.2s;
+}
+
+.btn-primary:hover {
+    background: #185b91;
+}
+
+.btn-warning {
+    background: #ffc107;
+    border: none;
+    color: #000;
+    border-radius: 6px;
+    font-size: 13px;
+    padding: 6px 12px;
+}
+
+.btn-danger {
+    background: #dc3545;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    padding: 6px 12px;
+}
+
+/* ==== HEADER DENGAN TOMBOL DI SEBELAH KANAN ==== */
+.card-header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 15px 20px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e5e9f2;
+    flex-wrap: wrap; /* Untuk responsif */
+    gap: 15px;
+}
+
+.card-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1d2433;
+    margin: 0;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap; /* Untuk tombol yang banyak */
+}
+
+.btn-add-user {
+    background: linear-gradient(135deg, #3d6c8c 25%, #4d83b9 100%);
+    border: none;
+    color: #fff;
+    font-weight: 300;
+    border-radius: 8px;
+    padding: 8px 18px;
+    transition: background 0.2s;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    white-space: nowrap; /* Mencegah teks tombol terpotong */
+}
+
+.btn-add-user:hover {
+    background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.table .btn-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0 2px;
+    padding: 6px 12px;
+    font-size: 13px;
+    border-radius: 6px;
+    white-space: nowrap;
+}
+
+.btn-warning.btn-action {
+    background: #ffc107;
+    border: none;
+    color: #000;
+}
+
+.btn-danger.btn-action {
+    background: #dc3545;
+    border: none;
+    color: #fff;
+}
+
+/* ==== TOMBOL AKSI - PERBAIKAN UTAMA ==== */
+.table .action-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: nowrap; /* ← Ubah dari wrap ke nowrap untuk desktop/tablet */
+}
+
+.modal .modal-content {
+    font-size: 15px;
+}
+
+.modal .form-control,
+.modal .form-select {
+    font-size: 14px;
+    padding: 8px 10px;
+}
+
+/* ==== Password Toggle Styles ==== */
+#modalEditUser .field-pass {
+    position: relative;
+}
+
+#modalEditUser .field-pass input.form-control {
+    padding-right: 2.25rem;
+}
+
+#modalEditUser .field-pass .pass-toggle {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border: 0;
+    background: transparent;
+    color: #6c757d;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+#modalEditUser .field-pass .pass-toggle i {
+    font-size: 1.05rem;
+    line-height: 1;
+}
+
+#modalEditUser .field-pass .pass-toggle:hover {
+    color: #495057;
+}
+
+#modalEditUser .field-pass .pass-toggle:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+/* ==== RESPONSIVE DESIGN ==== */
+
+/* Tablet (768px - 1024px) */
+@media (max-width: 1024px) {
+    .content {
+        margin-left: 0;
+        padding: 10px;
+    }
+
+    .page-body {
+        padding: 5px 10px 15px 10px;
+    }
+
+    .card-header-container {
+        padding: 12px 15px;
+    }
+
+    .card-title {
+        font-size: 18px;
+    }
+
+    .table thead th,
+    .table tbody td {
+        padding: 8px 10px;
+        font-size: 13px;
+    }
+
+    .btn-add-user {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+
+    /* TAMBAHKAN: Scroll horizontal hanya untuk tablet/mobile */
+    .card {
+        overflow-x: auto;
+    }
+
+    .table {
+        min-width: 800px; /* Lebar minimum untuk tablet */
+    }
+
+    .table .action-buttons {
+        flex-wrap: nowrap;
+        gap: 6px;
+    }
+
+    .table .btn-action {
+        padding: 5px 10px;
+        font-size: 12px;
+    }
+}
+
+/* Mobile (576px - 768px) */
+@media (max-width: 768px) {
+    .card-header-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .button-group {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .card {
+        padding: 15px;
+        margin-top: 15px;
+    }
+
+    .table {
+        font-size: 12px;
+    }
+
+    .table thead th,
+    .table tbody td {
+        padding: 6px 8px;
+        font-size: 12px;
+    }
+
+    /* Hanya di mobile tombol aksi menjadi vertikal */
+    .action-buttons {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .btn-action {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Modal adjustments for mobile */
+    .modal-dialog {
+        margin: 10px;
+    }
+
+    .modal-content {
+        border-radius: 10px;
+    }
+
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 15px;
+    }
+}
+
+/* Small Mobile (max-width: 576px) */
+@media (max-width: 576px) {
+    .page-body {
+        padding: 5px;
+    }
+
+    .card {
+        padding: 10px;
+        border-radius: 8px;
+        margin-top: 10px;
+    }
+
+    .card-header-container {
+        padding: 10px;
+        border-radius: 8px;
+    }
+
+    .card-title {
+        font-size: 16px;
+    }
+
+    .button-group {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .btn-add-user {
+        width: 100%;
+        text-align: center;
+        padding: 8px 12px;
+    }
+
+    .table {
+        min-width: 500px;
+    }
+
+    .table thead th,
+    .table tbody td {
+        padding: 4px 6px;
+        font-size: 11px;
+    }
+
+    /* Tombol aksi tetap vertikal di small mobile */
+    .action-buttons {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .btn-action {
+        padding: 4px 8px;
+        font-size: 11px;
+    }
+
+    /* Toast notification mobile adjustment */
+    #toast-notif {
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        transform: none;
+        max-width: none;
+    }
+
+    .toast-message {
+        min-width: auto;
+        max-width: none;
+        width: 100%;
+    }
+}
+
+/* Very Small Mobile (max-width: 400px) */
+@media (max-width: 400px) {
+    .modal-dialog {
+        margin: 5px;
+    }
+
+    .modal-header h5 {
+        font-size: 16px;
+    }
+
+    .modal-body .form-label {
+        font-size: 13px;
+    }
+
+    .modal-body .form-control,
+    .modal-body .form-select {
+        font-size: 13px;
+        padding: 6px 8px;
+    }
+
+    .modal-footer .btn {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+
+    .action-buttons .btn {
+        font-size: 12px;
+        padding: 4px 8px;
+    }
+}
+
+/* Landscape mode for mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+    .modal-dialog {
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .modal-body {
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+}
+
+/* High resolution screens */
+@media (min-width: 1400px) {
+    .container {
+        max-width: 1320px;
+    }
+}
+
+/* Print styles */
+@media print {
+    .button-group,
+    .action-buttons,
+    .modal {
+        display: none !important;
+    }
+
+    .card {
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+
+    .table {
+        border: 1px solid #000;
     }
 }

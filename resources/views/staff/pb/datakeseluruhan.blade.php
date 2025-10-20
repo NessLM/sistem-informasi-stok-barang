@@ -6,86 +6,20 @@
         $gudang = $gudang ?? collect();
     @endphp
 
-    <head>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
+    @push('styles')  
+        <link rel="stylesheet" href="{{ asset('assets/css/staff/pb/data_keseluruhan_pb.css') }}">
         <style>
-            .search-suggestion-item {
-                padding: 12px 16px;
-                cursor: pointer;
-                border-bottom: 1px solid #f0f0f0;
-                transition: background-color 0.2s;
-            }
-
-            .search-suggestion-item:hover,
-            .search-suggestion-item.active {
-                background-color: #f8f9fa;
-            }
-
-            .search-suggestion-item:last-child {
-                border-bottom: none;
-            }
-
-            .suggestion-name {
-                font-weight: 600;
-                color: #2c3e50;
-                margin-bottom: 4px;
-            }
-
-            .suggestion-code {
-                font-size: 0.875rem;
-                color: #6c757d;
-                margin-bottom: 4px;
-            }
-
-            .suggestion-meta {
-                font-size: 0.8rem;
-                color: #95a5a6;
-            }
-
-            .stock-status {
-                padding: 2px 8px;
-                border-radius: 4px;
-                font-weight: 500;
-                font-size: 0.75rem;
-            }
-
-            .stock-available {
-                background-color: #d4edda;
-                color: #155724;
-            }
-
-            .stock-low {
-                background-color: #fff3cd;
-                color: #856404;
-            }
-
-            .stock-empty {
-                background-color: #f8d7da;
-                color: #721c24;
-            }
-
-            .loading-suggestion {
-                padding: 12px 16px;
-                text-align: center;
-                color: #6c757d;
-                font-style: italic;
-            }
-
-            #searchSuggestions {
-                max-height: 400px;
-                overflow-y: auto;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                border-radius: 0 0 0.375rem 0.375rem;
-            }
-
             .row-low-stock {
                 background-color: #ffcccc !important;
-                border-left: 8px solid #dc3545 !important;
+                border-left: 4px solid #dc3545 !important;
             }
         </style>
-    </head>
+        
+    @endpush
+
 
     <main class="page-wrap container py-4">
 
@@ -523,7 +457,7 @@
             </form>
         </div>
     </div>
-
+@push('scripts')
     {{-- JavaScript --}}
     <script>
         // Toggle detail function
@@ -773,6 +707,5 @@
             }
         });
     </script>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+@endpush
 </x-layouts.app>

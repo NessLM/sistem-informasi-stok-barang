@@ -1191,3 +1191,481 @@
         min-width: 70px;
     }
 }
+/* ==== CONTENT AREA ==== */
+.content {
+    margin-left: 20px;
+    background: #f5f7fb;
+    min-height: 100vh;
+}
+
+/* ==== HEADER TITLE ==== */
+.content h2 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #1d2433;
+}
+
+/* ==== CARD STYLE ==== */
+.card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e5e9f2;
+    margin-top: 20px;
+}
+
+/* ==== Page body khusus Data Pengguna ==== */
+.page-body {
+    padding: 5px 15px 15px 15px;
+    width: 100%;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+.page-body h2 {
+    margin-bottom: 20px;
+    font-weight: 600;
+    font-size: 22px;
+    color: #1d2433;
+}
+
+/* ==== TABLE STYLE ==== */
+.table {
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table thead th {
+    background: #343a40;
+    color: #fff;
+    text-align: center;
+    font-weight: 600;
+    padding: 12px;
+    font-size: 14px;
+}
+
+.table tbody td {
+    text-align: center;
+    vertical-align: middle;
+    padding: 10px;
+    font-size: 14px;
+    color: #333;
+}
+
+.table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.table tbody tr:hover {
+    background-color: #f8f9fa;
+    transform: translateX(4px);
+}
+
+/* ==== BUTTON STYLE ==== */
+.btn-primary {
+    background: #2072b7;
+    border: none;
+    font-weight: 500;
+    border-radius: 8px;
+    padding: 8px 16px;
+    transition: background 0.2s;
+}
+
+.btn-primary:hover {
+    background: #185b91;
+}
+
+.btn-warning {
+    background: #ffc107;
+    border: none;
+    color: #000;
+    border-radius: 6px;
+    font-size: 13px;
+    padding: 6px 12px;
+}
+
+.btn-danger {
+    background: #dc3545;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    padding: 6px 12px;
+}
+
+/* ==== HEADER DENGAN TOMBOL DI SEBELAH KANAN ==== */
+.card-header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 15px 20px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e5e9f2;
+    flex-wrap: wrap; /* Untuk responsif */
+    gap: 15px;
+}
+
+.card-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1d2433;
+    margin: 0;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap; /* Untuk tombol yang banyak */
+}
+
+.btn-add-user {
+    background: linear-gradient(135deg, #3d6c8c 25%, #4d83b9 100%);
+    border: none;
+    color: #fff;
+    font-weight: 300;
+    border-radius: 8px;
+    padding: 8px 18px;
+    transition: background 0.2s;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    white-space: nowrap; /* Mencegah teks tombol terpotong */
+}
+
+.btn-add-user:hover {
+    background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.table .btn-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0 2px;
+    padding: 6px 12px;
+    font-size: 13px;
+    border-radius: 6px;
+    white-space: nowrap;
+}
+
+.btn-warning.btn-action {
+    background: #ffc107;
+    border: none;
+    color: #000;
+}
+
+.btn-danger.btn-action {
+    background: #dc3545;
+    border: none;
+    color: #fff;
+}
+
+/* ==== TOMBOL AKSI - PERBAIKAN UTAMA ==== */
+.table .action-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: nowrap; /* ← Ubah dari wrap ke nowrap untuk desktop/tablet */
+}
+
+.modal .modal-content {
+    font-size: 15px;
+}
+
+.modal .form-control,
+.modal .form-select {
+    font-size: 14px;
+    padding: 8px 10px;
+}
+
+/* ==== Password Toggle Styles ==== */
+#modalEditUser .field-pass {
+    position: relative;
+}
+
+#modalEditUser .field-pass input.form-control {
+    padding-right: 2.25rem;
+}
+
+#modalEditUser .field-pass .pass-toggle {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border: 0;
+    background: transparent;
+    color: #6c757d;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+#modalEditUser .field-pass .pass-toggle i {
+    font-size: 1.05rem;
+    line-height: 1;
+}
+
+#modalEditUser .field-pass .pass-toggle:hover {
+    color: #495057;
+}
+
+#modalEditUser .field-pass .pass-toggle:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+/* ==== RESPONSIVE DESIGN ==== */
+
+/* Tablet (768px - 1024px) */
+@media (max-width: 1024px) {
+    .content {
+        margin-left: 0;
+        padding: 10px;
+    }
+
+    .page-body {
+        padding: 5px 10px 15px 10px;
+    }
+
+    .card-header-container {
+        padding: 12px 15px;
+    }
+
+    .card-title {
+        font-size: 18px;
+    }
+
+    .table thead th,
+    .table tbody td {
+        padding: 8px 10px;
+        font-size: 13px;
+    }
+
+    .btn-add-user {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+
+    /* TAMBAHKAN: Scroll horizontal hanya untuk tablet/mobile */
+    .card {
+        overflow-x: auto;
+    }
+
+    .table {
+        min-width: 800px; /* Lebar minimum untuk tablet */
+    }
+
+    .table .action-buttons {
+        flex-wrap: nowrap;
+        gap: 6px;
+    }
+
+    .table .btn-action {
+        padding: 5px 10px;
+        font-size: 12px;
+    }
+}
+
+/* Mobile (576px - 768px) */
+@media (max-width: 768px) {
+    .card-header-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .button-group {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .card {
+        padding: 15px;
+        margin-top: 15px;
+    }
+
+    .table {
+        font-size: 12px;
+    }
+
+    .table thead th,
+    .table tbody td {
+        padding: 6px 8px;
+        font-size: 12px;
+    }
+
+    /* Hanya di mobile tombol aksi menjadi vertikal */
+    .action-buttons {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .btn-action {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Modal adjustments for mobile */
+    .modal-dialog {
+        margin: 10px;
+    }
+
+    .modal-content {
+        border-radius: 10px;
+    }
+
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 15px;
+    }
+}
+
+/* Small Mobile (max-width: 576px) */
+@media (max-width: 576px) {
+    .page-body {
+        padding: 5px;
+    }
+
+    .card {
+        padding: 10px;
+        border-radius: 8px;
+        margin-top: 10px;
+    }
+
+    .card-header-container {
+        padding: 10px;
+        border-radius: 8px;
+    }
+
+    .card-title {
+        font-size: 16px;
+    }
+
+    .button-group {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .btn-add-user {
+        width: 100%;
+        text-align: center;
+        padding: 8px 12px;
+    }
+
+    .table {
+        min-width: 500px;
+    }
+
+    .table thead th,
+    .table tbody td {
+        padding: 4px 6px;
+        font-size: 11px;
+    }
+
+    /* Tombol aksi tetap vertikal di small mobile */
+    .action-buttons {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .btn-action {
+        padding: 4px 8px;
+        font-size: 11px;
+    }
+
+    /* Toast notification mobile adjustment */
+    #toast-notif {
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        transform: none;
+        max-width: none;
+    }
+
+    .toast-message {
+        min-width: auto;
+        max-width: none;
+        width: 100%;
+    }
+}
+
+/* Very Small Mobile (max-width: 400px) */
+@media (max-width: 400px) {
+    .modal-dialog {
+        margin: 5px;
+    }
+
+    .modal-header h5 {
+        font-size: 16px;
+    }
+
+    .modal-body .form-label {
+        font-size: 13px;
+    }
+
+    .modal-body .form-control,
+    .modal-body .form-select {
+        font-size: 13px;
+        padding: 6px 8px;
+    }
+
+    .modal-footer .btn {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+
+    .action-buttons .btn {
+        font-size: 12px;
+        padding: 4px 8px;
+    }
+}
+
+/* Landscape mode for mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+    .modal-dialog {
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .modal-body {
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+}
+
+/* High resolution screens */
+@media (min-width: 1400px) {
+    .container {
+        max-width: 1320px;
+    }
+}
+
+/* Print styles */
+@media print {
+    .button-group,
+    .action-buttons,
+    .modal {
+        display: none !important;
+    }
+
+    .card {
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+
+    .table {
+        border: 1px solid #000;
+    }
+}

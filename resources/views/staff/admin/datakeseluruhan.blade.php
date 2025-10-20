@@ -6,16 +6,16 @@
         $gudang = $gudang ?? collect();
     @endphp
 
-    <head>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+     @push('styles')  
+        <link rel="stylesheet" href="{{ asset('assets/css/staff/admin/data_keseluruhan.css') }}">
         <style>
             .row-low-stock {
                 background-color: #ffcccc !important;
                 border-left: 4px solid #dc3545 !important;
             }
         </style>
-    </head>
+        
+    @endpush
 
     <main class="page-wrap container py-4">
 
@@ -627,7 +627,7 @@
             </form>
         </div>
     </div>
-
+@push('scripts')
     {{-- JavaScript --}}
     <script>
         // Toggle detail function
@@ -958,5 +958,6 @@
         });
     </script>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    @endpush
+    
 </x-layouts.app>

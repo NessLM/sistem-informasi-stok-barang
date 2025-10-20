@@ -388,7 +388,10 @@
         </div>
     </div>
 
-    @push('scripts')
+@push('styles')
+       <link rel="stylesheet" href="{{ asset('assets/css/staff/admin/data_pengguna.css') }}">
+    @endpush
+@push('scripts')
         <script>
             document.addEventListener("DOMContentLoaded", () => {
                 // === EDIT USER ===

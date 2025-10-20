@@ -631,7 +631,7 @@ function handleKeteranganToggle(e) {
         </script>
     @endpush
 
-    @push('styles')
-     <link rel="stylesheet" href="{{ asset('css/staff/pj/riwayat_pj.css') }}">
+    @push('styles')  
+        <link rel="stylesheet" href="{{ asset('assets/css/staff/pj/riwayat_pj.css') }}">        
     @endpush
 </x-layouts.app>

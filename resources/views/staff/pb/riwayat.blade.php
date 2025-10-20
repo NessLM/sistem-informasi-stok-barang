@@ -162,7 +162,8 @@
                                         <td class="fw-medium" data-label="Nama Barang">{{ $item->nama_barang }}</td>
                                         <td data-label="Jumlah"><span class="fw-medium">{{ $item->jumlah }}</span></td>
                                         <td class="fw-medium" data-label="Satuan">{{ $item->satuan }}</td>
-                                        <td data-label="Keterangan" style="white-space: normal !important; word-wrap: break-word !important; word-break: break-word !important; max-width: 200px; vertical-align: top;">
+                                        <td data-label="Keterangan"
+                                            style="white-space: normal !important; word-wrap: break-word !important; word-break: break-word !important; max-width: 200px; vertical-align: top;">
                                             @if ($item->keterangan && strlen($item->keterangan) > 55)
                                                 <div class="keterangan-wrapper">
                                                     <span class="keterangan-text collapsed"
@@ -611,8 +612,9 @@
         </script>
     @endpush
 
+
     @push('styles')
-        <link rel="stylesheet" href="{{ asset('css/staff/pb/riwayat.pb.css') }}">
+        <link rel="stylesheet" href="{{ asset('assets/css/staff/pb/riwayat.pb.css') }}">
         <style>
             /* Force override untuk keterangan */
             .riwayat-page .table td:nth-child(7) {

@@ -863,6 +863,6 @@
     @endpush
 
     @push('styles')
-       <link rel="stylesheet" href="{{ asset('css/staff/admin/riwayat.css') }}">
+       <link rel="stylesheet" href="{{ asset('assets/css/staff/admin/riwayat.css') }}">
     @endpush
 </x-layouts.app>
