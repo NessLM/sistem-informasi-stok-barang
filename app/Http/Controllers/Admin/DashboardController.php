@@ -21,9 +21,12 @@ class DashboardController extends Controller
     {
         $menu = MenuHelper::adminMenu();
 
-        // Ringkasan (default: semua gudang) - FIXED: Ambil dari pb_stok
-        $totalJenisBarang = JenisBarang::count();
-        $totalBarang = PbStok::sum('stok'); // Stok dari Pengelola Barang
+        // Gudang Utama sebagai default
+        $gudangUtama = Gudang::where('nama', 'Gudang Utama')->first();
+
+        // Ringkasan (default: Gudang Utama)
+        $totalJenisBarang = $this->hitungJenisBarangByGudang($gudangUtama->id);
+        $totalBarang = PbStok::sum('stok'); // Stok dari Pengelola Barang (Gudang Utama)
 
         // Data gudang untuk dropdown filter
         $gudangs = Gudang::orderBy('nama')->get();
@@ -98,6 +101,7 @@ class DashboardController extends Controller
             'totalJenisBarang',
             'totalBarang',
             'gudangs',
+            'gudangUtama',
             'bagianLabels',
             'keluarData',
             'pengeluaranLabels',
@@ -119,36 +123,33 @@ class DashboardController extends Controller
 
         return $type === 'bagian'
             ? $this->filterBagianData($filter)
-            : $this->filterPengeluaranData($filter);
+            : $this->filterPengeluaanData($filter);
     }
 
     /**
      * Filter Ringkasan berdasarkan gudang
-     * FIXED: Menggunakan pb_stok dan pj_stok
+     * FIXED: Hitung jenis barang unik dari tabel barang
      */
-    private function filterRingkasanData($gudangFilter)
+    private function filterRingkasanData($gudangNama)
     {
-        if ($gudangFilter === 'all') {
-            // Semua gudang - ambil dari PB Stok (stok pusat)
-            $totalJenisBarang = JenisBarang::count();
+        $gudang = Gudang::where('nama', $gudangNama)->first();
+
+        if (!$gudang) {
+            return response()->json([
+                'totalJenisBarang' => 0,
+                'totalBarang' => 0
+            ]);
+        }
+
+        // Hitung total jenis barang berdasarkan gudang
+        $totalJenisBarang = $this->hitungJenisBarangByGudang($gudang->id);
+
+        // Hitung total barang
+        if ($gudang->nama === 'Gudang Utama') {
+            // Gudang Utama = ambil dari PB Stok
             $totalBarang = PbStok::sum('stok');
         } else {
-            // Filter berdasarkan gudang tertentu
-            $gudang = Gudang::where('nama', $gudangFilter)->first();
-
-            if (!$gudang) {
-                return response()->json([
-                    'totalJenisBarang' => 0,
-                    'totalBarang' => 0
-                ]);
-            }
-
-            // Hitung total jenis barang berdasarkan gudang
-            $totalJenisBarang = JenisBarang::whereHas('kategori', function ($query) use ($gudang) {
-                $query->where('gudang_id', $gudang->id);
-            })->count();
-
-            // Hitung total barang dari PJ Stok untuk gudang tertentu
+            // Gudang lain = ambil dari PJ Stok
             $totalBarang = PjStok::where('id_gudang', $gudang->id)->sum('stok');
         }
 
@@ -156,6 +157,56 @@ class DashboardController extends Controller
             'totalJenisBarang' => (int) $totalJenisBarang,
             'totalBarang' => (int) $totalBarang
         ]);
+    }
+
+    /**
+     * Hitung jenis barang unik berdasarkan gudang
+     * Logika: 
+     * - Gudang Utama: ambil dari pb_stok → join ke barang → extract nama unik
+     * - Gudang Kecil: ambil dari pj_stok → join ke barang → extract nama unik
+     */
+    private function hitungJenisBarangByGudang($gudangId)
+    {
+        $gudang = Gudang::find($gudangId);
+
+        if (!$gudang) {
+            return 0;
+        }
+
+        // Gudang Utama = ambil dari pb_stok
+        if ($gudang->nama === 'Gudang Utama') {
+            $kodeBarangList = PbStok::where('stok', '>', 0)
+                ->pluck('kode_barang');
+        } else {
+            // Gudang Kecil = ambil dari pj_stok berdasarkan id_gudang
+            $kodeBarangList = PjStok::where('id_gudang', $gudangId)
+                ->where('stok', '>', 0)
+                ->pluck('kode_barang');
+        }
+
+        // Kalau ga ada barang, return 0
+        if ($kodeBarangList->isEmpty()) {
+            return 0;
+        }
+
+        // Ambil nama barang dari kode_barang
+        $namaBarangList = Barang::whereIn('kode_barang', $kodeBarangList)
+            ->pluck('nama_barang');
+
+        // Extract nama dasar (hilangkan angka di belakang)
+        $namaUnik = $namaBarangList->map(function ($nama) {
+            // Trim whitespace dulu
+            $nama = trim($nama);
+
+            // Hilangkan angka di akhir: "Pulpen 1" → "Pulpen", "Buku Catatan 2" → "Buku Catatan"
+            // Pattern: spasi + angka di akhir string
+            $namaBase = preg_replace('/\s+\d+$/', '', $nama);
+
+            // Kalau masih kosong atau sama, return nama asli
+            return empty($namaBase) ? $nama : $namaBase;
+        })->unique()->filter(); // filter() untuk buang yang kosong
+
+        return $namaUnik->count();
     }
 
     /**

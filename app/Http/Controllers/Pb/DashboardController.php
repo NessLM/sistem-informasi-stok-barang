@@ -22,7 +22,7 @@ class DashboardController extends Controller
         $menu = MenuHelper::pbMenu();
 
         // Ringkasan (default: semua data) - FIXED: Ambil dari pb_stok
-        $totalJenisBarang = JenisBarang::count();
+        $totalJenisBarang = $this->hitungJenisBarangGudangUtama();
         $totalBarang = PbStok::sum('stok'); // Stok Pengelola Barang
 
         /* =========================================================
@@ -110,9 +110,8 @@ class DashboardController extends Controller
         $type = $request->query('type', 'kategori');
         $filter = $request->query('filter', 'all');
 
-        if ($type === 'ringkasan') {
-            return $this->filterRingkasanData($filter);
-        } elseif ($type === 'kategori') {
+        // PB ga ada filter ringkasan, cuma kategori & pengeluaran
+        if ($type === 'kategori') {
             return $this->filterKategoriData($filter);
         } else {
             return $this->filterPengeluaanData($filter);
@@ -123,49 +122,7 @@ class DashboardController extends Controller
      * Filter data ringkasan berdasarkan gudang
      * FIXED: Menggunakan pb_stok dan pj_stok
      */
-    private function filterRingkasanData($filter)
-    {
-        if ($filter === 'all') {
-            $totalJenisBarang = JenisBarang::count();
-            $totalBarang = PbStok::sum('stok'); // Stok PB (pusat)
-        } else {
-            // Map filter ke nama gudang
-            $gudangMap = [
-                'gudang-utama' => 'Gudang Utama',
-                'gudang-atk' => 'Gudang ATK',
-                'gudang-listrik' => 'Gudang Listrik',
-                'gudang-kebersihan' => 'Gudang Kebersihan',
-                'gudang-b-komputer' => 'Gudang B Komputer'
-            ];
 
-            $gudangNama = $gudangMap[$filter] ?? null;
-
-            if ($gudangNama) {
-                $gudang = Gudang::where('nama', $gudangNama)->first();
-
-                if ($gudang) {
-                    // Hitung jenis barang berdasarkan kategori di gudang
-                    $totalJenisBarang = JenisBarang::whereHas('kategori', function ($query) use ($gudang) {
-                        $query->where('gudang_id', $gudang->id);
-                    })->count();
-
-                    // Hitung total stok dari PJ Stok untuk gudang ini
-                    $totalBarang = PjStok::where('id_gudang', $gudang->id)->sum('stok');
-                } else {
-                    $totalJenisBarang = 0;
-                    $totalBarang = 0;
-                }
-            } else {
-                $totalJenisBarang = 0;
-                $totalBarang = 0;
-            }
-        }
-
-        return response()->json([
-            'totalJenisBarang' => (int) $totalJenisBarang,
-            'totalBarang' => (int) $totalBarang
-        ]);
-    }
 
     /**
      * Filter data kategori berdasarkan rentang waktu
@@ -269,6 +226,40 @@ class DashboardController extends Controller
         ]);
     }
 
+
+    /**
+     * Hitung jenis barang unik dari Gudang Utama (pb_stok)
+     * Logika: ambil dari pb_stok → join ke barang → extract nama unik
+     */
+    private function hitungJenisBarangGudangUtama()
+    {
+        // Ambil kode_barang dari pb_stok yang stoknya > 0
+        $kodeBarangList = PbStok::where('stok', '>', 0)
+            ->pluck('kode_barang');
+
+        // Kalau ga ada barang, return 0
+        if ($kodeBarangList->isEmpty()) {
+            return 0;
+        }
+
+        // Ambil nama barang dari kode_barang
+        $namaBarangList = Barang::whereIn('kode_barang', $kodeBarangList)
+            ->pluck('nama_barang');
+
+        // Extract nama dasar (hilangkan angka di belakang)
+        $namaUnik = $namaBarangList->map(function ($nama) {
+            // Trim whitespace dulu
+            $nama = trim($nama);
+
+            // Hilangkan angka di akhir: "Pulpen 1" → "Pulpen"
+            $namaBase = preg_replace('/\s+\d+$/', '', $nama);
+
+            // Kalau kosong, return nama asli
+            return empty($namaBase) ? $nama : $namaBase;
+        })->unique()->filter();
+
+        return $namaUnik->count();
+    }
     /**
      * Warna untuk setiap kategori
      */

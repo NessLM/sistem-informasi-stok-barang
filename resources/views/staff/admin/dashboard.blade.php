@@ -11,25 +11,26 @@
         <div class="dashboard-row">
             {{-- ========================= RINGKASAN ========================= --}}
             <div class="summary-section">
-                {{-- [NEW] Header dengan judul dan filter dropdown --}}
+                {{-- Header dengan judul dan filter dropdown --}}
                 <div class="summary-header">
                     <h2>Ringkasan</h2>
                     <div class="summary-filter">
                         <button class="summary-filter-btn" type="button" id="summaryFilterBtn" aria-expanded="false">
-                            <i class="bi bi-funnel"></i> <span id="summaryFilterText">Semua</span>
+                            <i class="bi bi-funnel"></i> <span id="summaryFilterText">{{ $gudangUtama->nama }}</span>
                             <i class="bi bi-chevron-right arrow-icon"></i>
                         </button>
                         <div class="summary-dropdown-menu" id="summaryDropdownMenu">
-                            <button class="summary-dropdown-item" data-value="all">Semua</button>
                             @foreach ($gudangs as $gudang)
-                                <button class="summary-dropdown-item"
-                                    data-value="{{ $gudang->nama }}">{{ $gudang->nama }}</button>
+                                <button class="summary-dropdown-item" data-value="{{ $gudang->nama }}"
+                                    @if($gudang->id === $gudangUtama->id) data-default="true" @endif>
+                                    {{ $gudang->nama }}
+                                </button>
                             @endforeach
                         </div>
                     </div>
                 </div>
 
-                {{-- KLASIK: ikon bulat di kiri, angka & label di kanan (match CSS kamu) --}}
+                {{-- KLASIK: ikon bulat di kiri, angka & label di kanan --}}
                 <div class="summary-cards summary-cards--classic">
                     {{-- Card: Total Jenis Barang --}}
                     <div class="summary-card summary-card--classic">
@@ -57,7 +58,7 @@
 
             {{-- ======================= GRAFIK PER BAGIAN ======================= --}}
             <div class="chart-section">
-                {{-- [NEW] Layout horizontal sejajar untuk semua komponen --}}
+                {{-- Layout horizontal sejajar untuk semua komponen --}}
                 <div class="chart-header chart-header--horizontal">
                     <div class="chart-header-horizontal-item">
                         <h2>Grafik Per Bagian</h2>
@@ -122,9 +123,6 @@
                 <div class="chart-header chart-header--wrap">
                     <div class="chart-header-left">
                         <h2>Grafik Pengeluaran per Tahun</h2>
-                        {{-- [OPSIONAL-HILANGKAN BADGE TAHUN]
-                        kalau mau DISEMBUNYIKAN, comment span di bawah + baris JS yg setRangeHint untuk Tahun --}}
-                        {{-- <span id="rangeHintTahun" class="range-hint" title="Semua Data">Semua Data</span> --}}
                     </div>
 
                     <div class="chart-controls">
@@ -163,7 +161,7 @@
         document.addEventListener('DOMContentLoaded', function () {
             const FILTER_URL = "{{ route('admin.dashboard.filter') }}";
 
-            /* ====================== [NEW] Atur Arrow Dropdown ====================== */
+            /* ====================== Atur Arrow Dropdown ====================== */
             // Untuk custom dropdown Ringkasan
             const summaryFilterBtn = document.getElementById('summaryFilterBtn');
             const summaryDropdownMenu = document.getElementById('summaryDropdownMenu');
@@ -203,8 +201,8 @@
                 }
             });
 
-            function filterRingkasan(gudangFilter) {
-                fetch(`${FILTER_URL}?type=ringkasan&filter=${gudangFilter}`)
+            function filterRingkasan(gudangNama) {
+                fetch(`${FILTER_URL}?type=ringkasan&filter=${encodeURIComponent(gudangNama)}`)
                     .then(r => r.json())
                     .then(data => {
                         // Update numbers with animation
@@ -236,7 +234,7 @@
 
             /* ====================== Grafik Per Bagian (Keluar only) ====================== */
             const PER_PAGE = 9; // batas 9 bar
-            let allLabels = {!! json_encode($bagianLabels) !!}; // full labels (sudah "Bagian " dibersihkan di controller)
+            let allLabels = {!! json_encode($bagianLabels) !!}; // full labels
             let allData = {!! json_encode($keluarData) !!}; // full data
             let pageStart = 0; // index mulai
 
@@ -326,7 +324,7 @@
                 }
             });
 
-            // ===== Drag / swipe untuk paging (ada visual cue di CSS: #bagianChartBox.grabbing) =====
+            // ===== Drag / swipe untuk paging =====
             (function enableDragToPage() {
                 const box = document.getElementById('bagianChartBox');
                 let isDown = false,
@@ -394,8 +392,7 @@
                 el.title = titleText || text;
             }
 
-            // ===== [FIXED] Bootstrap Dropdown Events untuk Arrow Rotation =====
-            // Handle untuk semua dropdown Bootstrap
+            // ===== Bootstrap Dropdown Events untuk Arrow Rotation =====
             document.querySelectorAll('[data-bs-toggle="dropdown"]').forEach(dropdown => {
                 dropdown.addEventListener('show.bs.dropdown', function () {
                     this.setAttribute('aria-expanded', 'true');
@@ -446,7 +443,7 @@
             /* ====================== Pengeluaran per Tahun ====================== */
             const pengeluaranData = {
                 labels: {!! json_encode($pengeluaranLabels) !!},
-                datasets: {!! json_encode($pengeluaranData) !!} // label 'Keluar' + colors sudah dari controller
+                datasets: {!! json_encode($pengeluaranData) !!}
             };
             // Ambil data mentah dulu
             const pengeluaranChartData = pengeluaranData.datasets[0].data;
@@ -478,7 +475,7 @@
                     },
                     scales: {
                         y: {
-                            beginAtZero: false, // biar nggak selalu mulai dari 0
+                            beginAtZero: false,
                             ticks: {
                                 color: '#6B7280',
                                 callback: function (value) {
@@ -496,7 +493,6 @@
                     }
                 }
             });
-
 
             function renderYearLegend(years, colorsMap) {
                 const box = document.getElementById('legendYears');
@@ -535,22 +531,12 @@
                         }
                         pengeluaranChart.update();
                         renderYearLegend(d.labels, d.colors);
-
-                        // [OPSIONAL-HILANGKAN BADGE TAHUN] -> kalau kamu hide span di HTML, baris di bawah juga bisa dihapus
-                        const hintT = document.getElementById('rangeHintTahun');
-                        if (hintT) {
-                            if (d.labels && d.labels.length) {
-                                const txt = `${d.labels[0]} – ${d.labels[d.labels.length - 1]}`;
-                                setRangeHint(hintT, txt, txt);
-                            } else setRangeHint(hintT, 'Semua Data', 'Semua Data');
-                        }
                     })
                     .catch(console.error);
             }
 
             // set awal -> badge "Semua Data"
             setRangeHint(document.getElementById('rangeHintBagian'), 'Semua Data', 'Semua Data');
-            setRangeHint(document.getElementById('rangeHintTahun'), 'Semua Data', 'Semua Data'); // [OPSIONAL-HILANGKAN BADGE TAHUN]
         });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

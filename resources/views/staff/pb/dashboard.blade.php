@@ -17,20 +17,7 @@
         <div class="summary-header">
           <h2>Ringkasan</h2>
           {{-- [NEW] Filter gudang pada ringkasan seperti admin --}}
-          <div class="summary-filter">
-            <button class="summary-filter-btn" type="button" id="summaryFilterBtn" aria-expanded="false">
-              <i class="bi bi-funnel"></i> <span id="summaryFilterText">Semua</span>
-              <i class="bi bi-chevron-right arrow-icon"></i>
-            </button>
-            <div class="summary-dropdown-menu" id="summaryDropdownMenu">
-              <button class="summary-dropdown-item" data-value="all">Semua</button>
-              <button class="summary-dropdown-item" data-value="gudang-utama">Gudang Utama</button>
-              <button class="summary-dropdown-item" data-value="gudang-atk">Gudang ATK</button>
-              <button class="summary-dropdown-item" data-value="gudang-listrik">Gudang Listrik</button>
-              <button class="summary-dropdown-item" data-value="gudang-kebersihan">Gudang Kebersihan</button>
-              <button class="summary-dropdown-item" data-value="gudang-b-komputer">Gudang B Komputer</button>
-            </div>
-          </div>
+         
         </div>
 
         {{-- KLASIK: ikon bulat di kiri, angka & label di kanan (match CSS admin) --}}
