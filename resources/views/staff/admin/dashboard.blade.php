@@ -7,7 +7,7 @@
 
     <div class="dashboard-container">
 
-        {{-- Row pertama: Ringkasan dan Grafik Per Bagian --}}
+        {{-- Row pertama: Ringkasan dan Grafik Per Gudang --}}
         <div class="dashboard-row">
             {{-- ========================= RINGKASAN ========================= --}}
             <div class="summary-section">
@@ -56,59 +56,50 @@
                 </div>
             </div>
 
-            {{-- ======================= GRAFIK PER BAGIAN ======================= --}}
+            {{-- ======================= GRAFIK PER GUDANG ======================= --}}
             <div class="chart-section">
                 {{-- Layout horizontal sejajar untuk semua komponen --}}
                 <div class="chart-header chart-header--horizontal">
                     <div class="chart-header-horizontal-item">
-                        <h2>Grafik Per Bagian</h2>
+                        <h2>Grafik Per Gudang</h2>
                     </div>
 
                     <div class="chart-header-horizontal-item">
-                        <span id="rangeHintBagian" class="range-hint" title="Semua Data">Semua Data</span>
-                    </div>
-
-                    <div class="chart-header-horizontal-item">
-                        {{-- Pager (muncul jika data > 9) --}}
-                        <div class="pager" id="bagianPager" style="display:none">
-                            <button class="pager-btn" id="bagianPrev" title="Sebelumnya" aria-label="Sebelumnya">
-                                <i class="bi bi-chevron-left"></i>
-                            </button>
-                            <span class="pager-info" id="bagianPagerInfo">1/1</span>
-                            <button class="pager-btn" id="bagianNext" title="Berikutnya" aria-label="Berikutnya">
-                                <i class="bi bi-chevron-right"></i>
-                            </button>
-                        </div>
+                        <span id="rangeHintGudang" class="range-hint" title="Semua Data">Semua Data</span>
                     </div>
 
                     <div class="chart-header-horizontal-item" style="margin-left:auto;">
                         {{-- Filter waktu --}}
                         <div class="dropdown">
-                            <button class="filter-btn dropdown-toggle" type="button" id="bagianFilterDropdown"
+                            <button class="filter-btn dropdown-toggle" type="button" id="gudangFilterDropdown"
                                 data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="bi bi-funnel"></i> Semua
                                 <i class="bi bi-chevron-right arrow-icon"></i>
                             </button>
-                            <ul class="dropdown-menu" aria-labelledby="bagianFilterDropdown">
-                                <li><a class="dropdown-item filter-option" href="#" data-type="bagian"
+                            <ul class="dropdown-menu" aria-labelledby="gudangFilterDropdown">
+                                <li><a class="dropdown-item filter-option" href="#" data-type="gudang"
                                         data-value="all">Semua</a></li>
-                                <li><a class="dropdown-item filter-option" href="#" data-type="bagian"
+                                <li><a class="dropdown-item filter-option" href="#" data-type="gudang"
                                         data-value="week">1 Minggu Terakhir</a></li>
-                                <li><a class="dropdown-item filter-option" href="#" data-type="bagian"
+                                <li><a class="dropdown-item filter-option" href="#" data-type="gudang"
                                         data-value="month">1 Bulan Terakhir</a></li>
-                                <li><a class="dropdown-item filter-option" href="#" data-type="bagian"
+                                <li><a class="dropdown-item filter-option" href="#" data-type="gudang"
                                         data-value="year">1 Tahun Terakhir</a></li>
                             </ul>
                         </div>
                     </div>
                 </div>
 
-                {{-- Wadah kanvas chart (dipakai juga untuk drag) --}}
-                <div class="chart-container" id="bagianChartBox">
-                    <canvas id="bagianChart"></canvas>
+                {{-- Wadah kanvas chart --}}
+                <div class="chart-container">
+                    <canvas id="gudangChart"></canvas>
                 </div>
 
                 <div class="chart-legend">
+                    <div class="legend-item">
+                        <span class="legend-color masuk"></span>
+                        <span>Masuk</span>
+                    </div>
                     <div class="legend-item">
                         <span class="legend-color keluar"></span>
                         <span>Keluar</span>
@@ -232,30 +223,65 @@
                 }, duration / steps);
             }
 
-            /* ====================== Grafik Per Bagian (Keluar only) ====================== */
-            const PER_PAGE = 9; // batas 9 bar
-            let allLabels = {!! json_encode($bagianLabels) !!}; // full labels
-            let allData = {!! json_encode($keluarData) !!}; // full data
-            let pageStart = 0; // index mulai
+            /* ====================== Grafik Per Gudang (Masuk & Keluar) ====================== */
+            const gudangLabels = {!! json_encode($gudangLabels) !!};
+            const masukData = {!! json_encode($masukData) !!};
+            const keluarData = {!! json_encode($keluarData) !!};
 
-            const bagianCtx = document.getElementById('bagianChart').getContext('2d');
-            const bagianChart = new Chart(bagianCtx, {
-                type: 'bar',
+            const gudangCtx = document.getElementById('gudangChart').getContext('2d');
+            const gudangChart = new Chart(gudangCtx, {
+                type: 'line',
                 data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'Keluar',
-                        data: [],
-                        backgroundColor: '#EF4444',
-                        borderRadius: 4
-                    }]
+                    labels: gudangLabels,
+                    datasets: [
+                        {
+                            label: 'Masuk',
+                            data: masukData,
+                            borderColor: '#10B981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.4,
+                            fill: true,
+                            pointBackgroundColor: '#10B981',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        },
+                        {
+                            label: 'Keluar',
+                            data: keluarData,
+                            borderColor: '#EF4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.4,
+                            fill: true,
+                            pointBackgroundColor: '#EF4444',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
                     plugins: {
                         legend: {
                             display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: '#374151',
+                            borderWidth: 1
                         }
                     },
                     scales: {
@@ -275,110 +301,13 @@
                                 minRotation: 45
                             },
                             grid: {
-                                display: false
+                                color: '#F3F4F6',
+                                display: true
                             }
                         }
                     }
                 }
             });
-
-            const pagerBox = document.getElementById('bagianPager');
-            const pagerInfo = document.getElementById('bagianPagerInfo');
-            const btnPrev = document.getElementById('bagianPrev');
-            const btnNext = document.getElementById('bagianNext');
-
-            function totalPages() {
-                return Math.max(1, Math.ceil(allLabels.length / PER_PAGE));
-            }
-
-            function currentPage() {
-                return Math.floor(pageStart / PER_PAGE) + 1;
-            }
-
-            function renderPager() {
-                pagerBox.style.display = (allLabels.length > PER_PAGE) ? 'flex' : 'none';
-                pagerInfo.textContent = `${currentPage()}/${totalPages()}`;
-                btnPrev.disabled = pageStart === 0;
-                btnNext.disabled = (pageStart + PER_PAGE) >= allLabels.length;
-            }
-
-            function sliceData() {
-                const end = Math.min(pageStart + PER_PAGE, allLabels.length);
-                bagianChart.data.labels = allLabels.slice(pageStart, end);
-                bagianChart.data.datasets[0].data = allData.slice(pageStart, end);
-                bagianChart.update();
-                renderPager();
-            }
-            sliceData(); // first render
-
-            btnPrev.addEventListener('click', () => {
-                if (pageStart >= PER_PAGE) {
-                    pageStart -= PER_PAGE;
-                    sliceData();
-                }
-            });
-            btnNext.addEventListener('click', () => {
-                if (pageStart + PER_PAGE < allLabels.length) {
-                    pageStart += PER_PAGE;
-                    sliceData();
-                }
-            });
-
-            // ===== Drag / swipe untuk paging =====
-            (function enableDragToPage() {
-                const box = document.getElementById('bagianChartBox');
-                let isDown = false,
-                    startX = 0;
-                box.addEventListener('mousedown', e => {
-                    isDown = true;
-                    startX = e.clientX;
-                    box.classList.add('dragging');
-                });
-                window.addEventListener('mouseup', () => {
-                    if (!isDown) return;
-                    isDown = false;
-                    box.classList.remove('dragging');
-                });
-                box.addEventListener('mouseleave', () => {
-                    if (!isDown) return;
-                    isDown = false;
-                    box.classList.remove('dragging');
-                });
-                box.addEventListener('mousemove', e => {
-                    if (!isDown) return;
-                    const delta = e.clientX - startX;
-                    if (Math.abs(delta) > 60) {
-                        if (delta < 0) btnNext.click();
-                        else btnPrev.click();
-                        isDown = false;
-                        box.classList.remove('dragging');
-                    }
-                });
-                // Touch
-                box.addEventListener('touchstart', e => {
-                    startX = e.touches[0].clientX;
-                    isDown = true;
-                    box.classList.add('dragging');
-                }, {
-                    passive: true
-                });
-                box.addEventListener('touchend', () => {
-                    isDown = false;
-                    box.classList.remove('dragging');
-                });
-                box.addEventListener('touchmove', e => {
-                    if (!isDown) return;
-                    const delta = e.touches[0].clientX - startX;
-                    if (Math.abs(delta) > 60) {
-                        if (delta < 0) btnNext.click();
-                        else btnPrev.click();
-                        isDown = false;
-                        box.classList.remove('dragging');
-                    }
-                }, {
-                    passive: true
-                });
-            })();
 
             // ===== Helper format tanggal untuk badge (ID locale) =====
             function fmt(d) {
@@ -412,22 +341,22 @@
                     const dropdownToggle = this.closest('.dropdown').querySelector('.dropdown-toggle');
                     dropdownToggle.innerHTML = `<i class="bi bi-funnel"></i> ${this.textContent} <i class="bi bi-chevron-right arrow-icon"></i>`;
 
-                    if (type === 'bagian') filterBagian(value);
+                    if (type === 'gudang') filterGudang(value);
                     else filterPengeluaran(value);
                 });
             });
 
-            // ====== Filter Per Bagian (update data + badge tanggal) ======
-            function filterBagian(filterType) {
-                fetch(`${FILTER_URL}?type=bagian&filter=${filterType}`)
+            // ====== Filter Per Gudang (update data + badge tanggal) ======
+            function filterGudang(filterType) {
+                fetch(`${FILTER_URL}?type=gudang&filter=${filterType}`)
                     .then(r => r.json())
                     .then(d => {
-                        allLabels = d.labels || [];
-                        allData = d.keluar || [];
-                        pageStart = 0;
-                        sliceData();
+                        gudangChart.data.labels = d.labels || [];
+                        gudangChart.data.datasets[0].data = d.masuk || [];
+                        gudangChart.data.datasets[1].data = d.keluar || [];
+                        gudangChart.update();
 
-                        const hint = document.getElementById('rangeHintBagian');
+                        const hint = document.getElementById('rangeHintGudang');
                         if (d.range && d.range.start && d.range.end) {
                             const s = new Date(d.range.start),
                                 e = new Date(d.range.end);
@@ -536,7 +465,7 @@
             }
 
             // set awal -> badge "Semua Data"
-            setRangeHint(document.getElementById('rangeHintBagian'), 'Semua Data', 'Semua Data');
+            setRangeHint(document.getElementById('rangeHintGudang'), 'Semua Data', 'Semua Data');
         });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

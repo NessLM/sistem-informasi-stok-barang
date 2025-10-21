@@ -32,35 +32,33 @@ class DashboardController extends Controller
         $gudangs = Gudang::orderBy('nama')->get();
 
         /* =========================================================
-         * GRAFIK PER BAGIAN (KATEGORI TUJUAN) - HANYA KELUAR
+         * GRAFIK PER GUDANG (HANYA GUDANG PJ)
          * =========================================================
-         * Dari transaksi_barang_keluar
-         * - Grouping by bagian_id
-         * - Exclude "Umum" dan "Gudang" dan "Operasional"
+         * - Masuk: dari transaksi_distribusi (PB → PJ)
+         * - Keluar: dari transaksi_barang_keluar (PJ → Bagian)
          */
-        $bagianRows = TransaksiBarangKeluar::select('bagian_id', DB::raw('SUM(jumlah) AS total'))
-            ->whereNotNull('bagian_id')
-            ->groupBy('bagian_id')
-            ->with('bagian')
+
+        // Ambil gudang PJ (exclude Gudang Utama)
+        $gudangPj = Gudang::where('nama', '!=', 'Gudang Utama')
+            ->orderBy('nama')
             ->get();
 
-        // Map ke nama bagian dan exclude bagian tertentu
-        $bagianData = $bagianRows->map(function ($row) {
-            $namaBagian = optional($row->bagian)->nama ?? 'Tidak Diketahui';
-            return [
-                'bagian' => $namaBagian,
-                'total' => (int) $row->total
-            ];
-        })
-            ->filter(function ($item) {
-                // Exclude bagian tertentu (case-insensitive)
-                return !preg_match('/^(umum|gudang|operasional)$/i', $item['bagian']);
-            })
-            ->sortBy('bagian')
-            ->values();
+        $gudangLabels = $gudangPj->pluck('nama')->values();
+        $masukData = [];
+        $keluarData = [];
 
-        $bagianLabels = $bagianData->pluck('bagian')->values();
-        $keluarData = $bagianData->pluck('total')->values();
+        foreach ($gudangPj as $gudang) {
+            // MASUK: dari transaksi_distribusi ke gudang ini
+            $masuk = TransaksiDistribusi::where('id_gudang_tujuan', $gudang->id)
+                ->sum('jumlah');
+            $masukData[] = (int) $masuk;
+
+            // KELUAR: dari transaksi_barang_keluar dari gudang ini
+            $keluar = TransaksiBarangKeluar::where('id_gudang', $gudang->id)
+                ->whereNotNull('bagian_id')
+                ->sum('jumlah');
+            $keluarData[] = (int) $keluar;
+        }
 
         /* =========================================================
          * GRAFIK PENGELUARAN PER TAHUN (DALAM TOTAL HARGA)
@@ -102,7 +100,8 @@ class DashboardController extends Controller
             'totalBarang',
             'gudangs',
             'gudangUtama',
-            'bagianLabels',
+            'gudangLabels',
+            'masukData',
             'keluarData',
             'pengeluaranLabels',
             'pengeluaranData',
@@ -114,16 +113,16 @@ class DashboardController extends Controller
     /* ==================== AJAX FILTER ==================== */
     public function filterData(Request $request)
     {
-        $type = $request->query('type', 'bagian');
+        $type = $request->query('type', 'gudang');
         $filter = $request->query('filter', 'all');
 
         if ($type === 'ringkasan') {
             return $this->filterRingkasanData($filter);
         }
 
-        return $type === 'bagian'
-            ? $this->filterBagianData($filter)
-            : $this->filterPengeluaanData($filter);
+        return $type === 'gudang'
+            ? $this->filterGudangData($filter)
+            : $this->filterPengeluaranData($filter);
     }
 
     /**
@@ -210,58 +209,61 @@ class DashboardController extends Controller
     }
 
     /**
-     * Filter Bagian berdasarkan rentang waktu
-     * FIXED: Dari transaksi_barang_keluar dengan bagian
+     * Filter Gudang berdasarkan rentang waktu
+     * FIXED: Dari transaksi_distribusi (masuk) & transaksi_barang_keluar (keluar)
      */
-    private function filterBagianData($filter)
+    private function filterGudangData($filter)
     {
-        // Ambil semua bagian yang pernah menerima barang (baseline labels)
-        $allTimeBagian = TransaksiBarangKeluar::whereNotNull('bagian_id')
-            ->select('bagian_id')
-            ->groupBy('bagian_id')
-            ->with('bagian')
-            ->get()
-            ->map(fn($row) => optional($row->bagian)->nama ?? 'Tidak Diketahui')
-            ->filter(fn($nama) => !preg_match('/^(umum|gudang|operasional)$/i', $nama))
-            ->unique()
-            ->sort()
-            ->values();
+        // Ambil semua gudang PJ (exclude Gudang Utama)
+        $gudangPj = Gudang::where('nama', '!=', 'Gudang Utama')
+            ->orderBy('nama')
+            ->get();
+
+        $gudangLabels = $gudangPj->pluck('nama')->values();
 
         // Query dengan filter waktu
-        $q = TransaksiBarangKeluar::whereNotNull('bagian_id');
+        $qMasuk = TransaksiDistribusi::query();
+        $qKeluar = TransaksiBarangKeluar::whereNotNull('bagian_id');
 
         $start = null;
         $end = null;
 
         if ($filter === 'week') {
             $start = Carbon::now()->subWeek();
-            $q->where('tanggal', '>=', $start);
+            $qMasuk->where('tanggal', '>=', $start);
+            $qKeluar->where('tanggal', '>=', $start);
         } elseif ($filter === 'month') {
             $start = Carbon::now()->subMonth();
-            $q->where('tanggal', '>=', $start);
+            $qMasuk->where('tanggal', '>=', $start);
+            $qKeluar->where('tanggal', '>=', $start);
         } elseif ($filter === 'year') {
             $start = Carbon::now()->subYear();
-            $q->where('tanggal', '>=', $start);
+            $qMasuk->where('tanggal', '>=', $start);
+            $qKeluar->where('tanggal', '>=', $start);
         }
         $end = Carbon::now();
 
-        // Hitung total per bagian
+        // Hitung total per gudang
+        $masukData = [];
         $keluarData = [];
-        foreach ($allTimeBagian as $bagianNama) {
-            // Cari bagian_id dari nama
-            $bagianIds = \App\Models\Bagian::where('nama', $bagianNama)
-                ->pluck('id')
-                ->toArray();
 
-            $total = (clone $q)
-                ->whereIn('bagian_id', $bagianIds)
+        foreach ($gudangPj as $gudang) {
+            // MASUK: dari transaksi_distribusi
+            $masuk = (clone $qMasuk)
+                ->where('id_gudang_tujuan', $gudang->id)
                 ->sum('jumlah');
+            $masukData[] = (int) $masuk;
 
-            $keluarData[] = (int) $total;
+            // KELUAR: dari transaksi_barang_keluar
+            $keluar = (clone $qKeluar)
+                ->where('id_gudang', $gudang->id)
+                ->sum('jumlah');
+            $keluarData[] = (int) $keluar;
         }
 
         return response()->json([
-            'labels' => $allTimeBagian,
+            'labels' => $gudangLabels,
+            'masuk' => $masukData,
             'keluar' => $keluarData,
             'range' => $start ? ['start' => $start->toDateString(), 'end' => $end->toDateString()] : null,
         ]);
