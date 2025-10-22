@@ -777,42 +777,37 @@ if ($isGudangUtama) {
     }
 
     try {
-        $barangQuery = Barang::with(['kategori.gudang', 'pbStok', 'pjStok'])
+        // Wajib: muat gudang pada pjStok biar bisa ambil nama gudang
+        $barangQuery = Barang::with(['kategori.gudang', 'pbStok', 'pjStok.gudang'])
             ->where(function ($q) use ($search) {
                 $q->where('nama_barang', 'like', "%{$search}%")
                   ->orWhere('kode_barang', 'like', "%{$search}%");
             });
 
+        // === MODE GUDANG TERTENTU (ADA gudang_id) → TETAP SPT BIASA ===
         if ($gudangId) {
             $g = Gudang::find($gudangId);
             $isUtama = $g && stripos($g->nama, 'utama') !== false;
 
             if ($isUtama) {
-                // Untuk Gudang Utama: harus punya PB stok dan kategorinya memang milik gudang ini
                 $barangQuery->whereHas('pbStok')
                             ->whereHas('kategori', function ($q) use ($gudangId) {
                                 $q->where('gudang_id', $gudangId);
                             });
             } else {
-                // Untuk gudang lain: barang yang punya PJ stok di gudang ini
                 $barangQuery->whereHas('pjStok', function ($q) use ($gudangId) {
                     $q->where('id_gudang', $gudangId);
                 });
             }
-        }
 
-        $suggestions = $barangQuery
-            ->select('kode_barang', 'nama_barang', 'id_kategori')
-            ->orderBy('nama_barang')
-            ->limit(8)
-            ->get()
-            ->map(function ($barang) use ($gudangId) {
-                $stok = 0;
-                $gudangNama = $barang->kategori->gudang->nama ?? '-';
-
-                if ($gudangId) {
-                    $g = Gudang::find($gudangId);
-                    $isUtama = $g && stripos($g->nama, 'utama') !== false;
+            $suggestions = $barangQuery
+                ->select('kode_barang', 'nama_barang', 'id_kategori')
+                ->orderBy('nama_barang')
+                ->limit(8)
+                ->get()
+                ->map(function ($barang) use ($gudangId, $isUtama, $g) {
+                    $stok = 0;
+                    $gudangNama = $barang->kategori->gudang->nama ?? '-';
 
                     if ($isUtama) {
                         $stok = (int) ($barang->pbStok->stok ?? 0);
@@ -822,28 +817,61 @@ if ($isGudangUtama) {
                         $stok = (int) ($pjStok->stok ?? 0);
                         $gudangNama = $g->nama;
                     }
-                } else {
-                    $stok = (int) (($barang->pbStok->stok ?? 0) + $barang->pjStok()->sum('stok'));
-                }
 
-                return [
+                    return [
+                        'kode'         => $barang->kode_barang,
+                        'nama'         => $barang->nama_barang,
+                        'stok'         => $stok,
+                        'kategori'     => $barang->kategori->nama ?? '-',
+                        'gudang'       => $gudangNama,
+                        'display'      => $barang->nama_barang . ' (' . $barang->kode_barang . ')',
+                        'stock_status' => $stok === 0 ? 'empty' : ($stok < 10 ? 'low' : 'normal'),
+                    ];
+                });
+
+            return response()->json($suggestions);
+        }
+
+        // === MODE DATA KESELURUHAN (TANPA gudang_id) → FLATTEN PER GUDANG ===
+        $barangList = $barangQuery
+            ->select('kode_barang', 'nama_barang', 'id_kategori')
+            ->orderBy('nama_barang')
+            ->limit(10) // ambil 10 barang; hasil flatten bisa > 10 baris
+            ->get();
+
+        $rows = collect();
+
+        foreach ($barangList as $barang) {
+            // PB (Gudang Utama) – jika ada
+            if ($barang->pbStok) {
+                $stokPB = (int) ($barang->pbStok->stok ?? 0);
+                $rows->push([
                     'kode'         => $barang->kode_barang,
                     'nama'         => $barang->nama_barang,
-                    'stok'         => $stok,
+                    'stok'         => $stokPB,
                     'kategori'     => $barang->kategori->nama ?? '-',
-                    'gudang'       => $gudangNama,
+                    'gudang'       => $barang->kategori->gudang->nama ?? 'Gudang Utama',
                     'display'      => $barang->nama_barang . ' (' . $barang->kode_barang . ')',
-                    'stock_status' => $stok === 0 ? 'empty' : ($stok < 10 ? 'low' : 'normal'),
-                ];
-            });
+                    'stock_status' => $stokPB === 0 ? 'empty' : ($stokPB < 10 ? 'low' : 'normal'),
+                ]);
+            }
 
-        \Log::info('Search suggestions', [
-            'query' => $search,
-            'gudang_id' => $gudangId,
-            'results' => $suggestions->count(),
-        ]);
+            // Setiap gudang kecil (PJ)
+            foreach ($barang->pjStok as $pj) {
+                $stokPJ = (int) ($pj->stok ?? 0);
+                $rows->push([
+                    'kode'         => $barang->kode_barang,
+                    'nama'         => $barang->nama_barang,
+                    'stok'         => $stokPJ,
+                    'kategori'     => $barang->kategori->nama ?? '-',
+                    'gudang'       => $pj->gudang->nama ?? '-',
+                    'display'      => $barang->nama_barang . ' (' . $barang->kode_barang . ')',
+                    'stock_status' => $stokPJ === 0 ? 'empty' : ($stokPJ < 10 ? 'low' : 'normal'),
+                ]);
+            }
+        }
 
-        return response()->json($suggestions);
+        return response()->json($rows->take(12)->values());
 
     } catch (\Throwable $e) {
         \Log::error('Search API error', ['error' => $e->getMessage()]);

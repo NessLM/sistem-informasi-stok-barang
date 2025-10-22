@@ -36,6 +36,10 @@ $isDataKeseluruhan = !isset($selectedGudang); // ← flag supaya logika view kon
         </style>
 
     @endpush
+    @if (isset($selectedGudang))
+    <meta name="selected-gudang-id" content="{{ $selectedGudang->id }}">
+@endif
+
 
     <main class="page-wrap container py-4">
 
@@ -1007,29 +1011,35 @@ $isDataKeseluruhan = !isset($selectedGudang); // ← flag supaya logika view kon
                 }
 
                 function getActiveGudangId() {
-                    const modalGudangSelect = document.querySelector('#modalFilterBarang select[name="gudang_id"]');
-                    if (modalGudangSelect && modalGudangSelect.value) {
-                        return modalGudangSelect.value;
-                    }
+    // 1) Paling akurat: baca dari meta (diset di Blade saat halaman gudang)
+    const meta = document.querySelector('meta[name="selected-gudang-id"]');
+    if (meta && meta.content) {
+        return meta.content; // ← ini akan terisi juga untuk Gudang Utama
+    }
 
-                    const urlParams = new URLSearchParams(window.location.search);
-                    if (urlParams.get('gudang_id')) {
-                        return urlParams.get('gudang_id');
-                    }
+    // 2) Fallback: dari modal filter (kalau user pilih manual)
+    const modalGudangSelect = document.querySelector('#modalFilterBarang select[name="gudang_id"]');
+    if (modalGudangSelect && modalGudangSelect.value) {
+        return modalGudangSelect.value;
+    }
 
-                    const currentPath = window.location.pathname;
-                    if (currentPath.includes('/atk')) {
-                        return getGudangIdByName('ATK');
-                    } else if (currentPath.includes('/listrik')) {
-                        return getGudangIdByName('Listrik');
-                    } else if (currentPath.includes('/kebersihan')) {
-                        return getGudangIdByName('Kebersihan');
-                    } else if (currentPath.includes('/komputer')) {
-                        return getGudangIdByName('Komputer');
-                    }
+    // 3) Fallback: dari URL query
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('gudang_id')) {
+        return urlParams.get('gudang_id');
+    }
 
-                    return null;
-                }
+    // 4) Fallback: dari path slug (atk/listrik/kebersihan/komputer/utama)
+    const currentPath = window.location.pathname;
+    if (currentPath.includes('/atk'))        return getGudangIdByName('ATK');
+    if (currentPath.includes('/listrik'))    return getGudangIdByName('Listrik');
+    if (currentPath.includes('/kebersihan')) return getGudangIdByName('Kebersihan');
+    if (currentPath.includes('/komputer'))   return getGudangIdByName('Komputer');
+    if (currentPath.includes('/utama'))      return getGudangIdByName('Utama'); // ← TAMBAHKAN BARIS INI
+
+    return null; // Data Keseluruhan
+}
+
 
                 function getGudangIdByName(namaGudang) {
                     const gudangSelect = document.querySelector('select[name="gudang_id"]');
