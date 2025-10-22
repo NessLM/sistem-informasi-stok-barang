@@ -171,6 +171,10 @@ class DataKeseluruhan extends Controller
      * API: Search suggestions untuk autocomplete
      * - Hanya mengembalikan stok > 0 (agar tombol "Barang Keluar" valid).
      */
+/**
+     * API: Search suggestions untuk autocomplete
+     * - Hanya mengembalikan stok > 0 (agar tombol "Barang Keluar" valid).
+     */
     public function searchSuggestions(Request $request)
     {
         $query = $request->get('q', '');
@@ -184,11 +188,11 @@ class DataKeseluruhan extends Controller
             return response()->json([]);
         }
 
-        // Query dengan JOIN pj_stok
-        $results = DB::table('barang')
-            ->join('pj_stok', 'barang.kode_barang', '=', 'pj_stok.kode_barang')
-            ->join('kategori', 'barang.id_kategori', '=', 'kategori.id')
-            ->join('gudang', 'kategori.gudang_id', '=', 'gudang.id')
+        // Query dengan JOIN pj_stok - PERBAIKAN: langsung join gudang dari pj_stok
+        $results = DB::table('pj_stok')
+            ->join('barang', 'pj_stok.kode_barang', '=', 'barang.kode_barang')
+            ->join('kategori', 'pj_stok.id_kategori', '=', 'kategori.id')
+            ->join('gudang', 'pj_stok.id_gudang', '=', 'gudang.id')
             ->where('pj_stok.id_gudang', $user->gudang_id)
             ->where('pj_stok.stok', '>', 0)
             ->where(function ($q) use ($query) {
