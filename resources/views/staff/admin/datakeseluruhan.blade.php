@@ -453,25 +453,27 @@
                             @enderror
                         </div>
                         <div class="col-md-6">
-                            <label>Harga / Satuan</label>
-                            <div class="input-group">
-                                <span class="input-group-text">Rp</span>
-                                <input type="text" name="harga_display" id="hargaTambah"
-                                    class="form-control @error('harga_barang') is-invalid @enderror"
-                                    value="{{ old('harga_barang') }}" placeholder="Harga">
-                                <input type="hidden" name="harga_barang" id="hargaTambahHidden">
-                                <select name="satuan" class="form-select">
-                                    <option value="Pcs" @if (old('satuan') == 'Pcs') selected @endif>Pcs</option>
-                                    <option value="Box" @if (old('satuan') == 'Box') selected @endif>Box</option>
-                                    <option value="Pack" @if (old('satuan') == 'Pack') selected @endif>Pack</option>
-                                    <option value="Rim" @if (old('satuan') == 'Rim') selected @endif>Rim</option>
-                                    <option value="Unit" @if (old('satuan') == 'Unit') selected @endif>Unit</option>
-                                </select>
-                            </div>
-                            @error('harga_barang')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+    <label>Harga / Satuan</label>
+    <div class="input-group">
+        <span class="input-group-text">Rp</span>
+        <input type="text" name="harga_display" id="hargaTambah"
+            class="form-control @error('harga_barang') is-invalid @enderror"
+            value="{{ old('harga_barang') }}" placeholder="Harga" required>
+        <input type="hidden" name="harga_barang" id="hargaTambahHidden" required>
+        <select name="satuan" class="form-select" required>
+            <option value="">-- Pilih Satuan --</option>
+            <option value="Pcs" @if (old('satuan') == 'Pcs') selected @endif>Pcs</option>
+            <option value="Box" @if (old('satuan') == 'Box') selected @endif>Box</option>
+            <option value="Pack" @if (old('satuan') == 'Pack') selected @endif>Pack</option>
+            <option value="Rim" @if (old('satuan') == 'Rim') selected @endif>Rim</option>
+            <option value="Unit" @if (old('satuan') == 'Unit') selected @endif>Unit</option>
+        </select>
+    </div>
+    @error('harga_barang')
+        <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+
                     </div>
                 </div>
                 <div class="modal-footer">
