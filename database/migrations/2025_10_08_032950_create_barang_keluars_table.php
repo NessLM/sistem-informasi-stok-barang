@@ -13,11 +13,9 @@ return new class extends Migration
     {
         Schema::create('barang_keluars', function (Blueprint $table) {
             $table->id();
-            // Change 'barangs' to 'barang' if that's your actual table name
-            $table->foreignId('barang_id')->constrained('barang')->onDelete('cascade');
-            // Change 'gudangs' to 'gudang' if that's your actual table name
-            $table->foreignId('gudang_id')->constrained('gudang')->onDelete('cascade');
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->string('kode_barang', 20); // Ganti dari barang_id
+            $table->unsignedBigInteger('gudang_id');
+            $table->unsignedBigInteger('user_id');
             $table->string('nama_penerima');
             $table->integer('jumlah');
             $table->date('tanggal');
@@ -25,6 +23,22 @@ return new class extends Migration
             $table->text('keterangan')->nullable();
             $table->string('bukti')->nullable();
             $table->timestamps();
+
+            // Foreign keys
+            $table->foreign('kode_barang')
+                  ->references('kode_barang')
+                  ->on('barang')
+                  ->onDelete('cascade');
+
+            $table->foreign('gudang_id')
+                  ->references('id')
+                  ->on('gudang')
+                  ->onDelete('cascade');
+
+            $table->foreign('user_id')
+                  ->references('id')
+                  ->on('users')
+                  ->onDelete('cascade');
         });
     }
 

@@ -6,21 +6,38 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up()
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
     {
         Schema::create('stok_gudang', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('barang_id')->constrained('barang')->onDelete('cascade');
-            $table->foreignId('gudang_id')->constrained('gudang')->onDelete('cascade');
+            $table->string('kode_barang', 20); // Ganti dari barang_id
+            $table->unsignedBigInteger('gudang_id');
             $table->integer('stok')->default(0);
             $table->timestamps();
-            
-            // Pastikan kombinasi barang + gudang unik
-            $table->unique(['barang_id', 'gudang_id']);
+
+            // Foreign key ke kode_barang
+            $table->foreign('kode_barang')
+                  ->references('kode_barang')
+                  ->on('barang')
+                  ->onDelete('cascade');
+
+            $table->foreign('gudang_id')
+                  ->references('id')
+                  ->on('gudang')
+                  ->onDelete('cascade');
+
+            // Unique constraint untuk kombinasi kode_barang dan gudang_id
+            $table->unique(['kode_barang', 'gudang_id']);
         });
     }
 
-    public function down()
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
     {
         Schema::dropIfExists('stok_gudang');
     }

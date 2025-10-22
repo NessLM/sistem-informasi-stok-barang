@@ -27,10 +27,8 @@ class DashboardController extends Controller
 
         $pageTitle = $this->getDashboardTitle($gudang->nama);
 
-        // FIXED: Hitung jenis barang berdasarkan kategori di gudang
-        $totalJenisBarang = JenisBarang::whereHas('kategori', function ($query) use ($gudang) {
-            $query->where('gudang_id', $gudang->id);
-        })->count();
+        // FIXED: Hitung jenis barang unik dari pj_stok
+        $totalJenisBarang = $this->hitungJenisBarangByGudang($gudang->id);
 
         // FIXED: Ambil total stok dari pj_stok untuk gudang ini
         $totalBarang = PjStok::where('id_gudang', $gudang->id)->sum('stok');
@@ -105,6 +103,42 @@ class DashboardController extends Controller
     }
 
     /**
+     * Hitung jenis barang unik dari PJ Stok untuk gudang ini
+     * Logika: ambil dari pj_stok → join ke barang → extract nama unik
+     */
+    private function hitungJenisBarangByGudang($gudangId)
+    {
+        // Ambil kode_barang dari pj_stok yang stoknya > 0 untuk gudang ini
+        $kodeBarangList = PjStok::where('id_gudang', $gudangId)
+            ->where('stok', '>', 0)
+            ->pluck('kode_barang');
+
+        // Kalau ga ada barang, return 0
+        if ($kodeBarangList->isEmpty()) {
+            return 0;
+        }
+
+        // Ambil nama barang dari kode_barang
+        $namaBarangList = Barang::whereIn('kode_barang', $kodeBarangList)
+            ->pluck('nama_barang');
+
+        // Extract nama dasar (hilangkan angka di belakang)
+        $namaUnik = $namaBarangList->map(function ($nama) {
+            // Trim whitespace dulu
+            $nama = trim($nama);
+
+            // Hilangkan angka di akhir: "Pulpen 1" → "Pulpen", "Buku Catatan 2" → "Buku Catatan"
+            // Pattern: spasi + angka di akhir string
+            $namaBase = preg_replace('/\s+\d+$/', '', $nama);
+
+            // Kalau masih kosong atau sama, return nama asli
+            return empty($namaBase) ? $nama : $namaBase;
+        })->unique()->filter(); // filter() untuk buang yang kosong
+
+        return $namaUnik->count();
+    }
+
+    /**
      * Dapatkan gudang berdasarkan user yang login
      * IMPROVED: Menggunakan gudang_id dari users table
      */
@@ -164,33 +198,10 @@ class DashboardController extends Controller
             return response()->json(['error' => 'Gudang tidak ditemukan'], 404);
         }
 
-        if ($type === 'ringkasan') {
-            return $this->filterRingkasanData($filter, $gudang);
-        }
-
+        // PJ tidak ada filter ringkasan (gudang fixed)
         return $type === 'bagian'
             ? $this->filterBagianData($filter, $gudang)
             : $this->filterPengeluaranData($filter, $gudang);
-    }
-
-    /**
-     * Filter Ringkasan berdasarkan gudang
-     * FIXED: Menggunakan pj_stok
-     */
-    private function filterRingkasanData($gudangFilter, $gudang)
-    {
-        // Untuk PJ, gudang sudah tetap (tidak berubah)
-        $totalJenisBarang = JenisBarang::whereHas('kategori', function ($query) use ($gudang) {
-            $query->where('gudang_id', $gudang->id);
-        })->count();
-
-        // FIXED: Typo 'kategari' -> 'kategori' dan gunakan pj_stok
-        $totalBarang = PjStok::where('id_gudang', $gudang->id)->sum('stok');
-
-        return response()->json([
-            'totalJenisBarang' => (int) $totalJenisBarang,
-            'totalBarang' => (int) $totalBarang
-        ]);
     }
 
     /**

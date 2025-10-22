@@ -32,7 +32,6 @@ class DashboardController extends Controller
          */
 
         $kategorMap = [
-            'Gudang Utama' => 'G. Utama',
             'Gudang ATK' => 'G. ATK',
             'Gudang Listrik' => 'G. Listrik',
             'Gudang Kebersihan' => 'G. Kebersihan',
