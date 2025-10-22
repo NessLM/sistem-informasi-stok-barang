@@ -6,85 +6,76 @@
         $gudang = $gudang ?? collect();
     @endphp
 
-     @push('styles')  
+    @push('styles')
         <link rel="stylesheet" href="{{ asset('assets/css/staff/admin/data_keseluruhan.css') }}">
-        <style>
-            .row-low-stock {
-                background-color: #ffcccc !important;
-                border-left: 4px solid #dc3545 !important;
-            }
-        </style>
-        
+
     @endpush
 
     <main class="page-wrap container py-4">
 
-      <!-- Toast notification -->
-    @if (session('toast'))
-        <div id="toast-notif"
-            style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-              z-index: 2000; display: flex; justify-content: center; pointer-events: none;">
+        <!-- Toast notification -->
+        @if (session('toast'))
+            <div id="toast-notif" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+                  z-index: 2000; display: flex; justify-content: center; pointer-events: none;">
 
-            <div class="toast-message"
-                style="background: #fff; border-radius: 12px; padding: 14px 22px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;
-                min-width: 280px; max-width: 360px; transition: opacity .5s ease;">
+                <div class="toast-message" style="background: #fff; border-radius: 12px; padding: 14px 22px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;
+                    min-width: 280px; max-width: 360px; transition: opacity .5s ease;">
 
-                {{-- Judul (Hijau kalau success, Merah kalau error) --}}
-                <div
-                    style="font-weight: 600; font-size: 16px; margin-bottom: 4px;
-                  color: {{ session('toast.type') === 'success' ? '#28a745' : '#dc3545' }};">
-                    {{ session('toast.title') }}
-                </div>
+                    {{-- Judul (Hijau kalau success, Merah kalau error) --}}
+                    <div style="font-weight: 600; font-size: 16px; margin-bottom: 4px;
+                      color: {{ session('toast.type') === 'success' ? '#28a745' : '#dc3545' }};">
+                        {{ session('toast.title') }}
+                    </div>
 
-                {{-- Pesan kecil --}}
-                <div style="color:#333; font-size: 14px; line-height: 1.4;">
-                    {{ session('toast.message') }}
+                    {{-- Pesan kecil --}}
+                    <div style="color:#333; font-size: 14px; line-height: 1.4;">
+                        {{ session('toast.message') }}
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <script>
-            setTimeout(() => {
-                const toast = document.getElementById('toast-notif');
-                if (toast) toast.style.opacity = '0';
-                setTimeout(() => toast?.remove(), 500);
-            }, 3000);
-        </script>
-    @endif
+            <script>
+                setTimeout(() => {
+                    const toast = document.getElementById('toast-notif');
+                    if (toast) toast.style.opacity = '0';
+                    setTimeout(() => toast?.remove(), 500);
+                }, 3000);
+            </script>
+        @endif
 
         <section class="card shadow-sm p-3">
             <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
                 @php
                     $title = 'Data Keseluruhan'; // default
-                    
+
                     // Jika ada kategori dan semua kategori dari gudang yang sama
-                    if($kategori->isNotEmpty()) {
+                    if ($kategori->isNotEmpty()) {
                         $firstGudang = $kategori->first()->gudang->nama ?? null;
-                        $allSameGudang = $kategori->every(function($k) use ($firstGudang) {
+                        $allSameGudang = $kategori->every(function ($k) use ($firstGudang) {
                             return ($k->gudang->nama ?? null) === $firstGudang;
                         });
-                        
-                        if($allSameGudang && $firstGudang) {
+
+                        if ($allSameGudang && $firstGudang) {
                             // Hindari duplikasi kata "Gudang"
-                            if(str_starts_with($firstGudang, 'Gudang')) {
+                            if (str_starts_with($firstGudang, 'Gudang')) {
                                 $title = 'Data ' . $firstGudang;
                             } else {
                                 $title = 'Data Gudang ' . $firstGudang;
                             }
                         }
                     }
-                    
+
                     // Override berdasarkan filter gudang jika ada
-                    if(request()->filled('gudang_id') && isset($selectedGudang)) {
+                    if (request()->filled('gudang_id') && isset($selectedGudang)) {
                         $gudangNama = $selectedGudang->nama;
-                        if(str_starts_with($gudangNama, 'Gudang')) {
+                        if (str_starts_with($gudangNama, 'Gudang')) {
                             $title = 'Data ' . $gudangNama;
                         } else {
                             $title = 'Data Gudang ' . $gudangNama;
                         }
                     }
-                    
+
                     // Override berdasarkan URL path
                     $currentPath = request()->path();
                     if (str_contains($currentPath, '/atk')) {
@@ -97,19 +88,19 @@
                         $title = 'Data Gudang Komputer';
                     }
                 @endphp
-                
+
                 <h4>{{ $title }}</h4>
-                
+
                 <div class="d-flex flex-wrap gap-2">
                     @php
                         // Tentukan apakah tombol tambah harus ditampilkan
                         $showAddButtons = false; // Default: TIDAK tampilkan
                         $currentPath = request()->path();
-                        
+
                         // HANYA tampilkan tombol jika:
                         // 1. Halaman Data Keseluruhan (tidak ada selectedGudang DAN tidak ada segment gudang)
                         // 2. ATAU di Gudang Utama
-                        
+
                         if (!isset($selectedGudang) && !str_contains($currentPath, '/gudang/')) {
                             // Halaman Data Keseluruhan
                             $showAddButtons = true;
@@ -121,7 +112,7 @@
                             }
                         }
                     @endphp
-                    
+
                     @if($showAddButtons)
                         <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#modalTambahKategori">
                             <div class="btn-text">+ Tambah Kategori</div>
@@ -130,7 +121,7 @@
                             <div class="btn-text">+ Tambah Barang</div>
                         </button>
                     @endif
-                    
+
                     <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalFilterBarang">
                         <i class="bi bi-funnel"></i> Filter
                     </button>
@@ -139,12 +130,16 @@
 
             {{-- Search Form dengan Autocomplete --}}
             <div class="position-relative mb-3">
-                <form action="{{ route('admin.datakeseluruhan.index') }}" method="GET" class="input-group" id="searchForm">
+                <form action="{{ url()->current() }}" method="GET" class="input-group" id="searchForm">
                     <span class="input-group-text"><i class="bi bi-search"></i></span>
                     <input type="text" name="search" id="searchInput" class="form-control"
                         placeholder="Telusuri barang (nama atau kode)" value="{{ request('search') }}"
                         autocomplete="off">
                     <button class="btn btn-outline-secondary" type="submit">Cari</button>
+
+                    @if(isset($selectedGudang))
+                        <input type="hidden" name="gudang_id" value="{{ $selectedGudang->id }}">
+                    @endif
                 </form>
 
                 {{-- Dropdown Suggestions --}}
@@ -154,7 +149,8 @@
             </div>
 
             {{-- Jika ada filter/search --}}
-            @if (request()->filled('search') ||
+            @if (
+                    request()->filled('search') ||
                     request()->filled('kode') ||
                     request()->filled('stok_min') ||
                     request()->filled('stok_max') ||
@@ -162,7 +158,8 @@
                     request()->filled('gudang_id') ||
                     request()->filled('satuan') ||
                     request()->filled('harga_min') ||
-                    request()->filled('harga_max'))
+                    request()->filled('harga_max')
+                )
                 <h5 class="mt-3">Hasil Pencarian</h5>
                 @if ($barang->count() > 0)
                     <div class="table-responsive">
@@ -175,49 +172,88 @@
                                     <th>Harga</th>
                                     <th>Stok</th>
                                     <th>Satuan</th>
+                                    @if (!request()->filled('gudang_id'))
+                                        <th>Gudang</th>
+                                    @endif
                                     <th>Kategori</th>
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($barang as $i => $b)
-    @php
-        // PERBAIKAN: Cek apakah gudang adalah Gudang Utama
-        $stokDisplay = 0;
-        
-        if (request()->filled('gudang_id') && isset($selectedGudang)) {
-            // Jika ada filter gudang
-            $isGudangUtama = stripos($selectedGudang->nama, 'utama') !== false;
-            
-            if ($isGudangUtama) {
-                // Ambil dari PB Stok untuk Gudang Utama
-                $stokDisplay = $b->pbStok ? $b->pbStok->stok : 0;
-            } else {
-                // Ambil dari PJ Stok untuk gudang lain
-                $pjStok = $b->pjStok()->where('id_gudang', $selectedGudang->id)->first();
-                $stokDisplay = $pjStok ? $pjStok->stok : 0;
-            }
-        } elseif ($b->kategori && $b->kategori->gudang_id) {
-            // Stok di gudang kategori
-            $isGudangUtama = stripos($b->kategori->gudang->nama ?? '', 'utama') !== false;
-            
-            if ($isGudangUtama) {
-                // Ambil dari PB Stok untuk Gudang Utama
-                $stokDisplay = $b->pbStok ? $b->pbStok->stok : 0;
-            } else {
-                // Ambil dari PJ Stok untuk gudang lain
-                $pjStok = $b->pjStok()->where('id_gudang', $b->kategori->gudang_id)->first();
-                $stokDisplay = $pjStok ? $pjStok->stok : 0;
-            }
-        } else {
-            // Total stok: PB + semua PJ
-            $stokDisplay = ($b->pbStok ? $b->pbStok->stok : 0) + $b->pjStok()->sum('stok');
-        }
-    @endphp
-    <tr @if ($stokDisplay < 10) class="row-low-stock" @endif>
-        {{-- ... rest of table row ... --}}
-    </tr>
-@endforeach
+                                @if (!request()->filled('gudang_id') && isset($hasilCari))
+                                    @foreach ($hasilCari as $i => $row)
+                                        @php $stokDisplay = $row->stok; @endphp
+                                        <tr @class(['row-low-stock' => $stokDisplay < 10])>
+                                            <td>{{ $i + 1 }}</td>
+                                            <td>{{ $row->b->nama_barang }}</td>
+                                            <td>{{ $row->b->kode_barang }}</td>
+                                            <td>Rp {{ number_format((int) ($row->b->harga_barang ?? 0), 0, ',', '.') }}</td>
+                                            <td>{{ $stokDisplay }}</td>
+                                            <td>{{ $row->b->satuan }}</td>
+                                            <td>{{ $row->gudang }}</td>
+                                            <td>{{ $row->kategori }}</td>
+                                            <td class="d-flex gap-2 text-center">
+
+                                                <button class="btn btn-sm btn-warning" data-bs-toggle="modal"
+                                                    data-bs-target="#modalEditBarang-{{ $row->b->kode_barang }}">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-danger"
+                                                    onclick="confirmDelete('{{ route('admin.barang.destroy', $row->b->kode_barang) }}', 'Barang {{ $row->b->nama_barang }}')">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                @else
+                                    {{-- fallback: ketika user memilih gudang tertentu → pakai loop lama --}}
+                                    @foreach ($barang as $i => $b)
+                                        @php
+                                            $stokDisplay = 0;
+                                            if (request()->filled('gudang_id') && isset($selectedGudang)) {
+                                                $isGudangUtama = stripos($selectedGudang->nama, 'utama') !== false;
+                                                if ($isGudangUtama) {
+                                                    $stokDisplay = $b->pbStok->stok ?? 0;
+                                                } else {
+                                                    $pjStok = $b->pjStok()->where('id_gudang', $selectedGudang->id)->first();
+                                                    $stokDisplay = $pjStok->stok ?? 0;
+                                                }
+                                            } elseif ($b->kategori && $b->kategori->gudang_id) {
+                                                $isGudangUtama = stripos($b->kategori->gudang->nama ?? '', 'utama') !== false;
+                                                if ($isGudangUtama) {
+                                                    $stokDisplay = $b->pbStok->stok ?? 0;
+                                                } else {
+                                                    $pjStok = $b->pjStok()->where('id_gudang', $b->kategori->gudang_id)->first();
+                                                    $stokDisplay = $pjStok->stok ?? 0;
+                                                }
+                                            } else {
+                                                $stokDisplay = ($b->pbStok->stok ?? 0) + $b->pjStok()->sum('stok');
+                                            }
+                                        @endphp
+
+                                        <tr @class(['row-low-stock' => $stokDisplay < 10])>
+                                            <td>{{ $i + 1 }}</td>
+                                            <td>{{ $b->nama_barang }}</td>
+                                            <td>{{ $b->kode_barang }}</td>
+                                            <td>Rp {{ number_format((int) ($b->harga_barang ?? 0), 0, ',', '.') }}</td>
+                                            <td>{{ $stokDisplay }}</td>
+                                            <td>{{ $b->satuan }}</td>
+                                            @if (!request()->filled('gudang_id'))
+                                            <td>-</td> @endif
+                                            <td>{{ $b->kategori->nama ?? '-' }}</td>
+                                            <td class="d-flex gap-2">
+                                                <button class="btn btn-sm btn-warning" data-bs-toggle="modal"
+                                                    data-bs-target="#modalEditBarang-{{ $b->kode_barang }}">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-danger"
+                                                    onclick="confirmDelete('{{ route('admin.barang.destroy', $b->kode_barang) }}', 'Barang {{ $b->nama_barang }}')">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                @endif
                             </tbody>
                         </table>
                     </div>
@@ -225,128 +261,247 @@
                     <div class="alert alert-warning">Tidak ada data ditemukan untuk kriteria pencarian Anda</div>
                 @endif
             @endif
-
-            {{-- Jika tidak ada filter/search --}}
-            @if (
-                !request()->filled('search') &&
-                    !request()->filled('kode') &&
-                    !request()->filled('stok_min') &&
-                    !request()->filled('stok_max') &&
-                    !request()->filled('kategori_id') &&
-                    !request()->filled('gudang_id') &&
-                    !request()->filled('satuan') &&
-                    !request()->filled('harga_min') &&
-                    !request()->filled('harga_max'))
-                <div class="table-responsive mt-3">
-                    <table class="table table-bordered">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>KATEGORI</th>
-                                
-                                <th style="width:180px" class="text-center">AKSI</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($kategori as $k)
-                                <tr>
-                                    <td>{{ $k->nama }}</td>
-                                    
-                                    <td class="text-center">
-                                        <div class="d-flex flex-wrap justify-content-center gap-2">
-                                            <button class="btn btn-sm btn-success"
-                                                onclick="toggleDetail({{ $k->id }})"><i
-                                                    class="bi bi-eye"></i></button>
-                                            <button type="button" class="btn btn-sm btn-danger"
-                                                onclick="confirmDelete('{{ route('admin.kategori.destroy', $k->id) }}', 'Kategori {{ $k->nama }}')">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-
-                                <tr id="detail-{{ $k->id }}" style="display:none;">
-                                    <td colspan="3">
-                                        @if ($k->barang->count())
-                                            <div class="table-responsive">
-                                                <table class="table table-striped">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>No</th>
-                                                            <th>Nama</th>
-                                                            <th>Kode</th>
-                                                            <th>Harga</th>
-                                                            <th>Stok</th>
-                                                            <th>Satuan</th>
-                                                            <th>Aksi</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        @foreach ($k->barang as $i => $b)
+<!-- Jika tidak ada search atau filter -->
+        @if (
+    !request()->filled('search') &&
+    !request()->filled('kode') &&
+    !request()->filled('stok_min') &&
+    !request()->filled('stok_max') &&
+    !request()->filled('kategori_id') &&
+    !request()->filled('gudang_id') &&
+    !request()->filled('satuan') &&
+    !request()->filled('harga_min') &&
+    !request()->filled('harga_max')
+)
     @php
-        // PERBAIKAN: Cek apakah gudang adalah Gudang Utama
-        $stokDisplay = 0;
-        
-        if (isset($selectedGudang)) {
-            // Jika ada filter gudang
-            $isGudangUtama = stripos($selectedGudang->nama, 'utama') !== false;
-            
-            if ($isGudangUtama) {
-                // Ambil dari PB Stok untuk Gudang Utama
-                $stokDisplay = $b->pbStok ? $b->pbStok->stok : 0;
-            } else {
-                // Ambil dari PJ Stok untuk gudang lain
-                $pjStok = $b->pjStok()->where('id_gudang', $selectedGudang->id)->first();
-                $stokDisplay = $pjStok ? $pjStok->stok : 0;
-            }
-        } else {
-            // Jika tidak ada filter gudang, ambil stok dari gudang kategori
-            if ($k->gudang_id) {
-                $isGudangUtama = stripos($k->gudang->nama ?? '', 'utama') !== false;
-                
-                if ($isGudangUtama) {
-                    // Ambil dari PB Stok untuk Gudang Utama
-                    $stokDisplay = $b->pbStok ? $b->pbStok->stok : 0;
-                } else {
-                    // Ambil dari PJ Stok untuk gudang lain
-                    $pjStok = $b->pjStok()->where('id_gudang', $k->gudang_id)->first();
-                    $stokDisplay = $pjStok ? $pjStok->stok : 0;
-                }
-            }
-        }
-                                                            @endphp
-                                                            <tr @if ($stokDisplay < 10) class="row-low-stock" @endif>
-                                                                <td>{{ $i + 1 }}</td>
-                                                                <td>{{ $b->nama_barang }}</td>
-                                                                <td>{{ $b->kode_barang }}</td>
-                                                                <td>Rp {{ number_format($b->harga_barang ?? 0, 0, ',', '.') }}</td>
-                                                                <td>{{ $stokDisplay }}</td>
-                                                                <td>{{ $b->satuan }}</td>
-                                                                <td class="d-flex gap-2">
-                                                                    <button class="btn btn-sm btn-warning"
-                                                                        data-bs-toggle="modal"
-                                                                        data-bs-target="#modalEditBarang-{{ $b->kode_barang }}">
-                                                                        <i class="bi bi-pencil"></i>
-                                                                    </button>
-                                                                    <button type="button" class="btn btn-sm btn-danger"
-                                                                        onclick="confirmDelete('{{ route('admin.barang.destroy', $b->kode_barang) }}', 'Barang {{ $b->nama_barang }}')">
-                                                                        <i class="bi bi-trash"></i>
-                                                                    </button>
-                                                                </td>
-                                                            </tr>
-                                                        @endforeach
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        @else
-                                            <p class="text-muted">Belum ada barang pada kategori ini.</p>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @endif
+    // Cek apakah ini halaman Data Keseluruhan atau gudang spesifik
+    $isDataKeseluruhan = !isset($selectedGudang);
+
+    // Group kategori berdasarkan gudang jika di Data Keseluruhan
+    $kategoriByGudang = $isDataKeseluruhan ? $kategori->groupBy('gudang.nama') : null;
+    @endphp
+
+    {{-- TAMPILAN NESTED - KHUSUS DATA KESELURUHAN --}}
+    @if($isDataKeseluruhan)
+            <div class="table-responsive mt-3">
+                <table class="table table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th>STRUKTUR DATA</th>
+                            <th style="width:180px" class="text-center">AKSI</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($kategoriByGudang as $namaGudang => $kategoriList)
+                            {{-- LEVEL 1: GUDANG --}}
+                            <tr class="table-secondary">
+                                <td>
+                                   
+                                        
+                                        {{ $namaGudang ?: 'Gudang Tidak Diketahui' }}
+                    
+                                   
+                                </td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-primary" 
+                                            onclick="toggleGudang('{{ Str::slug($namaGudang) }}')">
+                                        <i class="bi bi-chevron-down" id="icon-gudang-{{ Str::slug($namaGudang) }}"></i>
+                                        Expand
+                                    </button>
+                                </td>
+                            </tr>
+
+                            {{-- CONTAINER KATEGORI PER GUDANG --}}
+                            <tr id="gudang-{{ Str::slug($namaGudang) }}" style="display:none;">
+                                <td colspan="2" class="p-0">
+                                    <table class="table table-sm mb-2">
+                                        <tbody>
+                                            @foreach ($kategoriList as $k)
+                                                {{-- LEVEL 2: KATEGORI --}}
+                                                <tr class="table-light">
+                                                   <td style="padding-left: 30px;">
+    {{ $k->nama }}
+</td>
+
+
+                                                    <td style="width:180px" class="text-center">
+                                                        <div class="d-flex flex-wrap justify-content-center gap-2">
+                                                            <button class="btn btn-sm btn-success"
+                                                                    onclick="toggleKategori({{ $k->id }})">
+                                                                <i class="bi bi-eye" id="icon-kategori-{{ $k->id }}"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-sm btn-danger"
+                                                                    onclick="confirmDelete('{{ route('admin.kategori.destroy', $k->id) }}', 'Kategori {{ $k->nama }}')">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+
+                                                {{-- LEVEL 3: BARANG --}}
+                                                <tr id="kategori-{{ $k->id }}" style="display:none;">
+                                                    <td colspan="2" style="padding-left: 60px; background-color: #f8f9fa;">
+                                                        @if ($k->barang->count())
+                                                            <div class="table-responsive">
+                                                                <table class="table table-striped table-sm">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th>No</th>
+                                                                            <th>Nama</th>
+                                                                            <th>Kode</th>
+                                                                            <th>Harga</th>
+                                                                            <th>Stok</th>
+                                                                            <th>Satuan</th>
+                                                                            <th>Aksi</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        @foreach ($k->barang as $i => $b)
+                                                                            @php
+                                                                                $stokDisplay = 0;
+
+                                                                                if ($k->gudang_id) {
+                                                                                    $isGudangUtama = stripos($k->gudang->nama ?? '', 'utama') !== false;
+
+                                                                                    if ($isGudangUtama) {
+                                                                                        $stokDisplay = $b->pbStok ? $b->pbStok->stok : 0;
+                                                                                    } else {
+                                                                                        $pjStok = $b->pjStok()->where('id_gudang', $k->gudang_id)->first();
+                                                                                        $stokDisplay = $pjStok ? $pjStok->stok : 0;
+                                                                                    }
+                                                                                }
+                                                                            @endphp
+                                                                            <tr @if ($stokDisplay < 10) class="row-low-stock" @endif>
+                                                                                <td>{{ $i + 1 }}</td>
+                                                                                <td>{{ $b->nama_barang }}</td>
+                                                                                <td>{{ $b->kode_barang }}</td>
+                                                                                <td>Rp {{ number_format($b->harga_barang ?? 0, 0, ',', '.') }}</td>
+                                                                                <td>{{ $stokDisplay }}</td>
+                                                                                <td>{{ $b->satuan }}</td>
+                                                                                <td class="d-flex gap-2">
+                                                                                    <button class="btn btn-sm btn-warning"
+                                                                                        data-bs-toggle="modal"
+                                                                                        data-bs-target="#modalEditBarang-{{ $b->kode_barang }}">
+                                                                                        <i class="bi bi-pencil"></i>
+                                                                                    </button>
+                                                                                    <button type="button" class="btn btn-sm btn-danger"
+                                                                                        onclick="confirmDelete('{{ route('admin.barang.destroy', $b->kode_barang) }}', 'Barang {{ $b->nama_barang }}')">
+                                                                                        <i class="bi bi-trash"></i>
+                                                                                    </button>
+                                                                                </td>
+                                                                            </tr>
+                                                                        @endforeach
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        @else
+                                                            <p class="text-muted">Belum ada barang pada kategori ini.</p>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+        {{-- TAMPILAN NORMAL - UNTUK GUDANG SPESIFIK (ATK, Listrik, dll) --}}
+    @else
+        <div class="table-responsive mt-3">
+            <table class="table table-bordered">
+                <thead class="table-dark">
+                    <tr>
+                        <th>KATEGORI</th>
+                        <th style="width:180px" class="text-center">AKSI</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($kategori as $k)
+                        <tr>
+                            <td>{{ $k->nama }}</td>
+                            <td class="text-center">
+                                <div class="d-flex flex-wrap justify-content-center gap-2">
+                                    <button class="btn btn-sm btn-success"
+                                        onclick="toggleDetail({{ $k->id }})"><i
+                                            class="bi bi-eye"></i></button>
+                                    <button type="button" class="btn btn-sm btn-danger"
+                                        onclick="confirmDelete('{{ route('admin.kategori.destroy', $k->id) }}', 'Kategori {{ $k->nama }}')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr id="detail-{{ $k->id }}" style="display:none;">
+                            <td colspan="3">
+                                @if ($k->barang->count())
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>No</th>
+                                                    <th>Nama</th>
+                                                    <th>Kode</th>
+                                                    <th>Harga</th>
+                                                    <th>Stok</th>
+                                                    <th>Satuan</th>
+                                                    <th>Aksi</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach ($k->barang as $i => $b)
+                                                    @php
+                                                        $stokDisplay = 0;
+
+                                                        if (isset($selectedGudang)) {
+                                                            $isGudangUtama = stripos($selectedGudang->nama, 'utama') !== false;
+
+                                                            if ($isGudangUtama) {
+                                                                $stokDisplay = $b->pbStok ? $b->pbStok->stok : 0;
+                                                            } else {
+                                                                $pjStok = $b->pjStok()->where('id_gudang', $selectedGudang->id)->first();
+                                                                $stokDisplay = $pjStok ? $pjStok->stok : 0;
+                                                            }
+                                                        }
+                                                    @endphp
+                                                    <tr @if ($stokDisplay < 10) class="row-low-stock" @endif>
+                                                        <td>{{ $i + 1 }}</td>
+                                                        <td>{{ $b->nama_barang }}</td>
+                                                        <td>{{ $b->kode_barang }}</td>
+                                                        <td>Rp {{ number_format($b->harga_barang ?? 0, 0, ',', '.') }}</td>
+                                                        <td>{{ $stokDisplay }}</td>
+                                                        <td>{{ $b->satuan }}</td>
+                                                        <td class="d-flex gap-2">
+                                                            <button class="btn btn-sm btn-warning"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#modalEditBarang-{{ $b->kode_barang }}">
+                                                                <i class="bi bi-pencil"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-sm btn-danger"
+                                                                onclick="confirmDelete('{{ route('admin.barang.destroy', $b->kode_barang) }}', 'Barang {{ $b->nama_barang }}')">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                @else
+                                    <p class="text-muted">Belum ada barang pada kategori ini.</p>
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    @endif
+@endif
         </section>
     </main>
 
@@ -432,29 +587,31 @@
                                 @endforeach
                             </select>
                             @error('id_kategori')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        <div class="col-md-6">
-                            <label>Harga / Satuan</label>
-                            <div class="input-group">
-                                <span class="input-group-text">Rp</span>
-                                <input type="text" name="harga_display" id="hargaTambah"
-                                    class="form-control @error('harga_barang') is-invalid @enderror"
-                                    value="{{ old('harga_barang') }}" placeholder="Harga">
-                                <input type="hidden" name="harga_barang" id="hargaTambahHidden">
-                                <select name="satuan" class="form-select">
-                                    <option value="Pcs" @if (old('satuan') == 'Pcs') selected @endif>Pcs</option>
-                                    <option value="Box" @if (old('satuan') == 'Box') selected @endif>Box</option>
-                                    <option value="Pack" @if (old('satuan') == 'Pack') selected @endif>Pack</option>
-                                    <option value="Rim" @if (old('satuan') == 'Rim') selected @endif>Rim</option>
-                                    <option value="Unit" @if (old('satuan') == 'Unit') selected @endif>Unit</option>
-                                </select>
-                            </div>
-                            @error('harga_barang')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
+                        <div class="col-md-6">
+    <label>Harga / Satuan</label>
+    <div class="input-group">
+        <span class="input-group-text">Rp</span>
+        <input type="text" name="harga_display" id="hargaTambah"
+            class="form-control @error('harga_barang') is-invalid @enderror"
+            value="{{ old('harga_barang') }}" placeholder="Harga" required>
+        <input type="hidden" name="harga_barang" id="hargaTambahHidden" required>
+        <select name="satuan" class="form-select" required>
+            <option value="">-- Pilih Satuan --</option>
+            <option value="Pcs" @if (old('satuan') == 'Pcs') selected @endif>Pcs</option>
+            <option value="Box" @if (old('satuan') == 'Box') selected @endif>Box</option>
+            <option value="Pack" @if (old('satuan') == 'Pack') selected @endif>Pack</option>
+            <option value="Rim" @if (old('satuan') == 'Rim') selected @endif>Rim</option>
+            <option value="Unit" @if (old('satuan') == 'Unit') selected @endif>Unit</option>
+        </select>
+    </div>
+    @error('harga_barang')
+        <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -648,336 +805,395 @@
         </div>
     </div>
 @push('scripts')
-    {{-- JavaScript --}}
-    <script>
-        // Toggle detail function
-        function toggleDetail(id) {
-            let el = document.getElementById('detail-' + id);
-            if (el.style.display === 'none') {
-                el.style.display = 'table-row';
-            } else {
-                el.style.display = 'none';
-            }
-        }
-
-        // Confirm delete function
-        function confirmDelete(actionUrl, itemName) {
-            document.getElementById('deleteForm').setAttribute('action', actionUrl);
-            document.getElementById('deleteMessage').innerText =
-                "Apakah Anda yakin ingin menghapus " + itemName + "?";
-            let modal = new bootstrap.Modal(document.getElementById('modalConfirmDelete'));
-            modal.show();
-        }
-
-        // Format Rupiah function - FIXED
-        function formatRupiah(angka) {
-            // Konversi ke string dan hapus semua non-digit
-            let numberString = angka.toString().replace(/[^\d]/g, '');
+        {{-- JavaScript --}}
+        <script>
+            ///baru banget
+          // Toggle Gudang (Level 1) - Khusus Data Keseluruhan
+    function toggleGudang(slug) {
+        const container = document.getElementById('gudang-' + slug);
+        const icon = document.getElementById('icon-gudang-' + slug);
+        
+        if (container.style.display === 'none') {
+            container.style.display = 'table-row';
+            icon.classList.remove('bi-chevron-down');
+            icon.classList.add('bi-chevron-up');
+        } else {
+            container.style.display = 'none';
+            icon.classList.remove('bi-chevron-up');
+            icon.classList.add('bi-chevron-down');
             
-            // Jika kosong, return kosong
-            if (!numberString) return '';
-            
-            // Reverse string untuk memudahkan grouping
-            let reverse = numberString.split('').reverse().join('');
-            let ribuan = '';
-            
-            // Tambahkan titik setiap 3 digit
-            for (let i = 0; i < reverse.length; i++) {
-                if (i > 0 && i % 3 === 0) {
-                    ribuan += '.';
+            // Close all categories when closing warehouse
+            const categories = container.querySelectorAll('[id^="kategori-"]');
+            categories.forEach(cat => {
+                cat.style.display = 'none';
+                const catId = cat.id.replace('kategori-', '');
+                const catIcon = document.getElementById('icon-kategori-' + catId);
+                if (catIcon) {
+                    catIcon.classList.remove('bi-eye-slash');
+                    catIcon.classList.add('bi-eye');
                 }
-                ribuan += reverse[i];
-            }
-            
-            // Reverse kembali
-            return ribuan.split('').reverse().join('');
-        }
-
-        function unformatRupiah(formatted) {
-            // Hapus semua titik pemisah ribuan
-            return formatted.replace(/\./g, '');
-        }
-
-        // Handle Tambah Barang Price Format
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize Bootstrap tooltips
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
             });
+        }
+    }
 
-            const hargaTambahInput = document.getElementById('hargaTambah');
-            const hargaTambahHidden = document.getElementById('hargaTambahHidden');
-            
-            if (hargaTambahInput && hargaTambahHidden) {
-                hargaTambahInput.addEventListener('input', function() {
-                    const formatted = formatRupiah(this.value);
-                    this.value = formatted;
-                    hargaTambahHidden.value = unformatRupiah(formatted);
+    // Toggle Kategori (Level 2) - Untuk Data Keseluruhan
+    function toggleKategori(id) {
+        let el = document.getElementById('kategori-' + id);
+        let icon = document.getElementById('icon-kategori-' + id);
+        
+        if (el.style.display === 'none') {
+            el.style.display = 'table-row';
+            icon.classList.remove('bi-eye');
+            icon.classList.add('bi-eye-slash');
+        } else {
+            el.style.display = 'none';
+            icon.classList.remove('bi-eye-slash');
+            icon.classList.add('bi-eye');
+        }
+    }
+
+    // Toggle Detail - Untuk Gudang Spesifik (fungsi lama tetep dipake)
+    function toggleDetail(id) {
+        let el = document.getElementById('detail-' + id);
+        if (el.style.display === 'none') {
+            el.style.display = 'table-row';
+        } else {
+            el.style.display = 'none';
+        }
+    }
+
+
+
+
+            // Toggle detail function
+            function toggleDetail(id) {
+                let el = document.getElementById('detail-' + id);
+                if (el.style.display === 'none') {
+                    el.style.display = 'table-row';
+                } else {
+                    el.style.display = 'none';
+                }
+            }
+
+            // Confirm delete function
+            function confirmDelete(actionUrl, itemName) {
+                document.getElementById('deleteForm').setAttribute('action', actionUrl);
+                document.getElementById('deleteMessage').innerText =
+                    "Apakah Anda yakin ingin menghapus " + itemName + "?";
+                let modal = new bootstrap.Modal(document.getElementById('modalConfirmDelete'));
+                modal.show();
+            }
+
+            // Format Rupiah function - FIXED
+            function formatRupiah(angka) {
+                // Konversi ke string dan hapus semua non-digit
+                let numberString = angka.toString().replace(/[^\d]/g, '');
+
+                // Jika kosong, return kosong
+                if (!numberString) return '';
+
+                // Reverse string untuk memudahkan grouping
+                let reverse = numberString.split('').reverse().join('');
+                let ribuan = '';
+
+                // Tambahkan titik setiap 3 digit
+                for (let i = 0; i < reverse.length; i++) {
+                    if (i > 0 && i % 3 === 0) {
+                        ribuan += '.';
+                    }
+                    ribuan += reverse[i];
+                }
+
+                // Reverse kembali
+                return ribuan.split('').reverse().join('');
+            }
+
+            function unformatRupiah(formatted) {
+                // Hapus semua titik pemisah ribuan
+                return formatted.replace(/\./g, '');
+            }
+
+            // Handle Tambah Barang Price Format
+            document.addEventListener('DOMContentLoaded', function() {
+                // Initialize Bootstrap tooltips
+                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
                 });
 
-                // Set initial value if exists
-                if (hargaTambahInput.value) {
-                    const initialValue = unformatRupiah(hargaTambahInput.value);
-                    hargaTambahHidden.value = initialValue;
-                    hargaTambahInput.value = formatRupiah(initialValue);
-                }
-            }
+                const hargaTambahInput = document.getElementById('hargaTambah');
+                const hargaTambahHidden = document.getElementById('hargaTambahHidden');
 
-            // Handle Edit Barang Price Format - Setup saat modal dibuka
-            document.querySelectorAll('[id^="modalEditBarang-"]').forEach(modal => {
-                modal.addEventListener('shown.bs.modal', function() {
-                    const kodeBarang = this.id.replace('modalEditBarang-', '');
-                    const displayInput = document.getElementById('hargaEdit-' + kodeBarang);
-                    const hiddenInput = document.getElementById('hargaEditHidden-' + kodeBarang);
-                    
-                    if (displayInput && hiddenInput) {
-                        // Ambil nilai original dan konversi ke integer (buang desimal)
-                        let originalValue = displayInput.dataset.originalValue || hiddenInput.value;
-                        originalValue = parseInt(originalValue) || 0;
-                        
-                        // Set nilai awal (format saat tampil)
-                        displayInput.value = formatRupiah(originalValue.toString());
-                        hiddenInput.value = originalValue;
-                        
-                        // Remove existing listener jika ada
-                        const newDisplayInput = displayInput.cloneNode(true);
-                        displayInput.parentNode.replaceChild(newDisplayInput, displayInput);
-                        
-                        // Handler untuk input
-                        newDisplayInput.addEventListener('input', function() {
-                            const formatted = formatRupiah(this.value);
-                            this.value = formatted;
-                            hiddenInput.value = unformatRupiah(formatted);
-                        });
-                    }
-                });
-            });
-        });
+                if (hargaTambahInput && hargaTambahHidden) {
+                    hargaTambahInput.addEventListener('input', function() {
+                        const formatted = formatRupiah(this.value);
+                        this.value = formatted;
+                        hargaTambahHidden.value = unformatRupiah(formatted);
+                    });
 
-        // Autocomplete search functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const searchInput = document.getElementById('searchInput');
-            const suggestionsContainer = document.getElementById('searchSuggestions');
-            let currentSuggestions = [];
-            let activeSuggestionIndex = -1;
-            let searchTimeout;
-
-            if (!searchInput || !suggestionsContainer) {
-                return;
-            }
-
-            function getActiveGudangId() {
-                const modalGudangSelect = document.querySelector('#modalFilterBarang select[name="gudang_id"]');
-                if (modalGudangSelect && modalGudangSelect.value) {
-                    return modalGudangSelect.value;
-                }
-
-                const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.get('gudang_id')) {
-                    return urlParams.get('gudang_id');
-                }
-
-                const currentPath = window.location.pathname;
-                if (currentPath.includes('/atk')) {
-                    return getGudangIdByName('ATK');
-                } else if (currentPath.includes('/listrik')) {
-                    return getGudangIdByName('Listrik');
-                } else if (currentPath.includes('/kebersihan')) {
-                    return getGudangIdByName('Kebersihan');
-                } else if (currentPath.includes('/komputer')) {
-                    return getGudangIdByName('Komputer');
-                }
-
-                return null;
-            }
-
-            function getGudangIdByName(namaGudang) {
-                const gudangSelect = document.querySelector('select[name="gudang_id"]');
-                if (!gudangSelect) return null;
-
-                for (let option of gudangSelect.options) {
-                    if (option.text.toLowerCase().includes(namaGudang.toLowerCase())) {
-                        return option.value;
+                    // Set initial value if exists
+                    if (hargaTambahInput.value) {
+                        const initialValue = unformatRupiah(hargaTambahInput.value);
+                        hargaTambahHidden.value = initialValue;
+                        hargaTambahInput.value = formatRupiah(initialValue);
                     }
                 }
-                return null;
-            }
 
-            function fetchSuggestions(query) {
-                if (query.length < 2) {
-                    hideSuggestions();
-                    return;
-                }
+                // Handle Edit Barang Price Format - Setup saat modal dibuka
+                document.querySelectorAll('[id^="modalEditBarang-"]').forEach(modal => {
+                    modal.addEventListener('shown.bs.modal', function() {
+                        const kodeBarang = this.id.replace('modalEditBarang-', '');
+                        const displayInput = document.getElementById('hargaEdit-' + kodeBarang);
+                        const hiddenInput = document.getElementById('hargaEditHidden-' + kodeBarang);
 
-                showLoading();
-                clearTimeout(searchTimeout);
+                        if (displayInput && hiddenInput) {
+                            // Ambil nilai original dan konversi ke integer (buang desimal)
+                            let originalValue = displayInput.dataset.originalValue || hiddenInput.value;
+                            originalValue = parseInt(originalValue) || 0;
 
-                searchTimeout = setTimeout(() => {
-                    const activeGudangId = getActiveGudangId();
-                    let searchUrl = `{{ route('admin.api.search.barang') }}?q=${encodeURIComponent(query)}`;
-                    
-                    if (activeGudangId) {
-                        searchUrl += `&gudang_id=${activeGudangId}`;
-                    }
+                            // Set nilai awal (format saat tampil)
+                            displayInput.value = formatRupiah(originalValue.toString());
+                            hiddenInput.value = originalValue;
 
-                    fetch(searchUrl)
-                        .then(response => response.json())
-                        .then(data => {
-                            currentSuggestions = data;
-                            displaySuggestions(data);
-                        })
-                        .catch(error => {
-                            console.error('Search error:', error);
-                            hideSuggestions();
-                        });
-                }, 300);
-            }
+                            // Remove existing listener jika ada
+                            const newDisplayInput = displayInput.cloneNode(true);
+                            displayInput.parentNode.replaceChild(newDisplayInput, displayInput);
 
-            function showLoading() {
-                suggestionsContainer.innerHTML = '<div class="dropdown-item">Mencari...</div>';
-                suggestionsContainer.style.display = 'block';
-            }
-
-            function displaySuggestions(suggestions) {
-                if (suggestions.length === 0) {
-                    suggestionsContainer.innerHTML = 
-                        '<div class="dropdown-item">Tidak ada barang ditemukan</div>';
-                    return;
-                }
-
-                let html = '';
-                suggestions.forEach((item, index) => {
-                    const stockStatusClass = item.stock_status === 'empty' ? 'text-danger' :
-                        item.stock_status === 'low' ? 'text-warning' : 'text-success';
-                    const stockText = item.stock_status === 'empty' ? 'Habis' :
-                        item.stock_status === 'low' ? 'Sedikit' : 'Tersedia';
-
-                    html += `
-                        <div class="dropdown-item cursor-pointer" data-index="${index}" style="cursor: pointer;">
-                            <div class="fw-bold">${item.nama}</div>
-                            <small class="text-muted">Kode: ${item.kode} | Kategori: ${item.kategori} | Gudang: ${item.gudang}</small><br>
-                            <small>Stok: <span class="${stockStatusClass}">${item.stok} - ${stockText}</span></small>
-                        </div>
-                    `;
-                });
-
-                suggestionsContainer.innerHTML = html;
-                suggestionsContainer.style.display = 'block';
-
-                suggestionsContainer.querySelectorAll('.dropdown-item').forEach(item => {
-                    if (item.dataset.index) {
-                        item.addEventListener('click', function() {
-                            const index = parseInt(this.dataset.index);
-                            selectSuggestion(index);
-                        });
-                        
-                        item.addEventListener('mouseenter', function() {
-                            activeSuggestionIndex = parseInt(this.dataset.index);
-                            updateActiveSuggestion();
-                        });
-                    }
-                });
-            }
-
-            function hideSuggestions() {
-                suggestionsContainer.style.display = 'none';
-                activeSuggestionIndex = -1;
-            }
-
-            function selectSuggestion(index) {
-                if (currentSuggestions[index]) {
-                    const suggestion = currentSuggestions[index];
-                    searchInput.value = suggestion.nama;
-                    hideSuggestions();
-
-                    const form = document.getElementById('searchForm');
-                    const activeGudangId = getActiveGudangId();
-                    
-                    if (activeGudangId) {
-                        let hiddenGudangInput = form.querySelector('input[name="gudang_id"]');
-                        if (!hiddenGudangInput) {
-                            hiddenGudangInput = document.createElement('input');
-                            hiddenGudangInput.type = 'hidden';
-                            hiddenGudangInput.name = 'gudang_id';
-                            form.appendChild(hiddenGudangInput);
+                            // Handler untuk input
+                            newDisplayInput.addEventListener('input', function() {
+                                const formatted = formatRupiah(this.value);
+                                this.value = formatted;
+                                hiddenInput.value = unformatRupiah(formatted);
+                            });
                         }
-                        hiddenGudangInput.value = activeGudangId;
-                    }
-                    
-                    form.submit();
-                }
-            }
-
-            function updateActiveSuggestion() {
-                const suggestions = suggestionsContainer.querySelectorAll('.dropdown-item[data-index]');
-                suggestions.forEach((item, index) => {
-                    if (parseInt(item.dataset.index) === activeSuggestionIndex) {
-                        item.classList.add('active');
-                    } else {
-                        item.classList.remove('active');
-                    }
+                    });
                 });
-            }
-
-            // Event listeners
-            searchInput.addEventListener('input', function() {
-                fetchSuggestions(this.value.trim());
             });
 
-            searchInput.addEventListener('keydown', function(e) {
-                const suggestions = suggestionsContainer.querySelectorAll('.dropdown-item[data-index]');
+            // Autocomplete search functionality
+            document.addEventListener('DOMContentLoaded', function() {
+                const searchInput = document.getElementById('searchInput');
+                const suggestionsContainer = document.getElementById('searchSuggestions');
+                let currentSuggestions = [];
+                let activeSuggestionIndex = -1;
+                let searchTimeout;
 
-                if (e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    if (suggestions.length > 0) {
-                        activeSuggestionIndex = activeSuggestionIndex < suggestions.length - 1 
-                            ? activeSuggestionIndex + 1 
-                            : 0;
-                        updateActiveSuggestion();
-                    }
-                } else if (e.key === 'ArrowUp') {
-                    e.preventDefault();
-                    if (suggestions.length > 0) {
-                        activeSuggestionIndex = activeSuggestionIndex > 0 
-                            ? activeSuggestionIndex - 1 
-                            : suggestions.length - 1;
-                        updateActiveSuggestion();
-                    }
-                } else if (e.key === 'Enter') {
-                    if (activeSuggestionIndex >= 0 && suggestions.length > 0) {
-                        e.preventDefault();
-                        selectSuggestion(activeSuggestionIndex);
-                    }
-                } else if (e.key === 'Escape') {
-                    hideSuggestions();
+                if (!searchInput || !suggestionsContainer) {
+                    return;
                 }
-            });
 
-            searchInput.addEventListener('focus', function() {
-                if (this.value.trim().length >= 2) {
+                function getActiveGudangId() {
+     const hiddenInForm = document.querySelector('#searchForm input[name="gudang_id"]');
+        if (hiddenInForm && hiddenInForm.value) return hiddenInForm.value;
+
+        const modalGudangSelect = document.querySelector('#modalFilterBarang select[name="gudang_id"]');
+        if (modalGudangSelect && modalGudangSelect.value) return modalGudangSelect.value;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('gudang_id')) return urlParams.get('gudang_id');
+
+        const currentPath = window.location.pathname;
+        if (currentPath.includes('/atk')) return getGudangIdByName('ATK');
+        if (currentPath.includes('/listrik')) return getGudangIdByName('Listrik');
+        if (currentPath.includes('/kebersihan')) return getGudangIdByName('Kebersihan');
+        if (currentPath.includes('/komputer')) return getGudangIdByName('Komputer');
+
+        return null;
+    }
+
+                function getGudangIdByName(namaGudang) {
+                    const gudangSelect = document.querySelector('select[name="gudang_id"]');
+                    if (!gudangSelect) return null;
+
+                    for (let option of gudangSelect.options) {
+                        if (option.text.toLowerCase().includes(namaGudang.toLowerCase())) {
+                            return option.value;
+                        }
+                    }
+                    return null;
+                }
+
+                function fetchSuggestions(query) {
+                    if (query.length < 2) {
+                        hideSuggestions();
+                        return;
+                    }
+
+                    showLoading();
+                    clearTimeout(searchTimeout);
+
+                    searchTimeout = setTimeout(() => {
+                        const activeGudangId = getActiveGudangId();
+                        let searchUrl = `{{ route('admin.api.search.barang') }}?q=${encodeURIComponent(query)}`;
+
+                        if (activeGudangId) {
+                            searchUrl += `&gudang_id=${activeGudangId}`;
+                        }
+
+                        fetch(searchUrl)
+                            .then(response => response.json())
+                            .then(data => {
+                                currentSuggestions = data;
+                                displaySuggestions(data);
+                            })
+                            .catch(error => {
+                                console.error('Search error:', error);
+                                hideSuggestions();
+                            });
+                    }, 300);
+                }
+
+                function showLoading() {
+                    suggestionsContainer.innerHTML = '<div class="dropdown-item">Mencari...</div>';
+                    suggestionsContainer.style.display = 'block';
+                }
+
+                function displaySuggestions(suggestions) {
+                    if (suggestions.length === 0) {
+                        suggestionsContainer.innerHTML = 
+                            '<div class="dropdown-item">Tidak ada barang ditemukan</div>';
+                        return;
+                    }
+
+                    let html = '';
+                    suggestions.forEach((item, index) => {
+                        const stockStatusClass = item.stock_status === 'empty' ? 'text-danger' :
+                            item.stock_status === 'low' ? 'text-warning' : 'text-success';
+                        const stockText = item.stock_status === 'empty' ? 'Habis' :
+                            item.stock_status === 'low' ? 'Sedikit' : 'Tersedia';
+
+                        html += `
+                            <div class="dropdown-item cursor-pointer" data-index="${index}" style="cursor: pointer;">
+                                <div class="fw-bold">${item.nama}</div>
+                                <small class="text-muted">Kode: ${item.kode} | Kategori: ${item.kategori} | Gudang: ${item.gudang}</small><br>
+                                <small>Stok: <span class="${stockStatusClass}">${item.stok} - ${stockText}</span></small>
+                            </div>
+                        `;
+                    });
+
+                    suggestionsContainer.innerHTML = html;
+                    suggestionsContainer.style.display = 'block';
+
+                    suggestionsContainer.querySelectorAll('.dropdown-item').forEach(item => {
+                        if (item.dataset.index) {
+                            item.addEventListener('click', function() {
+                                const index = parseInt(this.dataset.index);
+                                selectSuggestion(index);
+                            });
+
+                            item.addEventListener('mouseenter', function() {
+                                activeSuggestionIndex = parseInt(this.dataset.index);
+                                updateActiveSuggestion();
+                            });
+                        }
+                    });
+                }
+
+                function hideSuggestions() {
+                    suggestionsContainer.style.display = 'none';
+                    activeSuggestionIndex = -1;
+                }
+
+                function selectSuggestion(index) {
+                    if (currentSuggestions[index]) {
+                        const suggestion = currentSuggestions[index];
+                        searchInput.value = suggestion.nama;
+                        hideSuggestions();
+
+                        const form = document.getElementById('searchForm');
+                        const activeGudangId = getActiveGudangId();
+
+                        if (activeGudangId) {
+                            let hiddenGudangInput = form.querySelector('input[name="gudang_id"]');
+                            if (!hiddenGudangInput) {
+                                hiddenGudangInput = document.createElement('input');
+                                hiddenGudangInput.type = 'hidden';
+                                hiddenGudangInput.name = 'gudang_id';
+                                form.appendChild(hiddenGudangInput);
+                            }
+                            hiddenGudangInput.value = activeGudangId;
+                        }
+
+                        form.submit();
+                    }
+                }
+
+                function updateActiveSuggestion() {
+                    const suggestions = suggestionsContainer.querySelectorAll('.dropdown-item[data-index]');
+                    suggestions.forEach((item, index) => {
+                        if (parseInt(item.dataset.index) === activeSuggestionIndex) {
+                            item.classList.add('active');
+                        } else {
+                            item.classList.remove('active');
+                        }
+                    });
+                }
+
+                // Event listeners
+                searchInput.addEventListener('input', function() {
                     fetchSuggestions(this.value.trim());
-                }
-            });
+                });
 
-            document.addEventListener('click', function(e) {
-                if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
-                    hideSuggestions();
-                }
-            });
+                searchInput.addEventListener('keydown', function(e) {
+                    const suggestions = suggestionsContainer.querySelectorAll('.dropdown-item[data-index]');
 
-            // Listen to main gudang filter changes only
-            const mainGudangSelect = document.querySelector('#modalFilterBarang select[name="gudang_id"]');
-            if (mainGudangSelect) {
-                mainGudangSelect.addEventListener('change', function() {
-                    if (searchInput.value.trim().length >= 2) {
-                        fetchSuggestions(searchInput.value.trim());
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        if (suggestions.length > 0) {
+                            activeSuggestionIndex = activeSuggestionIndex < suggestions.length - 1 
+                                ? activeSuggestionIndex + 1 
+                                : 0;
+                            updateActiveSuggestion();
+                        }
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        if (suggestions.length > 0) {
+                            activeSuggestionIndex = activeSuggestionIndex > 0 
+                                ? activeSuggestionIndex - 1 
+                                : suggestions.length - 1;
+                            updateActiveSuggestion();
+                        }
+                    } else if (e.key === 'Enter') {
+                        if (activeSuggestionIndex >= 0 && suggestions.length > 0) {
+                            e.preventDefault();
+                            selectSuggestion(activeSuggestionIndex);
+                        }
+                    } else if (e.key === 'Escape') {
+                        hideSuggestions();
                     }
                 });
-            }
-        });
-    </script>
 
-    @endpush
+                searchInput.addEventListener('focus', function() {
+                    if (this.value.trim().length >= 2) {
+                        fetchSuggestions(this.value.trim());
+                    }
+                });
+
+                document.addEventListener('click', function(e) {
+                    if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+                        hideSuggestions();
+                    }
+                });
+
+                // Listen to main gudang filter changes only
+                const mainGudangSelect = document.querySelector('#modalFilterBarang select[name="gudang_id"]');
+                if (mainGudangSelect) {
+                    mainGudangSelect.addEventListener('change', function() {
+                        if (searchInput.value.trim().length >= 2) {
+                            fetchSuggestions(searchInput.value.trim());
+                        }
+                    });
+                }
+            });
+                document.addEventListener('DOMContentLoaded', function () {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    });
+
+        </script>
+
+@endpush
     
 </x-layouts.app>
