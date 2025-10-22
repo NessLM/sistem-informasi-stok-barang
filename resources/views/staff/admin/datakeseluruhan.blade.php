@@ -77,37 +77,35 @@ $isDataKeseluruhan = !isset($selectedGudang); // ← flag supaya logika view kon
         <section class="card shadow-sm p-3">
             <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
                 @php
-                    $title = 'Data Keseluruhan'; // default
-
-                    // Jika ada kategori dan semua kategori dari gudang yang sama
+                $title = 'Data Keseluruhan'; // dikunci utk mode Data Keseluruhan
+                $currentPath = request()->path();
+                $isDataKeseluruhan = !isset($selectedGudang);
+            
+                // HANYA ketika BUKAN Data Keseluruhan, boleh override judul
+                if (!$isDataKeseluruhan) {
+                    // Jika semua kategori dari gudang yang sama
                     if ($kategori->isNotEmpty()) {
                         $firstGudang = $kategori->first()->gudang->nama ?? null;
                         $allSameGudang = $kategori->every(function ($k) use ($firstGudang) {
                             return ($k->gudang->nama ?? null) === $firstGudang;
                         });
-
+            
                         if ($allSameGudang && $firstGudang) {
-                            // Hindari duplikasi kata "Gudang"
-                            if (str_starts_with($firstGudang, 'Gudang')) {
-                                $title = 'Data ' . $firstGudang;
-                            } else {
-                                $title = 'Data Gudang ' . $firstGudang;
-                            }
+                            $title = str_starts_with($firstGudang, 'Gudang')
+                                ? 'Data ' . $firstGudang
+                                : 'Data Gudang ' . $firstGudang;
                         }
                     }
-
-                    // Override berdasarkan filter gudang jika ada
+            
+                    // Override berdasarkan filter gudang (hanya berlaku jika benar2 di halaman gudang)
                     if (request()->filled('gudang_id') && isset($selectedGudang)) {
                         $gudangNama = $selectedGudang->nama;
-                        if (str_starts_with($gudangNama, 'Gudang')) {
-                            $title = 'Data ' . $gudangNama;
-                        } else {
-                            $title = 'Data Gudang ' . $gudangNama;
-                        }
+                        $title = str_starts_with($gudangNama, 'Gudang')
+                            ? 'Data ' . $gudangNama
+                            : 'Data Gudang ' . $gudangNama;
                     }
-
-                    // Override berdasarkan URL path
-                    $currentPath = request()->path();
+            
+                    // Override berdasarkan URL path (route halaman gudang tertentu)
                     if (str_contains($currentPath, '/atk')) {
                         $title = 'Data Gudang ATK';
                     } elseif (str_contains($currentPath, '/listrik')) {
@@ -116,10 +114,28 @@ $isDataKeseluruhan = !isset($selectedGudang); // ← flag supaya logika view kon
                         $title = 'Data Gudang Kebersihan';
                     } elseif (str_contains($currentPath, '/komputer')) {
                         $title = 'Data Gudang Komputer';
+                    } elseif (str_contains($currentPath, '/utama')) {
+                        $title = 'Data Gudang Utama';
                     }
-                @endphp
+                }
+            @endphp
+            
 
-                <h4>{{ $title }}</h4>
+            <h4 class="d-flex align-items-center gap-2">
+                {{ $title }}
+                @if ($isDataKeseluruhan && request()->filled('gudang_id'))
+                  @php $gAct = $gudang->firstWhere('id', (int)request('gudang_id')); @endphp
+                  @if ($gAct)
+                    <span class="filter-chip" data-gudang="{{ Str::slug($gAct->nama) }}">
+                      <i class="bi bi-funnel"></i>
+                      <span class="chip-label">Filter Gudang:</span>
+                      <span class="chip-value">{{ $gAct->nama }}</span>
+                    </span>
+                  @endif
+                @endif
+              </h4>
+              
+
 
                 <div class="d-flex flex-wrap gap-2">
                     @php
@@ -692,15 +708,25 @@ $isDataKeseluruhan = !isset($selectedGudang); // ← flag supaya logika view kon
                                 </div>
                                 <div class="col-md-6">
                                     <label>Kategori</label>
-                                    <select name="id_kategori" class="form-select" required>
-                                        @foreach ($kategori as $kat)
-                                            @if($kat->gudang && str_contains(strtolower($kat->gudang->nama), 'utama'))
-                                                <option value="{{ $kat->id }}" @if ($b->id_kategori == $kat->id) selected @endif>
-                                                    {{ $kat->nama }}
-                                                </option>
-                                            @endif
-                                        @endforeach
-                                    </select>
+                                    @php
+                                    $uniqueKategori = $kategori->groupBy(fn($k) => strtolower($k->nama))
+                                        ->map(function($items){
+                                            // pilih yang dari Gudang Utama kalau ada; kalau tidak ya ambil item pertama
+                                            $utama = $items->firstWhere(fn($it) => $it->gudang && stripos($it->gudang->nama, 'utama') !== false);
+                                            return $utama ?: $items->first();
+                                        })
+                                        ->values();
+                                @endphp
+                                
+                                <select name="kategori_id" class="form-select">
+                                    <option value="">-- Semua Kategori --</option>
+                                    @foreach ($uniqueKategori as $k)
+                                        <option value="{{ $k->id }}" @selected(request('kategori_id') == $k->id)>
+                                            {{ $k->nama }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                
                                 </div>
                                 <div class="col-md-6">
                                     <label>Harga / Satuan</label>
@@ -735,7 +761,8 @@ $isDataKeseluruhan = !isset($selectedGudang); // ← flag supaya logika view kon
     {{-- Modal Filter --}}
     <div class="modal fade" id="modalFilterBarang" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
-            <form action="{{ route('admin.datakeseluruhan.index') }}" method="GET" class="modal-content">
+            <form action="{{ url()->current() }}" method="GET" class="modal-content">
+
                 <div class="modal-header">
                     <h5 class="modal-title">Filter Barang</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -767,17 +794,31 @@ $isDataKeseluruhan = !isset($selectedGudang); // ← flag supaya logika view kon
                         </div>
 
                         <!-- Kategori -->
-                        <div class="col-md-6">
-                            <label class="form-label">Kategori</label>
-                            <select name="kategori_id" class="form-select">
-                                <option value="">-- Semua Kategori --</option>
-                                @foreach ($kategori as $k)
-                                    <option value="{{ $k->id }}" @if (request('kategori_id') == $k->id) selected @endif>
-                                        {{ $k->nama }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+                        {{-- Kategori --}}
+<div class="col-md-6">
+    <label class="form-label">Kategori</label>
+
+    @if ($isDataKeseluruhan)
+        {{-- Di Data Keseluruhan: kategori tergantung gudang --}}
+        <select name="kategori_id" id="filterKategori" class="form-select" disabled>
+            <option value="">-- Pilih Gudang dulu --</option>
+        </select>
+        <small class="text-muted d-block mt-1">
+            <i class="bi bi-info-circle"></i> Pilih gudang untuk menampilkan kategori.
+        </small>
+    @else
+        {{-- Di halaman gudang tertentu: biarkan seperti biasa (kategori dari gudang ini saja) --}}
+        <select name="kategori_id" class="form-select">
+            <option value="">-- Semua Kategori --</option>
+            @foreach ($kategori as $k)
+                <option value="{{ $k->id }}" @selected(request('kategori_id') == $k->id)>
+                    {{ $k->nama }}
+                </option>
+            @endforeach
+        </select>
+    @endif
+</div>
+
 
                         <!-- Stok -->
                         <div class="col-md-6">
@@ -791,17 +832,21 @@ $isDataKeseluruhan = !isset($selectedGudang); // ← flag supaya logika view kon
                         </div>
 
                         <!-- Gudang -->
-                        <div class="col-md-12">
-                            <label class="form-label">Gudang</label>
-                            <select name="gudang_id" class="form-select">
-                                <option value="">-- Semua Gudang --</option>
-                                @foreach ($gudang as $g)
-                                    <option value="{{ $g->id }}" @if (request('gudang_id') == $g->id) selected @endif>
-                                        {{ $g->nama }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+                        {{-- Gudang: hanya aktif di Data Keseluruhan --}}
+@if ($isDataKeseluruhan)
+<div class="col-md-12">
+    <label class="form-label">Gudang</label>
+    <select name="gudang_id" class="form-select">
+        <option value="">-- Semua Gudang --</option>
+        @foreach ($gudang as $g)
+            <option value="{{ $g->id }}" @selected(request('gudang_id') == $g->id)>
+                {{ $g->nama }}
+            </option>
+        @endforeach
+    </select>
+</div>
+@endif
+
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -1233,6 +1278,67 @@ $isDataKeseluruhan = !isset($selectedGudang); // ← flag supaya logika view kon
             });
 
         </script>
+@if ($isDataKeseluruhan)
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Peta kategori per gudang (dibentuk dari $kategori yang ada di halaman)
+    // Format: { [gudang_id]: [ {id, nama}, ... ] }
+    const kategoriByGudang = @json(
+        $kategori
+            ->groupBy('gudang_id')
+            ->map(fn($items) => $items->map(fn($it) => ['id' => $it->id, 'nama' => $it->nama])->values())
+    );
+
+    const selectGudang   = document.querySelector('#modalFilterBarang select[name="gudang_id"]');
+    const selectKategori = document.getElementById('filterKategori');
+
+    function hydrateKategori(gudangId, preselectId = null) {
+        // Kosongkan dulu
+        selectKategori.innerHTML = '';
+        if (!gudangId || !kategoriByGudang[gudangId] || kategoriByGudang[gudangId].length === 0) {
+            selectKategori.innerHTML = '<option value="">-- Pilih Gudang dulu --</option>';
+            selectKategori.disabled = true;
+            return;
+        }
+        // Isi opsi kategori milik gudang yg dipilih
+        const defaultOpt = document.createElement('option');
+        defaultOpt.value = '';
+        defaultOpt.textContent = '-- Semua Kategori --';
+        selectKategori.appendChild(defaultOpt);
+
+        kategoriByGudang[gudangId].forEach(k => {
+            const opt = document.createElement('option');
+            opt.value = k.id;
+            opt.textContent = k.nama;
+            if (preselectId && String(preselectId) === String(k.id)) {
+                opt.selected = true;
+            }
+            selectKategori.appendChild(opt);
+        });
+
+        selectKategori.disabled = false;
+    }
+
+    if (selectGudang) {
+        // Saat user ganti gudang di modal, muat kategori sesuai gudang
+        selectGudang.addEventListener('change', function() {
+            hydrateKategori(this.value || null, null);
+        });
+
+        // Preselect dari query (kalau ada)
+        const preGudangId   = "{{ request('gudang_id') }}";
+        const preKategoriId = "{{ request('kategori_id') }}";
+        if (preGudangId) {
+            // Sinkronkan opsi kategori saat modal dibuka pertama kali
+            hydrateKategori(preGudangId, preKategoriId || null);
+        } else {
+            // belum pilih gudang → kunci kategori
+            selectKategori.disabled = true;
+        }
+    }
+});
+</script>
+@endif
 
     @endpush
 
