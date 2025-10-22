@@ -143,38 +143,56 @@ class DataKeseluruhan extends Controller
         $gudang = Gudang::all();
 
         // PERBAIKAN: Cek apakah ini Gudang Utama atau gudang lain
-        $isGudangUtama = stripos($selectedGudang->nama, 'utama') !== false;
+// ... di dalam method gudang($slug, Request $request)
 
-        if ($isGudangUtama) {
-            // Untuk Gudang Utama: Ambil kategori dengan barang yang punya pb_stok
-            $kategori = Kategori::with([
-                'barang' => function ($query) {
-                    $query->whereHas('pbStok'); // Hanya barang yang punya PB Stok
-                },
-                'barang.pbStok',
-                'barang.pjStok',
-                'gudang'
-            ])->where('gudang_id', $selectedGudang->id)->get();
-        } else {
-            // PERBAIKAN BESAR: Untuk gudang lain, ambil SEMUA kategori yang punya barang dengan pj_stok di gudang ini
-            // Tidak peduli gudang_id kategorinya apa, yang penting barangnya ada di pj_stok gudang ini
-            $kategori = Kategori::with([
-                'barang' => function ($query) use ($selectedGudang) {
-                    // Hanya ambil barang yang punya PJ Stok di gudang ini
-                    $query->whereHas('pjStok', function ($q) use ($selectedGudang) {
-                        $q->where('id_gudang', $selectedGudang->id);
-                    });
-                },
-                'barang.pbStok',
-                'barang.pjStok' => function ($q) use ($selectedGudang) {
-                    $q->where('id_gudang', $selectedGudang->id);
-                },
-                'gudang'
-            ])
-                // KUNCI: Ambil kategori yang barangnya ada di pj_stok gudang ini, bukan filter by gudang_id
-                ->where('gudang_id', $selectedGudang->id)
-                ->get();
+$isGudangUtama = stripos($selectedGudang->nama, 'utama') !== false;
+
+if ($isGudangUtama) {
+    $kategori = Kategori::with([
+        'barang' => fn($q) => $q->whereHas('pbStok'),
+        'barang.pbStok', 'barang.pjStok', 'gudang'
+    ])->where('gudang_id', $selectedGudang->id)->get();
+} else {
+    // Ambil semua kategori milik gudang kecil ini
+    $kategori = Kategori::with('gudang')
+        ->where('gudang_id', $selectedGudang->id)
+        ->get();
+
+    // Cari Gudang Utama
+    $gudangUtama = Gudang::whereRaw('LOWER(nama) LIKE ?', ['%utama%'])->first();
+
+    // Untuk tiap kategori di gudang kecil, isi relasi 'barang' dari kategori kembaran di Gudang Utama
+    $kategori->each(function ($kat) use ($selectedGudang, $gudangUtama) {
+        $barang = collect();
+
+        if ($gudangUtama) {
+            // Temukan kategori "kembaran" di Gudang Utama (berdasar nama)
+            $katUtama = Kategori::whereRaw('LOWER(nama) = ?', [strtolower($kat->nama)])
+                ->where('gudang_id', $gudangUtama->id)
+                ->first();
+
+            if ($katUtama) {
+                // Ambil SEMUA barang pada kategori Gudang Utama tsb,
+                // plus attach pjStok untuk gudang kecil (kalau ada). Jika tidak ada → stok dianggap 0 di Blade.
+                $barang = Barang::where('id_kategori', $katUtama->id)
+                    ->with([
+                        'pbStok',
+                        'pjStok' => function ($q) use ($selectedGudang) {
+                            $q->where('id_gudang', $selectedGudang->id);
+                        },
+                        'kategori.gudang',
+                    ])
+                    ->orderBy('nama_barang')
+                    ->get();
+            }
         }
+
+        // Timpa relasi agar Blade tetap pakai $k->barang
+        $kat->setRelation('barang', $barang);
+    });
+}
+
+
 
         // Inisialisasi collection barang kosong
         $barang = collect();
