@@ -69,10 +69,24 @@ class DataKeseluruhan extends Controller
 
         // Filter berdasarkan gudang yang dipilih
         if ($request->filled('gudang_id')) {
-            $query->whereHas('kategori', function ($q) use ($request) {
-                $q->where('gudang_id', $request->gudang_id);
-            });
+            $g = Gudang::find($request->gudang_id);
+            $isUtama = $g && stripos($g->nama, 'utama') !== false;
+        
+            if ($isUtama) {
+                // Gudang Utama → pakai PB stok dan kategori memang milik Gudang Utama tsb
+                $query->whereHas('pbStok')
+                      ->whereHas('kategori', function ($q) use ($request) {
+                          $q->where('gudang_id', $request->gudang_id);
+                      });
+            } else {
+                // Gudang lain → barang yang punya PJ stok di gudang ini
+                $query->whereHas('pjStok', function ($q) use ($request) {
+                    $q->where('id_gudang', $request->gudang_id);
+                });
+                // catatan: jangan filter kategori by gudang untuk gudang non-utama
+            }
         }
+        
 
         // Filter tambahan
         if ($request->filled('kode')) {
@@ -80,19 +94,41 @@ class DataKeseluruhan extends Controller
         }
 
         // Filter stok berdasarkan PJ Stok
-        if ($request->filled('stok_min') || $request->filled('stok_max')) {
-            $query->whereHas('pjStok', function ($q) use ($request) {
-                if ($request->filled('gudang_id')) {
-                    $q->where('id_gudang', $request->gudang_id);
-                }
-                if ($request->filled('stok_min')) {
-                    $q->where('stok', '>=', (int) $request->stok_min);
-                }
-                if ($request->filled('stok_max')) {
-                    $q->where('stok', '<=', (int) $request->stok_max);
-                }
+       // Filter stok: gabungkan PB & PJ kalau TIDAK memilih gudang
+if ($request->filled('stok_min') || $request->filled('stok_max')) {
+    $min = (int) ($request->stok_min ?? 0);
+    $max = (int) ($request->stok_max ?? PHP_INT_MAX);
+
+    if ($request->filled('gudang_id')) {
+        $g = Gudang::find($request->gudang_id);
+        $isUtama = $g && stripos($g->nama, 'utama') !== false;
+
+        if ($isUtama) {
+            // Hanya PB stok untuk Gudang Utama
+            $query->whereHas('pbStok', function ($q) use ($min, $max) {
+                $q->whereBetween('stok', [$min, $max]);
+            })->whereHas('kategori', function ($q) use ($request) {
+                $q->where('gudang_id', $request->gudang_id);
+            });
+        } else {
+            // Hanya PJ stok untuk gudang non-utama tsb
+            $query->whereHas('pjStok', function ($q) use ($min, $max, $request) {
+                $q->where('id_gudang', $request->gudang_id)
+                  ->whereBetween('stok', [$min, $max]);
             });
         }
+    } else {
+        // Data Keseluruhan → PB ATAU PJ masuk filter
+        $query->where(function ($q) use ($min, $max) {
+            $q->whereHas('pbStok', function ($qq) use ($min, $max) {
+                $qq->whereBetween('stok', [$min, $max]);
+            })->orWhereHas('pjStok', function ($qq) use ($min, $max) {
+                $qq->whereBetween('stok', [$min, $max]);
+            });
+        });
+    }
+}
+
 
         if ($request->filled('kategori_id')) {
             $query->where('id_kategori', $request->kategori_id);
@@ -112,14 +148,39 @@ class DataKeseluruhan extends Controller
         }
 
         $barang = $query->get();
+// Flatten per gudang untuk Data Keseluruhan (tanpa gudang_id)
+$hasilCari = collect();
+if (!$request->filled('gudang_id') && $barang->isNotEmpty()) {
+    $hasilCari = $barang->flatMap(function ($b) {
+        $rows = collect();
 
-        return view('staff.admin.datakeseluruhan', compact(
-            'kategori',
-            'barang',
-            'menu',
-            'gudang',
-            'selectedGudang'
-        ));
+        // Baris PB (Gudang Utama)
+        if ($b->pbStok) {
+            $rows->push((object)[
+                'b'        => $b, // referensi model Barang
+                'stok'     => (int) ($b->pbStok->stok ?? 0),
+                'gudang'   => $b->kategori->gudang->nama ?? 'Gudang Utama',
+                'kategori' => $b->kategori->nama ?? '-',
+            ]);
+        }
+
+        // Baris PJ (setiap gudang non-utama yang punya stok)
+        foreach ($b->pjStok as $pj) {
+            $rows->push((object)[
+                'b'        => $b,
+                'stok'     => (int) ($pj->stok ?? 0),
+                'gudang'   => $pj->gudang->nama ?? '-',
+                'kategori' => $b->kategori->nama ?? '-',
+            ]);
+        }
+
+        return $rows;
+    });
+}
+
+return view('staff.admin.datakeseluruhan', compact(
+    'kategori', 'barang', 'menu', 'gudang', 'selectedGudang', 'hasilCari'
+));
     }
 
     /**
@@ -142,8 +203,6 @@ class DataKeseluruhan extends Controller
         // Ambil semua gudang untuk dropdown/filter
         $gudang = Gudang::all();
 
-        // PERBAIKAN: Cek apakah ini Gudang Utama atau gudang lain
-// ... di dalam method gudang($slug, Request $request)
 
 $isGudangUtama = stripos($selectedGudang->nama, 'utama') !== false;
 
@@ -658,69 +717,89 @@ if ($isGudangUtama) {
      * API untuk search suggestions dengan filter gudang
      */
     public function searchSuggestions(Request $request)
-    {
-        $search = $request->get('q', '');
-        $gudangId = $request->get('gudang_id');
+{
+    $search   = $request->get('q', '');
+    $gudangId = $request->get('gudang_id');
 
-        if (strlen($search) < 2) {
-            return response()->json([]);
-        }
+    if (mb_strlen($search) < 2) {
+        return response()->json([]);
+    }
 
-        try {
-            $barangQuery = Barang::with(['kategori.gudang', 'pbStok', 'pjStok'])
-                ->where(function ($query) use ($search) {
-                    $query->where('nama_barang', 'like', "%{$search}%")
-                        ->orWhere('kode_barang', 'like', "%{$search}%");
-                });
+    try {
+        $barangQuery = Barang::with(['kategori.gudang', 'pbStok', 'pjStok'])
+            ->where(function ($q) use ($search) {
+                $q->where('nama_barang', 'like', "%{$search}%")
+                  ->orWhere('kode_barang', 'like', "%{$search}%");
+            });
 
-            // Filter berdasarkan gudang jika ada
-            if ($gudangId) {
-                $barangQuery->whereHas('kategori', function ($q) use ($gudangId) {
-                    $q->where('gudang_id', $gudangId);
+        if ($gudangId) {
+            $g = Gudang::find($gudangId);
+            $isUtama = $g && stripos($g->nama, 'utama') !== false;
+
+            if ($isUtama) {
+                // Untuk Gudang Utama: harus punya PB stok dan kategorinya memang milik gudang ini
+                $barangQuery->whereHas('pbStok')
+                            ->whereHas('kategori', function ($q) use ($gudangId) {
+                                $q->where('gudang_id', $gudangId);
+                            });
+            } else {
+                // Untuk gudang lain: barang yang punya PJ stok di gudang ini
+                $barangQuery->whereHas('pjStok', function ($q) use ($gudangId) {
+                    $q->where('id_gudang', $gudangId);
                 });
             }
-
-            $suggestions = $barangQuery->select('kode_barang', 'nama_barang', 'id_kategori')
-                ->limit(8)
-                ->get()
-                ->map(function ($barang) use ($gudangId) {
-                    // Ambil stok dari gudang yang dipilih
-                    $stok = 0;
-                    if ($gudangId) {
-                        $pjStok = $barang->pjStok()
-                            ->where('id_gudang', $gudangId)
-                            ->first();
-                        $stok = $pjStok ? $pjStok->stok : 0;
-                    } else {
-                        // Total stok dari semua gudang PJ
-                        $stok = $barang->pjStok()->sum('stok');
-                    }
-
-                    return [
-                        'kode' => $barang->kode_barang,
-                        'nama' => $barang->nama_barang,
-                        'stok' => $stok,
-                        'kategori' => $barang->kategori->nama ?? '-',
-                        'gudang' => $barang->kategori->gudang->nama ?? '-',
-                        'display' => $barang->nama_barang . ' (' . $barang->kode_barang . ')',
-                        'stock_status' => $stok == 0 ? 'empty' : ($stok < 10 ? 'low' : 'normal')
-                    ];
-                });
-
-            \Log::info('Search suggestions', [
-                'query' => $search,
-                'gudang_id' => $gudangId,
-                'results' => $suggestions->count(),
-                'first_result_gudang' => $suggestions->first()['gudang'] ?? null
-            ]);
-
-            return response()->json($suggestions);
-
-        } catch (\Exception $e) {
-            \Log::error('Search API error', ['error' => $e->getMessage()]);
-            return response()->json(['error' => 'Search failed'], 500);
         }
+
+        $suggestions = $barangQuery
+            ->select('kode_barang', 'nama_barang', 'id_kategori')
+            ->orderBy('nama_barang')
+            ->limit(8)
+            ->get()
+            ->map(function ($barang) use ($gudangId) {
+                $stok = 0;
+                $gudangNama = $barang->kategori->gudang->nama ?? '-';
+
+                if ($gudangId) {
+                    $g = Gudang::find($gudangId);
+                    $isUtama = $g && stripos($g->nama, 'utama') !== false;
+
+                    if ($isUtama) {
+                        $stok = (int) ($barang->pbStok->stok ?? 0);
+                        $gudangNama = $g->nama;
+                    } else {
+                        $pjStok = $barang->pjStok()->where('id_gudang', $gudangId)->first();
+                        $stok = (int) ($pjStok->stok ?? 0);
+                        $gudangNama = $g->nama;
+                    }
+                } else {
+                    $stok = (int) (($barang->pbStok->stok ?? 0) + $barang->pjStok()->sum('stok'));
+                }
+
+                return [
+                    'kode'         => $barang->kode_barang,
+                    'nama'         => $barang->nama_barang,
+                    'stok'         => $stok,
+                    'kategori'     => $barang->kategori->nama ?? '-',
+                    'gudang'       => $gudangNama,
+                    'display'      => $barang->nama_barang . ' (' . $barang->kode_barang . ')',
+                    'stock_status' => $stok === 0 ? 'empty' : ($stok < 10 ? 'low' : 'normal'),
+                ];
+            });
+
+        \Log::info('Search suggestions', [
+            'query' => $search,
+            'gudang_id' => $gudangId,
+            'results' => $suggestions->count(),
+        ]);
+
+        return response()->json($suggestions);
+
+    } catch (\Throwable $e) {
+        \Log::error('Search API error', ['error' => $e->getMessage()]);
+        return response()->json(['error' => 'Search failed'], 500);
     }
+}
+
 
     /**
      * Cek apakah ada filter yang aktif
