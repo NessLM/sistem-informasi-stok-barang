@@ -38,6 +38,54 @@ class DataKeseluruhan extends Controller
 
         $kategori = $kategoriQuery->get();
         $gudang = Gudang::all();
+// === PERBAIKAN: Data Keseluruhan - isi ulang barang untuk gudang kecil ===
+if (!$request->filled('gudang_id')) {
+    $gudangUtama = Gudang::whereRaw('LOWER(nama) LIKE ?', ['%utama%'])->first();
+
+    $kategori->each(function ($kat) use ($gudangUtama, $search) {
+        $namaGudang = $kat->gudang->nama ?? '';
+        $isUtama = stripos($namaGudang, 'utama') !== false;
+
+        if ($isUtama) {
+            // Gudang Utama: boleh dibiarkan (sudah eager load).
+            // Opsional (rapihin): hanya tampilkan barang yang memang punya PB stok
+            $barang = ($kat->barang ?? collect())->filter(fn($b) => !is_null($b->pbStok));
+            $kat->setRelation('barang', $barang->values());
+            return;
+        }
+
+        // Gudang kecil: ambil "kembaran" kategori di Gudang Utama (berdasar nama)
+        $barang = collect();
+        if ($gudangUtama) {
+            $katUtama = Kategori::whereRaw('LOWER(nama) = ?', [strtolower($kat->nama)])
+                ->where('gudang_id', $gudangUtama->id)
+                ->first();
+
+            if ($katUtama) {
+                $barang = Barang::where('id_kategori', $katUtama->id)
+                    ->when($search, function ($q) use ($search) {
+                        $q->where(function ($qq) use ($search) {
+                            $qq->where('nama_barang', 'like', "%{$search}%")
+                               ->orWhere('kode_barang', 'like', "%{$search}%");
+                        });
+                    })
+                    ->with([
+                        'pbStok',
+                        // PJ stok khusus gudang pemilik kategori kecil ini:
+                        'pjStok' => function ($q) use ($kat) {
+                            $q->where('id_gudang', $kat->gudang_id);
+                        },
+                        'kategori.gudang',
+                    ])
+                    ->orderBy('nama_barang')
+                    ->get();
+            }
+        }
+
+        // Timpa relasi agar Blade tetap pakai $k->barang
+        $kat->setRelation('barang', $barang);
+    });
+}
 
         // Tentukan gudang yang sedang dipilih (jika ada)
         $selectedGudang = null;
@@ -248,6 +296,7 @@ if ($isGudangUtama) {
 
         // Timpa relasi agar Blade tetap pakai $k->barang
         $kat->setRelation('barang', $barang);
+        
     });
 }
 
@@ -261,14 +310,16 @@ if ($isGudangUtama) {
             $barang = $this->getFilteredBarang($request, $selectedGudang->id);
         }
 
-        // Return view yang sama dengan index
         return view('staff.admin.datakeseluruhan', compact(
             'kategori',
             'barang',
             'menu',
             'gudang',
             'selectedGudang'
-        ));
+        ))->with([
+            'hasilCari' => collect(), // ← tambahkan ini
+        ]);
+        
     }
 
     /**

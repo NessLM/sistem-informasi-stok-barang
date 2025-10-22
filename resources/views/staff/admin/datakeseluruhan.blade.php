@@ -4,7 +4,10 @@
         $barang = $barang ?? collect();
         $kategori = $kategori ?? collect();
         $gudang = $gudang ?? collect();
+        $hasilCari  = $hasilCari ?? collect();   // ← tambahkan default
+$isDataKeseluruhan = !isset($selectedGudang); // ← flag supaya logika view konsisten
     @endphp
+
 
     @push('styles')
         <link rel="stylesheet" href="{{ asset('assets/css/staff/admin/data_keseluruhan.css') }}">
@@ -168,80 +171,132 @@
                 </div>
             </div>
 
-            {{-- Jika ada filter/search --}}
-            @if (
-                    request()->filled('search') ||
-                    request()->filled('kode') ||
-                    request()->filled('stok_min') ||
-                    request()->filled('stok_max') ||
-                    request()->filled('kategori_id') ||
-                    request()->filled('gudang_id') ||
-                    request()->filled('satuan') ||
-                    request()->filled('harga_min') ||
-                    request()->filled('harga_max')
-                )
-                <h5 class="mt-3">Hasil Pencarian</h5>
-                @if ($barang->count() > 0)
-                    <div class="table-responsive">
-                        <table class="table table-bordered mt-2">
-                            <thead class="table-secondary">
-                                <tr>
-                                    <th>No</th>
-                                    <th>Nama</th>
-                                    <th>Kode</th>
-                                    <th>Harga</th>
-                                    <th>Stok</th>
-                                    <th>Satuan</th>
-                                    <th>Kategori</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($barang as $i => $b)
-                                    @php
-                                        // PERBAIKAN: Cek apakah gudang adalah Gudang Utama
-                                        $stokDisplay = 0;
+           {{-- Jika ada filter/search --}}
+@if (
+    request()->filled('search') ||
+    request()->filled('kode') ||
+    request()->filled('stok_min') ||
+    request()->filled('stok_max') ||
+    request()->filled('kategori_id') ||
+    request()->filled('gudang_id') ||
+    request()->filled('satuan') ||
+    request()->filled('harga_min') ||
+    request()->filled('harga_max')
+)
+    <h5 class="mt-3">Hasil Pencarian</h5>
 
-                                        if (request()->filled('gudang_id') && isset($selectedGudang)) {
-                                            // Jika ada filter gudang
-                                            $isGudangUtama = stripos($selectedGudang->nama, 'utama') !== false;
+    @if ($isDataKeseluruhan)
 
-                                            if ($isGudangUtama) {
-                                                // Ambil dari PB Stok untuk Gudang Utama
-                                                $stokDisplay = $b->pbStok ? $b->pbStok->stok : 0;
-                                            } else {
-                                                // Ambil dari PJ Stok untuk gudang lain
-                                                $pjStok = $b->pjStok()->where('id_gudang', $selectedGudang->id)->first();
-                                                $stokDisplay = $pjStok ? $pjStok->stok : 0;
-                                            }
-                                        } elseif ($b->kategori && $b->kategori->gudang_id) {
-                                            // Stok di gudang kategori
-                                            $isGudangUtama = stripos($b->kategori->gudang->nama ?? '', 'utama') !== false;
+        {{-- MODE DATA KESELURUHAN: pakai $hasilCari (flatten PB & PJ), tampilkan kolom Gudang --}}
+        @if ($hasilCari->count() > 0)
+            <div class="table-responsive">
+                <table class="table table-bordered mt-2">
+                    <thead class="table-secondary">
+                        <tr>
+                            <th>No</th>
+                            <th>Nama</th>
+                            <th>Kode</th>
+                            <th>Gudang</th>
+                            <th>Kategori</th>
+                            <th>Harga</th>
+                            <th>Stok</th>
+                            <th>Satuan</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($hasilCari as $i => $row)
+                            @php
+                                $b = $row->b; /* referensi model Barang */
+                                $stokDisplay = (int) $row->stok;
+                            @endphp
+                            <tr @if ($stokDisplay < 10) class="row-low-stock" @endif>
+                                <td>{{ $i + 1 }}</td>
+                                <td>{{ $b->nama_barang }}</td>
+                                <td>{{ $b->kode_barang }}</td>
+                                <td>{{ $row->gudang }}</td>
+                                <td>{{ $row->kategori }}</td>
+                                <td>Rp {{ number_format($b->harga_barang ?? 0, 0, ',', '.') }}</td>
+                                <td>{{ $stokDisplay }}</td>
+                                <td>{{ $b->satuan }}</td>
+                                <td class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-warning" data-bs-toggle="modal"
+                                        data-bs-target="#modalEditBarang-{{ $b->kode_barang }}">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-danger"
+                                        onclick="confirmDelete('{{ route('admin.barang.destroy', $b->kode_barang) }}', 'Barang {{ $b->nama_barang }}')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @else
+            <div class="alert alert-warning">Tidak ada data ditemukan untuk kriteria pencarian Anda</div>
+        @endif
 
-                                            if ($isGudangUtama) {
-                                                // Ambil dari PB Stok untuk Gudang Utama
-                                                $stokDisplay = $b->pbStok ? $b->pbStok->stok : 0;
-                                            } else {
-                                                // Ambil dari PJ Stok untuk gudang lain
-                                                $pjStok = $b->pjStok()->where('id_gudang', $b->kategori->gudang_id)->first();
-                                                $stokDisplay = $pjStok ? $pjStok->stok : 0;
-                                            }
-                                        } else {
-                                            // Total stok: PB + semua PJ
-                                            $stokDisplay = ($b->pbStok ? $b->pbStok->stok : 0) + $b->pjStok()->sum('stok');
-                                        }
-                                    @endphp
-                                    <tr @if ($stokDisplay < 10) class="row-low-stock" @endif>
-                                        {{-- ... rest of table row ... --}}
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @else
-                    <div class="alert alert-warning">Tidak ada data ditemukan untuk kriteria pencarian Anda</div>
-                @endif
-            @endif
+    @else
+        {{-- MODE GUDANG TERTENTU: tetap pakai $barang seperti sebelumnya --}}
+        @if ($barang->count() > 0)
+            <div class="table-responsive">
+                <table class="table table-bordered mt-2">
+                    <thead class="table-secondary">
+                        <tr>
+                            <th>No</th>
+                            <th>Nama</th>
+                            <th>Kode</th>
+                            <th>Harga</th>
+                            <th>Stok</th>
+                            <th>Satuan</th>
+                            <th>Kategori</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($barang as $i => $b)
+                            @php
+                                $stokDisplay = 0;
+                                $isGudangUtama = isset($selectedGudang) && stripos($selectedGudang->nama, 'utama') !== false;
+
+                                if ($isGudangUtama) {
+                                    $stokDisplay = $b->pbStok->stok ?? 0;
+                                } else {
+                                    $pjStok = $b->pjStok()->where('id_gudang', $selectedGudang->id)->first();
+                                    $stokDisplay = $pjStok->stok ?? 0;
+                                }
+                            @endphp
+                            <tr @if ($stokDisplay < 10) class="row-low-stock" @endif>
+                                <td>{{ $i + 1 }}</td>
+                                <td>{{ $b->nama_barang }}</td>
+                                <td>{{ $b->kode_barang }}</td>
+                                <td>Rp {{ number_format($b->harga_barang ?? 0, 0, ',', '.') }}</td>
+                                <td>{{ $stokDisplay }}</td>
+                                <td>{{ $b->satuan }}</td>
+                                <td>{{ $b->kategori->nama ?? '-' }}</td>
+                                <td class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-warning" data-bs-toggle="modal"
+                                        data-bs-target="#modalEditBarang-{{ $b->kode_barang }}">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-danger"
+                                        onclick="confirmDelete('{{ route('admin.barang.destroy', $b->kode_barang) }}', 'Barang {{ $b->nama_barang }}')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @else
+            <div class="alert alert-warning">Tidak ada data ditemukan untuk kriteria pencarian Anda</div>
+        @endif
+    @endif
+@endif
+
 
             {{-- Jika tidak ada filter/search --}}
             @if (

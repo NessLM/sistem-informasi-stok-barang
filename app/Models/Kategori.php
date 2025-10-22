@@ -33,4 +33,16 @@ class Kategori extends Model
     {
         return $this->hasMany(PjStok::class, 'id_kategori');
     }
+    // App/Models/Kategori.php
+public function barangPj()
+{
+    return $this->belongsToMany(
+        Barang::class, 'pj_stok',
+        'id_kategori',   // kolom di pj_stok yang ke kategori.id
+        'kode_barang',   // kolom di pj_stok yang ke barang.kode_barang
+        'id',
+        'kode_barang'
+    )->withPivot(['id_gudang', 'stok']);
+}
+
 }
