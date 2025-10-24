@@ -113,7 +113,7 @@ class DashboardController extends Controller
         if ($type === 'kategori') {
             return $this->filterKategoriData($filter);
         } else {
-            return $this->filterPengeluaanData($filter);
+            return $this->filterPengeluaranData($filter);
         }
     }
 
