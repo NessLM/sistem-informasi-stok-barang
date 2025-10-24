@@ -11,29 +11,6 @@ $isDataKeseluruhan = !isset($selectedGudang); // ← flag supaya logika view kon
 
     @push('styles')
         <link rel="stylesheet" href="{{ asset('assets/css/staff/admin/data_keseluruhan.css') }}">
-        <style>
-            .row-low-stock {
-                background-color: #ffcccc !important;
-                border-left: 4px solid #dc3545 !important;
-            }
-
-            /* Custom styling untuk dropdown suggestions */
-            #searchSuggestions .dropdown-item {
-                padding: 12px 16px;
-                border-bottom: 1px solid #f0f0f0;
-                transition: background-color 0.2s ease;
-            }
-
-            #searchSuggestions .dropdown-item:hover,
-            #searchSuggestions .dropdown-item.active {
-                background-color: #bbbbbb !important;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-            }
-
-            #searchSuggestions .dropdown-item:last-child {
-                border-bottom: none;
-            }
-        </style>
 
     @endpush
     @if (isset($selectedGudang))

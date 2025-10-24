@@ -2,48 +2,88 @@
     font-weight: 700;
     margin-bottom: 20px;
 }
-/* Chip filter gudang – gaya modern */
-.filter-chip{
-  --chip-from:#eef2ff;            /* default gradien */
-  --chip-to:#e0e7ff;
-  --chip-text:#1e293b;
-  --chip-border:rgba(30,41,59,.15);
 
-  display:inline-flex;
-  align-items:center;
-  gap:.5rem;
-  padding:.35rem .75rem;
-  border-radius:999px;
-  border:1px solid var(--chip-border);
-  background:linear-gradient(180deg,var(--chip-from),var(--chip-to));
-  color:var(--chip-text);
-  font-size:.875rem;
-  font-weight:600;
-  letter-spacing:.1px;
-  box-shadow:0 1px 2px rgba(0,0,0,.05), 0 8px 24px -12px rgba(0,0,0,.25);
+.row-low-stock {
+    background-color: #ffcccc !important;
+    border-left: 4px solid #dc3545 !important;
 }
 
-.filter-chip .bi{font-size:1rem; opacity:.75;}
-.filter-chip .chip-label{opacity:.8; font-weight:500;}
-.filter-chip .chip-value{font-weight:700;}
+/* Custom styling untuk dropdown suggestions */
+#searchSuggestions .dropdown-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s ease;
+}
+
+#searchSuggestions .dropdown-item:hover,
+#searchSuggestions .dropdown-item.active {
+    background-color: #bbbbbb !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+#searchSuggestions .dropdown-item:last-child {
+    border-bottom: none;
+}
+/* Chip filter gudang – gaya modern */
+.filter-chip {
+    --chip-from: #eef2ff; /* default gradien */
+    --chip-to: #e0e7ff;
+    --chip-text: #1e293b;
+    --chip-border: rgba(30, 41, 59, 0.15);
+
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid var(--chip-border);
+    background: linear-gradient(180deg, var(--chip-from), var(--chip-to));
+    color: var(--chip-text);
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0.1px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05),
+        0 8px 24px -12px rgba(0, 0, 0, 0.25);
+}
+
+.filter-chip .bi {
+    font-size: 1rem;
+    opacity: 0.75;
+}
+.filter-chip .chip-label {
+    opacity: 0.8;
+    font-weight: 500;
+}
+.filter-chip .chip-value {
+    font-weight: 700;
+}
 
 /* Tema per gudang (berdasar slug di data-gudang) */
-.filter-chip[data-gudang*="atk"]{
-  --chip-from:#ecfeff; --chip-to:#cffafe; --chip-text:#134e4a;  /* teal */
+.filter-chip[data-gudang*="atk"] {
+    --chip-from: #ecfeff;
+    --chip-to: #cffafe;
+    --chip-text: #134e4a; /* teal */
 }
-.filter-chip[data-gudang*="kebersihan"]{
-  --chip-from:#f0fdf4; --chip-to:#dcfce7; --chip-text:#14532d;  /* green */
+.filter-chip[data-gudang*="kebersihan"] {
+    --chip-from: #f0fdf4;
+    --chip-to: #dcfce7;
+    --chip-text: #14532d; /* green */
 }
-.filter-chip[data-gudang*="listrik"]{
-  --chip-from:#fefce8; --chip-to:#fef9c3; --chip-text:#713f12;  /* amber */
+.filter-chip[data-gudang*="listrik"] {
+    --chip-from: #fefce8;
+    --chip-to: #fef9c3;
+    --chip-text: #713f12; /* amber */
 }
-.filter-chip[data-gudang*="komputer"]{
-  --chip-from:#eef2ff; --chip-to:#e0e7ff; --chip-text:#1e293b;  /* indigo */
+.filter-chip[data-gudang*="komputer"] {
+    --chip-from: #eef2ff;
+    --chip-to: #e0e7ff;
+    --chip-text: #1e293b; /* indigo */
 }
-.filter-chip[data-gudang*="utama"]{
-  --chip-from:#eff6ff; --chip-to:#dbeafe; --chip-text:#1e3a8a;  /* blue */
+.filter-chip[data-gudang*="utama"] {
+    --chip-from: #eff6ff;
+    --chip-to: #dbeafe;
+    --chip-text: #1e3a8a; /* blue */
 }
-
 
 .badge-modern {
     background-color: #e0e7ff; /* biru lembut */
