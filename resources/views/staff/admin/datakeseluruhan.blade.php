@@ -929,7 +929,7 @@ $isDataKeseluruhan = !isset($selectedGudang); // ← flag supaya logika view kon
             function confirmDelete(actionUrl, itemName) {
                 document.getElementById('deleteForm').setAttribute('action', actionUrl);
                 document.getElementById('deleteMessage').innerText =
-                    "Apakah Anda yakin ingin menghapus " + itemName + "?";
+                    "Apakah Anda yakin ingin menghapus " + itemName + "? Tindakan ini juga akan menghapus seluruh data yang terkait di dalamnya.";
                 let modal = new bootstrap.Modal(document.getElementById('modalConfirmDelete'));
                 modal.show();
             }
