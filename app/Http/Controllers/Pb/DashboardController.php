@@ -33,8 +33,8 @@ class DashboardController extends Controller
 
         $kategorMap = [
             'Gudang ATK' => 'G. ATK',
-            'Gudang Listrik' => 'G. Listrik',
             'Gudang Kebersihan' => 'G. Kebersihan',
+            'Gudang Listrik' => 'G. Listrik',
             'Gudang B Komputer' => 'G.B. Komputer'
         ];
 
@@ -113,7 +113,7 @@ class DashboardController extends Controller
         if ($type === 'kategori') {
             return $this->filterKategoriData($filter);
         } else {
-            return $this->filterPengeluaanData($filter);
+            return $this->filterPengeluaranData($filter);
         }
     }
 
@@ -130,10 +130,9 @@ class DashboardController extends Controller
     private function filterKategoriData($filter)
     {
         $kategorMap = [
-            'Gudang Utama' => 'G. Utama',
             'Gudang ATK' => 'G. ATK',
-            'Gudang Listrik' => 'G. Listrik',
             'Gudang Kebersihan' => 'G. Kebersihan',
+            'Gudang Listrik' => 'G. Listrik',
             'Gudang B Komputer' => 'G.B. Komputer'
         ];
 
@@ -178,10 +177,9 @@ class DashboardController extends Controller
             'labels' => $labels,
             'data' => $data,
             'colors' => [
-                $this->getColorForKategori('Utama'),
                 $this->getColorForKategori('ATK'),
-                $this->getColorForKategori('Listrik'),
                 $this->getColorForKategori('Kebersihan'),
+                $this->getColorForKategori('Listrik'),
                 $this->getColorForKategori('Komputer')
             ],
             'range' => $start ? ['start' => $start->toDateString(), 'end' => $end->toDateString()] : null,
@@ -265,10 +263,9 @@ class DashboardController extends Controller
     private function getColorForKategori($kategori)
     {
         $colors = [
-            'Utama' => '#6366F1',      // Indigo
             'ATK' => '#3B82F6',        // Biru
-            'Listrik' => '#F59E0B',    // Kuning/Orange
             'Kebersihan' => '#10B981', // Hijau
+            'Listrik' => '#F59E0B',    // Kuning/Orange
             'Komputer' => '#8B5CF6'    // Ungu
         ];
 
