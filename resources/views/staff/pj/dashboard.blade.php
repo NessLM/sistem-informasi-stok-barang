@@ -159,6 +159,8 @@
             let pageStart = 0; // index mulai
 
             const bagianCtx = document.getElementById('bagianChart').getContext('2d');
+            // Temukan bagian inisialisasi bagianChart dan update options.scales.y seperti ini:
+
             const bagianChart = new Chart(bagianCtx, {
                 type: 'bar',
                 data: {
@@ -181,8 +183,16 @@
                     scales: {
                         y: {
                             beginAtZero: true,
+                            suggestedMax: 5, // Saran max 5, tapi bisa lebih kalau data > 5
                             ticks: {
-                                color: '#6B7280'
+                                stepSize: 1,
+                                color: '#6B7280',
+                                callback: function (value) {
+                                    // Hanya tampilkan angka bulat
+                                    if (Number.isInteger(value)) {
+                                        return value;
+                                    }
+                                }
                             },
                             grid: {
                                 color: '#F3F4F6'
