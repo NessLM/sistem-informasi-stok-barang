@@ -596,14 +596,15 @@ $isDataKeseluruhan = !isset($selectedGudang); // ← flag supaya logika view kon
                             @enderror
                         </div>
                         <div class="col-md-6">
-                            <label>Kode Barang</label>
-                            <input type="text" name="kode_barang"
-                                class="form-control @error('kode_barang') is-invalid @enderror"
-                                value="{{ old('kode_barang') }}" required>
-                            @error('kode_barang')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+    <label>Kode Barang</label>
+    <input type="text" name="kode_barang" id="kodeBarangTambah"
+        class="form-control @error('kode_barang') is-invalid @enderror"
+        value="{{ old('kode_barang') }}" required>
+    <div id="kodeValidationTambah" class="form-text"></div>
+    @error('kode_barang')
+        <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
                         <div class="col-md-6">
                             <label>Kategori</label>
                             <select name="id_kategori" class="form-select @error('id_kategori') is-invalid @enderror"
@@ -645,10 +646,10 @@ $isDataKeseluruhan = !isset($selectedGudang); // ← flag supaya logika view kon
 
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Batal</button>
-                    <button class="btn btn-primary" type="submit">Simpan</button>
-                </div>
+               <div class="modal-footer">
+    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Batal</button>
+    <button class="btn btn-primary" type="submit" id="btnSimpanTambah">Simpan</button>
+</div>
             </form>
         </div>
     </div>
@@ -672,17 +673,19 @@ $isDataKeseluruhan = !isset($selectedGudang); // ← flag supaya logika view kon
                                     <input type="text" name="nama_barang" class="form-control" value="{{ $b->nama_barang }}"
                                         required>
                                 </div>
-                                <div class="col-md-6">
-                                    <label>
-                                        Kode Barang
-                                        <i class="bi bi-info-circle text-primary" data-bs-toggle="tooltip"
-                                            data-bs-placement="top"
-                                            title="Hati-hati mengubah kode barang, akan mempengaruhi riwayat transaksi"
-                                            style="cursor: help;"></i>
-                                    </label>
-                                    <input type="text" name="kode_barang" class="form-control" value="{{ $b->kode_barang }}"
-                                        required>
-                                </div>
+                               <div class="col-md-6">
+    <label>
+        Kode Barang
+        <i class="bi bi-info-circle text-primary" data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            title="Hati-hati mengubah kode barang, akan mempengaruhi riwayat transaksi"
+            style="cursor: help;"></i>
+    </label>
+    <input type="text" name="kode_barang" id="kodeBarangEdit-{{ $b->kode_barang }}" 
+        class="form-control" value="{{ $b->kode_barang }}"
+        data-original-kode="{{ $b->kode_barang }}" required>
+    <div id="kodeValidationEdit-{{ $b->kode_barang }}" class="form-text"></div>
+</div>
                                 <div class="col-md-6">
                                     <label>Kategori</label>
                                     @php
@@ -725,10 +728,10 @@ $isDataKeseluruhan = !isset($selectedGudang); // ← flag supaya logika view kon
                                 </div>
                             </div>
                         </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Batal</button>
-                            <button class="btn btn-primary" type="submit">Simpan Perubahan</button>
-                        </div>
+                      <div class="modal-footer">
+    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Batal</button>
+    <button class="btn btn-primary" type="submit" id="btnSimpanEdit-{{ $b->kode_barang }}">Simpan Perubahan</button>
+</div>
                     </form>
                 </div>
             </div>
@@ -1248,11 +1251,150 @@ $isDataKeseluruhan = !isset($selectedGudang); // ← flag supaya logika view kon
                 }
             });
             document.addEventListener('DOMContentLoaded', function () {
-                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-                tooltipTriggerList.map(function (tooltipTriggerEl) {
-                    return new bootstrap.Tooltip(tooltipTriggerEl)
-                })
-            });
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+});
+
+// ============ VALIDASI REAL-TIME KODE BARANG ============
+document.addEventListener('DOMContentLoaded', function() {
+    let kodeCheckTimeout;
+
+    // Validasi untuk Modal Tambah Barang
+    const kodeInputTambah = document.getElementById('kodeBarangTambah');
+    const validationMsgTambah = document.getElementById('kodeValidationTambah');
+    const btnSimpanTambah = document.getElementById('btnSimpanTambah');
+
+    if (kodeInputTambah) {
+        kodeInputTambah.addEventListener('input', function() {
+            const kode = this.value.trim();
+            
+            if (!kode) {
+                validationMsgTambah.textContent = '';
+                validationMsgTambah.className = 'form-text';
+                btnSimpanTambah.disabled = true;
+                return;
+            }
+
+            // Tampilkan loading
+            validationMsgTambah.textContent = 'Mengecek ketersediaan kode...';
+            validationMsgTambah.className = 'form-text text-muted';
+            btnSimpanTambah.disabled = true;
+
+            clearTimeout(kodeCheckTimeout);
+            kodeCheckTimeout = setTimeout(() => {
+                fetch(`{{ route('admin.api.check.kode') }}?kode=${encodeURIComponent(kode)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.available) {
+                            validationMsgTambah.innerHTML = '<i class="bi bi-check-circle"></i> ' + data.message;
+                            validationMsgTambah.className = 'form-text text-success';
+                            btnSimpanTambah.disabled = false;
+                            kodeInputTambah.classList.remove('is-invalid');
+                            kodeInputTambah.classList.add('is-valid');
+                        } else {
+                            validationMsgTambah.innerHTML = '<i class="bi bi-x-circle"></i> ' + data.message;
+                            validationMsgTambah.className = 'form-text text-danger';
+                            btnSimpanTambah.disabled = true;
+                            kodeInputTambah.classList.remove('is-valid');
+                            kodeInputTambah.classList.add('is-invalid');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error checking kode:', error);
+                        validationMsgTambah.textContent = 'Gagal mengecek kode';
+                        validationMsgTambah.className = 'form-text text-danger';
+                        btnSimpanTambah.disabled = true;
+                    });
+            }, 500); // Delay 500ms untuk debouncing
+        });
+    }
+
+    // Validasi untuk Modal Edit Barang (semua barang)
+    document.querySelectorAll('[id^="kodeBarangEdit-"]').forEach(input => {
+        const kodeBarang = input.id.replace('kodeBarangEdit-', '');
+        const validationMsg = document.getElementById('kodeValidationEdit-' + kodeBarang);
+        const btnSimpan = document.getElementById('btnSimpanEdit-' + kodeBarang);
+        const originalKode = input.dataset.originalKode;
+
+        input.addEventListener('input', function() {
+            const kode = this.value.trim();
+            
+            if (!kode) {
+                validationMsg.textContent = '';
+                validationMsg.className = 'form-text';
+                btnSimpan.disabled = true;
+                return;
+            }
+
+            // Jika kode sama dengan kode asli, langsung enable
+            if (kode === originalKode) {
+                validationMsg.innerHTML = '<i class="bi bi-info-circle"></i> Kode tidak berubah';
+                validationMsg.className = 'form-text text-muted';
+                btnSimpan.disabled = false;
+                input.classList.remove('is-invalid', 'is-valid');
+                return;
+            }
+
+            // Tampilkan loading
+            validationMsg.textContent = 'Mengecek ketersediaan kode...';
+            validationMsg.className = 'form-text text-muted';
+            btnSimpan.disabled = true;
+
+            clearTimeout(kodeCheckTimeout);
+            kodeCheckTimeout = setTimeout(() => {
+                fetch(`{{ route('admin.api.check.kode') }}?kode=${encodeURIComponent(kode)}&current_kode=${encodeURIComponent(originalKode)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.available) {
+                            validationMsg.innerHTML = '<i class="bi bi-check-circle"></i> ' + data.message;
+                            validationMsg.className = 'form-text text-success';
+                            btnSimpan.disabled = false;
+                            input.classList.remove('is-invalid');
+                            input.classList.add('is-valid');
+                        } else {
+                            validationMsg.innerHTML = '<i class="bi bi-x-circle"></i> ' + data.message;
+                            validationMsg.className = 'form-text text-danger';
+                            btnSimpan.disabled = true;
+                            input.classList.remove('is-valid');
+                            input.classList.add('is-invalid');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error checking kode:', error);
+                        validationMsg.textContent = 'Gagal mengecek kode';
+                        validationMsg.className = 'form-text text-danger';
+                        btnSimpan.disabled = true;
+                    });
+            }, 500);
+        });
+    });
+
+    // Reset validasi saat modal ditutup
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('hidden.bs.modal', function() {
+            // Reset untuk modal tambah
+            if (kodeInputTambah) {
+                kodeInputTambah.value = '';
+                kodeInputTambah.classList.remove('is-valid', 'is-invalid');
+                validationMsgTambah.textContent = '';
+                btnSimpanTambah.disabled = false;
+            }
+
+            // Reset untuk modal edit
+            const editInput = this.querySelector('[id^="kodeBarangEdit-"]');
+            if (editInput) {
+                editInput.classList.remove('is-valid', 'is-invalid');
+                const kodeBarang = editInput.id.replace('kodeBarangEdit-', '');
+                const validationMsg = document.getElementById('kodeValidationEdit-' + kodeBarang);
+                if (validationMsg) {
+                    validationMsg.textContent = '';
+                }
+            }
+        });
+    });
+});
 
         </script>
 @if ($isDataKeseluruhan)
