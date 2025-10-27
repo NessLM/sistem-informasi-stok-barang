@@ -504,15 +504,20 @@ class DataKeseluruhan extends Controller
             'stok' => 0
         ]);
 
-        // Buat stok PJ untuk gudang kategori
-        $kategori = Kategori::find($request->id_kategori);
-        if ($kategori && $kategori->gudang_id) {
-            PjStok::create([
-                'kode_barang' => $barang->kode_barang,
-                'id_gudang' => $kategori->gudang_id,
-                'id_kategori' => $request->id_kategori,
-                'stok' => 0
-            ]);
+        // PERBAIKAN: Hanya buat PJ Stok jika kategorinya BUKAN dari Gudang Utama
+        $kategori = Kategori::with('gudang')->find($request->id_kategori);
+        if ($kategori && $kategori->gudang_id && $kategori->gudang) {
+            $isGudangUtama = stripos($kategori->gudang->nama, 'utama') !== false;
+
+            // Hanya buat PJ Stok untuk gudang NON-UTAMA (ID 2-5)
+            if (!$isGudangUtama) {
+                PjStok::create([
+                    'kode_barang' => $barang->kode_barang,
+                    'id_gudang' => $kategori->gudang_id,
+                    'id_kategori' => $request->id_kategori,
+                    'stok' => 0
+                ]);
+            }
         }
 
         return redirect()->route('admin.datakeseluruhan.index')
