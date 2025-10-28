@@ -265,6 +265,9 @@
     font-size: 13px;
     padding: 6px 12px;
 }
+.modal-body .form-label {
+    color: #212529 !important; /* Hitam/dark */
+}
 
 .btn-danger {
     background: #dc3545;

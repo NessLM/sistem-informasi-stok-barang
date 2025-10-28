@@ -171,7 +171,7 @@ class DataKeseluruhan extends Controller
      * API: Search suggestions untuk autocomplete
      * - Hanya mengembalikan stok > 0 (agar tombol "Barang Keluar" valid).
      */
-/**
+    /**
      * API: Search suggestions untuk autocomplete
      * - Hanya mengembalikan stok > 0 (agar tombol "Barang Keluar" valid).
      */
@@ -294,9 +294,17 @@ class DataKeseluruhan extends Controller
         $buktiPath = null;
         if ($request->hasFile('bukti')) {
             $file = $request->file('bukti');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $buktiPath = $file->storeAs('bukti_barang_keluar', $filename, 'public');
-            Log::info('Bukti uploaded:', ['path' => $buktiPath]);
+
+            // Generate nama file yang unik dan konsisten
+            $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+
+            // Simpan dengan nama yang sudah ditentukan
+            $buktiPath = $file->storeAs('bukti-barang-keluar', $fileName, 'public');
+
+            Log::info('Bukti uploaded:', [
+                'path' => $buktiPath,
+                'filename' => $fileName
+            ]);
         }
 
         // Proses bagian_id (boleh null)

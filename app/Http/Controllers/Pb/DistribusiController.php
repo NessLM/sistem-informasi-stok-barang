@@ -44,53 +44,53 @@ class DistribusiController extends Controller
 
             // ===== STEP 1: Cari barang =====
             $barang = Barang::where('kode_barang', $kodeBarang)->lockForUpdate()->first();
-            
+
             if (!$barang) {
                 throw new \Exception("Barang dengan kode {$kodeBarang} tidak ditemukan");
             }
-            
+
             Log::info("Barang ditemukan: {$barang->nama_barang} (ID Kategori: {$barang->id_kategori})");
 
             // ===== STEP 2: Ambil kategori asal dari Gudang Utama =====
             $kategoriUtama = Kategori::find($barang->id_kategori);
-            
+
             if (!$kategoriUtama) {
                 throw new \Exception("Kategori barang tidak ditemukan");
             }
-            
+
             Log::info("Kategori Utama: {$kategoriUtama->nama} (ID: {$kategoriUtama->id}, Gudang ID: {$kategoriUtama->gudang_id})");
 
             // ===== STEP 3: PRIORITAS TINGGI - CEK KATEGORI EXISTING DI GUDANG PJ =====
             $namaKategori = $kategoriUtama->nama;
-            
+
             Log::info("STEP 3A: Mencari kategori '{$namaKategori}' yang sudah ada di gudang PJ manapun...");
-            
+
             // Cari kategori dengan nama yang sama di gudang selain Gudang Utama
             $kategoriExisting = Kategori::where('nama', $namaKategori)
-                ->whereHas('gudang', function($query) {
+                ->whereHas('gudang', function ($query) {
                     $query->where('nama', 'NOT LIKE', '%Utama%')
-                          ->where('nama', 'NOT LIKE', '%utama%');
+                        ->where('nama', 'NOT LIKE', '%utama%');
                 })
                 ->with('gudang')
                 ->first();
-            
+
             if ($kategoriExisting && $kategoriExisting->gudang) {
                 // BINGO! Kategori sudah ada di gudang PJ, langsung gunakan!
                 $gudangTujuan = $kategoriExisting->gudang;
                 $matchType = 'existing_category';
                 $matchScore = 100;
-                
+
                 Log::info("✓✓✓ KATEGORI EXISTING DITEMUKAN! ✓✓✓");
                 Log::info("Kategori '{$namaKategori}' sudah ada di gudang '{$gudangTujuan->nama}' (ID Kategori: {$kategoriExisting->id})");
                 Log::info("LANGSUNG GUNAKAN GUDANG INI!");
-                
+
             } else {
                 Log::info("✗ Kategori '{$namaKategori}' belum ada di gudang PJ manapun");
                 Log::info("STEP 3B: Mencari gudang berdasarkan nama kategori...");
-                
+
                 // Lanjut ke matching algorithm
                 $result = $this->findMatchingGudang($namaKategori);
-                
+
                 $gudangTujuan = $result['gudang'];
                 $matchType = $result['match_type'];
                 $matchScore = $result['score'];
@@ -100,21 +100,21 @@ class DistribusiController extends Controller
                     $availableGudang = Gudang::where('nama', 'NOT LIKE', '%Utama%')
                         ->where('nama', 'NOT LIKE', '%utama%')
                         ->get();
-                        
+
                     if ($availableGudang->isEmpty()) {
                         throw new \Exception("Tidak ada gudang PJ yang tersedia. Silakan buat gudang terlebih dahulu.");
                     }
-                    
+
                     // Gunakan gudang pertama sebagai default
                     $gudangTujuan = $availableGudang->first();
                     $matchType = 'default';
                     $matchScore = 0;
-                    
+
                     Log::warning("⚠ MENGGUNAKAN GUDANG DEFAULT: {$gudangTujuan->nama} untuk kategori '{$namaKategori}'");
                     Log::warning("Saran: Ubah nama kategori menjadi salah satu dari: " . $availableGudang->pluck('nama')->join(', '));
                 }
             }
-            
+
             Log::info("=== SMART DETECTION SUCCESS ===");
             Log::info("Gudang Tujuan: '{$gudangTujuan->nama}' (ID: {$gudangTujuan->id})");
             Log::info("Kategori: '{$namaKategori}'");
@@ -135,12 +135,12 @@ class DistribusiController extends Controller
                 if (!$kategoriTujuan) {
                     // Buat kategori baru di gudang tujuan dengan nama yang sama
                     Log::info("STEP 4: Kategori '{$namaKategori}' tidak ditemukan di {$gudangTujuan->nama}, membuat baru...");
-                    
+
                     $kategoriTujuan = Kategori::create([
                         'gudang_id' => $gudangTujuan->id,
                         'nama' => $namaKategori
                     ]);
-                    
+
                     Log::info("STEP 4: Kategori baru dibuat: {$kategoriTujuan->nama} (ID: {$kategoriTujuan->id}) di {$gudangTujuan->nama}");
                 } else {
                     Log::info("STEP 4: Kategori tujuan ditemukan: {$kategoriTujuan->nama} (ID: {$kategoriTujuan->id}) di {$gudangTujuan->nama}");
@@ -149,47 +149,56 @@ class DistribusiController extends Controller
 
             // ===== STEP 5: Cek stok PB dengan LOCK =====
             Log::info("STEP 5: Mencari PB Stok dengan kode_barang = '{$kodeBarang}'");
-            
+
             $pbStok = PbStok::where('kode_barang', $kodeBarang)->lockForUpdate()->first();
-            
+
             if (!$pbStok) {
                 throw new \Exception("Barang belum ada di PB Stok. Silakan tambahkan barang masuk terlebih dahulu.");
             }
-            
+
             Log::info("STEP 5: PbStok ditemukan - ID: {$pbStok->id}, Stok AWAL: {$pbStok->stok}");
-            
+
             // Validasi stok cukup
             if ($pbStok->stok < $validated['jumlah']) {
                 throw new \Exception(
                     "Stok PB tidak mencukupi. Tersedia: {$pbStok->stok}, Diminta: {$validated['jumlah']}"
                 );
             }
-            
+
             Log::info("STEP 5: Validasi stok OK - Tersedia: {$pbStok->stok}, Diminta: {$validated['jumlah']}");
 
             // ===== STEP 6: Upload bukti jika ada =====
+            // ===== STEP 6: Upload bukti jika ada =====
             if ($request->hasFile('bukti')) {
-                $buktiPath = $request->file('bukti')->store('bukti-distribusi', 'public');
+                $file = $request->file('bukti');
+
+                // Generate nama file yang unik dan konsisten
+                $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+
+                // Simpan dengan nama yang sudah ditentukan
+                $buktiPath = $file->storeAs('bukti-distribusi', $fileName, 'public');
+
                 Log::info("STEP 6: Bukti file diupload: {$buktiPath}");
+                Log::info("STEP 6: Nama file: {$fileName}");
             }
 
             // ===== STEP 7: Kurangi stok PB =====
             Log::info("STEP 7: Mulai kurangi stok PB");
-            
+
             $stokBaruPb = $pbStok->stok - $validated['jumlah'];
-            
+
             $affectedPb = DB::table('pb_stok')
                 ->where('id', $pbStok->id)
                 ->update([
                     'stok' => $stokBaruPb,
                     'updated_at' => now()
                 ]);
-            
+
             Log::info("STEP 7: Stok PB diupdate. Stok baru: {$stokBaruPb}");
 
             // ===== STEP 8: Tambah/Update stok PJ =====
             Log::info("STEP 8: Mencari PjStok - Kode: '{$kodeBarang}', Gudang ID: {$gudangTujuan->id}");
-            
+
             $pjStok = PjStok::where('kode_barang', $kodeBarang)
                 ->where('id_gudang', $gudangTujuan->id)
                 ->lockForUpdate()
@@ -197,9 +206,9 @@ class DistribusiController extends Controller
 
             if ($pjStok) {
                 Log::info("STEP 8: PjStok DITEMUKAN - ID: {$pjStok->id}, Stok AWAL: {$pjStok->stok}");
-                
+
                 $stokBaruPj = $pjStok->stok + $validated['jumlah'];
-                
+
                 $affectedPj = DB::table('pj_stok')
                     ->where('id', $pjStok->id)
                     ->update([
@@ -207,12 +216,12 @@ class DistribusiController extends Controller
                         'id_kategori' => $kategoriTujuan->id,
                         'updated_at' => now()
                     ]);
-                
+
                 Log::info("STEP 8: PjStok diupdate. Stok baru: {$stokBaruPj}");
-                
+
             } else {
                 Log::info("STEP 8: PjStok TIDAK DITEMUKAN, membuat baru");
-                
+
                 $pjStokId = DB::table('pj_stok')->insertGetId([
                     'kode_barang' => $kodeBarang,
                     'id_gudang' => $gudangTujuan->id,
@@ -221,15 +230,15 @@ class DistribusiController extends Controller
                     'created_at' => now(),
                     'updated_at' => now()
                 ]);
-                
+
                 Log::info("STEP 8: PjStok baru dibuat - ID: {$pjStokId}, Stok: {$validated['jumlah']}, Kategori: {$kategoriTujuan->nama}");
             }
 
             // ===== STEP 9: Simpan transaksi distribusi =====
             $tanggal = $validated['tanggal'] ?? now()->toDateString();
-            
+
             Log::info("STEP 9: Membuat transaksi distribusi");
-            
+
             $transaksiId = DB::table('transaksi_distribusi')->insertGetId([
                 'kode_barang' => $kodeBarang,
                 'id_gudang_tujuan' => $gudangTujuan->id,
@@ -241,19 +250,19 @@ class DistribusiController extends Controller
                 'created_at' => now(),
                 'updated_at' => now()
             ]);
-            
+
             Log::info("STEP 9: Transaksi dibuat - ID: {$transaksiId}");
 
             // Commit transaksi
             DB::commit();
             Log::info("=== TRANSACTION COMMITTED SUCCESSFULLY ===");
-            
+
             // Ambil data final
             $afterCommitPb = DB::table('pb_stok')->where('id', $pbStok->id)->first();
 
             // Pesan sukses dengan info match type
             $message = "Barang '{$barang->nama_barang}' berhasil didistribusikan ke {$gudangTujuan->nama} (Kategori: {$kategoriTujuan->nama}). Jumlah: {$validated['jumlah']}. Stok PB tersisa: {$afterCommitPb->stok}";
-            
+
             if ($matchType === 'existing_category') {
                 $message .= " ✓ Kategori sudah ada di gudang ini.";
             } elseif ($matchType === 'default') {
@@ -271,7 +280,7 @@ class DistribusiController extends Controller
             Log::error("=== TRANSACTION ROLLED BACK ===");
             Log::error("Error Message: " . $e->getMessage());
             Log::error("Error Line: " . $e->getLine());
-            
+
             // Hapus file jika upload gagal
             if ($buktiPath) {
                 Storage::disk('public')->delete($buktiPath);
@@ -294,14 +303,14 @@ class DistribusiController extends Controller
     private function findMatchingGudang($namaKategori)
     {
         Log::info("=== MULAI PENCARIAN GUDANG UNTUK KATEGORI: '{$namaKategori}' ===");
-        
+
         // Ambil semua gudang kecuali Gudang Utama
         $allGudang = Gudang::where('nama', 'NOT LIKE', '%Utama%')
             ->where('nama', 'NOT LIKE', '%utama%')
             ->get();
-        
+
         Log::info("Total gudang tersedia (non-Utama): " . $allGudang->count());
-        
+
         if ($allGudang->isEmpty()) {
             Log::error("FATAL: Tidak ada gudang selain Gudang Utama!");
             return ['gudang' => null, 'match_type' => 'none', 'score' => 0];
@@ -315,7 +324,7 @@ class DistribusiController extends Controller
         // Normalisasi nama kategori
         $namaKategoriLower = strtolower(trim($namaKategori));
         $namaKategoriClean = $this->cleanGudangName($namaKategoriLower);
-        
+
         Log::info("Kategori normalized: '{$namaKategoriLower}'");
         Log::info("Kategori cleaned: '{$namaKategoriClean}'");
 
@@ -323,50 +332,50 @@ class DistribusiController extends Controller
         // PRIORITAS 1: EXACT MATCH (100% akurat)
         // ═══════════════════════════════════════════════════════════════
         Log::info("--- PRIORITAS 1: EXACT MATCH ---");
-        
+
         foreach ($allGudang as $gudang) {
             $namaGudangClean = $this->cleanGudangName(strtolower($gudang->nama));
-            
+
             // Exact match setelah cleaning
             if ($namaKategoriClean === $namaGudangClean) {
                 Log::info("✓ EXACT MATCH FOUND: Kategori '{$namaKategoriClean}' === Gudang '{$namaGudangClean}' ({$gudang->nama})");
                 return ['gudang' => $gudang, 'match_type' => 'exact', 'score' => 100];
             }
-            
+
             // Juga cek tanpa cleaning (untuk kasus spesifik)
             if ($namaKategoriLower === strtolower($gudang->nama)) {
                 Log::info("✓ EXACT MATCH FOUND (raw): Kategori '{$namaKategoriLower}' === Gudang '{$gudang->nama}'");
                 return ['gudang' => $gudang, 'match_type' => 'exact', 'score' => 100];
             }
         }
-        
+
         Log::info("✗ Tidak ada exact match");
 
         // ═══════════════════════════════════════════════════════════════
         // PRIORITAS 2: MAPPING DATABASE (untuk kategori yang sudah ada)
         // ═══════════════════════════════════════════════════════════════
         Log::info("--- PRIORITAS 2: MAPPING DATABASE ---");
-        
+
         $mapping = $this->getKategoriGudangMapping();
-        
+
         foreach ($mapping as $kategoriPattern => $gudangKeywords) {
             $kategoriPatternLower = strtolower($kategoriPattern);
-            
+
             // Exact match pada mapping
             if ($namaKategoriLower === $kategoriPatternLower) {
                 Log::info("✓ Mapping exact match: '{$namaKategoriLower}' === '{$kategoriPatternLower}'");
-                
+
                 $gudang = $this->findGudangByKeywords($allGudang, $gudangKeywords);
                 if ($gudang) {
                     Log::info("✓ MAPPING MATCH FOUND: Kategori '{$namaKategori}' → Gudang '{$gudang->nama}'");
                     return ['gudang' => $gudang, 'match_type' => 'mapping_exact', 'score' => 90];
                 }
             }
-            
+
             // Contains match pada mapping
             if (strpos($namaKategoriLower, $kategoriPatternLower) !== false) {
                 Log::info("✓ Mapping contains match: '{$kategoriPatternLower}' dalam '{$namaKategoriLower}'");
-                
+
                 $gudang = $this->findGudangByKeywords($allGudang, $gudangKeywords);
                 if ($gudang) {
                     Log::info("✓ MAPPING MATCH FOUND: Kategori '{$namaKategori}' → Gudang '{$gudang->nama}'");
@@ -374,41 +383,41 @@ class DistribusiController extends Controller
                 }
             }
         }
-        
+
         Log::info("✗ Tidak ada mapping match");
 
         // ═══════════════════════════════════════════════════════════════
         // PRIORITAS 3: SMART WORD MATCHING (untuk kategori baru)
         // ═══════════════════════════════════════════════════════════════
         Log::info("--- PRIORITAS 3: SMART WORD MATCHING ---");
-        
+
         // Extract kata-kata signifikan dari kategori (min 3 karakter, bukan stop word)
         $stopWords = ['dan', 'atau', 'untuk', 'dari', 'yang', 'dengan', 'pada', 'di', 'ke', 'the', 'of', 'in', 'a', 'an'];
         $kategoriWords = array_values(array_filter(
             preg_split('/[\s&,\-\/]+/', $namaKategoriLower),
-            function($word) use ($stopWords) {
+            function ($word) use ($stopWords) {
                 return strlen($word) >= 3 && !in_array($word, $stopWords);
             }
         ));
-        
+
         Log::info("Kata signifikan dari kategori: " . json_encode($kategoriWords));
 
         if (!empty($kategoriWords)) {
             $scoreboard = [];
-            
+
             foreach ($allGudang as $gudang) {
                 $namaGudangLower = strtolower($gudang->nama);
                 $namaGudangClean = $this->cleanGudangName($namaGudangLower);
                 $gudangWords = array_filter(
                     preg_split('/[\s&,\-\/]+/', $namaGudangClean),
-                    function($word) use ($stopWords) {
+                    function ($word) use ($stopWords) {
                         return strlen($word) >= 3 && !in_array($word, $stopWords);
                     }
                 );
-                
+
                 $score = 0;
                 $matchDetails = [];
-                
+
                 foreach ($kategoriWords as $kWord) {
                     foreach ($gudangWords as $gWord) {
                         // Exact word match
@@ -431,39 +440,39 @@ class DistribusiController extends Controller
                             $distance = levenshtein($kWord, $gWord);
                             $maxLen = max(strlen($kWord), strlen($gWord));
                             $similarity = (1 - $distance / $maxLen) * 100;
-                            
+
                             if ($similarity >= 70) {
-                                $similarityScore = (int)($similarity / 2);
+                                $similarityScore = (int) ($similarity / 2);
                                 $score += $similarityScore;
                                 $matchDetails[] = "similar: '{$kWord}' ≈ '{$gWord}' ({$similarity}% = +{$similarityScore})";
                             }
                         }
                     }
                 }
-                
+
                 if ($score > 0) {
                     $scoreboard[$gudang->id] = [
                         'gudang' => $gudang,
                         'score' => $score,
                         'details' => $matchDetails
                     ];
-                    
+
                     Log::info("  Gudang '{$gudang->nama}' score: {$score}");
                     foreach ($matchDetails as $detail) {
                         Log::info("    - {$detail}");
                     }
                 }
             }
-            
+
             // Urutkan berdasarkan score
-            uasort($scoreboard, function($a, $b) {
+            uasort($scoreboard, function ($a, $b) {
                 return $b['score'] - $a['score'];
             });
-            
+
             // Return gudang dengan score tertinggi jika >= 40 (threshold lebih rendah)
             if (!empty($scoreboard)) {
                 $topMatch = reset($scoreboard);
-                
+
                 if ($topMatch['score'] >= 40) {
                     Log::info("✓ SMART MATCH FOUND: '{$topMatch['gudang']->nama}' dengan score {$topMatch['score']}");
                     return ['gudang' => $topMatch['gudang'], 'match_type' => 'smart', 'score' => $topMatch['score']];
@@ -473,7 +482,7 @@ class DistribusiController extends Controller
                 }
             }
         }
-        
+
         Log::info("✗ Tidak ada smart match yang memenuhi threshold");
 
         // ═══════════════════════════════════════════════════════════════
@@ -487,7 +496,7 @@ class DistribusiController extends Controller
             Log::warning("  - {$g->nama} (ID: {$g->id})");
         }
         Log::warning("Saran: Ubah nama kategori agar mengandung kata kunci dari salah satu gudang di atas");
-        
+
         return ['gudang' => null, 'match_type' => 'none', 'score' => 0];
     }
 
@@ -524,7 +533,7 @@ class DistribusiController extends Controller
             'amplop' => ['atk', 'alat tulis'],
             'map' => ['atk', 'alat tulis'],
             'ordner' => ['atk', 'alat tulis'],
-            
+
             // Listrik / Elektrik
             'kabel listrik' => ['listrik', 'elektrik', 'electrical'],
             'kabel' => ['listrik', 'elektrik'],
@@ -537,7 +546,7 @@ class DistribusiController extends Controller
             'bohlam' => ['listrik', 'elektrik'],
             'mcb' => ['listrik', 'elektrik'],
             'terminal' => ['listrik', 'elektrik'],
-            
+
             // Kebersihan
             'alat kebersihan' => ['kebersihan', 'sanitasi', 'cleaning'],
             'kebersihan' => ['kebersihan', 'sanitasi', 'cleaning'],
@@ -551,7 +560,7 @@ class DistribusiController extends Controller
             'kemoceng' => ['kebersihan', 'sanitasi', 'cleaning'],
             'lap' => ['kebersihan', 'sanitasi', 'cleaning'],
             'tissue' => ['kebersihan', 'sanitasi', 'cleaning'],
-            
+
             // Komputer / IT
             'perangkat keras' => ['komputer', 'it', 'elektronik', 'computer'],
             'komputer' => ['komputer', 'it', 'elektronik'],
@@ -575,18 +584,18 @@ class DistribusiController extends Controller
     {
         foreach ($keywords as $keyword) {
             $keywordLower = strtolower($keyword);
-            
-            $gudang = $allGudang->first(function($g) use ($keywordLower) {
+
+            $gudang = $allGudang->first(function ($g) use ($keywordLower) {
                 $namaGudangLower = strtolower($g->nama);
                 return strpos($namaGudangLower, $keywordLower) !== false;
             });
-            
+
             if ($gudang) {
                 Log::info("  → Found gudang '{$gudang->nama}' via keyword '{$keyword}'");
                 return $gudang;
             }
         }
-        
+
         return null;
     }
 }

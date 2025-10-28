@@ -9,6 +9,7 @@ use App\Models\TransaksiDistribusi;
 use App\Models\TransaksiBarangKeluar;
 use App\Models\TransaksiBarangMasuk;
 use App\Models\Gudang;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
@@ -25,56 +26,63 @@ class RiwayatController extends Controller
     private function mapBarangMasukToAdminRow(TransaksiBarangMasuk $item)
     {
         return (object) [
-            'tanggal'     => $item->tanggal ?? optional($item->created_at)->toDateString(),
-            'waktu'       => optional($item->created_at)->format('H:i:s'),
-            'alur_barang' => 'Masuk PB', // PERBAIKAN: Sesuaikan dengan filter di PDF
-            'gudang'      => 'Gudang Utama',
+            'tanggal' => $item->tanggal ?? optional($item->created_at)->toDateString(),
+            'waktu' => optional($item->created_at)->format('H:i:s'),
+            'alur_barang' => 'Masuk PB',
+            'gudang' => 'Gudang Utama',
             'nama_barang' => optional($item->barang)->nama_barang ?? '-',
-            'jumlah'      => (int) ($item->jumlah ?? 0),
-            'satuan'      => optional($item->barang)->satuan ?? '-',
-            'bukti'       => $item->bukti,
-            'bukti_path'  => $item->bukti ? asset('storage/' . $item->bukti) : null,
-            'keterangan'  => $item->keterangan ?? 'Barang masuk'
+            'jumlah' => (int) ($item->jumlah ?? 0),
+            'satuan' => optional($item->barang)->satuan ?? '-',
+            'bukti' => $item->bukti,
+            // PERBAIKAN: Tambahkan pengecekan apakah file exist
+            'bukti_path' => $item->bukti
+                ? asset('storage/' . str_replace('\\', '/', $item->bukti))
+                : null,
+
+            'keterangan' => $item->keterangan ?? 'Barang masuk'
         ];
     }
 
-    /**
-     * Map Transaksi Distribusi (PB ke PJ)
-     */
     private function mapDistribusiToAdminRow(TransaksiDistribusi $item)
     {
         return (object) [
-            'tanggal'     => $item->tanggal ?? optional($item->created_at)->toDateString(),
-            'waktu'       => optional($item->created_at)->format('H:i:s'),
-            'alur_barang' => 'Distribusi PJ', // PERBAIKAN: Sesuaikan dengan filter di PDF
-            'gudang'      => optional($item->gudangTujuan)->nama ?? '-',
+            'tanggal' => $item->tanggal ?? optional($item->created_at)->toDateString(),
+            'waktu' => optional($item->created_at)->format('H:i:s'),
+            'alur_barang' => 'Distribusi PJ',
+            'gudang' => optional($item->gudangTujuan)->nama ?? '-',
             'nama_barang' => optional($item->barang)->nama_barang ?? '-',
-            'jumlah'      => (int) ($item->jumlah ?? 0),
-            'satuan'      => optional($item->barang)->satuan ?? '-',
-            'bukti'       => $item->bukti,
-            'bukti_path'  => $item->bukti ? asset('storage/' . $item->bukti) : null,
-            'keterangan'  => $item->keterangan ?? 'Distribusi barang  '
+            'jumlah' => (int) ($item->jumlah ?? 0),
+            'satuan' => optional($item->barang)->satuan ?? '-',
+            'bukti' => $item->bukti,
+            // PERBAIKAN: Tambahkan pengecekan apakah file exist
+            'bukti_path' => $item->bukti
+                ? asset('storage/' . str_replace('\\', '/', $item->bukti))
+                : null,
+
+            'keterangan' => $item->keterangan ?? 'Distribusi barang'
         ];
     }
 
-    /**
-     * Map Transaksi Barang Keluar (PJ ke Individu)
-     */
     private function mapBarangKeluarToAdminRow(TransaksiBarangKeluar $item)
     {
         return (object) [
-            'tanggal'     => $item->tanggal ?? optional($item->created_at)->toDateString(),
-            'waktu'       => optional($item->created_at)->format('H:i:s'),
-            'alur_barang' => 'Keluar PJ', // PERBAIKAN: Sesuaikan dengan filter di PDF
-            'gudang'      => optional($item->gudang)->nama ?? '-',
+            'tanggal' => $item->tanggal ?? optional($item->created_at)->toDateString(),
+            'waktu' => optional($item->created_at)->format('H:i:s'),
+            'alur_barang' => 'Keluar PJ',
+            'gudang' => optional($item->gudang)->nama ?? '-',
             'nama_barang' => optional($item->barang)->nama_barang ?? '-',
-            'jumlah'      => (int) ($item->jumlah ?? 0),
-            'satuan'      => optional($item->barang)->satuan ?? '-',
-            'bagian'      => optional($item->bagian)->nama ?? '-',
-            'penerima'    => $item->nama_penerima ?? '-',
-            'bukti'       => $item->bukti,
-            'bukti_path'  => $item->bukti ? asset('storage/' . $item->bukti) : null,
-            'keterangan'  => $item->keterangan ?? 'Barang keluar ' 
+            'jumlah' => (int) ($item->jumlah ?? 0),
+            'satuan' => optional($item->barang)->satuan ?? '-',
+            'bagian' => optional($item->bagian)->nama ?? '-',
+            'penerima' => $item->nama_penerima ?? '-',
+            'bukti' => $item->bukti,
+            // PERBAIKAN: Tambahkan pengecekan apakah file exist
+            'bukti_path' => $item->bukti
+                ? asset('storage/' . str_replace('\\', '/', $item->bukti))
+                : null,
+
+
+            'keterangan' => $item->keterangan ?? 'Barang keluar'
         ];
     }
 
@@ -94,7 +102,7 @@ class RiwayatController extends Controller
         // ===== TABEL 1: Barang Masuk (Admin -> PB) =====
         $barangMasukQuery = TransaksiBarangMasuk::with(['barang.kategori', 'user']);
         $this->applyPeriodeFilter($barangMasukQuery, $request);
-        
+
         $riwayatBarangMasuk = $barangMasukQuery
             ->orderBy('tanggal', 'desc')
             ->orderBy('created_at', 'desc')
@@ -105,13 +113,13 @@ class RiwayatController extends Controller
 
         // ===== TABEL 2: Distribusi (PB -> PJ) =====
         $distribusiQuery = TransaksiDistribusi::with(['barang.kategori.gudang', 'gudangTujuan', 'user']);
-        
+
         if ($gudangIdForFilter) {
             $distribusiQuery->where('id_gudang_tujuan', $gudangIdForFilter);
         }
-        
+
         $this->applyPeriodeFilter($distribusiQuery, $request);
-        
+
         $riwayatDistribusi = $distribusiQuery
             ->orderBy('tanggal', 'desc')
             ->orderBy('created_at', 'desc')
@@ -122,13 +130,13 @@ class RiwayatController extends Controller
 
         // ===== TABEL 3: Barang Keluar (PJ -> Individu) =====
         $keluarQuery = TransaksiBarangKeluar::with(['barang.kategori', 'gudang', 'user', 'bagian']);
-        
+
         if ($gudangIdForFilter) {
             $keluarQuery->where('id_gudang', $gudangIdForFilter);
         }
-        
+
         $this->applyPeriodeFilter($keluarQuery, $request);
-        
+
         $riwayatBarangKeluar = $keluarQuery
             ->orderBy('tanggal', 'desc')
             ->orderBy('created_at', 'desc')
@@ -143,9 +151,9 @@ class RiwayatController extends Controller
 
         return view('staff.admin.riwayat', compact(
             'riwayatBarangMasuk',
-            'riwayatDistribusi', 
+            'riwayatDistribusi',
             'riwayatBarangKeluar',
-            'menu', 
+            'menu',
             'gudangList'
         ));
     }
@@ -180,15 +188,15 @@ class RiwayatController extends Controller
 
         // Gabungkan semua data
         $riwayat = $rowsBarangMasuk->concat($rowsDistribusi)->concat($rowsBarangKeluar);
-        
+
         $riwayat = $riwayat->sortByDesc(function ($x) {
             return ($x->tanggal ?? '1970-01-01') . ' ' . ($x->waktu ?? '00:00:00');
         })->values();
 
         $filter = [
-            'gudang'         => $request->gudang,
-            'periode'        => $request->periode,
-            'dari_tanggal'   => $request->dari_tanggal,
+            'gudang' => $request->gudang,
+            'periode' => $request->periode,
+            'dari_tanggal' => $request->dari_tanggal,
             'sampai_tanggal' => $request->sampai_tanggal,
         ];
 

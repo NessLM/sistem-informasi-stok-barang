@@ -255,6 +255,7 @@
                                     <th>Jumlah</th>
                                     <th>Satuan</th>
                                     <th>Bagian</th>
+                                    <th>Nama Penerima</th>
                                     <th>Keterangan</th>
                                     <th>Bukti</th>
                                 </tr>
@@ -274,6 +275,7 @@
                                         <td><span>{{ $item->jumlah }}</span></td>
                                         <td>{{ $item->satuan ?? '-' }}</td>
                                         <td>{{ $item->bagian ?? '-' }}</td>
+                                        <td>{{ $item->nama_penerima ?? '-' }}</td>
                                         <td data-label="Keterangan"
                                             style="white-space: normal !important; word-wrap: break-word !important; word-break: break-word !important; max-width: 200px; vertical-align: top;">
 
@@ -304,7 +306,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="8" class="riwayat-empty-state text-center py-4">
+                                        <td colspan="9" class="riwayat-empty-state text-center py-4">
                                             <i class="bi bi-inbox"></i>
                                             <p>Tidak ada data barang keluar ditemukan</p>
                                         </td>
@@ -395,7 +397,6 @@
 
                 function initKeteranganToggle() {
                     document.querySelectorAll('.keterangan-toggle').forEach(toggle => {
-                        // Remove existing listeners to prevent duplicates
                         toggle.removeEventListener('click', handleKeteranganToggle);
                         toggle.addEventListener('click', handleKeteranganToggle);
                     });
@@ -410,16 +411,14 @@
                     const textSpan = wrapper.querySelector('.keterangan-text');
 
                     if (textSpan.classList.contains('collapsed')) {
-                        // EXPAND - tampilkan full text
                         const fullText = textSpan.getAttribute('data-full-text');
                         textSpan.textContent = fullText;
                         textSpan.classList.remove('collapsed');
                         textSpan.classList.add('expanded');
                         toggle.textContent = 'tutup';
                     } else {
-                        // COLLAPSE - kembalikan ke text pendek
                         const fullText = textSpan.getAttribute('data-full-text');
-                        const limitedText = fullText.substring(0, 100); // sesuai limit di blade
+                        const limitedText = fullText.substring(0, 100);
                         textSpan.textContent = limitedText;
                         textSpan.classList.remove('expanded');
                         textSpan.classList.add('collapsed');
