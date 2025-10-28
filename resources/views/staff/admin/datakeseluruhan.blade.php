@@ -655,89 +655,97 @@ $isDataKeseluruhan = !isset($selectedGudang); // ← flag supaya logika view kon
     </div>
 
     {{-- Modal Edit Barang --}}
-    @foreach ($kategori as $k)
-        @foreach ($k->barang as $b)
-            <div class="modal fade" id="modalEditBarang-{{ $b->kode_barang }}" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered modal-lg">
-                    <form action="{{ route('admin.barang.update', $b->kode_barang) }}" method="POST" class="modal-content">
-                        @csrf
-                        @method('PUT')
-                        <div class="modal-header">
-                            <h5 class="modal-title">Edit Barang: {{ $b->nama_barang }}</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label>Nama Barang</label>
-                                    <input type="text" name="nama_barang" class="form-control" value="{{ $b->nama_barang }}"
-                                        required>
-                                </div>
-                               <div class="col-md-6">
-    <label>
-        Kode Barang
-        <i class="bi bi-info-circle text-primary" data-bs-toggle="tooltip"
-            data-bs-placement="top"
-            title="Hati-hati mengubah kode barang, akan mempengaruhi riwayat transaksi"
-            style="cursor: help;"></i>
-    </label>
-    <input type="text" name="kode_barang" id="kodeBarangEdit-{{ $b->kode_barang }}" 
-        class="form-control" value="{{ $b->kode_barang }}"
-        data-original-kode="{{ $b->kode_barang }}" required>
-    <div id="kodeValidationEdit-{{ $b->kode_barang }}" class="form-text"></div>
-</div>
-                                <div class="col-md-6">
-                                    <label>Kategori</label>
-                                    @php
-                                    $uniqueKategori = $kategori->groupBy(fn($k) => strtolower($k->nama))
-                                        ->map(function($items){
-                                            // pilih yang dari Gudang Utama kalau ada; kalau tidak ya ambil item pertama
-                                            $utama = $items->firstWhere(fn($it) => $it->gudang && stripos($it->gudang->nama, 'utama') !== false);
-                                            return $utama ?: $items->first();
-                                        })
-                                        ->values();
+   {{-- Modal Edit Barang - PERBAIKAN --}}
+@foreach ($kategori as $k)
+    @foreach ($k->barang as $b)
+        <div class="modal fade" id="modalEditBarang-{{ $b->kode_barang }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <form action="{{ route('admin.barang.update', $b->kode_barang) }}" method="POST" class="modal-content">
+                    @csrf
+                    @method('PUT')
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit Barang: {{ $b->nama_barang }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label>Nama Barang</label>
+                                <input type="text" name="nama_barang" class="form-control" value="{{ $b->nama_barang }}" required>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label>
+                                    Kode Barang
+                                    <i class="bi bi-info-circle text-primary" data-bs-toggle="tooltip"
+                                        data-bs-placement="top"
+                                        title="Hati-hati mengubah kode barang, akan mempengaruhi riwayat transaksi"
+                                        style="cursor: help;"></i>
+                                </label>
+                                <input type="text" name="kode_barang" id="kodeBarangEdit-{{ $b->kode_barang }}" 
+                                    class="form-control" value="{{ $b->kode_barang }}"
+                                    data-original-kode="{{ $b->kode_barang }}" required>
+                                <div id="kodeValidationEdit-{{ $b->kode_barang }}" class="form-text"></div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label>Kategori</label>
+                                @php
+                                    // Ambil kategori dari Gudang Utama saja untuk konsistensi
+                                    $gudangUtama = $gudang->first(fn($g) => stripos($g->nama, 'utama') !== false);
+                                    $kategoriUtama = collect();
+                                    
+                                    if ($gudangUtama) {
+                                        $kategoriUtama = $kategori->filter(fn($kat) => $kat->gudang_id == $gudangUtama->id);
+                                    }
+                                    
+                                    // Fallback jika tidak ada Gudang Utama
+                                    if ($kategoriUtama->isEmpty()) {
+                                        $kategoriUtama = $kategori->unique('nama');
+                                    }
                                 @endphp
                                 
-                                <select name="kategori_id" class="form-select">
-                                    <option value="">-- Semua Kategori --</option>
-                                    @foreach ($uniqueKategori as $k)
-                                        <option value="{{ $k->id }}" @selected(request('kategori_id') == $k->id)>
-                                            {{ $k->nama }}
+                                <select name="id_kategori" class="form-select" required>
+                                    <option value="">-- Pilih Kategori --</option>
+                                    @foreach ($kategoriUtama as $kat)
+                                        <option value="{{ $kat->id }}" @selected($b->id_kategori == $kat->id)>
+                                            {{ $kat->nama }}
                                         </option>
                                     @endforeach
                                 </select>
-                                
-                                </div>
-                                <div class="col-md-6">
-                                    <label>Harga / Satuan</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text">Rp</span>
-                                        <input type="text" name="harga_display" id="hargaEdit-{{ $b->kode_barang }}"
-                                            class="form-control" value="{{ intval($b->harga_barang ?? 0) }}"
-                                            data-original-value="{{ intval($b->harga_barang ?? 0) }}">
-                                        <input type="hidden" name="harga_barang" id="hargaEditHidden-{{ $b->kode_barang }}"
-                                            value="{{ intval($b->harga_barang ?? 0) }}">
-                                        <select name="satuan" class="form-select">
-                                            <option value="Pcs" @if ($b->satuan == 'Pcs') selected @endif>Pcs</option>
-                                            <option value="Box" @if ($b->satuan == 'Box') selected @endif>Box</option>
-                                            <option value="Pack" @if ($b->satuan == 'Pack') selected @endif>Pack</option>
-                                            <option value="Rim" @if ($b->satuan == 'Rim') selected @endif>Rim</option>
-                                            <option value="Unit" @if ($b->satuan == 'Unit') selected @endif>Unit</option>
-                                        </select>
-                                    </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label>Harga / Satuan</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">Rp</span>
+                                    <input type="text" name="harga_display" id="hargaEdit-{{ $b->kode_barang }}"
+                                        class="form-control" value="{{ intval($b->harga_barang ?? 0) }}"
+                                        data-original-value="{{ intval($b->harga_barang ?? 0) }}" required>
+                                    <input type="hidden" name="harga_barang" id="hargaEditHidden-{{ $b->kode_barang }}"
+                                        value="{{ intval($b->harga_barang ?? 0) }}">
+                                    <select name="satuan" class="form-select" required>
+                                        <option value="Pcs" @selected($b->satuan == 'Pcs')>Pcs</option>
+                                        <option value="Box" @selected($b->satuan == 'Box')>Box</option>
+                                        <option value="Pack" @selected($b->satuan == 'Pack')>Pack</option>
+                                        <option value="Rim" @selected($b->satuan == 'Rim')>Rim</option>
+                                        <option value="Unit" @selected($b->satuan == 'Unit')>Unit</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
-                      <div class="modal-footer">
-    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Batal</button>
-    <button class="btn btn-primary" type="submit" id="btnSimpanEdit-{{ $b->kode_barang }}">Simpan Perubahan</button>
-</div>
-                    </form>
-                </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Batal</button>
+                        <button class="btn btn-primary" type="submit" id="btnSimpanEdit-{{ $b->kode_barang }}">
+                            Simpan Perubahan
+                        </button>
+                    </div>
+                </form>
             </div>
-        @endforeach
+        </div>
     @endforeach
-
+@endforeach
     {{-- Modal Filter --}}
     <div class="modal fade" id="modalFilterBarang" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
