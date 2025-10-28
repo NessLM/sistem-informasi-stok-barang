@@ -113,7 +113,8 @@
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     border: 1px solid #e5e9f2;
-    flex-wrap: wrap; /* Untuk responsif */
+    flex-wrap: wrap;
+    /* Untuk responsif */
     gap: 15px;
 }
 
@@ -127,7 +128,8 @@
 .button-group {
     display: flex;
     gap: 10px;
-    flex-wrap: wrap; /* Untuk tombol yang banyak */
+    flex-wrap: wrap;
+    /* Untuk tombol yang banyak */
 }
 
 .btn-add-user {
@@ -141,7 +143,8 @@
     text-decoration: none;
     display: inline-block;
     font-size: 14px;
-    white-space: nowrap; /* Mencegah teks tombol terpotong */
+    white-space: nowrap;
+    /* Mencegah teks tombol terpotong */
 }
 
 .btn-add-user:hover {
@@ -179,7 +182,8 @@
     display: flex;
     gap: 8px;
     justify-content: center;
-    flex-wrap: nowrap; /* ← Ubah dari wrap ke nowrap untuk desktop/tablet */
+    flex-wrap: nowrap;
+    /* ← Ubah dari wrap ke nowrap untuk desktop/tablet */
 }
 
 .modal .modal-content {
@@ -240,44 +244,45 @@
         margin-left: 0;
         padding: 10px;
     }
-    
+
     .page-body {
         padding: 5px 10px 15px 10px;
     }
-    
+
     .card-header-container {
         padding: 12px 15px;
     }
-    
+
     .card-title {
         font-size: 18px;
     }
-    
+
     .table thead th,
     .table tbody td {
         padding: 8px 10px;
         font-size: 13px;
     }
-    
+
     .btn-add-user {
         padding: 6px 12px;
         font-size: 13px;
     }
-    
+
     /* TAMBAHKAN: Scroll horizontal hanya untuk tablet/mobile */
     .card {
         overflow-x: auto;
     }
-    
+
     .table {
-        min-width: 800px; /* Lebar minimum untuk tablet */
+        min-width: 800px;
+        /* Lebar minimum untuk tablet */
     }
-    
+
     .table .action-buttons {
         flex-wrap: nowrap;
         gap: 6px;
     }
-    
+
     .table .btn-action {
         padding: 5px 10px;
         font-size: 12px;
@@ -291,47 +296,47 @@
         align-items: flex-start;
         gap: 15px;
     }
-    
+
     .button-group {
         width: 100%;
         justify-content: flex-start;
     }
-    
+
     .card {
         padding: 15px;
         margin-top: 15px;
     }
-    
+
     .table {
         font-size: 12px;
     }
-    
+
     .table thead th,
     .table tbody td {
         padding: 6px 8px;
         font-size: 12px;
     }
-    
+
     /* Hanya di mobile tombol aksi menjadi vertikal */
     .action-buttons {
         flex-direction: column;
         gap: 5px;
     }
-    
+
     .btn-action {
         width: 100%;
         justify-content: center;
     }
-    
+
     /* Modal adjustments for mobile */
     .modal-dialog {
         margin: 10px;
     }
-    
+
     .modal-content {
         border-radius: 10px;
     }
-    
+
     .modal-header,
     .modal-body,
     .modal-footer {
@@ -344,54 +349,54 @@
     .page-body {
         padding: 5px;
     }
-    
+
     .card {
         padding: 10px;
         border-radius: 8px;
         margin-top: 10px;
     }
-    
+
     .card-header-container {
         padding: 10px;
         border-radius: 8px;
     }
-    
+
     .card-title {
         font-size: 16px;
     }
-    
+
     .button-group {
         flex-direction: column;
         width: 100%;
     }
-    
+
     .btn-add-user {
         width: 100%;
         text-align: center;
         padding: 8px 12px;
     }
-    
+
     .table {
         min-width: 500px;
     }
-    
+
     .table thead th,
     .table tbody td {
         padding: 4px 6px;
         font-size: 11px;
     }
-    
+
     /* Tombol aksi tetap vertikal di small mobile */
     .action-buttons {
         flex-direction: column;
         gap: 4px;
     }
-    
+
     .btn-action {
         padding: 4px 8px;
         font-size: 11px;
     }
-    
+
     /* Toast notification mobile adjustment */
     #toast-notif {
         top: 10px;
@@ -400,7 +405,7 @@
         transform: none;
         max-width: none;
     }
-    
+
     .toast-message {
         min-width: auto;
         max-width: none;
@@ -413,26 +418,26 @@
     .modal-dialog {
         margin: 5px;
     }
-    
+
     .modal-header h5 {
         font-size: 16px;
     }
-    
+
     .modal-body .form-label {
         font-size: 13px;
     }
-    
+
     .modal-body .form-control,
     .modal-body .form-select {
         font-size: 13px;
         padding: 6px 8px;
     }
-    
+
     .modal-footer .btn {
         padding: 6px 12px;
         font-size: 13px;
     }
-    
+
     .action-buttons .btn {
         font-size: 12px;
         padding: 4px 8px;
@@ -445,7 +450,7 @@
         max-height: 90vh;
         overflow-y: auto;
     }
-    
+
     .modal-body {
         max-height: 60vh;
         overflow-y: auto;
@@ -461,18 +466,479 @@
 
 /* Print styles */
 @media print {
+
     .button-group,
     .action-buttons,
     .modal {
         display: none !important;
     }
-    
+
     .card {
         box-shadow: none;
         border: 1px solid #000;
     }
-    
+
     .table {
         border: 1px solid #000;
     }
+}
+
+
+
+
+
+
+
+/* ===========================
+   KEYFRAME ANIMATIONS
+   =========================== */
+
+/* Fade In Up - untuk elemen masuk dari bawah */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Fade In Down - untuk header masuk dari atas */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Scale In - untuk button dan modal */
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Pulse - animasi berkelanjutan untuk icon */
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.08);
+        opacity: 0.85;
+    }
+}
+
+/* Float - animasi melayang untuk icon */
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-3px);
+    }
+}
+
+/* Shimmer - animasi berkilau */
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+/* Rotate - untuk icon loading */
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Glow - efek cahaya */
+@keyframes glow {
+
+    0%,
+    100% {
+        box-shadow: 0 0 5px rgba(13, 110, 253, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 0 15px rgba(13, 110, 253, 0.6);
+    }
+}
+
+/* Bounce Soft - bouncing halus */
+@keyframes bounceSoft {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-4px);
+    }
+}
+
+
+/* ===========================
+   ANIMASI SAAT PAGE LOAD
+   =========================== */
+
+/* Toast Notification */
+#toast-notif {
+    animation: fadeInDown 0.5s ease-out;
+}
+
+/* Header dengan judul dan tombol */
+.card-header-container {
+    animation: fadeInDown 0.6s ease-out;
+}
+
+.card-header-container .card-title {
+    animation: fadeInDown 0.6s ease-out 0.1s backwards;
+}
+
+.card-header-container .button-group {
+    animation: scaleIn 0.6s ease-out 0.2s backwards;
+}
+
+/* Button di button group - cascade */
+.button-group .btn:nth-child(1) {
+    animation: scaleIn 0.5s ease-out 0.3s backwards;
+}
+
+.button-group .btn:nth-child(2) {
+    animation: scaleIn 0.5s ease-out 0.4s backwards;
+}
+
+/* Card table */
+.page-body .card {
+    animation: fadeInUp 0.7s ease-out 0.3s backwards;
+}
+
+/* Table */
+.page-body .card table {
+    animation: fadeIn 0.5s ease-out 0.5s backwards;
+}
+
+/* Table thead */
+.page-body .card table thead {
+    animation: fadeInDown 0.5s ease-out 0.6s backwards;
+}
+
+/* Table rows - simple fade in */
+.page-body .card table tbody tr {
+    animation: fadeIn 0.4s ease-out backwards;
+}
+
+.page-body .card table tbody tr:nth-child(1) {
+    animation-delay: 0.7s;
+}
+
+.page-body .card table tbody tr:nth-child(2) {
+    animation-delay: 0.75s;
+}
+
+.page-body .card table tbody tr:nth-child(3) {
+    animation-delay: 0.8s;
+}
+
+.page-body .card table tbody tr:nth-child(4) {
+    animation-delay: 0.85s;
+}
+
+.page-body .card table tbody tr:nth-child(5) {
+    animation-delay: 0.9s;
+}
+
+.page-body .card table tbody tr:nth-child(6) {
+    animation-delay: 0.95s;
+}
+
+.page-body .card table tbody tr:nth-child(7) {
+    animation-delay: 1s;
+}
+
+.page-body .card table tbody tr:nth-child(8) {
+    animation-delay: 1.05s;
+}
+
+.page-body .card table tbody tr:nth-child(9) {
+    animation-delay: 1.1s;
+}
+
+.page-body .card table tbody tr:nth-child(10) {
+    animation-delay: 1.15s;
+}
+
+/* Modal animation */
+.modal.fade .modal-dialog {
+    animation: scaleIn 0.3s ease-out;
+}
+
+
+/* ===========================
+   ANIMASI BERKELANJUTAN
+   =========================== */
+
+/* Button add user - no animation on + icon */
+.btn-add-user {
+    position: relative;
+    overflow: hidden;
+}
+
+/* Icon di action buttons - hover pulse */
+.btn-action i {
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.btn-action:hover i {
+    animation: pulse 0.6s ease-in-out infinite;
+}
+
+/* Button hover shimmer effect */
+.btn-add-user::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.3),
+            transparent);
+    transition: left 0.5s ease;
+}
+
+.btn-add-user:hover::after {
+    left: 100%;
+}
+
+/* Table row - no hover animation */
+tbody tr {
+    /* No hover animation */
+}
+
+/* Action buttons hover effect - no press animation */
+.action-buttons .btn {
+    transition: all 0.3s ease;
+}
+
+.action-buttons .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Modal button hover - no press animation */
+.modal-footer .btn {
+    transition: all 0.3s ease;
+}
+
+.modal-footer .btn:hover {
+    transform: scale(1.05);
+}
+
+/* Password toggle button animation */
+.pass-toggle {
+    transition: all 0.3s ease;
+}
+
+.pass-toggle:hover {
+    color: #0d6efd !important;
+    transform: translateY(-50%) scale(1.1) !important;
+}
+
+.pass-toggle i {
+    transition: all 0.3s ease;
+}
+
+.pass-toggle:hover i {
+    animation: pulse 0.6s ease-in-out infinite;
+}
+
+/* Form control focus animation */
+.form-control:focus,
+.form-select:focus {
+    animation: glow 0.5s ease-in-out;
+}
+
+/* Close button hover */
+.btn-close {
+    transition: all 0.3s ease;
+}
+
+.btn-close:hover {
+    transform: rotate(90deg) scale(1.1);
+}
+
+/* Card title underline animation - very slow */
+.card-title {
+    position: relative;
+    display: inline-block;
+}
+
+.card-title::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, #0d6efd, transparent);
+    animation: shimmer 8s linear infinite;
+}
+
+/* Toast fade out */
+#toast-notif .toast-message {
+    transition: opacity 0.5s ease;
+}
+
+
+/* ===========================
+   MICRO INTERACTIONS
+   =========================== */
+
+/* Button press effect - no animation */
+.btn {
+    /* No press animation */
+}
+
+/* Table header hover */
+thead th {
+    transition: background-color 0.3s ease;
+}
+
+
+/* Input placeholder animation */
+.form-control::placeholder {
+    transition: all 0.3s ease;
+}
+
+.form-control:focus::placeholder {
+    transform: translateX(5px);
+    opacity: 0.7;
+}
+
+/* Select dropdown animation */
+.form-select {
+    transition: all 0.3s ease;
+}
+
+.form-select:hover {
+    border-color: #0d6efd;
+    box-shadow: 0 0 5px rgba(13, 110, 253, 0.2);
+}
+
+/* Invalid feedback slide in */
+.invalid-feedback {
+    animation: fadeInDown 0.3s ease-out;
+}
+
+/* Form text hint fade in */
+.form-text {
+    animation: fadeIn 0.5s ease-out 0.2s backwards;
+}
+
+/* Modal backdrop fade */
+.modal-backdrop.fade {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Modal header close button */
+.modal-header .btn-close {
+    transition: all 0.3s ease;
+}
+
+.modal-header .btn-close:hover {
+    transform: rotate(90deg);
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+
+/* ===========================
+   RESPONSIVE ADJUSTMENTS
+   =========================== */
+
+@media (max-width: 768px) {
+
+    /* Reduce animation duration on mobile */
+    .card-header-container,
+    .page-body .card {
+        animation-duration: 0.4s;
+    }
+
+    tbody tr {
+        animation-duration: 0.3s;
+    }
+}
+
+/* Prefers reduced motion - disable animations */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+
+/* ===========================
+   LOADING STATE
+   =========================== */
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #0d6efd;
+    border-radius: 50%;
+    animation: rotate 1s linear infinite;
 }
