@@ -1669,3 +1669,453 @@
         border: 1px solid #000;
     }
 }
+
+
+
+
+
+
+/* ===========================
+   KEYFRAME ANIMATIONS
+   =========================== */
+
+/* Fade In Up - untuk card masuk dari bawah */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Fade In Down - untuk header masuk dari atas */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Fade In Left - untuk tabel masuk dari kiri */
+@keyframes fadeInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Scale In - untuk button dan dropdown */
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Pulse - animasi berkelanjutan untuk icon */
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+    }
+}
+
+/* Float - animasi melayang untuk icon - lebih halus */
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-6px);
+    }
+}
+
+/* Shimmer - animasi berkilau */
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+/* Rotate - untuk icon loading/refresh */
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Bounce - untuk icon chevron - lebih subtle */
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-2px);
+    }
+}
+
+/* Slide In - untuk row table */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Glow - efek cahaya */
+@keyframes glow {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(13, 110, 253, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 15px rgba(13, 110, 253, 0.6);
+    }
+}
+
+
+/* ===========================
+   ANIMASI SAAT PAGE LOAD
+   =========================== */
+
+/* Filter Card Animation */
+.riwayat-filter-card {
+    animation: fadeInDown 0.6s ease-out;
+}
+
+/* Filter Groups - cascade animation */
+.riwayat-filter-group:nth-child(1) {
+    animation: scaleIn 0.5s ease-out 0.1s backwards;
+}
+
+.riwayat-filter-group:nth-child(2) {
+    animation: scaleIn 0.5s ease-out 0.2s backwards;
+}
+
+.riwayat-filter-group:nth-child(3) {
+    animation: scaleIn 0.5s ease-out 0.3s backwards;
+}
+
+.riwayat-filter-group-reset {
+    animation: scaleIn 0.5s ease-out 0.4s backwards;
+}
+
+.riwayat-action-buttons {
+    animation: scaleIn 0.5s ease-out 0.5s backwards;
+}
+
+/* Table Cards Animation */
+.riwayat-table-card:nth-child(1) {
+    animation: fadeInLeft 0.7s ease-out 0.3s backwards;
+}
+
+.riwayat-table-card:nth-child(2) {
+    animation: fadeInLeft 0.7s ease-out 0.5s backwards;
+}
+
+.riwayat-table-card:nth-child(3) {
+    animation: fadeInLeft 0.7s ease-out 0.7s backwards;
+}
+
+/* Table Rows - subtle fade in only */
+tbody tr {
+    animation: fadeIn 0.3s ease-out backwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+
+/* ===========================
+   ANIMASI BERKELANJUTAN
+   =========================== */
+
+/* Icon header table - subtle float animation */
+.riwayat-header-masuk h5 i,
+.riwayat-header-distribusi h5 i,
+.riwayat-header-keluar h5 i {
+    display: inline-block;
+    animation: float 4s ease-in-out infinite;
+}
+
+/* Toggle button chevron - no animation */
+.btn-toggle-table i {
+    display: inline-block;
+}
+
+/* Bukti icon - pulse animation on hover */
+.riwayat-bukti-icon {
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.riwayat-bukti-icon:hover {
+    animation: pulse 0.6s ease-in-out infinite;
+    cursor: pointer;
+}
+
+/* Download button icon */
+.riwayat-btn-download i:first-child {
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+.riwayat-btn-download:hover i:first-child {
+    animation: bounce 0.5s ease infinite;
+}
+
+/* Reset button icon - rotate on hover */
+.riwayat-btn-reset i {
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+.riwayat-btn-reset:hover i {
+    animation: rotate 0.6s linear infinite;
+}
+
+/* Dropdown arrow animation */
+.dropdown-arrow {
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+.dropdown-toggle[aria-expanded="true"] .dropdown-arrow {
+    transform: rotate(90deg);
+}
+
+/* Filter button - shimmer effect on hover */
+.riwayat-btn-filter {
+    position: relative;
+    overflow: hidden;
+}
+
+.riwayat-btn-filter::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    transition: left 0.5s ease;
+}
+
+.riwayat-btn-filter:hover::before {
+    left: 100%;
+}
+
+/* Pagination button hover effect */
+.pagination-btn {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.pagination-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+/* Table row hover animation - subtle only */
+tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.03);
+}
+
+/* Card header glow effect */
+.riwayat-header-masuk,
+.riwayat-header-distribusi,
+.riwayat-header-keluar {
+    position: relative;
+}
+
+.riwayat-header-masuk::after,
+.riwayat-header-distribusi::after,
+.riwayat-header-keluar::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, currentColor, transparent);
+    animation: shimmer 3s linear infinite;
+    opacity: 0.5;
+}
+
+/* Keterangan toggle animation */
+.keterangan-toggle {
+    display: inline-block;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.keterangan-toggle:hover {
+    transform: scale(1.2);
+    color: #0d6efd;
+}
+
+/* Empty state icon animation */
+.riwayat-empty-state i {
+    display: inline-block;
+    font-size: 3rem;
+    animation: pulse 2s ease-in-out infinite;
+    opacity: 0.5;
+}
+
+/* Modal animation */
+.modal.fade .modal-dialog {
+    transition: transform 0.3s ease-out;
+}
+
+.modal.show .modal-dialog {
+    animation: scaleIn 0.3s ease-out;
+}
+
+
+/* Active dropdown item glow */
+.dropdown-item.active {
+    position: relative;
+    animation: glow 2s ease-in-out infinite;
+}
+
+
+/* ===========================
+   RESPONSIVE ADJUSTMENTS
+   =========================== */
+
+@media (max-width: 768px) {
+    /* Reduce animation duration on mobile */
+    .riwayat-filter-card,
+    .riwayat-table-card {
+        animation-duration: 0.4s;
+    }
+    
+    tbody tr {
+        animation-duration: 0.3s;
+    }
+    
+    /* Disable some continuous animations on mobile for performance */
+    .btn-toggle-table i,
+    .riwayat-header-masuk i,
+    .riwayat-header-distribusi i,
+    .riwayat-header-keluar i {
+        animation: none;
+    }
+}
+
+/* Prefers reduced motion - disable animations */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+
+/* ===========================
+   LOADING STATE ANIMATION
+   =========================== */
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    animation: fadeInUp 0.3s ease-out;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #0d6efd;
+    border-radius: 50%;
+    animation: rotate 1s linear infinite;
+}
+
+
+/* ===========================
+   MICRO INTERACTIONS
+   =========================== */
+
+/* Button press effect */
+.btn {
+    transition: all 0.2s ease;
+}
+
+.btn:active {
+    transform: scale(0.95);
+}
+
+/* Input focus animation */
+input[type="date"]:focus {
+    animation: glow 0.5s ease-in-out;
+}
+
+/* Badge animation */
+.badge {
+    display: inline-block;
+    animation: scaleIn 0.3s ease-out;
+}
+
+/* Alert animation */
+.alert {
+    animation: fadeInDown 0.4s ease-out;
+}

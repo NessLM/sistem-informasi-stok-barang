@@ -137,7 +137,10 @@
             <!-- Tabel Barang Masuk -->
             <div class="card riwayat-table-card mb-4">
                 <div class="card-header riwayat-header-masuk">
-                    <h5 class="mb-0">Barang Masuk</h5>
+                    <h5 class="mb-0">
+                        <i class="bi bi-box-arrow-in-down me-2"></i>
+                        Barang Masuk
+                    </h5>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -167,7 +170,7 @@
                                         <td class="fw-medium">{{ $item->nama_barang }}</td>
                                         <td><span>{{ $item->jumlah }}</span></td>
                                         <td>{{ $item->satuan ?? '-' }}</td>
-                                       <td data-label="Keterangan"
+                                        <td data-label="Keterangan"
                                             style="white-space: normal !important; word-wrap: break-word !important; word-break: break-word !important; max-width: 200px; vertical-align: top;">
 
                                             @if ($item->keterangan && strlen($item->keterangan) > 40)
@@ -236,7 +239,10 @@
             <!-- Tabel Barang Keluar -->
             <div class="card riwayat-table-card mb-4">
                 <div class="card-header riwayat-header-keluar">
-                    <h5 class="mb-0">Barang Keluar</h5>
+                    <h5 class="mb-0">
+                        <i class="bi bi-box-arrow-up me-2"></i>
+                        Barang Keluar
+                    </h5>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -385,44 +391,44 @@
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 initEventListeners();
-initKeteranganToggle();
+                initKeteranganToggle();
 
-function initKeteranganToggle() {
-    document.querySelectorAll('.keterangan-toggle').forEach(toggle => {
-        // Remove existing listeners to prevent duplicates
-        toggle.removeEventListener('click', handleKeteranganToggle);
-        toggle.addEventListener('click', handleKeteranganToggle);
-    });
-}
+                function initKeteranganToggle() {
+                    document.querySelectorAll('.keterangan-toggle').forEach(toggle => {
+                        // Remove existing listeners to prevent duplicates
+                        toggle.removeEventListener('click', handleKeteranganToggle);
+                        toggle.addEventListener('click', handleKeteranganToggle);
+                    });
+                }
 
-function handleKeteranganToggle(e) {
-    e.preventDefault();
-    e.stopPropagation();
+                function handleKeteranganToggle(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
 
-    const toggle = this;
-    const wrapper = toggle.closest('.keterangan-wrapper');
-    const textSpan = wrapper.querySelector('.keterangan-text');
+                    const toggle = this;
+                    const wrapper = toggle.closest('.keterangan-wrapper');
+                    const textSpan = wrapper.querySelector('.keterangan-text');
 
-    if (textSpan.classList.contains('collapsed')) {
-        // EXPAND - tampilkan full text
-        const fullText = textSpan.getAttribute('data-full-text');
-        textSpan.textContent = fullText;
-        textSpan.classList.remove('collapsed');
-        textSpan.classList.add('expanded');
-        toggle.textContent = 'tutup';
-    } else {
-        // COLLAPSE - kembalikan ke text pendek
-        const fullText = textSpan.getAttribute('data-full-text');
-        const limitedText = fullText.substring(0, 100); // sesuai limit di blade
-        textSpan.textContent = limitedText;
-        textSpan.classList.remove('expanded');
-        textSpan.classList.add('collapsed');
-        toggle.textContent = '...';
-    }
-}
+                    if (textSpan.classList.contains('collapsed')) {
+                        // EXPAND - tampilkan full text
+                        const fullText = textSpan.getAttribute('data-full-text');
+                        textSpan.textContent = fullText;
+                        textSpan.classList.remove('collapsed');
+                        textSpan.classList.add('expanded');
+                        toggle.textContent = 'tutup';
+                    } else {
+                        // COLLAPSE - kembalikan ke text pendek
+                        const fullText = textSpan.getAttribute('data-full-text');
+                        const limitedText = fullText.substring(0, 100); // sesuai limit di blade
+                        textSpan.textContent = limitedText;
+                        textSpan.classList.remove('expanded');
+                        textSpan.classList.add('collapsed');
+                        toggle.textContent = '...';
+                    }
+                }
 
                 function initEventListeners() {
-                    
+
                     document.querySelectorAll('.riwayat-filter-dropdown .dropdown-item').forEach(item => {
                         item.removeEventListener('click', handleFilterClick);
                         item.addEventListener('click', handleFilterClick);
@@ -638,9 +644,9 @@ function handleKeteranganToggle(e) {
         </script>
     @endpush
 
-    @push('styles')  
-        <link rel="stylesheet" href="{{ asset('assets/css/staff/pj/riwayat_pj.css') }}">        
+    @push('styles')
+        <link rel="stylesheet" href="{{ asset('assets/css/staff/pj/riwayat_pj.css') }}">
     @endpush
 
-    
+
 </x-layouts.app>

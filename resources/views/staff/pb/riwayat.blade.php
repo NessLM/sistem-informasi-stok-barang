@@ -80,8 +80,8 @@
                     <!-- Tombol Unduh -->
                     <div class="riwayat-action-buttons">
                         <div class="dropdown riwayat-download-dropdown">
-                            <button class="btn riwayat-btn-download dropdown-toggle" type="button" id="downloadDropdown"
-                                data-bs-toggle="dropdown" aria-expanded="false">
+                            <button class="btn riwayat-btn-download dropdown-toggle" type="button"
+                                id="downloadDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="bi bi-download me-2"></i>Unduh
                                 <i class="bi bi-chevron-right dropdown-arrow ms-2"></i>
                             </button>
@@ -130,7 +130,10 @@
             <!-- Tabel Barang Masuk -->
             <div class="card riwayat-table-card mb-4">
                 <div class="card-header riwayat-header-masuk">
-                    <h5 class="mb-0">Barang Masuk</h5>
+                    <h5 class="mb-0">
+                        <i class="bi bi-box-arrow-in-down me-2"></i>
+                        Barang Masuk
+                    </h5>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive-vertical"> <!-- Ganti class untuk scroll vertikal -->
@@ -155,12 +158,14 @@
                                         </td>
                                         <td data-label="Tanggal/Waktu">
                                             {{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }} <br>
-                                            <small class="text-muted">{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }}
+                                            <small
+                                                class="text-muted">{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }}
                                                 WIB</small>
                                         </td>
                                         <td class="fw-medium" data-label="Gudang">{{ $item->gudang }}</td>
                                         <td class="fw-medium" data-label="Nama Barang">{{ $item->nama_barang }}</td>
-                                        <td data-label="Jumlah"><span class="fw-medium">{{ $item->jumlah }}</span></td>
+                                        <td data-label="Jumlah"><span class="fw-medium">{{ $item->jumlah }}</span>
+                                        </td>
                                         <td class="fw-medium" data-label="Satuan">{{ $item->satuan }}</td>
                                         <td data-label="Keterangan"
                                             style="white-space: normal !important; word-wrap: break-word !important; word-break: break-word !important; max-width: 200px; vertical-align: top;">
@@ -180,8 +185,9 @@
                                         </td>
                                         <td class="text-center" data-label="Bukti">
                                             @if ($item->bukti_path)
-                                                <span class="riwayat-bukti-icon" style="cursor: pointer;" data-bs-toggle="modal"
-                                                    data-bs-target="#buktiModal" data-image="{{ $item->bukti_path }}">
+                                                <span class="riwayat-bukti-icon" style="cursor: pointer;"
+                                                    data-bs-toggle="modal" data-bs-target="#buktiModal"
+                                                    data-image="{{ $item->bukti_path }}">
                                                     <i class="bi bi-eye-fill"></i>
                                                 </span>
                                             @else
@@ -206,14 +212,16 @@
                         <div class="card-footer d-flex justify-content-center align-items-center">
                             <div class="pagination-controls">
                                 <button class="btn btn-sm btn-outline-primary pagination-btn pagination-prev"
-                                    onclick="changePage('masuk', {{ max(1, $currentPageMasuk - 1) }})" {{ $currentPageMasuk <= 1 ? 'disabled' : '' }}>
+                                    onclick="changePage('masuk', {{ max(1, $currentPageMasuk - 1) }})"
+                                    {{ $currentPageMasuk <= 1 ? 'disabled' : '' }}>
                                     <i class="bi bi-chevron-left"></i>
                                     <span class="pagination-text">Sebelumnya</span>
                                 </button>
                                 <span class="mx-2 pagination-info">Halaman {{ $currentPageMasuk }} dari
                                     {{ $totalPagesMasuk }}</span>
                                 <button class="btn btn-sm btn-outline-primary pagination-btn pagination-next"
-                                    onclick="changePage('masuk', {{ min($totalPagesMasuk, $currentPageMasuk + 1) }})" {{ $currentPageMasuk >= $totalPagesMasuk ? 'disabled' : '' }}>
+                                    onclick="changePage('masuk', {{ min($totalPagesMasuk, $currentPageMasuk + 1) }})"
+                                    {{ $currentPageMasuk >= $totalPagesMasuk ? 'disabled' : '' }}>
                                     <span class="pagination-text">Selanjutnya</span>
                                     <i class="bi bi-chevron-right"></i>
                                 </button>
@@ -228,7 +236,10 @@
             <!-- Tabel Barang Keluar -->
             <div class="card riwayat-table-card mb-4">
                 <div class="card-header riwayat-header-keluar">
-                    <h5 class="mb-0">Barang Keluar</h5>
+                    <h5 class="mb-0">
+                        <i class="bi bi-box-arrow-up me-2"></i>
+                        Barang Keluar
+                    </h5>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive-vertical"> <!-- Ganti class untuk scroll vertikal -->
@@ -253,14 +264,16 @@
                                         </td>
                                         <td data-label="Tanggal/Waktu">
                                             {{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }} <br>
-                                            <small class="text-muted">{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }}
+                                            <small
+                                                class="text-muted">{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }}
                                                 WIB</small>
                                         </td>
                                         <td class="fw-medium" data-label="Gudang Tujuan">
                                             {{ $item->gudang_tujuan }}<br>
                                         </td>
                                         <td class="fw-medium" data-label="Nama Barang">{{ $item->nama_barang }}</td>
-                                        <td data-label="Jumlah"><span class="fw-medium">{{ $item->jumlah }}</span></td>
+                                        <td data-label="Jumlah"><span class="fw-medium">{{ $item->jumlah }}</span>
+                                        </td>
                                         <td class="fw-medium" data-label="Satuan">{{ $item->satuan }}</td>
                                         <td data-label="Keterangan"
                                             style="white-space: normal !important; word-wrap: break-word !important; word-break: break-word !important; max-width: 200px; vertical-align: top;">
@@ -280,8 +293,9 @@
                                         </td>
                                         <td class="text-center" data-label="Bukti">
                                             @if ($item->bukti_path)
-                                                <span class="riwayat-bukti-icon" style="cursor: pointer;" data-bs-toggle="modal"
-                                                    data-bs-target="#buktiModal" data-image="{{ $item->bukti_path }}">
+                                                <span class="riwayat-bukti-icon" style="cursor: pointer;"
+                                                    data-bs-toggle="modal" data-bs-target="#buktiModal"
+                                                    data-image="{{ $item->bukti_path }}">
                                                     <i class="bi bi-eye-fill"></i>
                                                 </span>
                                             @else
@@ -306,14 +320,16 @@
                         <div class="card-footer d-flex justify-content-center align-items-center">
                             <div class="pagination-controls">
                                 <button class="btn btn-sm btn-outline-primary pagination-btn pagination-prev"
-                                    onclick="changePage('keluar', {{ max(1, $currentPageKeluar - 1) }})" {{ $currentPageKeluar <= 1 ? 'disabled' : '' }}>
+                                    onclick="changePage('keluar', {{ max(1, $currentPageKeluar - 1) }})"
+                                    {{ $currentPageKeluar <= 1 ? 'disabled' : '' }}>
                                     <i class="bi bi-chevron-left"></i>
                                     <span class="pagination-text">Sebelumnya</span>
                                 </button>
                                 <span class="mx-2 pagination-info">Halaman {{ $currentPageKeluar }} dari
                                     {{ $totalPagesKeluar }}</span>
                                 <button class="btn btn-sm btn-outline-primary pagination-btn pagination-next"
-                                    onclick="changePage('keluar', {{ min($totalPagesKeluar, $currentPageKeluar + 1) }})" {{ $currentPageKeluar >= $totalPagesKeluar ? 'disabled' : '' }}>
+                                    onclick="changePage('keluar', {{ min($totalPagesKeluar, $currentPageKeluar + 1) }})"
+                                    {{ $currentPageKeluar >= $totalPagesKeluar ? 'disabled' : '' }}>
                                     <span class="pagination-text">Selanjutnya</span>
                                     <i class="bi bi-chevron-right"></i>
                                 </button>
@@ -374,7 +390,7 @@
 
     @push('scripts')
         <script>
-            document.addEventListener('DOMContentLoaded', function () {
+            document.addEventListener('DOMContentLoaded', function() {
                 initEventListeners();
                 initKeteranganToggle();
 
@@ -560,11 +576,11 @@
 
                 // Gunakan fetch untuk AJAX pagination
                 fetch(url, {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'text/html'
-                    }
-                })
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'text/html'
+                        }
+                    })
                     .then(response => response.text())
                     .then(html => {
                         const parser = new DOMParser();
