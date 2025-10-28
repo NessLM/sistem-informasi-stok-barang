@@ -38,7 +38,7 @@ class UserController extends Controller
 
         $roles = Role::all();
         $bagians = Bagian::orderBy('nama')->get(); // TAMBAH INI
-        $menu  = MenuHelper::adminMenu();
+        $menu = MenuHelper::adminMenu();
 
         $users->each(function ($u) {
             $hash = (string) $u->getOriginal('password');
@@ -71,9 +71,9 @@ class UserController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'nama'     => 'required|string|max:255',
+                'nama' => 'required|string|max:255',
                 'username' => 'required|string|max:100|unique:users,username',
-                'role_id'  => 'required|exists:roles,id',
+                'role_id' => 'required|exists:roles,id',
                 'bagian_id' => 'required|exists:bagian,id', // UBAH dari 'bagian' ke 'bagian_id'
                 'password' => [
                     'required',
@@ -82,6 +82,7 @@ class UserController extends Controller
                     'regex:/^(?=.*[a-zA-Z])(?=.*\d).+$/'
                 ],
             ], [
+                'username.unique' => 'Username sudah digunakan, silakan pilih yang lain.',
                 'password.regex' => 'Password harus mengandung huruf dan angka.',
                 'bagian_id.required' => 'Bagian harus dipilih.',
                 'bagian_id.exists' => 'Bagian tidak valid.',
@@ -98,9 +99,9 @@ class UserController extends Controller
             $validated = $validator->validated();
 
             $user = new User();
-            $user->nama     = $validated['nama'];
+            $user->nama = $validated['nama'];
             $user->username = $validated['username'];
-            $user->role_id  = $validated['role_id'];
+            $user->role_id = $validated['role_id'];
             $user->bagian_id = $validated['bagian_id']; // UBAH INI
             $user->password = $validated['password'];
             $user->save();
@@ -128,9 +129,9 @@ class UserController extends Controller
 
         try {
             $validator = Validator::make($request->all(), [
-                'nama'     => 'required|string|max:255',
+                'nama' => 'required|string|max:255',
                 'username' => 'required|string|max:100|unique:users,username,' . $user->id,
-                'role_id'  => 'required|exists:roles,id',
+                'role_id' => 'required|exists:roles,id',
                 'bagian_id' => 'required|exists:bagian,id', // UBAH dari 'bagian' ke 'bagian_id'
                 'password' => [
                     'nullable',
@@ -139,6 +140,7 @@ class UserController extends Controller
                     'regex:/^(?=.*[a-zA-Z])(?=.*\d).+$/'
                 ],
             ], [
+                 'username.unique' => 'Username sudah digunakan, silakan pilih yang lain.', 
                 'password.regex' => 'Password harus mengandung huruf dan angka',
                 'bagian_id.required' => 'Bagian harus dipilih.',
                 'bagian_id.exists' => 'Bagian tidak valid.',
@@ -154,9 +156,9 @@ class UserController extends Controller
 
             $validated = $validator->validated();
 
-            $user->nama     = $validated['nama'];
+            $user->nama = $validated['nama'];
             $user->username = $validated['username'];
-            $user->role_id  = $validated['role_id'];
+            $user->role_id = $validated['role_id'];
             $user->bagian_id = $validated['bagian_id']; // UBAH INI
 
             if (!empty($validated['password'])) {
