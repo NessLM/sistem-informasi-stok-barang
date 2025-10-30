@@ -146,7 +146,9 @@
                                         <td>
                                             <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
                                                 data-bs-target="#modalKelolaBarang" data-id="{{ $b->kode_barang }}"
-                                                data-nama="{{ $b->nama_barang }}" data-kode="{{ $b->kode_barang }}">
+                                                data-nama="{{ $b->nama_barang }}" data-kode="{{ $b->kode_barang }}"
+                                                data-id="{{ $b->kode_barang }}" data-nama="{{ $b->nama_barang }}" data-kode="{{ $b->kode_barang }}"
+                                                data-stok="{{ $stokTersedia }}">
                                                 <i class="bi bi-box-seam"></i> Kelola
                                             </button>
                                         </td>
@@ -228,7 +230,9 @@
                 data-bs-target="#modalKelolaBarang"
                 data-id="{{ $item->kode_barang }}"
                 data-nama="{{ $item->nama_barang }}"
-                data-kode="{{ $item->kode_barang }}">
+                data-kode="{{ $item->kode_barang }}"
+                data-kode="{{ $item->kode_barang }}"
+                data-stok="{{ $stokTersedia }}">
                 <i class="bi bi-box-seam"></i> Kelola
             </button>
         </td>
@@ -294,6 +298,9 @@
                                         <label class="form-label">Jumlah Masuk</label>
                                         <input type="number" name="jumlah" class="form-control"
                                             placeholder="Masukkan Jumlah" required min="1">
+                                            <small class="text-muted d-block mt-1">
+                                                Stok Gudang Utama: <span id="stokTersediaMasuk">0</span>
+                                             </small>
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Tanggal Masuk <small
@@ -346,6 +353,9 @@
                                         <label class="form-label">Jumlah Keluar</label>
                                         <input type="number" name="jumlah" class="form-control"
                                             placeholder="Masukkan Jumlah" required min="1">
+                                            <small class="text-muted d-block mt-1">
+                                                Stok Gudang tersedia: <span id="stokTersediaKeluar">0</span>
+                                            </small>
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Tanggal Keluar <small
@@ -633,6 +643,7 @@
                     const button = event.relatedTarget;
                     const barangKode = button.getAttribute("data-id");
                     const barangNama = button.getAttribute("data-nama");
+                    const stok = parseInt(button.getAttribute("data-stok") || "0", 10);
 
                     // Set data untuk kedua form
                     document.getElementById("kelolaBarangNama").textContent = barangNama;
@@ -640,6 +651,15 @@
                     document.getElementById("barangMasukNama").value = barangNama;
                     document.getElementById("distribusiBarangKode").value = barangKode;
                     document.getElementById("distribusiBarangNama").value = barangNama;
+
+                    // tampilkan stok di dua tab 
+                    const elMasuk  = document.getElementById("stokTersediaMasuk"); 
+                    const elKeluar = document.getElementById("stokTersediaKeluar"); 
+                    if (elMasuk)  elMasuk.textContent  = isFinite(stok) ? stok : 0; 
+                    if (elKeluar) elKeluar.textContent = isFinite(stok) ? stok : 0; 
+                    // batasi jumlah distribusi <= stok PB 
+                    const inputJumlahKeluar = document.querySelector('#content-distribusi input[name="jumlah"]'); 
+                    if (inputJumlahKeluar) inputJumlahKeluar.max = isFinite(stok) ? stok : 0;
 
                     // Reset ke tab pertama
                     const firstTab = document.getElementById('tab-barang-masuk');
