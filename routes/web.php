@@ -53,11 +53,11 @@ Route::middleware(['auth', 'role:Admin'])
     ->get('/admin', fn() => to_route('admin.dashboard'))
     ->name('staff.admin.dashboard');
 
-Route::middleware(['auth', 'role:Pengelola Barang'])
+Route::middleware(['auth', 'role:Pengurus Barang Pengguna'])
     ->get('/pb', fn() => to_route('pb.dashboard'))
     ->name('staff.pb.dashboard');
 
-Route::middleware(['auth', 'role:Penanggung Jawab ATK,Penanggung Jawab Kebersihan,Penanggung Jawab Listrik,Penanggung Jawab Bahan Komputer'])
+Route::middleware(['auth', 'role:Pengurus Barang Pembantu'])
     ->get('/pj', fn() => to_route('pj.dashboard'))
     ->name('staff.pj.dashboard');
 
@@ -150,7 +150,7 @@ Route::middleware(['auth', 'role:Admin'])->group(function () {
 /* =========================================================================
  | PB AREA (Pengelola Barang)
  * ========================================================================= */
-Route::prefix('pb')->name('pb.')->middleware(['auth', 'role:Pengelola Barang'])->group(function () {
+Route::prefix('pb')->name('pb.')->middleware(['auth', 'role:Pengurus Barang Pengguna'])->group(function () {
 
     // Dashboard
     Route::get('/dashboard', PbDashboardController::class)->name('dashboard');
@@ -192,7 +192,7 @@ Route::prefix('pb')->name('pb.')->middleware(['auth', 'role:Pengelola Barang'])-
  | PJ AREA (Penanggung Jawab) - CLEANED & FIXED
  * ========================================================================= */
 Route::prefix('pj')->name('pj.')
-    ->middleware(['auth', 'role:Penanggung Jawab ATK,Penanggung Jawab Kebersihan,Penanggung Jawab Listrik,Penanggung Jawab Bahan Komputer'])
+    ->middleware(['auth', 'role:Pengurus Barang Pembantu'])
     ->group(function () {
 
         // Dashboard

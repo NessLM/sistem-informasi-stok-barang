@@ -9,14 +9,11 @@ class RoleSeeder extends Seeder
 {
     public function run(): void
     {
-        DB::table('roles')->delete(); 
+        DB::table('roles')->delete();
         DB::table('roles')->insert([
             ['nama' => 'Admin'],
-            ['nama' => 'Pengelola Barang'],
-            ['nama' => 'Penanggung Jawab ATK'],
-            ['nama' => 'Penanggung Jawab Kebersihan'],
-            ['nama' => 'Penanggung Jawab Listrik'],
-            ['nama' => 'Penanggung Jawab Bahan Komputer'],
+            ['nama' => 'Pengurus Barang Pengguna'],
+            ['nama' => 'Pengurus Barang Pembantu'],
         ]);
     }
 }

@@ -66,6 +66,8 @@
                     @php
                         $currentUserCount = 0;
                         $adminCount = 0;
+                        $pengurusBarangPenggunaCount = 0;
+                        $pengurusBarangPembantuCount = 0;
                         $otherCount = 0;
                     @endphp
 
@@ -128,12 +130,12 @@
                         @endif
                     @endforeach
 
-                    {{-- Loop ketiga untuk non-admin --}}
+                    {{-- Loop ketiga untuk Pengurus Barang Pengguna --}}
                     @foreach ($users as $index => $u)
-                        @if ($u->role?->nama !== 'Admin')
-                            @php $otherCount++; @endphp
+                        @if ($u->role?->nama === 'Pengurus Barang Pengguna')
+                            @php $pengurusBarangPenggunaCount++; @endphp
                             <tr>
-                                <td>{{ $currentUserCount + $adminCount + $otherCount }}</td>
+                                <td>{{ $currentUserCount + $adminCount + $pengurusBarangPenggunaCount }}</td>
                                 <td>{{ $u->nama }}</td>
                                 <td>{{ $u->username }}</td>
                                 <td>{{ $u->role?->nama ?? '-' }}</td>
@@ -149,12 +151,72 @@
                                             <i class="bi bi-pencil"></i> Edit
                                         </button>
 
-                                        @if (!($u->id === auth()->id() && $u->role?->nama === 'Admin'))
-                                            <button type="button" class="btn btn-danger btn-sm btn-action btnDelete"
-                                                data-id="{{ $u->id }}">
-                                                <i class="bi bi-trash"></i> Hapus
-                                            </button>
-                                        @endif
+                                        <button type="button" class="btn btn-danger btn-sm btn-action btnDelete"
+                                            data-id="{{ $u->id }}">
+                                            <i class="bi bi-trash"></i> Hapus
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endif
+                    @endforeach
+
+                    {{-- Loop keempat untuk Pengurus Barang Pembantu --}}
+                    @foreach ($users as $index => $u)
+                        @if ($u->role?->nama === 'Pengurus Barang Pembantu')
+                            @php $pengurusBarangPembantuCount++; @endphp
+                            <tr>
+                                <td>{{ $currentUserCount + $adminCount + $pengurusBarangPenggunaCount + $pengurusBarangPembantuCount }}</td>
+                                <td>{{ $u->nama }}</td>
+                                <td>{{ $u->username }}</td>
+                                <td>{{ $u->role?->nama ?? '-' }}</td>
+                                <td>{{ $u->bagian?->nama ?? '-' }}</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button type="button" class="btn btn-warning btn-sm btn-action editUser"
+                                            data-id="{{ $u->id }}" data-nama="{{ $u->nama }}"
+                                            data-username="{{ $u->username }}" data-role-id="{{ $u->role_id }}"
+                                            data-role-name="{{ $u->role?->nama }}" data-bagian-id="{{ $u->bagian_id }}"
+                                            data-password="{{ $u->password }}" data-bs-toggle="modal"
+                                            data-bs-target="#modalEditUser">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </button>
+
+                                        <button type="button" class="btn btn-danger btn-sm btn-action btnDelete"
+                                            data-id="{{ $u->id }}">
+                                            <i class="bi bi-trash"></i> Hapus
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endif
+                    @endforeach
+
+                    {{-- Loop kelima untuk role lainnya --}}
+                    @foreach ($users as $index => $u)
+                        @if ($u->role?->nama !== 'Admin' && $u->role?->nama !== 'Pengurus Barang Pengguna' && $u->role?->nama !== 'Pengurus Barang Pembantu')
+                            @php $otherCount++; @endphp
+                            <tr>
+                                <td>{{ $currentUserCount + $adminCount + $pengurusBarangPenggunaCount + $pengurusBarangPembantuCount + $otherCount }}</td>
+                                <td>{{ $u->nama }}</td>
+                                <td>{{ $u->username }}</td>
+                                <td>{{ $u->role?->nama ?? '-' }}</td>
+                                <td>{{ $u->bagian?->nama ?? '-' }}</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button type="button" class="btn btn-warning btn-sm btn-action editUser"
+                                            data-id="{{ $u->id }}" data-nama="{{ $u->nama }}"
+                                            data-username="{{ $u->username }}" data-role-id="{{ $u->role_id }}"
+                                            data-role-name="{{ $u->role?->nama }}" data-bagian-id="{{ $u->bagian_id }}"
+                                            data-password="{{ $u->password }}" data-bs-toggle="modal"
+                                            data-bs-target="#modalEditUser">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </button>
+
+                                        <button type="button" class="btn btn-danger btn-sm btn-action btnDelete"
+                                            data-id="{{ $u->id }}">
+                                            <i class="bi bi-trash"></i> Hapus
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -400,16 +462,15 @@
                         const id = this.dataset.id;
                         const roleName = this.dataset.roleName;
                         const roleId = this.dataset.roleId;
-                        const bagianId = this.dataset.bagianId; // TAMBAH INI
+                        const bagianId = this.dataset.bagianId;
                         const isCurrentAdmin = (parseInt(id) === {{ auth()->id() }});
 
                         document.getElementById('user_id').value = id;
                         document.getElementById('user_nama').value = this.dataset.nama || '';
                         document.getElementById('user_username').value = this.dataset.username || '';
                         document.getElementById('user_role').value = roleId || '';
-                        document.getElementById('user_bagian').value = bagianId || ''; // UBAH INI
-                        document.getElementById('user_old_password').value = this.dataset.password ||
-                            '';
+                        document.getElementById('user_bagian').value = bagianId || '';
+                        document.getElementById('user_old_password').value = this.dataset.password || '';
 
                         // Set nilai hidden field
                         document.getElementById('user_role_hidden').value = roleId;

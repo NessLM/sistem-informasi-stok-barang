@@ -140,7 +140,7 @@ class UserController extends Controller
                     'regex:/^(?=.*[a-zA-Z])(?=.*\d).+$/'
                 ],
             ], [
-                 'username.unique' => 'Username sudah digunakan, silakan menggunakan yang lain.', 
+                'username.unique' => 'Username sudah digunakan, silakan menggunakan yang lain.',
                 'password.regex' => 'Password harus mengandung huruf dan angka',
                 'bagian_id.required' => 'Bagian harus dipilih.',
                 'bagian_id.exists' => 'Bagian tidak valid.',

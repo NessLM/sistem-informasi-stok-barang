@@ -24,17 +24,12 @@ class AuthController extends Controller
         if (Auth::attempt($credentials, $remember)) {
             $request->session()->regenerate();
 
-            $role = Auth::user()->role->nama; 
+            $role = Auth::user()->role->nama;
 
             return match ($role) {
                 'Admin' => to_route('staff.admin.dashboard'),
-                'Pengelola Barang' => to_route('staff.pb.dashboard'),
-
-                // Semua Penanggung Jawab diarahkan ke dashboard yang sama
-                'Penanggung Jawab ATK',
-                'Penanggung Jawab Kebersihan',
-                'Penanggung Jawab Listrik',
-                'Penanggung Jawab Bahan Komputer' => to_route('staff.pj.dashboard'),
+                'Pengurus Barang Pengguna' => to_route('staff.pb.dashboard'),
+                'Pengurus Barang Pembantu' => to_route('staff.pj.dashboard'),
 
                 default => to_route('login')->withErrors([
                     'username' => 'Role tidak dikenali.'

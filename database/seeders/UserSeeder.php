@@ -14,106 +14,191 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        $adminRole  = Role::where('nama', 'Admin')->first()->id;
-        $pbRole     = Role::where('nama', 'Pengelola Barang')->first()->id;
-        $atkRole    = Role::where('nama', 'Penanggung Jawab ATK')->first()->id;
-        $cleanRole  = Role::where('nama', 'Penanggung Jawab Kebersihan')->first()->id;
-        $elecRole   = Role::where('nama', 'Penanggung Jawab Listrik')->first()->id;
-        $compRole   = Role::where('nama', 'Penanggung Jawab Bahan Komputer')->first()->id;
+        // Get Role IDs - HANYA 3 ROLE
+        $adminRole = Role::where('nama', 'Admin')->first()->id;
+        $pbpenggunaRole = Role::where('nama', 'Pengurus Barang Pengguna')->first()->id;
+        $pbpembantuRole = Role::where('nama', 'Pengurus Barang Pembantu')->first()->id;
 
-        // Get Gudang IDs
+        // Get Gudang IDs (jika ada)
         $gudangATK = Gudang::where('nama', 'LIKE', '%ATK%')->first();
         $gudangKebersihan = Gudang::where('nama', 'LIKE', '%Kebersihan%')->first();
         $gudangListrik = Gudang::where('nama', 'LIKE', '%Listrik%')->first();
         $gudangKomputer = Gudang::where('nama', 'LIKE', '%Komputer%')->orWhere('nama', 'LIKE', '%Bahan Komputer%')->first();
 
         // Get Bagian IDs (atau buat jika belum ada)
-        $bagianUmum = Bagian::firstOrCreate(['nama' => 'Umum']);
         $bagianGudang = Bagian::firstOrCreate(['nama' => 'Gudang']);
-        $bagianOperasional = Bagian::firstOrCreate(['nama' => 'Operasional']);
+        $bagianTataPemerintahan = Bagian::firstOrCreate(['nama' => 'Tata Pemerintahan']);
+        $bagianKesradanKemasyarakatan = Bagian::firstOrCreate(['nama' => 'Kesejahteraan Rakyat & Kemasyarakatan']);
+        $bagianHukumdanHAM = Bagian::firstOrCreate(['nama' => 'Hukum & HAM']);
+        $bagianPerekonomian = Bagian::firstOrCreate(['nama' => 'Perekonomian']);
+        $bagianADMPembangunan = Bagian::firstOrCreate(['nama' => 'ADM Pembangunan']);
+        $bagianADMPelayananPengadaanBarangdanJasa = Bagian::firstOrCreate(['nama' => 'ADM Pelayanan Pengadaan Barang & Jasa (LPSE)']);
+        $bagianProtokol = Bagian::firstOrCreate(['nama' => 'Protokol']);
+        $bagianOrganisasi = Bagian::firstOrCreate(['nama' => 'Organisasi']);
+        $bagianUmum = Bagian::firstOrCreate(['nama' => 'Umum & Rumah Tangga']);
+        $bagianPerencanaandanKeuangan = Bagian::firstOrCreate(['nama' => 'Perencanaan & Keuangan']);
 
+        
         // Helper: simpan plaintext ke cache (terenkripsi) PERMANEN
         $putPlain = function (User $u, string $plain) {
             $key = "user:plainpwd:{$u->id}";
             Cache::forever($key, Crypt::encryptString($plain));
         };
 
-        // Admin
+        // 1. Admin
         $u = User::updateOrCreate(
             ['username' => 'admin'],
             [
-                'nama'     => 'Administrator',
+                'nama'     => 'Hiskawati, S.AP',
                 'password' => 'admin-1234',
                 'role_id'  => $adminRole,
-                'bagian_id' => $bagianUmum->id, // UBAH dari 'bagian' ke 'bagian_id'
+                'bagian_id' => $bagianPerencanaandanKeuangan->id,
                 'gudang_id' => null,
             ]
         );
         $putPlain($u, 'admin-1234');
 
-        // Pengelola Barang
+        // 2. Pengurus Barang Pengguna
         $u = User::updateOrCreate(
-            ['username' => 'pb'],
+            ['username' => 'pbp'],
             [
-                'nama'     => 'Pengelola Barang',
-                'password' => 'pb-1234',
-                'role_id'  => $pbRole,
-                'bagian_id' => $bagianGudang->id, // UBAH dari 'bagian' ke 'bagian_id'
+                'nama'     => 'Redha Efrida, A.Md',
+                'password' => 'pbp-1234',
+                'role_id'  => $pbpenggunaRole,
+                'bagian_id' => $bagianOrganisasi->id,
                 'gudang_id' => 1, // Gudang Utama
             ]
         );
-        $putPlain($u, 'pb-1234');
+        $putPlain($u, 'pbp-1234');
 
-        // PJ ATK
+        // 3. PBP Bagian Tata Pemerintahan
         $u = User::updateOrCreate(
-            ['username' => 'PJ-ATK'],
+            ['username' => 'PBP-TataPemerintahan'],
             [
-                'nama'     => 'Penanggung Jawab ATK',
-                'password' => 'atk-1234',
-                'role_id'  => $atkRole,
-                'bagian_id' => $bagianOperasional->id, // UBAH dari 'bagian' ke 'bagian_id'
+                'nama'     => 'Heni Handayani, SKM',
+                'password' => 'user-1234',
+                'role_id'  => $pbpembantuRole,
+                'bagian_id' => $bagianTataPemerintahan->id,
                 'gudang_id' => $gudangATK ? $gudangATK->id : 2,
             ]
         );
-        $putPlain($u, 'atk-1234');
+        $putPlain($u, 'user-1234');
 
-        // PJ Kebersihan
+        // 4. PBP Bagian Kesra dan Kemasyarakatan
         $u = User::updateOrCreate(
-            ['username' => 'PJ-Kebersihan'],
+            ['username' => 'PBP-KesradanKemasyarakatan'],
             [
-                'nama'     => 'Penanggung Jawab Kebersihan',
-                'password' => 'kebersihan-1234',
-                'role_id'  => $cleanRole,
-                'bagian_id' => $bagianOperasional->id, // UBAH dari 'bagian' ke 'bagian_id'
+                'nama'     => 'Yuniarti',
+                'password' => 'user-1234',
+                'role_id'  => $pbpembantuRole,
+                'bagian_id' => $bagianKesradanKemasyarakatan->id,
                 'gudang_id' => $gudangKebersihan ? $gudangKebersihan->id : 4,
             ]
         );
-        $putPlain($u, 'kebersihan-1234');
+        $putPlain($u, 'user-1234');
 
-        // PJ Listrik
+        // 5. PBP Bagian Hukum dan HAM
         $u = User::updateOrCreate(
-            ['username' => 'PJ-Listrik'],
+            ['username' => 'PBP-HukumdanHAM'],
             [
-                'nama'     => 'Penanggung Jawab Listrik',
-                'password' => 'listrik-1234',
-                'role_id'  => $elecRole,
-                'bagian_id' => $bagianOperasional->id, // UBAH dari 'bagian' ke 'bagian_id'
+                'nama'     => 'Sarkani',
+                'password' => 'user-1234',
+                'role_id'  => $pbpembantuRole,
+                'bagian_id' => $bagianHukumdanHAM->id,
                 'gudang_id' => $gudangListrik ? $gudangListrik->id : 5,
             ]
         );
-        $putPlain($u, 'listrik-1234');
+        $putPlain($u, 'user-1234');
 
-        // PJ Bahan Komputer
+        // 6. PBP Bagian Perekonomian
         $u = User::updateOrCreate(
-            ['username' => 'PJ-Bahan_Komputer'],
+            ['username' => 'PBP-Perekonomian'],
             [
-                'nama'     => 'Penanggung Jawab Bahan Komputer',
-                'password' => 'komputer-1234',
-                'role_id'  => $compRole,
-                'bagian_id' => $bagianOperasional->id, // UBAH dari 'bagian' ke 'bagian_id'
+                'nama'     => 'Rindi',
+                'password' => 'user-1234',
+                'role_id'  => $pbpembantuRole,
+                'bagian_id' => $bagianPerekonomian->id,
                 'gudang_id' => $gudangKomputer ? $gudangKomputer->id : 6,
             ]
         );
-        $putPlain($u, 'komputer-1234');
+        $putPlain($u, 'user-1234');
+
+        // 7. PBP Bagian Adm. Pembangunan
+        $u = User::updateOrCreate(
+            ['username' => 'PBP-AdmPembangunan'],
+            [
+                'nama'     => 'Dwi Afriyanti, A.Md',
+                'password' => 'user-1234',
+                'role_id'  => $pbpembantuRole,
+                'bagian_id' => $bagianADMPembangunan->id,
+                'gudang_id' => $gudangKomputer ? $gudangKomputer->id : 6,
+            ]
+        );
+        $putPlain($u, 'user-1234');
+
+        // 8. PBP Bagian Adm. Pelayanan Pengadaan Barang dan Jasa
+        $u = User::updateOrCreate(
+            ['username' => 'PBP-AdmPelayananPengadaanBarangdanJasa'],
+            [
+                'nama'     => 'Dedi Irawan',
+                'password' => 'user-1234',
+                'role_id'  => $pbpembantuRole,
+                'bagian_id' => $bagianADMPelayananPengadaanBarangdanJasa->id,
+                'gudang_id' => $gudangKomputer ? $gudangKomputer->id : 6,
+            ]
+        );
+        $putPlain($u, 'user-1234');
+
+        // 9. PBP Bagian Protokol
+        $u = User::updateOrCreate(
+            ['username' => 'PBP-Protokol'],
+            [
+                'nama'     => 'Anisah, S.Kom',
+                'password' => 'user-1234',
+                'role_id'  => $pbpembantuRole,
+                'bagian_id' => $bagianProtokol->id,
+                'gudang_id' => $gudangKomputer ? $gudangKomputer->id : 6,
+            ]
+        );
+        $putPlain($u, 'user-1234');
+
+        // 10. PBP Bagian Organisasi
+        $u = User::updateOrCreate(
+            ['username' => 'PBP-Organisasi'],
+            [
+                'nama'     => 'Redha Efrida, A.Md',
+                'password' => 'user-1234',
+                'role_id'  => $pbpembantuRole,
+                'bagian_id' => $bagianOrganisasi->id,
+                'gudang_id' => $gudangKomputer ? $gudangKomputer->id : 6,
+            ]
+        );
+        $putPlain($u, 'user-1234');
+
+        // 11. PBP Bagian Umum dan Rumah Tangga
+        $u = User::updateOrCreate(
+            ['username' => 'PBP-UmumdanRumahTangga'],
+            [
+                'nama'     => 'Yerri Kurniawan',
+                'password' => 'user-1234',
+                'role_id'  => $pbpembantuRole,
+                'bagian_id' => $bagianUmum->id,
+                'gudang_id' => $gudangKomputer ? $gudangKomputer->id : 6,
+            ]
+        );
+        $putPlain($u, 'user-1234');
+
+        // 12. PBP Bagian Perencanaan dan Keuangan
+        $u = User::updateOrCreate(
+            ['username' => 'PBP-PerencanaandanKeuangan'],
+            [
+                'nama'     => 'Yulianti, S.TR.IP',
+                'password' => 'user-1234',
+                'role_id'  => $pbpembantuRole,
+                'bagian_id' => $bagianPerencanaandanKeuangan->id,
+                'gudang_id' => $gudangKomputer ? $gudangKomputer->id : 6,
+            ]
+        );
+        $putPlain($u, 'user-1234');
     }
 }
