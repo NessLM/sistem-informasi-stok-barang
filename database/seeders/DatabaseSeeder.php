@@ -10,8 +10,8 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             RoleSeeder::class,
-            GudangSeeder::class,      // Buat gudang, kategori, jenis barang, dan barang
-            PbPjStokSeeder::class,    // Buat stok PB dan PJ
+            KategoriSeeder::class,
+            PbPjStokSeeder::class,
             UserSeeder::class,
         ]);
     }

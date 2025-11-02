@@ -26,23 +26,9 @@ class Barang extends Model
         'harga_barang' => 'decimal:2',
     ];
 
-    // Relasi ke Kategori
-    public function kategori()
-    {
-        return $this->belongsTo(Kategori::class, 'id_kategori');
-    }
 
-    // Relasi ke PB Stok
-    public function pbStok()
-    {
-        return $this->hasOne(PbStok::class, 'kode_barang', 'kode_barang');
-    }
+   
 
-    // Relasi ke PJ Stok
-    public function pjStok()
-    {
-        return $this->hasMany(PjStok::class, 'kode_barang', 'kode_barang');
-    }
 
     // Relasi ke Transaksi Barang Masuk
     public function transaksiBarangMasuk()
@@ -50,12 +36,7 @@ class Barang extends Model
         return $this->hasMany(TransaksiBarangMasuk::class, 'kode_barang', 'kode_barang');
     }
 
-    // Relasi ke Transaksi Distribusi
-    public function transaksiDistribusi()
-    {
-        return $this->hasMany(TransaksiDistribusi::class, 'kode_barang', 'kode_barang');
-    }
-
+  
     // Relasi ke Transaksi Barang Keluar
     public function transaksiBarangKeluar()
     {
@@ -73,4 +54,52 @@ class Barang extends Model
     {
         return $this->pjStok->sum('stok');
     }
+    /**
+     * Relasi ke Kategori
+     */
+    public function kategori()
+    {
+        return $this->belongsTo(Kategori::class, 'id_kategori');
+    }
+
+    /**
+     * Relasi ke PB Stok (Gudang Utama) - hasMany karena 1 barang bisa ada di banyak bagian
+     */
+    public function pbStok()
+    {
+        return $this->hasMany(PbStok::class, 'kode_barang', 'kode_barang');
+    }
+
+    /**
+     * Relasi ke Stok Bagian - hasMany
+     */
+    public function stokBagian()
+    {
+        return $this->hasMany(StokBagian::class, 'kode_barang', 'kode_barang');
+    }
+
+    /**
+     * Relasi ke Transaksi Barang Masuk
+     */
+    public function transaksiMasuk()
+    {
+        return $this->hasMany(TransaksiBarangMasuk::class, 'kode_barang', 'kode_barang');
+    }
+
+    /**
+     * Relasi ke Transaksi Distribusi
+     */
+    public function transaksiDistribusi()
+    {
+        return $this->hasMany(TransaksiDistribusi::class, 'kode_barang', 'kode_barang');
+    }
+
+    /**
+     * Relasi ke Transaksi Barang Keluar
+     */
+    public function transaksiKeluar()
+    {
+        return $this->hasMany(TransaksiBarangKeluar::class, 'kode_barang', 'kode_barang');
+    }
+    
 }

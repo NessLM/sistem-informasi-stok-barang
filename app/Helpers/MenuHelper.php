@@ -8,6 +8,8 @@ class MenuHelper
 {
     public static function adminMenu()
     {
+        // ORIGINAL CODE WITH DROPDOWN (COMMENTED OUT FOR FUTURE USE)
+        /*
         // ambil semua gudang dari database
         $gudangs = Gudang::all();
 
@@ -39,6 +41,16 @@ class MenuHelper
             ['label' => 'Laporan',       'icon' => 'bi-file-earmark-bar-graph-fill', 'route' => 'admin.laporan'],
             ['label' => 'Data Pengguna', 'icon' => 'bi-people', 'route' => 'admin.users.index'],
         ];
+        */
+
+        // CURRENT CODE WITHOUT DROPDOWN (USING BAGIAN STRUCTURE)
+        return [
+            ['label' => 'Dashboard', 'icon' => 'bi-grid', 'route' => 'admin.dashboard'],
+            ['label' => 'Data Keseluruhan', 'icon' => 'bi-card-list', 'route' => 'admin.datakeseluruhan.index'],
+            ['label' => 'Riwayat', 'icon' => 'bi-clock-history', 'route' => 'admin.riwayat.index'],
+            ['label' => 'Laporan', 'icon' => 'bi-file-earmark-bar-graph-fill', 'route' => 'admin.laporan'],
+            ['label' => 'Data Pengguna', 'icon' => 'bi-people', 'route' => 'admin.users.index'],
+        ];
     }
 
     /**
@@ -64,13 +76,13 @@ class MenuHelper
         return [
             [
                 'label' => 'Dashboard',
-                'icon' => 'bi-grid', // DIUBAH: dari 'bi-speedometer2' menjadi 'bi-grid'
+                'icon' => 'bi-grid',
                 'route' => 'pj.dashboard',
                 'active' => request()->routeIs('pj.dashboard'),
             ],
             [
                 'label' => 'Data Gudang',
-                'icon' => 'bi-card-list', // DIUBAH: dari 'bi-box-seam' menjadi 'bi-card-list'
+                'icon' => 'bi-card-list',
                 'route' => 'pj.datakeseluruhan.index',
                 'active' => request()->routeIs('pj.datakeseluruhan.*'),
             ],
@@ -82,6 +94,10 @@ class MenuHelper
             ],
         ];
     }
+
+    // ========================================================================
+    // DROPDOWN UTILITY FUNCTIONS (KEPT FOR FUTURE USE)
+    // ========================================================================
 
     /**
      * Buat slug dari nama gudang secara otomatis

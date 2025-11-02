@@ -14,31 +14,23 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        // Get Role IDs - HANYA 3 ROLE
+        // Get Role IDs - HANYA 3 ROLE(LPSE)
         $adminRole = Role::where('nama', 'Admin')->first()->id;
         $pbpenggunaRole = Role::where('nama', 'Pengurus Barang Pengguna')->first()->id;
         $pbpembantuRole = Role::where('nama', 'Pengurus Barang Pembantu')->first()->id;
 
-        // Get Gudang IDs (jika ada)
-        $gudangATK = Gudang::where('nama', 'LIKE', '%ATK%')->first();
-        $gudangKebersihan = Gudang::where('nama', 'LIKE', '%Kebersihan%')->first();
-        $gudangListrik = Gudang::where('nama', 'LIKE', '%Listrik%')->first();
-        $gudangKomputer = Gudang::where('nama', 'LIKE', '%Komputer%')->orWhere('nama', 'LIKE', '%Bahan Komputer%')->first();
-
-        // Get Bagian IDs (atau buat jika belum ada)
-        $bagianGudang = Bagian::firstOrCreate(['nama' => 'Gudang']);
         $bagianTataPemerintahan = Bagian::firstOrCreate(['nama' => 'Tata Pemerintahan']);
         $bagianKesradanKemasyarakatan = Bagian::firstOrCreate(['nama' => 'Kesejahteraan Rakyat & Kemasyarakatan']);
         $bagianHukumdanHAM = Bagian::firstOrCreate(['nama' => 'Hukum & HAM']);
         $bagianPerekonomian = Bagian::firstOrCreate(['nama' => 'Perekonomian']);
         $bagianADMPembangunan = Bagian::firstOrCreate(['nama' => 'ADM Pembangunan']);
-        $bagianADMPelayananPengadaanBarangdanJasa = Bagian::firstOrCreate(['nama' => 'ADM Pelayanan Pengadaan Barang & Jasa (LPSE)']);
+        $bagianADMPelayananPengadaanBarangdanJasa = Bagian::firstOrCreate(['nama' => 'ADM Pelayanan Pengadaan Barang & Jasa']);
         $bagianProtokol = Bagian::firstOrCreate(['nama' => 'Protokol']);
         $bagianOrganisasi = Bagian::firstOrCreate(['nama' => 'Organisasi']);
         $bagianUmum = Bagian::firstOrCreate(['nama' => 'Umum & Rumah Tangga']);
         $bagianPerencanaandanKeuangan = Bagian::firstOrCreate(['nama' => 'Perencanaan & Keuangan']);
 
-        
+
         // Helper: simpan plaintext ke cache (terenkripsi) PERMANEN
         $putPlain = function (User $u, string $plain) {
             $key = "user:plainpwd:{$u->id}";
@@ -49,11 +41,11 @@ class UserSeeder extends Seeder
         $u = User::updateOrCreate(
             ['username' => 'admin'],
             [
-                'nama'     => 'Hiskawati, S.AP',
+                'nama' => 'Hiskawati, S.AP',
                 'password' => 'admin-1234',
-                'role_id'  => $adminRole,
-                'bagian_id' => $bagianPerencanaandanKeuangan->id,
-                'gudang_id' => null,
+                'role_id' => $adminRole,
+                'bagian_id' => $bagianPerencanaandanKeuangan->id
+
             ]
         );
         $putPlain($u, 'admin-1234');
@@ -62,11 +54,11 @@ class UserSeeder extends Seeder
         $u = User::updateOrCreate(
             ['username' => 'pbp'],
             [
-                'nama'     => 'Redha Efrida, A.Md',
+                'nama' => 'Redha Efrida, A.Md',
                 'password' => 'pbp-1234',
-                'role_id'  => $pbpenggunaRole,
-                'bagian_id' => $bagianOrganisasi->id,
-                'gudang_id' => 1, // Gudang Utama
+                'role_id' => $pbpenggunaRole,
+                'bagian_id' => $bagianOrganisasi->id
+
             ]
         );
         $putPlain($u, 'pbp-1234');
@@ -75,11 +67,10 @@ class UserSeeder extends Seeder
         $u = User::updateOrCreate(
             ['username' => 'PBP-TataPemerintahan'],
             [
-                'nama'     => 'Heni Handayani, SKM',
+                'nama' => 'Heni Handayani, SKM',
                 'password' => 'user-1234',
-                'role_id'  => $pbpembantuRole,
-                'bagian_id' => $bagianTataPemerintahan->id,
-                'gudang_id' => $gudangATK ? $gudangATK->id : 2,
+                'role_id' => $pbpembantuRole,
+                'bagian_id' => $bagianTataPemerintahan->id
             ]
         );
         $putPlain($u, 'user-1234');
@@ -88,11 +79,10 @@ class UserSeeder extends Seeder
         $u = User::updateOrCreate(
             ['username' => 'PBP-KesradanKemasyarakatan'],
             [
-                'nama'     => 'Yuniarti',
+                'nama' => 'Yuniarti',
                 'password' => 'user-1234',
-                'role_id'  => $pbpembantuRole,
-                'bagian_id' => $bagianKesradanKemasyarakatan->id,
-                'gudang_id' => $gudangKebersihan ? $gudangKebersihan->id : 4,
+                'role_id' => $pbpembantuRole,
+                'bagian_id' => $bagianKesradanKemasyarakatan->id
             ]
         );
         $putPlain($u, 'user-1234');
@@ -101,11 +91,10 @@ class UserSeeder extends Seeder
         $u = User::updateOrCreate(
             ['username' => 'PBP-HukumdanHAM'],
             [
-                'nama'     => 'Sarkani',
+                'nama' => 'Sarkani',
                 'password' => 'user-1234',
-                'role_id'  => $pbpembantuRole,
-                'bagian_id' => $bagianHukumdanHAM->id,
-                'gudang_id' => $gudangListrik ? $gudangListrik->id : 5,
+                'role_id' => $pbpembantuRole,
+                'bagian_id' => $bagianHukumdanHAM->id
             ]
         );
         $putPlain($u, 'user-1234');
@@ -114,11 +103,10 @@ class UserSeeder extends Seeder
         $u = User::updateOrCreate(
             ['username' => 'PBP-Perekonomian'],
             [
-                'nama'     => 'Rindi',
+                'nama' => 'Rindi',
                 'password' => 'user-1234',
-                'role_id'  => $pbpembantuRole,
-                'bagian_id' => $bagianPerekonomian->id,
-                'gudang_id' => $gudangKomputer ? $gudangKomputer->id : 6,
+                'role_id' => $pbpembantuRole,
+                'bagian_id' => $bagianPerekonomian->id
             ]
         );
         $putPlain($u, 'user-1234');
@@ -127,11 +115,10 @@ class UserSeeder extends Seeder
         $u = User::updateOrCreate(
             ['username' => 'PBP-AdmPembangunan'],
             [
-                'nama'     => 'Dwi Afriyanti, A.Md',
+                'nama' => 'Dwi Afriyanti, A.Md',
                 'password' => 'user-1234',
-                'role_id'  => $pbpembantuRole,
-                'bagian_id' => $bagianADMPembangunan->id,
-                'gudang_id' => $gudangKomputer ? $gudangKomputer->id : 6,
+                'role_id' => $pbpembantuRole,
+                'bagian_id' => $bagianADMPembangunan->id
             ]
         );
         $putPlain($u, 'user-1234');
@@ -140,11 +127,10 @@ class UserSeeder extends Seeder
         $u = User::updateOrCreate(
             ['username' => 'PBP-AdmPelayananPengadaanBarangdanJasa'],
             [
-                'nama'     => 'Dedi Irawan',
+                'nama' => 'Dedi Irawan',
                 'password' => 'user-1234',
-                'role_id'  => $pbpembantuRole,
-                'bagian_id' => $bagianADMPelayananPengadaanBarangdanJasa->id,
-                'gudang_id' => $gudangKomputer ? $gudangKomputer->id : 6,
+                'role_id' => $pbpembantuRole,
+                'bagian_id' => $bagianADMPelayananPengadaanBarangdanJasa->id
             ]
         );
         $putPlain($u, 'user-1234');
@@ -153,11 +139,10 @@ class UserSeeder extends Seeder
         $u = User::updateOrCreate(
             ['username' => 'PBP-Protokol'],
             [
-                'nama'     => 'Anisah, S.Kom',
+                'nama' => 'Anisah, S.Kom',
                 'password' => 'user-1234',
-                'role_id'  => $pbpembantuRole,
-                'bagian_id' => $bagianProtokol->id,
-                'gudang_id' => $gudangKomputer ? $gudangKomputer->id : 6,
+                'role_id' => $pbpembantuRole,
+                'bagian_id' => $bagianProtokol->id
             ]
         );
         $putPlain($u, 'user-1234');
@@ -166,11 +151,10 @@ class UserSeeder extends Seeder
         $u = User::updateOrCreate(
             ['username' => 'PBP-Organisasi'],
             [
-                'nama'     => 'Redha Efrida, A.Md',
+                'nama' => 'Redha Efrida, A.Md',
                 'password' => 'user-1234',
-                'role_id'  => $pbpembantuRole,
-                'bagian_id' => $bagianOrganisasi->id,
-                'gudang_id' => $gudangKomputer ? $gudangKomputer->id : 6,
+                'role_id' => $pbpembantuRole,
+                'bagian_id' => $bagianOrganisasi->id
             ]
         );
         $putPlain($u, 'user-1234');
@@ -179,11 +163,10 @@ class UserSeeder extends Seeder
         $u = User::updateOrCreate(
             ['username' => 'PBP-UmumdanRumahTangga'],
             [
-                'nama'     => 'Yerri Kurniawan',
+                'nama' => 'Yerri Kurniawan',
                 'password' => 'user-1234',
-                'role_id'  => $pbpembantuRole,
-                'bagian_id' => $bagianUmum->id,
-                'gudang_id' => $gudangKomputer ? $gudangKomputer->id : 6,
+                'role_id' => $pbpembantuRole,
+                'bagian_id' => $bagianUmum->id
             ]
         );
         $putPlain($u, 'user-1234');
@@ -192,11 +175,10 @@ class UserSeeder extends Seeder
         $u = User::updateOrCreate(
             ['username' => 'PBP-PerencanaandanKeuangan'],
             [
-                'nama'     => 'Yulianti, S.TR.IP',
+                'nama' => 'Yulianti, S.TR.IP',
                 'password' => 'user-1234',
-                'role_id'  => $pbpembantuRole,
-                'bagian_id' => $bagianPerencanaandanKeuangan->id,
-                'gudang_id' => $gudangKomputer ? $gudangKomputer->id : 6,
+                'role_id' => $pbpembantuRole,
+                'bagian_id' => $bagianPerencanaandanKeuangan->id
             ]
         );
         $putPlain($u, 'user-1234');

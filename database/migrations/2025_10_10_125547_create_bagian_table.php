@@ -25,7 +25,7 @@ return new class extends Migration
             ['nama' => 'Hukum & HAM', 'created_at' => now(), 'updated_at' => now()],
             ['nama' => 'ADM Pembangunan', 'created_at' => now(), 'updated_at' => now()],
             ['nama' => 'Perekonomian', 'created_at' => now(), 'updated_at' => now()],
-            ['nama' => 'ADM Pelayanan Pengadaan Barang & Jasa (LPSE)', 'created_at' => now(), 'updated_at' => now()],
+            ['nama' => 'ADM Pelayanan Pengadaan Barang & Jasa', 'created_at' => now(), 'updated_at' => now()],
             ['nama' => 'Protokol', 'created_at' => now(), 'updated_at' => now()],
             ['nama' => 'Organisasi', 'created_at' => now(), 'updated_at' => now()],
             ['nama' => 'Umum & Rumah Tangga', 'created_at' => now(), 'updated_at' => now()],

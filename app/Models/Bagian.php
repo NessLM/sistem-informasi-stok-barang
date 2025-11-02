@@ -26,4 +26,30 @@ class Bagian extends Model
     {
         return $this->hasMany(TransaksiBarangKeluar::class, 'bagian_id');
     }
+
+    /**
+     * Relasi ke PB Stok
+     */
+    public function pbStok()
+    {
+        return $this->hasMany(PbStok::class, 'bagian_id', 'id');
+    }
+
+    /**
+     * Relasi ke Stok Bagian
+     */
+    public function stokBagian()
+    {
+        return $this->hasMany(StokBagian::class, 'bagian_id', 'id');
+    }
+
+    /**
+     * Relasi ke Transaksi Distribusi
+     */
+    public function transaksiDistribusi()
+    {
+        return $this->hasMany(TransaksiDistribusi::class, 'bagian_id', 'id');
+    }
+
+  
 }

@@ -7,29 +7,31 @@
 
     <div class="dashboard-container">
 
-        {{-- Row pertama: Ringkasan dan Grafik Per Gudang --}}
+        {{-- Row pertama: Ringkasan dan Grafik Per Bagian --}}
         <div class="dashboard-row">
             {{-- ========================= RINGKASAN ========================= --}}
             <div class="summary-section">
                 {{-- Header dengan judul dan filter dropdown --}}
                 <div class="summary-header">
                     <h2>Ringkasan</h2>
-                    <div class="summary-filter">
-                        <button class="summary-filter-btn" type="button" id="summaryFilterBtn" aria-expanded="false">
-                            <i class="bi bi-funnel"></i> <span id="summaryFilterText">{{ $gudangUtama->nama }}</span>
-                            <i class="bi bi-chevron-right arrow-icon"></i>
+
+                </div>
+                <div class="summary-filter">
+                    <button class="summary-filter-btn" type="button" id="summaryFilterBtn" aria-expanded="false">
+                        <i class="bi bi-funnel"></i> <span id="summaryFilterText">Gudang Utama</span>
+                        <i class="bi bi-chevron-right arrow-icon"></i>
+                    </button>
+                    <div class="summary-dropdown-menu" id="summaryDropdownMenu">
+                        <button class="summary-dropdown-item" data-value="global" data-default="true">
+                            Gudang Utama
                         </button>
-                        <div class="summary-dropdown-menu" id="summaryDropdownMenu">
-                            @foreach ($gudangs as $gudang)
-                                <button class="summary-dropdown-item" data-value="{{ $gudang->nama }}"
-                                    @if($gudang->id === $gudangUtama->id) data-default="true" @endif>
-                                    {{ $gudang->nama }}
-                                </button>
-                            @endforeach
-                        </div>
+                        @foreach ($bagians as $bagian)
+                            <button class="summary-dropdown-item" data-value="{{ $bagian->nama }}">
+                                {{ $bagian->nama }}
+                            </button>
+                        @endforeach
                     </div>
                 </div>
-
                 {{-- KLASIK: ikon bulat di kiri, angka & label di kanan --}}
                 <div class="summary-cards summary-cards--classic">
                     {{-- Card: Total Jenis Barang --}}
@@ -56,34 +58,34 @@
                 </div>
             </div>
 
-            {{-- ======================= GRAFIK PER GUDANG ======================= --}}
+            {{-- ======================= GRAFIK PER BAGIAN ======================= --}}
             <div class="chart-section">
                 {{-- Layout horizontal sejajar untuk semua komponen --}}
                 <div class="chart-header chart-header--horizontal">
                     <div class="chart-header-horizontal-item">
-                        <h2>Grafik Per Gudang</h2>
+                        <h2>Grafik Per Bagian</h2>
                     </div>
 
                     <div class="chart-header-horizontal-item">
-                        <span id="rangeHintGudang" class="range-hint" title="Semua Data">Semua Data</span>
+                        <span id="rangeHintBagian" class="range-hint" title="Semua Data">Semua Data</span>
                     </div>
 
                     <div class="chart-header-horizontal-item" style="margin-left:auto;">
                         {{-- Filter waktu --}}
                         <div class="dropdown">
-                            <button class="filter-btn dropdown-toggle" type="button" id="gudangFilterDropdown"
+                            <button class="filter-btn dropdown-toggle" type="button" id="bagianFilterDropdown"
                                 data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="bi bi-funnel"></i> Semua
                                 <i class="bi bi-chevron-right arrow-icon"></i>
                             </button>
-                            <ul class="dropdown-menu" aria-labelledby="gudangFilterDropdown">
-                                <li><a class="dropdown-item filter-option" href="#" data-type="gudang"
+                            <ul class="dropdown-menu" aria-labelledby="bagianFilterDropdown">
+                                <li><a class="dropdown-item filter-option" href="#" data-type="bagian"
                                         data-value="all">Semua</a></li>
-                                <li><a class="dropdown-item filter-option" href="#" data-type="gudang"
+                                <li><a class="dropdown-item filter-option" href="#" data-type="bagian"
                                         data-value="week">1 Minggu Terakhir</a></li>
-                                <li><a class="dropdown-item filter-option" href="#" data-type="gudang"
+                                <li><a class="dropdown-item filter-option" href="#" data-type="bagian"
                                         data-value="month">1 Bulan Terakhir</a></li>
-                                <li><a class="dropdown-item filter-option" href="#" data-type="gudang"
+                                <li><a class="dropdown-item filter-option" href="#" data-type="bagian"
                                         data-value="year">1 Tahun Terakhir</a></li>
                             </ul>
                         </div>
@@ -92,7 +94,7 @@
 
                 {{-- Wadah kanvas chart --}}
                 <div class="chart-container">
-                    <canvas id="gudangChart"></canvas>
+                    <canvas id="bagianChart"></canvas>
                 </div>
 
                 <div class="chart-legend">
@@ -181,7 +183,7 @@
                 if (e.target.classList.contains('summary-dropdown-item')) {
                     e.preventDefault();
                     const selectedValue = e.target.getAttribute('data-value');
-                    const selectedText = e.target.textContent;
+                    const selectedText = e.target.textContent.trim();
 
                     summaryFilterText.textContent = selectedText;
                     summaryDropdownMenu.classList.remove('show');
@@ -192,8 +194,8 @@
                 }
             });
 
-            function filterRingkasan(gudangNama) {
-                fetch(`${FILTER_URL}?type=ringkasan&filter=${encodeURIComponent(gudangNama)}`)
+            function filterRingkasan(bagianNama) {
+                fetch(`${FILTER_URL}?type=ringkasan&filter=${encodeURIComponent(bagianNama)}`)
                     .then(r => r.json())
                     .then(data => {
                         // Update numbers with animation
@@ -223,16 +225,16 @@
                 }, duration / steps);
             }
 
-            /* ====================== Grafik Per Gudang (Masuk & Keluar) ====================== */
-            const gudangLabels = {!! json_encode($gudangLabels) !!};
+            /* ====================== Grafik Per Bagian (Masuk & Keluar) ====================== */
+            const bagianLabels = {!! json_encode($bagianLabels) !!};
             const masukData = {!! json_encode($masukData) !!};
             const keluarData = {!! json_encode($keluarData) !!};
 
-            const gudangCtx = document.getElementById('gudangChart').getContext('2d');
-            const gudangChart = new Chart(gudangCtx, {
+            const bagianCtx = document.getElementById('bagianChart').getContext('2d');
+            const bagianChart = new Chart(bagianCtx, {
                 type: 'line',
                 data: {
-                    labels: gudangLabels,
+                    labels: bagianLabels,
                     datasets: [
                         {
                             label: 'Masuk',
@@ -246,7 +248,8 @@
                             pointBorderColor: '#fff',
                             pointBorderWidth: 2,
                             pointRadius: 5,
-                            pointHoverRadius: 7
+                            pointHoverRadius: 7,
+                            clip: false // 🔥 biar titik pertama bisa nempel garis kiri
                         },
                         {
                             label: 'Keluar',
@@ -260,7 +263,8 @@
                             pointBorderColor: '#fff',
                             pointBorderWidth: 2,
                             pointRadius: 5,
-                            pointHoverRadius: 7
+                            pointHoverRadius: 7,
+                            clip: false
                         }
                     ]
                 },
@@ -269,7 +273,10 @@
                     maintainAspectRatio: false,
                     interaction: {
                         mode: 'index',
-                        intersect: false,
+                        intersect: false
+                    },
+                    layout: {
+                        padding: 0
                     },
                     plugins: {
                         legend: {
@@ -277,37 +284,44 @@
                         },
                         tooltip: {
                             backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                            padding: 12,
                             titleColor: '#fff',
                             bodyColor: '#fff',
-                            borderColor: '#374151',
-                            borderWidth: 1
+                            padding: 12
                         }
                     },
                     scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                color: '#6B7280'
-                            },
-                            grid: {
-                                color: '#F3F4F6'
-                            }
-                        },
                         x: {
+                            offset: false, // 🔥 pastiin gak ada jarak kiri-kanan
+                            grid: {
+                                color: '#F3F4F6',
+                                drawBorder: true
+                            },
                             ticks: {
                                 color: '#6B7280',
                                 maxRotation: 45,
                                 minRotation: 45
                             },
+                            afterFit: (axis) => {
+                                // Hack lembut biar chart mulai lebih kiri tanpa ngilang
+                                axis.paddingLeft = 2;
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
                             grid: {
-                                color: '#F3F4F6',
-                                display: true
+                                color: '#F3F4F6'
+                            },
+                            ticks: {
+                                color: '#6B7280'
                             }
                         }
                     }
                 }
             });
+
+            // ⬇️ Tambahan CSS visual offset (bikin nempel kiri tapi gak ganggu chart)
+            document.getElementById('bagianChart').style.transform = 'translateX(3px)';
+
 
             // ===== Helper format tanggal untuk badge (ID locale) =====
             function fmt(d) {
@@ -339,24 +353,24 @@
                     const type = this.getAttribute('data-type');
                     const value = this.getAttribute('data-value');
                     const dropdownToggle = this.closest('.dropdown').querySelector('.dropdown-toggle');
-                    dropdownToggle.innerHTML = `<i class="bi bi-funnel"></i> ${this.textContent} <i class="bi bi-chevron-right arrow-icon"></i>`;
+                    dropdownToggle.innerHTML = `<i class="bi bi-funnel"></i> ${this.textContent.trim()} <i class="bi bi-chevron-right arrow-icon"></i>`;
 
-                    if (type === 'gudang') filterGudang(value);
+                    if (type === 'bagian') filterBagian(value);
                     else filterPengeluaran(value);
                 });
             });
 
-            // ====== Filter Per Gudang (update data + badge tanggal) ======
-            function filterGudang(filterType) {
-                fetch(`${FILTER_URL}?type=gudang&filter=${filterType}`)
+            // ====== Filter Per Bagian (update data + badge tanggal) ======
+            function filterBagian(filterType) {
+                fetch(`${FILTER_URL}?type=bagian&filter=${filterType}`)
                     .then(r => r.json())
                     .then(d => {
-                        gudangChart.data.labels = d.labels || [];
-                        gudangChart.data.datasets[0].data = d.masuk || [];
-                        gudangChart.data.datasets[1].data = d.keluar || [];
-                        gudangChart.update();
+                        bagianChart.data.labels = d.labels || [];
+                        bagianChart.data.datasets[0].data = d.masuk || [];
+                        bagianChart.data.datasets[1].data = d.keluar || [];
+                        bagianChart.update();
 
-                        const hint = document.getElementById('rangeHintGudang');
+                        const hint = document.getElementById('rangeHintBagian');
                         if (d.range && d.range.start && d.range.end) {
                             const s = new Date(d.range.start),
                                 e = new Date(d.range.end);
@@ -465,7 +479,7 @@
             }
 
             // set awal -> badge "Semua Data"
-            setRangeHint(document.getElementById('rangeHintGudang'), 'Semua Data', 'Semua Data');
+            setRangeHint(document.getElementById('rangeHintBagian'), 'Semua Data', 'Semua Data');
         });
     </script>
 

@@ -20,11 +20,7 @@ class PbStok extends Model
         'stok' => 'integer',
     ];
 
-    // Relasi ke Barang
-    public function barang()
-    {
-        return $this->belongsTo(Barang::class, 'kode_barang', 'kode_barang');
-    }
+
 
     // Method untuk menambah stok
     public function tambahStok($jumlah)
@@ -50,4 +46,22 @@ class PbStok extends Model
     {
         return $this->stok >= $jumlah;
     }
+  
+    /**
+     * Relasi ke Bagian
+     */
+    public function bagian()
+    {
+        return $this->belongsTo(Bagian::class, 'bagian_id', 'id');
+    }
+    /**
+     * Relasi ke Barang
+     */
+    public function barang()
+    {
+        return $this->belongsTo(Barang::class, 'kode_barang', 'kode_barang');
+    }
+
+    
+
 }
