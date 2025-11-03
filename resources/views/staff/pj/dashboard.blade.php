@@ -5,7 +5,7 @@
 
     <div class="dashboard-container">
 
-        {{-- Row pertama: Ringkasan dan Grafik Per Bagian --}}
+        {{-- Row pertama: Ringkasan dan Grafik Per Bulan --}}
         <div class="dashboard-row">
             {{-- ========================= RINGKASAN ========================= --}}
             <div class="summary-section">
@@ -41,20 +41,19 @@
                 </div>
             </div>
 
-            {{-- ======================= GRAFIK PER BAGIAN ======================= --}}
+            {{-- ======================= GRAFIK PER BAGIAN (BULANAN) ======================= --}}
             <div class="chart-section">
-                {{-- Layout horizontal sejajar untuk semua komponen --}}
                 <div class="chart-header chart-header--horizontal">
                     <div class="chart-header-horizontal-item">
-                        <h2>Grafik Per Bagian</h2>
+                        <h2>Grafik Per Bulan</h2>
                     </div>
 
                     <div class="chart-header-horizontal-item">
-                        <span id="rangeHintBagian" class="range-hint" title="Semua Data">Semua Data</span>
+                        <span id="rangeHintBagian" class="range-hint" title="Jan–Des {{ date('Y') }}">Jan–Des {{ date('Y') }}</span>
                     </div>
 
                     <div class="chart-header-horizontal-item">
-                        {{-- Pager (muncul jika data > 9) --}}
+                        {{-- Pager lama dipertahankan tapi disembunyikan agar layout aman --}}
                         <div class="pager" id="bagianPager" style="display:none">
                             <button class="pager-btn" id="bagianPrev" title="Sebelumnya" aria-label="Sebelumnya">
                                 <i class="bi bi-chevron-left"></i>
@@ -67,7 +66,6 @@
                     </div>
 
                     <div class="chart-header-horizontal-item" style="margin-left:auto;">
-                        {{-- Filter waktu --}}
                         <div class="dropdown">
                             <button class="filter-btn dropdown-toggle" type="button" id="bagianFilterDropdown"
                                 data-bs-toggle="dropdown" aria-expanded="false">
@@ -75,29 +73,21 @@
                                 <i class="bi bi-chevron-right arrow-icon"></i>
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="bagianFilterDropdown">
-                                <li><a class="dropdown-item filter-option" href="#" data-type="bagian"
-                                        data-value="all">Semua</a></li>
-                                <li><a class="dropdown-item filter-option" href="#" data-type="bagian"
-                                        data-value="week">1 Minggu Terakhir</a></li>
-                                <li><a class="dropdown-item filter-option" href="#" data-type="bagian"
-                                        data-value="month">1 Bulan Terakhir</a></li>
-                                <li><a class="dropdown-item filter-option" href="#" data-type="bagian"
-                                        data-value="year">1 Tahun Terakhir</a></li>
+                                <li><a class="dropdown-item filter-option" href="#" data-type="monthly" data-value="all">Semua (Jan–Des)</a></li>
+                                <li><a class="dropdown-item filter-option" href="#" data-type="monthly" data-value="3m">3 Bulan Terakhir</a></li>
+                                <li><a class="dropdown-item filter-option" href="#" data-type="monthly" data-value="5m">5 Bulan Terakhir</a></li>
                             </ul>
                         </div>
                     </div>
                 </div>
 
-                {{-- Wadah kanvas chart (dipakai juga untuk drag) --}}
                 <div class="chart-container" id="bagianChartBox">
                     <canvas id="bagianChart"></canvas>
                 </div>
 
                 <div class="chart-legend">
-                    <div class="legend-item">
-                        <span class="legend-color keluar"></span>
-                        <span>Keluar</span>
-                    </div>
+                    <div class="legend-item"><span class="legend-color" style="background:#10B981"></span><span>Masuk</span></div>
+                    <div class="legend-item"><span class="legend-color" style="background:#EF4444"></span><span>Keluar</span></div>
                 </div>
             </div>
         </div>
@@ -123,14 +113,10 @@
                                     <i class="bi bi-chevron-right arrow-icon"></i>
                                 </button>
                                 <ul class="dropdown-menu" aria-labelledby="pengeluaranFilterDropdown">
-                                    <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran"
-                                            data-value="all">Semua</a></li>
-                                    <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran"
-                                            data-value="5y">5 Tahun Terakhir</a></li>
-                                    <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran"
-                                            data-value="7y">7 Tahun Terakhir</a></li>
-                                    <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran"
-                                            data-value="10y">10 Tahun Terakhir</a></li>
+                                    <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran" data-value="all">Semua</a></li>
+                                    <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran" data-value="5y">5 Tahun Terakhir</a></li>
+                                    <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran" data-value="7y">7 Tahun Terakhir</a></li>
+                                    <li><a class="dropdown-item filter-option" href="#" data-type="pengeluaran" data-value="10y">10 Tahun Terakhir</a></li>
                                 </ul>
                             </div>
                         </div>
@@ -152,225 +138,106 @@
         document.addEventListener('DOMContentLoaded', function () {
             const FILTER_URL = "{{ route('pj.dashboard.filter') }}";
 
-            /* ====================== Grafik Per Bagian (Keluar only) ====================== */
-            const PER_PAGE = 9; // batas 9 bar
-            let allLabels = {!! json_encode($bagianLabels) !!}; // full labels (sudah "Bagian " dibersihkan di controller)
-            let allData = {!! json_encode($keluarData) !!}; // full data
-            let pageStart = 0; // index mulai
+            /* ====================== Grafik Bulanan (Line) ====================== */
+            // Pastikan bukan null
+            let monthLabels = {!! json_encode($monthlyLabels ?? []) !!};
+            let dataMasuk   = {!! json_encode($monthlyMasuk  ?? []) !!};
+            let dataKeluar  = {!! json_encode($monthlyKeluar ?? []) !!};
+
+            // Sembunyikan pager lama (biar layout tetap)
+            const pagerBoxInit = document.getElementById('bagianPager');
+            if (pagerBoxInit) pagerBoxInit.style.display = 'none';
 
             const bagianCtx = document.getElementById('bagianChart').getContext('2d');
-            // Temukan bagian inisialisasi bagianChart dan update options.scales.y seperti ini:
-
             const bagianChart = new Chart(bagianCtx, {
-                type: 'bar',
+                type: 'line',
                 data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'Keluar',
-                        data: [],
-                        backgroundColor: '#EF4444',
-                        borderRadius: 4
-                    }]
+                    labels: monthLabels,
+                    datasets: [
+                        {
+                            label: 'Masuk',
+                            data: dataMasuk,
+                            borderColor: '#10B981',
+                            backgroundColor: 'rgba(16,185,129,0.1)',
+                            borderWidth: 3,
+                            tension: 0.4,
+                            fill: true,
+                            pointBackgroundColor: '#10B981',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            clip: false
+                        },
+                        {
+                            label: 'Keluar',
+                            data: dataKeluar,
+                            borderColor: '#EF4444',
+                            backgroundColor: 'rgba(239,68,68,0.1)',
+                            borderWidth: 3,
+                            tension: 0.4,
+                            fill: true,
+                            pointBackgroundColor: '#EF4444',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            clip: false
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: { legend: { display: false } },
                     scales: {
+                        x: {
+                            offset: false,
+                            grid: { color: '#F3F4F6', drawBorder: true },
+                            ticks: { color: '#6B7280', maxRotation: 45, minRotation: 45 },
+                            afterFit: (axis) => { axis.paddingLeft = 2; }
+                        },
                         y: {
                             beginAtZero: true,
-                            suggestedMax: 5, // Saran max 5, tapi bisa lebih kalau data > 5
-                            ticks: {
-                                stepSize: 1,
-                                color: '#6B7280',
-                                callback: function (value) {
-                                    // Hanya tampilkan angka bulat
-                                    if (Number.isInteger(value)) {
-                                        return value;
-                                    }
-                                }
-                            },
-                            grid: {
-                                color: '#F3F4F6'
-                            }
-                        },
-                        x: {
-                            ticks: {
-                                color: '#6B7280',
-                                maxRotation: 45,
-                                minRotation: 45
-                            },
-                            grid: {
-                                display: false
-                            }
+                            grid: { color: '#F3F4F6' },
+                            ticks: { color: '#6B7280', stepSize: 1 }
                         }
                     }
                 }
             });
 
-            const pagerBox = document.getElementById('bagianPager');
-            const pagerInfo = document.getElementById('bagianPagerInfo');
-            const btnPrev = document.getElementById('bagianPrev');
-            const btnNext = document.getElementById('bagianNext');
+            // Helper badge
+            function setRangeHint(el, text) { if (el) { el.textContent = text; el.title = text; } }
 
-            function totalPages() {
-                return Math.max(1, Math.ceil(allLabels.length / PER_PAGE));
-            }
-
-            function currentPage() {
-                return Math.floor(pageStart / PER_PAGE) + 1;
-            }
-
-            function renderPager() {
-                pagerBox.style.display = (allLabels.length > PER_PAGE) ? 'flex' : 'none';
-                pagerInfo.textContent = `${currentPage()}/${totalPages()}`;
-                btnPrev.disabled = pageStart === 0;
-                btnNext.disabled = (pageStart + PER_PAGE) >= allLabels.length;
-            }
-
-            function sliceData() {
-                const end = Math.min(pageStart + PER_PAGE, allLabels.length);
-                bagianChart.data.labels = allLabels.slice(pageStart, end);
-                bagianChart.data.datasets[0].data = allData.slice(pageStart, end);
-                bagianChart.update();
-                renderPager();
-            }
-            sliceData(); // first render
-
-            btnPrev.addEventListener('click', () => {
-                if (pageStart >= PER_PAGE) {
-                    pageStart -= PER_PAGE;
-                    sliceData();
-                }
-            });
-            btnNext.addEventListener('click', () => {
-                if (pageStart + PER_PAGE < allLabels.length) {
-                    pageStart += PER_PAGE;
-                    sliceData();
-                }
-            });
-
-            // ===== Drag / swipe untuk paging =====
-            (function enableDragToPage() {
-                const box = document.getElementById('bagianChartBox');
-                let isDown = false,
-                    startX = 0;
-                box.addEventListener('mousedown', e => {
-                    isDown = true;
-                    startX = e.clientX;
-                    box.classList.add('dragging');
-                });
-                window.addEventListener('mouseup', () => {
-                    if (!isDown) return;
-                    isDown = false;
-                    box.classList.remove('dragging');
-                });
-                box.addEventListener('mouseleave', () => {
-                    if (!isDown) return;
-                    isDown = false;
-                    box.classList.remove('dragging');
-                });
-                box.addEventListener('mousemove', e => {
-                    if (!isDown) return;
-                    const delta = e.clientX - startX;
-                    if (Math.abs(delta) > 60) {
-                        if (delta < 0) btnNext.click();
-                        else btnPrev.click();
-                        isDown = false;
-                        box.classList.remove('dragging');
-                    }
-                });
-                // Touch
-                box.addEventListener('touchstart', e => {
-                    startX = e.touches[0].clientX;
-                    isDown = true;
-                    box.classList.add('dragging');
-                }, {
-                    passive: true
-                });
-                box.addEventListener('touchend', () => {
-                    isDown = false;
-                    box.classList.remove('dragging');
-                });
-                box.addEventListener('touchmove', e => {
-                    if (!isDown) return;
-                    const delta = e.touches[0].clientX - startX;
-                    if (Math.abs(delta) > 60) {
-                        if (delta < 0) btnNext.click();
-                        else btnPrev.click();
-                        isDown = false;
-                        box.classList.remove('dragging');
-                    }
-                }, {
-                    passive: true
-                });
-            })();
-
-            // ===== Helper format tanggal untuk badge (ID locale) =====
-            function fmt(d) {
-                const z = n => String(n).padStart(2, '0');
-                return `${z(d.getDate())}/${z(d.getMonth() + 1)}/${d.getFullYear()}`;
-            }
-
-            function setRangeHint(el, text, titleText) {
-                if (!el) return;
-                el.textContent = text;
-                el.title = titleText || text;
-            }
-
-            // ===== Bootstrap Dropdown Events untuk Arrow Rotation =====
-            document.querySelectorAll('[data-bs-toggle="dropdown"]').forEach(dropdown => {
-                dropdown.addEventListener('show.bs.dropdown', function () {
-                    this.setAttribute('aria-expanded', 'true');
-                });
-
-                dropdown.addEventListener('hide.bs.dropdown', function () {
-                    this.setAttribute('aria-expanded', 'false');
-                });
-            });
-
-            // ===== Filter dropdown =====
+            // Dropdown handler (monthly & pengeluaran)
             document.querySelectorAll('.filter-option').forEach(el => {
                 el.addEventListener('click', function (e) {
                     e.preventDefault();
-                    const type = this.getAttribute('data-type');
+                    const type  = this.getAttribute('data-type');
                     const value = this.getAttribute('data-value');
-                    const dropdownToggle = this.closest('.dropdown').querySelector('.dropdown-toggle');
-                    dropdownToggle.innerHTML = `<i class="bi bi-funnel"></i> ${this.textContent} <i class="bi bi-chevron-right arrow-icon"></i>`;
-
-                    if (type === 'bagian') filterBagian(value);
-                    else filterPengeluaran(value);
+                    const dd    = this.closest('.dropdown').querySelector('.dropdown-toggle');
+                    dd.innerHTML = `<i class="bi bi-funnel"></i> ${this.textContent.trim()} <i class="bi bi-chevron-right arrow-icon"></i>`;
+                    if (type === 'monthly') return filterMonthly(value);
+                    filterPengeluaran(value);
                 });
             });
 
-            // ====== Filter Per Bagian (update data + badge tanggal) ======
-            function filterBagian(filterType) {
-                fetch(`${FILTER_URL}?type=bagian&filter=${filterType}`)
+            // AJAX filter monthly
+            function filterMonthly(win) {
+                fetch(`${FILTER_URL}?type=monthly&filter=${win}`)
                     .then(r => r.json())
                     .then(d => {
-                        allLabels = d.labels || [];
-                        allData = d.keluar || [];
-                        pageStart = 0;
-                        sliceData();
-
-                        const hint = document.getElementById('rangeHintBagian');
-                        if (d.range && d.range.start && d.range.end) {
-                            const s = new Date(d.range.start),
-                                e = new Date(d.range.end);
-                            const txt = `${fmt(s)} – ${fmt(e)}`;
-                            setRangeHint(hint, txt, txt);
-                        } else {
-                            setRangeHint(hint, 'Semua Data', 'Semua Data');
-                        }
+                        bagianChart.data.labels = d.labels || [];
+                        bagianChart.data.datasets[0].data = d.masuk  || [];
+                        bagianChart.data.datasets[1].data = d.keluar || [];
+                        bagianChart.update();
+                        setRangeHint(document.getElementById('rangeHintBagian'), (d.range && d.range.text) ? d.range.text : 'Jan–Des {{ date('Y') }}');
                     })
                     .catch(console.error);
             }
 
-            /* ====================== Pengeluaran per Tahun ====================== */
+            /* ====================== Pengeluaran per Tahun (tetap) ====================== */
             const pengeluaranData = {
                 labels: {!! json_encode($pengeluaranLabels) !!},
                 datasets: {!! json_encode($pengeluaranData) !!}
@@ -381,28 +248,16 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
+                    plugins: { legend: { display: false } },
                     scales: {
                         y: {
                             beginAtZero: true,
-                            ticks: {
-                                color: '#6B7280'
-                            },
-                            grid: {
-                                color: '#F3F4F6'
-                            }
+                            ticks: { color: '#6B7280' },
+                            grid: { color: '#F3F4F6' }
                         },
                         x: {
-                            ticks: {
-                                color: '#6B7280'
-                            },
-                            grid: {
-                                display: false
-                            }
+                            ticks: { color: '#6B7280' },
+                            grid: { display: false }
                         }
                     }
                 }
@@ -426,7 +281,6 @@
             }
             renderYearLegend({!! json_encode($years) !!}, {!! json_encode($colorsForYears) !!});
 
-            // ====== Filter Pengeluaran (update data + badge tahun) ======
             function filterPengeluaran(filterType) {
                 fetch(`${FILTER_URL}?type=pengeluaran&filter=${filterType}`)
                     .then(r => r.json())
@@ -447,54 +301,40 @@
                         pengeluaranChart.update();
                         renderYearLegend(d.labels, d.colors);
 
-                        // Update range hint untuk pengeluaran
                         const hint = document.getElementById('rangeHintPengeluaran');
                         if (d.labels && d.labels.length > 0) {
                             const startYear = Math.min(...d.labels);
                             const endYear = Math.max(...d.labels);
-                            const txt = `${startYear} – ${endYear}`;
-                            setRangeHint(hint, txt, txt);
+                            setRangeHint(hint, `${startYear} – ${endYear}`);
                         } else {
-                            setRangeHint(hint, 'Semua Tahun', 'Semua Tahun');
+                            setRangeHint(hint, 'Semua Tahun');
                         }
                     })
                     .catch(console.error);
             }
 
-            // Set awal untuk grafik pengeluaran
+            // Badge awal
+            setRangeHint(document.getElementById('rangeHintBagian'), 'Jan–Des {{ date('Y') }}');
             const initialYears = {!! json_encode($years) !!};
             if (initialYears.length > 0) {
                 const startYear = Math.min(...initialYears);
-                const endYear = Math.max(...initialYears);
-                const txt = `${startYear} – ${endYear}`;
-                setRangeHint(document.getElementById('rangeHintPengeluaran'), txt, txt);
+                const endYear   = Math.max(...initialYears);
+                setRangeHint(document.getElementById('rangeHintPengeluaran'), `${startYear} – ${endYear}`);
             }
-
-            // set awal -> badge "Semua Data"
-            setRangeHint(document.getElementById('rangeHintBagian'), 'Semua Data', 'Semua Data');
         });
-        // ===== ANIMASI TRANSISI SETELAH LOGIN =====
+
+        // ===== ANIMASI TRANSISI SETELAH LOGIN (tetap) =====
         document.addEventListener('DOMContentLoaded', function () {
-            // Trigger reflow untuk memastikan animasi berjalan
             const sections = document.querySelectorAll('.summary-section, .chart-section, .wide-chart-section');
+            sections.forEach(section => { void section.offsetWidth; });
 
-            sections.forEach(section => {
-                // Force reflow
-                void section.offsetWidth;
-            });
-
-            // Animasi untuk counting numbers (jika ada)
             const numberElements = document.querySelectorAll('.summary-card__number');
-
             numberElements.forEach(element => {
                 const finalValue = element.textContent;
                 if (!isNaN(finalValue)) {
                     element.textContent = '0';
                     element.classList.add('number-counting');
-
-                    setTimeout(() => {
-                        animateCount(element, 0, parseInt(finalValue), 1000);
-                    }, 800);
+                    setTimeout(() => { animateCount(element, 0, parseInt(finalValue), 1000); }, 800);
                 }
             });
 
@@ -505,10 +345,7 @@
                     const progress = Math.min((timestamp - startTimestamp) / duration, 1);
                     const value = Math.floor(progress * (end - start) + start);
                     element.textContent = value.toLocaleString();
-
-                    if (progress < 1) {
-                        window.requestAnimationFrame(step);
-                    }
+                    if (progress < 1) window.requestAnimationFrame(step);
                 };
                 window.requestAnimationFrame(step);
             }

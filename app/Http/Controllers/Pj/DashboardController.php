@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Pj;
 use App\Helpers\MenuHelper;
 use App\Http\Controllers\Controller;
 use App\Models\TransaksiBarangKeluar;
+use App\Models\TransaksiDistribusi; // dipakai untuk "Masuk" di mode gudang (PB -> PJ)
 use App\Models\Gudang;
 use App\Models\Bagian;
 use App\Models\PjStok;
@@ -32,36 +33,40 @@ class DashboardController extends Controller
             abort(403, 'Anda tidak memiliki akses ke bagian manapun.');
         }
 
-        $mode = $gudang ? 'gudang' : 'bagian';
+        $mode    = $gudang ? 'gudang' : 'bagian';
+        $yearNow = (int) date('Y');
 
         if ($mode === 'gudang') {
             $contextForView = $gudang; // dipakai di blade sebagai $gudang->nama
             $pageTitle      = $this->getDashboardTitle($gudang->nama);
 
-            // ringkasan
+            // Ringkasan
             $totalJenisBarang = $this->hitungJenisBarangByGudang($gudang->id);
             $totalBarang      = PjStok::where('id_gudang', $gudang->id)->sum('stok');
 
-            // grafik per bagian (gudang ini saja)
-            [$bagianLabels, $keluarData] = $this->buildBagianChartForGudang($gudang->id);
+            // ===== Grafik Bulanan (Jan–Des) =====
+            [$monthlyLabels, $monthlyMasuk, $monthlyKeluar] = $this->buildMonthlyForGudang($gudang->id, $yearNow);
+            $monthlyRangeText = 'Jan–Des ' . $yearNow;
 
-            // pengeluaran per tahun (gudang ini)
+            // ===== Pengeluaran per Tahun (default 9 tahun terakhir) =====
             [$years, $pengeluaranLabels, $pengeluaranData, $colorsForYears] =
                 $this->buildPengeluaranPerTahunForGudang($gudang->id);
 
         } else {
-            // MODE BAGIAN (PBP)
-            $contextForView   = (object) ['nama' => 'Bagian ' . $bagian->nama]; // agar blade tetap aman
+            // MODE BAGIAN
+            $contextForView   = (object) ['nama' => 'Bagian ' . $bagian->nama];
             $pageTitle        = 'Dashboard - Bagian ' . $bagian->nama;
 
-            // ringkasan (stok_bagian)
+            // Ringkasan (stok_bagian)
             $totalJenisBarang = $this->hitungJenisBarangByBagian($bagian->id);
             $totalBarang      = StokBagian::where('bagian_id', $bagian->id)->sum('stok');
 
-            // grafik per bagian (semua gudang digabung)
-            [$bagianLabels, $keluarData] = $this->buildBagianChartAllGudang();
+            // ===== Grafik Bulanan (Jan–Des) =====
+            // FIX: untuk BAGIAN, “Keluar” yang diambil dari TBK; “Masuk” = 0.
+            [$monthlyLabels, $monthlyMasuk, $monthlyKeluar] = $this->buildMonthlyForBagian($bagian->id, $yearNow);
+            $monthlyRangeText = 'Jan–Des ' . $yearNow;
 
-            // pengeluaran per tahun untuk bagian user (lintas gudang)
+            // ===== Pengeluaran per Tahun (default 9 tahun terakhir) =====
             [$years, $pengeluaranLabels, $pengeluaranData, $colorsForYears] =
                 $this->buildPengeluaranPerTahunForBagian($bagian->id);
         }
@@ -71,9 +76,15 @@ class DashboardController extends Controller
             'pageTitle'         => $pageTitle,
             'totalJenisBarang'  => $totalJenisBarang,
             'totalBarang'       => $totalBarang,
-            'gudang'            => $contextForView, // blade pakai $gudang->nama
-            'bagianLabels'      => $bagianLabels,
-            'keluarData'        => $keluarData,
+            'gudang'            => $contextForView,
+
+            // === DATA BARU untuk grafik bulanan ===
+            'monthlyLabels'     => $monthlyLabels,
+            'monthlyMasuk'      => $monthlyMasuk,
+            'monthlyKeluar'     => $monthlyKeluar,
+            'monthlyRangeText'  => $monthlyRangeText,
+
+            // === Data grafik tahunan (tetap) ===
             'years'             => $years,
             'pengeluaranLabels' => $pengeluaranLabels,
             'pengeluaranData'   => $pengeluaranData,
@@ -84,8 +95,11 @@ class DashboardController extends Controller
     /* ========================= AJAX FILTER ========================= */
     public function filterData(Request $request)
     {
-        $type   = $request->query('type', 'bagian');    // 'bagian' | 'pengeluaran'
-        $filter = $request->query('filter', 'all');     // 'all' | 'week' | 'month' | 'year' | '5y' | '7y' | '10y'
+        // DEFAULT sekarang: monthly (grafik bulanan); opsi lain 'pengeluaran'
+        $type   = $request->query('type', 'monthly');  // 'monthly' | 'pengeluaran'
+        // monthly: 'all' | '3m' | '5m'
+        // pengeluaran: 'all' | '5y' | '7y' | '10y'
+        $filter = $request->query('filter', 'all');
 
         $user   = auth()->user();
         $gudang = $this->getGudangForUser($user);
@@ -95,49 +109,93 @@ class DashboardController extends Controller
             return response()->json(['error' => 'Bagian tidak ditemukan'], 404);
         }
 
-        // MODE BAGIAN
-        if (!$gudang && $bagian) {
-            if ($type === 'bagian') {
-                return $this->filterBagianDataAllGudang($filter);
-            }
-            return $this->filterPengeluaranDataForBagian($filter, $bagian);
+        // ====== BULANAN ======
+        if ($type === 'monthly') {
+            return $this->filterMonthly($filter, $gudang, $bagian);
         }
 
-        // MODE GUDANG (legacy)
-        if ($type === 'bagian') {
-            return $this->filterBagianDataForGudang($filter, $gudang);
+        // ====== TAHUNAN ======
+        if (!$gudang && $bagian) {
+            return $this->filterPengeluaranDataForBagian($filter, $bagian);
         }
         return $this->filterPengeluaranDataForGudang($filter, $gudang);
     }
 
     /* ========================= BUILDERS ========================= */
 
+    /** Label bulan pendek (Jan–Des) */
+    private function monthLabels(): array
+    {
+        return ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+    }
+
+    /**
+     * Grafik bulanan untuk MODE GUDANG:
+     * - Masuk  = TransaksiDistribusi ke gudang ini (PB -> PJ)
+     * - Keluar = TransaksiBarangKeluar dari gudang ini
+     */
+    private function buildMonthlyForGudang(int $gudangId, int $year): array
+    {
+        $labels = $this->monthLabels();
+        $masuk  = array_fill(0, 12, 0);
+        $keluar = array_fill(0, 12, 0);
+
+        // MASUK (Distribusi ke gudang)
+        $rowsMasuk = TransaksiDistribusi::selectRaw('MONTH(COALESCE(tanggal, created_at)) as m, SUM(jumlah) as total')
+            ->where('id_gudang_tujuan', $gudangId)
+            ->whereYear(DB::raw('COALESCE(tanggal, created_at)'), $year)
+            ->groupBy('m')->pluck('total','m')->toArray();
+        foreach ($rowsMasuk as $m => $t) $masuk[$m-1] = (int) $t;
+
+        // KELUAR (Keluar dari gudang)
+        $rowsKeluar = TransaksiBarangKeluar::selectRaw('MONTH(COALESCE(tanggal, created_at)) as m, SUM(jumlah) as total')
+            ->where('id_gudang', $gudangId)
+            ->whereYear(DB::raw('COALESCE(tanggal, created_at)'), $year)
+            ->groupBy('m')->pluck('total','m')->toArray();
+        foreach ($rowsKeluar as $m => $t) $keluar[$m-1] = (int) $t;
+
+        return [$labels, $masuk, $keluar];
+    }
+
+    /**
+     * Grafik bulanan untuk MODE BAGIAN:
+     * **FIX**: Bagian cuma punya *Keluar* (asal dari TBK, field `bagian_id`).
+     * - Keluar = SUM(TBK.jumlah) per bulan untuk bagian_id ini
+     * - Masuk  = 0 (disediakan supaya dataset & legend kompatibel)
+     */
+    private function buildMonthlyForBagian(int $bagianId, int $year): array
+    {
+        $labels = $this->monthLabels();
+        $masuk  = array_fill(0, 12, 0); // Bagian tidak punya "masuk"
+        $keluar = array_fill(0, 12, 0);
+
+        $rowsKeluar = TransaksiBarangKeluar::selectRaw('MONTH(COALESCE(tanggal, created_at)) as m, SUM(jumlah) as total')
+            ->where('bagian_id', $bagianId)
+            ->whereYear(DB::raw('COALESCE(tanggal, created_at)'), $year)
+            ->groupBy('m')->pluck('total','m')->toArray();
+        foreach ($rowsKeluar as $m => $t) $keluar[$m-1] = (int) $t;
+
+        return [$labels, $masuk, $keluar];
+    }
+
+    // ====== (SISA) BUILDER BAR lama disimpan untuk kompatibilitas ======
     private function buildBagianChartForGudang(int $gudangId): array
     {
-        $allBagian = Bagian::whereNotIn('nama', ['Umum', 'Gudang', 'Operasional'])
-            ->orderBy('id')->get();
-
+        $allBagian = Bagian::whereNotIn('nama', ['Umum', 'Gudang', 'Operasional'])->orderBy('id')->get();
         $labels = $allBagian->pluck('nama')->toArray();
         $data   = [];
-
         foreach ($allBagian as $b) {
-            $total = TransaksiBarangKeluar::where('id_gudang', $gudangId)
-                ->where('bagian_id', $b->id)
-                ->sum('jumlah');
+            $total = TransaksiBarangKeluar::where('id_gudang', $gudangId)->where('bagian_id', $b->id)->sum('jumlah');
             $data[] = (int) $total;
         }
         return [$labels, $data];
     }
 
-    // Untuk mode BAGIAN: agregasi semua gudang
     private function buildBagianChartAllGudang(): array
     {
-        $allBagian = Bagian::whereNotIn('nama', ['Umum', 'Gudang', 'Operasional'])
-            ->orderBy('id')->get();
-
+        $allBagian = Bagian::whereNotIn('nama', ['Umum', 'Gudang', 'Operasional'])->orderBy('id')->get();
         $labels = $allBagian->pluck('nama')->toArray();
         $data   = [];
-
         foreach ($allBagian as $b) {
             $total = TransaksiBarangKeluar::where('bagian_id', $b->id)->sum('jumlah');
             $data[] = (int) $total;
@@ -145,14 +203,11 @@ class DashboardController extends Controller
         return [$labels, $data];
     }
 
+    /** DEFAULT sekarang selalu 9 tahun terakhir (termasuk kalau 0) */
     private function buildPengeluaranPerTahunForGudang(int $gudangId): array
     {
         $currentYear = (int) date('Y');
-
-        $years = TransaksiBarangKeluar::selectRaw('YEAR(tanggal) as y')
-            ->where('id_gudang', $gudangId)
-            ->groupBy('y')->orderBy('y')->pluck('y')->toArray();
-        if (empty($years)) $years = [$currentYear];
+        $years  = range($currentYear - 8, $currentYear); // 9 tahun terakhir
 
         $labels = $years;
         $totals = [];
@@ -174,14 +229,11 @@ class DashboardController extends Controller
         return [$years, $labels, $dataset, $colors];
     }
 
+    /** DEFAULT sekarang selalu 9 tahun terakhir (termasuk kalau 0) */
     private function buildPengeluaranPerTahunForBagian(int $bagianId): array
     {
         $currentYear = (int) date('Y');
-
-        $years = TransaksiBarangKeluar::selectRaw('YEAR(tanggal) as y')
-            ->where('bagian_id', $bagianId)
-            ->groupBy('y')->orderBy('y')->pluck('y')->toArray();
-        if (empty($years)) $years = [$currentYear];
+        $years  = range($currentYear - 8, $currentYear); // 9 tahun terakhir
 
         $labels = $years;
         $totals = [];
@@ -205,53 +257,42 @@ class DashboardController extends Controller
 
     /* ========================= FILTER HELPERS ========================= */
 
-    private function filterBagianDataForGudang(string $filter, Gudang $gudang)
+    /** Filter untuk grafik BULANAN (window: all | 3m | 5m) */
+    private function filterMonthly(string $filter, ?Gudang $gudang, ?Bagian $bagian)
     {
-        [$start, $end] = $this->resolveDateRange($filter);
+        $year = (int) date('Y');
 
-        $allBagian = Bagian::whereNotIn('nama', ['Umum', 'Gudang', 'Operasional'])
-            ->orderBy('id')->get();
+        if ($gudang) {
+            [$labels, $masuk, $keluar] = $this->buildMonthlyForGudang($gudang->id, $year);
+        } else {
+            [$labels, $masuk, $keluar] = $this->buildMonthlyForBagian($bagian->id, $year);
+        }
 
-        $labels = $allBagian->pluck('nama')->toArray();
-        $data   = [];
+        // window 3/5 bulan terakhir: contoh Nov -> Sep–Nov atau Jul–Nov
+        $curr = (int) date('n'); // 1..12
+        if (in_array($filter, ['3m','5m'], true)) {
+            $n     = $filter === '3m' ? 3 : 5;
+            $start = max(1, $curr - $n + 1);
+            $len   = min($n, $curr - $start + 1); // clamp ke awal tahun bila perlu
 
-        foreach ($allBagian as $b) {
-            $q = TransaksiBarangKeluar::where('id_gudang', $gudang->id)
-                ->where('bagian_id', $b->id);
-            if ($start && $end) $q->whereBetween('tanggal', [$start, $end]);
-            $data[] = (int) $q->sum('jumlah');
+            $labels = array_slice($labels, $start - 1, $len);
+            $masuk  = array_slice($masuk,  $start - 1, $len);
+            $keluar = array_slice($keluar, $start - 1, $len);
+
+            $rangeText = $labels[0] . '–' . end($labels) . ' ' . $year;
+        } else {
+            $rangeText = 'Jan–Des ' . $year;
         }
 
         return response()->json([
             'labels' => $labels,
-            'keluar' => $data,
-            'range'  => $start && $end ? ['start' => $start, 'end' => $end] : null,
+            'masuk'  => $masuk,   // NOTE: untuk Bagian ini 0 semua (sesuai definisi di atas)
+            'keluar' => $keluar,  // NOTE: untuk Bagian inilah yang terisi dari TBK
+            'range'  => ['text' => $rangeText],
         ]);
     }
 
-    private function filterBagianDataAllGudang(string $filter)
-    {
-        [$start, $end] = $this->resolveDateRange($filter);
-
-        $allBagian = Bagian::whereNotIn('nama', ['Umum', 'Gudang', 'Operasional'])
-            ->orderBy('id')->get();
-
-        $labels = $allBagian->pluck('nama')->toArray();
-        $data   = [];
-
-        foreach ($allBagian as $b) {
-            $q = TransaksiBarangKeluar::where('bagian_id', $b->id);
-            if ($start && $end) $q->whereBetween('tanggal', [$start, $end]);
-            $data[] = (int) $q->sum('jumlah');
-        }
-
-        return response()->json([
-            'labels' => $labels,
-            'keluar' => $data,
-            'range'  => $start && $end ? ['start' => $start, 'end' => $end] : null,
-        ]);
-    }
-
+    // ====== FILTER TAHUNAN (tetap) ======
     private function filterPengeluaranDataForGudang(string $filter, Gudang $gudang)
     {
         $years  = $this->resolveYearRange($filter);
@@ -360,22 +401,6 @@ class DashboardController extends Controller
         return $palette[$idx];
     }
 
-    // Range waktu untuk filter grafik per bagian
-    private function resolveDateRange(string $filter): array
-    {
-        $today = now()->startOfDay();
-        switch ($filter) {
-            case 'week':
-                return [$today->copy()->subDays(6)->toDateString(), $today->toDateString()];
-            case 'month':
-                return [$today->copy()->subDays(29)->toDateString(), $today->toDateString()];
-            case 'year':
-                return [$today->copy()->startOfYear()->toDateString(), $today->copy()->endOfYear()->toDateString()];
-            default:
-                return [null, null];
-        }
-    }
-
     // Range tahun untuk filter pengeluaran chart
     private function resolveYearRange(string $filter): array
     {
@@ -384,10 +409,7 @@ class DashboardController extends Controller
             case '5y':  return range($currentYear - 4, $currentYear);
             case '7y':  return range($currentYear - 6, $currentYear);
             case '10y': return range($currentYear - 9, $currentYear);
-            default:
-                $years = TransaksiBarangKeluar::selectRaw('YEAR(tanggal) as y')
-                    ->groupBy('y')->orderBy('y')->pluck('y')->toArray();
-                return !empty($years) ? $years : [$currentYear];
+            default:    return range($currentYear - 8, $currentYear); // DEFAULT: 9 tahun terakhir
         }
     }
 }
