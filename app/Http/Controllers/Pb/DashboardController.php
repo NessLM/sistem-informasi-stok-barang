@@ -5,11 +5,9 @@ namespace App\Http\Controllers\Pb;
 use App\Http\Controllers\Controller;
 use App\Helpers\MenuHelper;
 use App\Models\Barang;
-use App\Models\JenisBarang;
-use App\Models\Gudang;
+use App\Models\Bagian;
 use App\Models\Kategori;
 use App\Models\PbStok;
-use App\Models\PjStok;
 use App\Models\TransaksiDistribusi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -21,38 +19,30 @@ class DashboardController extends Controller
     {
         $menu = MenuHelper::pbMenu();
 
-        // Ringkasan (default: semua data) - FIXED: Ambil dari pb_stok
-        $totalJenisBarang = $this->hitungJenisBarangGudangUtama();
-        $totalBarang = PbStok::sum('stok'); // Stok Pengelola Barang
+        // Ringkasan - Total Jenis Barang dan Total Stok dari pb_stok
+        $totalJenisBarang = $this->hitungJenisBarangDariPbStok();
+        $totalBarang = PbStok::sum('stok');
 
         /* =========================================================
-         * GRAFIK BARANG KELUAR PER KATEGORI (DISTRIBUSI KE GUDANG)
+         * GRAFIK BARANG KELUAR PER BAGIAN (DISTRIBUSI KE BAGIAN)
+         * Mengambil semua bagian dari database secara dinamis
          * =========================================================
-         * Menampilkan total distribusi barang ke setiap gudang
          */
-
-        $kategorMap = [
-            'Gudang ATK' => 'G. ATK',
-            'Gudang Kebersihan' => 'G. Kebersihan',
-            'Gudang Listrik' => 'G. Listrik',
-            'Gudang B Komputer' => 'G.B. Komputer'
-        ];
-
         $keluarPerKategoriLabels = [];
         $keluarPerKategoriData = [];
 
-        foreach ($kategorMap as $gudangName => $kategoriLabel) {
-            $gudang = Gudang::where('nama', $gudangName)->first();
+        // Ambil semua bagian dari database
+        $allBagian = Bagian::orderBy('id')->get();
 
-            if ($gudang) {
-                // Total distribusi ke gudang ini
-                $total = TransaksiDistribusi::where('id_gudang_tujuan', $gudang->id)
-                    ->sum('jumlah');
-            } else {
-                $total = 0;
-            }
+        foreach ($allBagian as $bagian) {
+            // Hitung total distribusi ke bagian ini
+            $total = TransaksiDistribusi::where('bagian_id', $bagian->id)
+                ->sum('jumlah');
 
-            $keluarPerKategoriLabels[] = $kategoriLabel;
+            // Singkat nama bagian jika terlalu panjang
+            $labelName = $this->shortenBagianName($bagian->nama);
+
+            $keluarPerKategoriLabels[] = $labelName;
             $keluarPerKategoriData[] = (int) $total;
         }
 
@@ -69,10 +59,9 @@ class DashboardController extends Controller
         $totalsPerYear = [];
 
         foreach ($years as $y) {
-            // Hitung total harga: SUM(transaksi_distribusi.jumlah * barang.harga_barang)
-            $totalHarga = TransaksiDistribusi::join('barang', 'transaksi_distribusi.kode_barang', '=', 'barang.kode_barang')
-                ->whereYear('transaksi_distribusi.tanggal', $y)
-                ->sum(DB::raw('transaksi_distribusi.jumlah * barang.harga_barang'));
+            // Hitung total harga dari transaksi_distribusi
+            $totalHarga = TransaksiDistribusi::whereYear('tanggal', $y)
+                ->sum(DB::raw('jumlah * COALESCE(harga, 0)'));
 
             $totalsPerYear[] = (float) $totalHarga;
             $c = $this->getColorForYear($y);
@@ -103,13 +92,11 @@ class DashboardController extends Controller
     }
 
     /* ==================== AJAX FILTER ==================== */
-
     public function filterData(Request $request)
     {
         $type = $request->query('type', 'kategori');
         $filter = $request->query('filter', 'all');
 
-        // PB ga ada filter ringkasan, cuma kategori & pengeluaran
         if ($type === 'kategori') {
             return $this->filterKategoriData($filter);
         } else {
@@ -118,28 +105,14 @@ class DashboardController extends Controller
     }
 
     /**
-     * Filter data ringkasan berdasarkan gudang
-     * FIXED: Menggunakan pb_stok dan pj_stok
-     */
-
-
-    /**
      * Filter data kategori berdasarkan rentang waktu
-     * FIXED: Menggunakan transaksi_distribusi
+     * Mengambil semua bagian dari database secara dinamis
      */
     private function filterKategoriData($filter)
     {
-        $kategorMap = [
-            'Gudang ATK' => 'G. ATK',
-            'Gudang Kebersihan' => 'G. Kebersihan',
-            'Gudang Listrik' => 'G. Listrik',
-            'Gudang B Komputer' => 'G.B. Komputer'
-        ];
-
         $start = null;
         $end = null;
 
-        // Filter berdasarkan waktu
         if ($filter === 'week') {
             $start = Carbon::now()->subWeek();
         } elseif ($filter === 'month') {
@@ -151,44 +124,38 @@ class DashboardController extends Controller
 
         $labels = [];
         $data = [];
+        $colors = [];
 
-        foreach ($kategorMap as $gudangName => $kategoriLabel) {
-            $gudang = Gudang::where('nama', $gudangName)->first();
+        // Ambil semua bagian dari database
+        $allBagian = Bagian::orderBy('id')->get();
 
-            if ($gudang) {
-                // Query distribusi ke gudang ini
-                $query = TransaksiDistribusi::where('id_gudang_tujuan', $gudang->id);
+        foreach ($allBagian as $bagian) {
+            $query = TransaksiDistribusi::where('bagian_id', $bagian->id);
 
-                // Tambahkan filter tanggal jika ada
-                if ($start) {
-                    $query->where('tanggal', '>=', $start);
-                }
-
-                $total = $query->sum('jumlah');
-            } else {
-                $total = 0;
+            if ($start) {
+                $query->where('tanggal', '>=', $start);
             }
 
-            $labels[] = $kategoriLabel;
+            $total = $query->sum('jumlah');
+
+            // Singkat nama bagian jika terlalu panjang
+            $labelName = $this->shortenBagianName($bagian->nama);
+
+            $labels[] = $labelName;
             $data[] = (int) $total;
+            $colors[] = $this->getColorForIndex(count($labels) - 1);
         }
 
         return response()->json([
             'labels' => $labels,
             'data' => $data,
-            'colors' => [
-                $this->getColorForKategori('ATK'),
-                $this->getColorForKategori('Kebersihan'),
-                $this->getColorForKategori('Listrik'),
-                $this->getColorForKategori('Komputer')
-            ],
+            'colors' => $colors,
             'range' => $start ? ['start' => $start->toDateString(), 'end' => $end->toDateString()] : null,
         ]);
     }
 
     /**
-     * Filter data pengeluaran per tahun (dalam total harga)
-     * FIXED: Menggunakan transaksi_distribusi
+     * Filter data pengeluaran per tahun
      */
     private function filterPengeluaranData($filter)
     {
@@ -207,10 +174,8 @@ class DashboardController extends Controller
         $colors = [];
 
         foreach ($years as $y) {
-            // Hitung total harga: SUM(jumlah * harga_barang)
-            $totalHarga = TransaksiDistribusi::join('barang', 'transaksi_distribusi.kode_barang', '=', 'barang.kode_barang')
-                ->whereYear('transaksi_distribusi.tanggal', $y)
-                ->sum(DB::raw('transaksi_distribusi.jumlah * barang.harga_barang'));
+            $totalHarga = TransaksiDistribusi::whereYear('tanggal', $y)
+                ->sum(DB::raw('jumlah * COALESCE(harga, 0)'));
 
             $totals[] = (float) $totalHarga;
             $colors[$y] = $this->getColorForYear($y);
@@ -223,53 +188,89 @@ class DashboardController extends Controller
         ]);
     }
 
-
     /**
-     * Hitung jenis barang unik dari Gudang Utama (pb_stok)
-     * Logika: ambil dari pb_stok → join ke barang → extract nama unik
+     * Hitung jenis barang unik dari pb_stok
+     * Pensil 1, Pensil 2, Pensil 3 = 1 jenis (Pensil)
+     * Pulpen 1, Pulpen 2 = 1 jenis (Pulpen)
      */
-    private function hitungJenisBarangGudangUtama()
+    private function hitungJenisBarangDariPbStok()
     {
-        // Ambil kode_barang dari pb_stok yang stoknya > 0
+        // Ambil semua kode_barang unik dari pb_stok yang stoknya > 0
         $kodeBarangList = PbStok::where('stok', '>', 0)
+            ->distinct()
             ->pluck('kode_barang');
 
-        // Kalau ga ada barang, return 0
         if ($kodeBarangList->isEmpty()) {
             return 0;
         }
 
-        // Ambil nama barang dari kode_barang
+        // Ambil nama barang dari tabel barang berdasarkan kode_barang
         $namaBarangList = Barang::whereIn('kode_barang', $kodeBarangList)
             ->pluck('nama_barang');
 
         // Extract nama dasar (hilangkan angka di belakang)
+        // "Pulpen 1" → "Pulpen"
+        // "Pensil 2" → "Pensil"
+        // "Buku Catatan 3" → "Buku Catatan"
         $namaUnik = $namaBarangList->map(function ($nama) {
-            // Trim whitespace dulu
             $nama = trim($nama);
 
-            // Hilangkan angka di akhir: "Pulpen 1" → "Pulpen"
+            // Hilangkan angka di akhir nama
+            // Pattern: hapus spasi + angka di akhir string
             $namaBase = preg_replace('/\s+\d+$/', '', $nama);
 
-            // Kalau kosong, return nama asli
+            // Jika hasil kosong, return nama asli
             return empty($namaBase) ? $nama : $namaBase;
-        })->unique()->filter();
+        })
+            ->unique()  // Ambil nilai unik
+            ->filter()  // Hapus nilai kosong
+            ->values(); // Reset index
 
         return $namaUnik->count();
     }
+
     /**
-     * Warna untuk setiap kategori
+     * Singkat nama bagian untuk label grafik
      */
-    private function getColorForKategori($kategori)
+    private function shortenBagianName($nama)
     {
-        $colors = [
-            'ATK' => '#3B82F6',        // Biru
-            'Kebersihan' => '#10B981', // Hijau
-            'Listrik' => '#F59E0B',    // Kuning/Orange
-            'Komputer' => '#8B5CF6'    // Ungu
+        $shortNames = [
+            'Tata Pemerintahan' => 'Tata Pemerintahan',
+            'Kesejahteraan Rakyat & Kemasyarakatan' => 'Kesra',
+            'Hukum & HAM' => 'Hukum & HAM',
+            'ADM Pembangunan' => 'ADM Pembangunan',
+            'Perekonomian' => 'Perekonomian',
+            'ADM Pelayanan Pengadaan Barang & Jasa' => 'ADM Pengadaan',
+            'Protokol' => 'Protokol',
+            'Organisasi' => 'Organisasi',
+            'Umum & Rumah Tangga' => 'Umum & RT',
+            'Perencanaan & Keuangan' => 'Perencanaan'
         ];
 
-        return $colors[$kategori] ?? '#6B7280';
+        return $shortNames[$nama] ?? $nama;
+    }
+
+    /**
+     * Warna berdasarkan index (untuk bagian dinamis)
+     */
+    private function getColorForIndex($index)
+    {
+        $colors = [
+            '#3B82F6', // Biru
+            '#10B981', // Hijau
+            '#F59E0B', // Orange
+            '#8B5CF6', // Ungu
+            '#EF4444', // Merah
+            '#06B6D4', // Cyan
+            '#EC4899', // Pink
+            '#F97316', // Orange terang
+            '#14B8A6', // Teal
+            '#A855F7', // Purple
+            '#FB923C', // Orange muda
+            '#34D399', // Hijau muda
+        ];
+
+        return $colors[$index % count($colors)];
     }
 
     /**

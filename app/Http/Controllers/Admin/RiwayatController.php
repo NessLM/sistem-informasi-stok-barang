@@ -8,7 +8,7 @@ use App\Models\Barang;
 use App\Models\TransaksiDistribusi;
 use App\Models\TransaksiBarangKeluar;
 use App\Models\TransaksiBarangMasuk;
-use App\Models\Gudang;
+use App\Models\Bagian; // PERUBAHAN: Gunakan Bagian bukan Gudang
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -28,17 +28,15 @@ class RiwayatController extends Controller
         return (object) [
             'tanggal' => $item->tanggal ?? optional($item->created_at)->toDateString(),
             'waktu' => optional($item->created_at)->format('H:i:s'),
-            'alur_barang' => 'Masuk PB',
-            'gudang' => 'Gudang Utama',
+            'alur_barang' => 'Masuk',
+            'gudang' => 'Pengurus Barang Pembantu', // PERUBAHAN: Sesuaikan terminologi
             'nama_barang' => optional($item->barang)->nama_barang ?? '-',
             'jumlah' => (int) ($item->jumlah ?? 0),
             'satuan' => optional($item->barang)->satuan ?? '-',
             'bukti' => $item->bukti,
-            // PERBAIKAN: Tambahkan pengecekan apakah file exist
-            'bukti_path' => $item->bukti
+            'bukti_path' => $item->bukti && Storage::exists('public/' . $item->bukti)
                 ? asset('storage/' . str_replace('\\', '/', $item->bukti))
                 : null,
-
             'keterangan' => $item->keterangan ?? 'Barang masuk'
         ];
     }
@@ -48,17 +46,15 @@ class RiwayatController extends Controller
         return (object) [
             'tanggal' => $item->tanggal ?? optional($item->created_at)->toDateString(),
             'waktu' => optional($item->created_at)->format('H:i:s'),
-            'alur_barang' => 'Distribusi PJ',
-            'gudang' => optional($item->gudangTujuan)->nama ?? '-',
+            'alur_barang' => 'Distribusi',
+            'gudang' => optional($item->bagian)->nama ?? '-', // PERUBAHAN: Gunakan bagian
             'nama_barang' => optional($item->barang)->nama_barang ?? '-',
             'jumlah' => (int) ($item->jumlah ?? 0),
             'satuan' => optional($item->barang)->satuan ?? '-',
             'bukti' => $item->bukti,
-            // PERBAIKAN: Tambahkan pengecekan apakah file exist
-            'bukti_path' => $item->bukti
+            'bukti_path' => $item->bukti && Storage::exists('public/' . $item->bukti)
                 ? asset('storage/' . str_replace('\\', '/', $item->bukti))
                 : null,
-
             'keterangan' => $item->keterangan ?? 'Distribusi barang'
         ];
     }
@@ -68,20 +64,17 @@ class RiwayatController extends Controller
         return (object) [
             'tanggal' => $item->tanggal ?? optional($item->created_at)->toDateString(),
             'waktu' => optional($item->created_at)->format('H:i:s'),
-            'alur_barang' => 'Keluar PJ',
-            'gudang' => optional($item->gudang)->nama ?? '-',
+            'alur_barang' => 'Keluar',
+            'gudang' => optional($item->bagian)->nama ?? '-', // PERUBAHAN: Gunakan bagian langsung
             'nama_barang' => optional($item->barang)->nama_barang ?? '-',
             'jumlah' => (int) ($item->jumlah ?? 0),
             'satuan' => optional($item->barang)->satuan ?? '-',
             'bagian' => optional($item->bagian)->nama ?? '-',
             'penerima' => $item->nama_penerima ?? '-',
             'bukti' => $item->bukti,
-            // PERBAIKAN: Tambahkan pengecekan apakah file exist
-            'bukti_path' => $item->bukti
+            'bukti_path' => $item->bukti && Storage::exists('public/' . $item->bukti)
                 ? asset('storage/' . str_replace('\\', '/', $item->bukti))
                 : null,
-
-
             'keterangan' => $item->keterangan ?? 'Barang keluar'
         ];
     }
@@ -94,9 +87,10 @@ class RiwayatController extends Controller
             return $this->downloadReport($request);
         }
 
-        $gudangIdForFilter = null;
+        // PERUBAHAN: Filter berdasarkan bagian_id
+        $bagianIdForFilter = null;
         if ($request->filled('gudang') && $request->gudang !== 'Semua') {
-            $gudangIdForFilter = Gudang::where('nama', $request->gudang)->value('id');
+            $bagianIdForFilter = Bagian::where('nama', $request->gudang)->value('id');
         }
 
         // ===== TABEL 1: Barang Masuk (Admin -> PB) =====
@@ -112,10 +106,10 @@ class RiwayatController extends Controller
             ->toBase();
 
         // ===== TABEL 2: Distribusi (PB -> PJ) =====
-        $distribusiQuery = TransaksiDistribusi::with(['barang.kategori.gudang', 'gudangTujuan', 'user']);
+        $distribusiQuery = TransaksiDistribusi::with(['barang.kategori', 'bagian', 'user']);
 
-        if ($gudangIdForFilter) {
-            $distribusiQuery->where('id_gudang_tujuan', $gudangIdForFilter);
+        if ($bagianIdForFilter) {
+            $distribusiQuery->where('bagian_id', $bagianIdForFilter);
         }
 
         $this->applyPeriodeFilter($distribusiQuery, $request);
@@ -129,10 +123,10 @@ class RiwayatController extends Controller
             ->toBase();
 
         // ===== TABEL 3: Barang Keluar (PJ -> Individu) =====
-        $keluarQuery = TransaksiBarangKeluar::with(['barang.kategori', 'gudang', 'user', 'bagian']);
+        $keluarQuery = TransaksiBarangKeluar::with(['barang.kategori', 'bagian', 'user']);
 
-        if ($gudangIdForFilter) {
-            $keluarQuery->where('id_gudang', $gudangIdForFilter);
+        if ($bagianIdForFilter) {
+            $keluarQuery->where('bagian_id', $bagianIdForFilter);
         }
 
         $this->applyPeriodeFilter($keluarQuery, $request);
@@ -145,8 +139,9 @@ class RiwayatController extends Controller
             ->values()
             ->toBase();
 
-        $gudangList = Gudang::orderBy('nama')->get()
-            ->map(fn($g) => (object) ['gudang' => $g->nama])
+        // PERUBAHAN: Gunakan Bagian untuk dropdown filter
+        $gudangList = Bagian::orderBy('nama')->get()
+            ->map(fn($b) => (object) ['gudang' => $b->nama])
             ->values();
 
         return view('staff.admin.riwayat', compact(
@@ -160,9 +155,10 @@ class RiwayatController extends Controller
 
     public function downloadReport(Request $request)
     {
-        $gudangIdForFilter = null;
+        // PERUBAHAN: Filter berdasarkan bagian_id
+        $bagianIdForFilter = null;
         if ($request->filled('gudang') && $request->gudang !== 'Semua') {
-            $gudangIdForFilter = Gudang::where('nama', $request->gudang)->value('id');
+            $bagianIdForFilter = Bagian::where('nama', $request->gudang)->value('id');
         }
 
         // Barang Masuk
@@ -171,17 +167,17 @@ class RiwayatController extends Controller
         $rowsBarangMasuk = $barangMasukQuery->get()->map(fn($item) => $this->mapBarangMasukToAdminRow($item))->values()->toBase();
 
         // Distribusi
-        $distribusiQuery = TransaksiDistribusi::with(['barang.kategori.gudang', 'gudangTujuan', 'user']);
-        if ($gudangIdForFilter) {
-            $distribusiQuery->where('id_gudang_tujuan', $gudangIdForFilter);
+        $distribusiQuery = TransaksiDistribusi::with(['barang.kategori', 'bagian', 'user']);
+        if ($bagianIdForFilter) {
+            $distribusiQuery->where('bagian_id', $bagianIdForFilter);
         }
         $this->applyPeriodeFilter($distribusiQuery, $request);
         $rowsDistribusi = $distribusiQuery->get()->map(fn($item) => $this->mapDistribusiToAdminRow($item))->values()->toBase();
 
         // Barang Keluar
-        $keluarQuery = TransaksiBarangKeluar::with(['barang.kategori', 'gudang', 'user', 'bagian']);
-        if ($gudangIdForFilter) {
-            $keluarQuery->where('id_gudang', $gudangIdForFilter);
+        $keluarQuery = TransaksiBarangKeluar::with(['barang.kategori', 'bagian', 'user']);
+        if ($bagianIdForFilter) {
+            $keluarQuery->where('bagian_id', $bagianIdForFilter);
         }
         $this->applyPeriodeFilter($keluarQuery, $request);
         $rowsBarangKeluar = $keluarQuery->get()->map(fn($item) => $this->mapBarangKeluarToAdminRow($item))->values()->toBase();
@@ -209,7 +205,7 @@ class RiwayatController extends Controller
 
         if ($request->download === 'pdf') {
             $pdf = Pdf::loadView('staff.admin.riwayat-pdf', compact('riwayat', 'filter'))
-                ->setPaper('a4', 'portrait') // PERBAIKAN: Ubah ke portrait untuk PDF
+                ->setPaper('a4', 'landscape')
                 ->setOption('isHtml5ParserEnabled', true)
                 ->setOption('isRemoteEnabled', true);
 
@@ -243,4 +239,4 @@ class RiwayatController extends Controller
             }
         }
     }
-}
+}   
