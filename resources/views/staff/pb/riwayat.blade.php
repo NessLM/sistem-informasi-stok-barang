@@ -142,7 +142,7 @@
                                 <tr>
                                     <th>No</th>
                                     <th>Tanggal <br> Waktu </th>
-                                    <th>Gudang</th>
+                                    <th>Gudang Utama</th>
                                     <th>Nama Barang</th>
                                     <th>Jumlah</th>
                                     <th>Satuan</th>
@@ -248,7 +248,7 @@
                                 <tr>
                                     <th>No</th>
                                     <th>Tanggal <br> Waktu </th>
-                                    <th>Gudang Tujuan</th>
+                                    <th>Bagian Tujuan</th>
                                     <th>Nama Barang</th>
                                     <th>Jumlah</th>
                                     <th>Satuan</th>
