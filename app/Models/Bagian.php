@@ -51,5 +51,5 @@ class Bagian extends Model
         return $this->hasMany(TransaksiDistribusi::class, 'bagian_id', 'id');
     }
 
-  
+
 }

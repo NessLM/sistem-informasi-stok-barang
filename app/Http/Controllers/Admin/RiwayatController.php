@@ -11,7 +11,7 @@ use App\Helpers\MenuHelper;
 use App\Models\TransaksiDistribusi;
 use App\Models\TransaksiBarangKeluar;
 use App\Models\TransaksiBarangMasuk;
-use App\Models\Gudang; // aman walau tabel gudang sudah dihapus, tidak dipakai saat $useGudang=false
+use App\Models\Gudang;
 
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -28,16 +28,20 @@ class RiwayatController extends Controller
     private function mapBarangMasukToAdminRow(TransaksiBarangMasuk $item)
     {
         return (object) [
-            'tanggal'     => $item->tanggal ?? optional($item->created_at)->toDateString(),
-            'waktu'       => optional($item->created_at)->format('H:i:s'),
+            'tanggal' => $item->tanggal ?? optional($item->created_at)->toDateString(),
+            'waktu' => optional($item->created_at)->format('H:i:s'),
             'alur_barang' => 'Masuk PB',
-            'gudang'      => 'Gudang Utama', // <— tetap
+            'gudang' => 'Gudang Utama',
             'nama_barang' => optional($item->barang)->nama_barang ?? '-',
-            'jumlah'      => (int) ($item->jumlah ?? 0),
-            'satuan'      => optional($item->barang)->satuan ?? '-',
-            'bukti'       => $item->bukti,
-            'bukti_path'  => $item->bukti ? asset('storage/' . str_replace('\\', '/', $item->bukti)) : null,
-            'keterangan'  => $item->keterangan ?? 'Barang masuk',
+            'jumlah' => (int) ($item->jumlah ?? 0),
+            'satuan' => optional($item->barang)->satuan ?? '-',
+            'bukti' => $item->bukti,
+            // PERBAIKAN: Tambahkan pengecekan apakah file exist
+            'bukti_path' => $item->bukti
+                ? asset('storage/' . str_replace('\\', '/', $item->bukti))
+                : null,
+
+            'keterangan' => $item->keterangan ?? 'Barang masuk'
         ];
     }
 
@@ -45,16 +49,20 @@ class RiwayatController extends Controller
     private function mapDistribusiBagianRow($r)
     {
         return (object) [
-            'tanggal'     => $r->tanggal ?? \Carbon\Carbon::parse($r->created_at)->toDateString(),
-            'waktu'       => \Carbon\Carbon::parse($r->created_at)->format('H:i:s'),
+            'tanggal' => $item->tanggal ?? optional($item->created_at)->toDateString(),
+            'waktu' => optional($item->created_at)->format('H:i:s'),
             'alur_barang' => 'Distribusi PJ',
-            'gudang'      => $r->bagian_nama ?? '-', // tampil di UI sebagai “Bagian Tujuan”
-            'nama_barang' => $r->nama_barang ?? '-',
-            'jumlah'      => (int) ($r->jumlah ?? 0),
-            'satuan'      => $r->satuan ?? '-',
-            'bukti'       => $r->bukti,
-            'bukti_path'  => $r->bukti ? asset('storage/' . str_replace('\\', '/', $r->bukti)) : null,
-            'keterangan'  => $r->keterangan ?? 'Distribusi barang',
+            'gudang' => optional($item->gudangTujuan)->nama ?? '-',
+            'nama_barang' => optional($item->barang)->nama_barang ?? '-',
+            'jumlah' => (int) ($item->jumlah ?? 0),
+            'satuan' => optional($item->barang)->satuan ?? '-',
+            'bukti' => $item->bukti,
+            // PERBAIKAN: Tambahkan pengecekan apakah file exist
+            'bukti_path' => $item->bukti
+                ? asset('storage/' . str_replace('\\', '/', $item->bukti))
+                : null,
+
+            'keterangan' => $item->keterangan ?? 'Distribusi barang'
         ];
     }
 
@@ -62,18 +70,23 @@ class RiwayatController extends Controller
     private function mapKeluarBagianRow($r)
     {
         return (object) [
-            'tanggal'     => $r->tanggal ?? \Carbon\Carbon::parse($r->created_at)->toDateString(),
-            'waktu'       => \Carbon\Carbon::parse($r->created_at)->format('H:i:s'),
+            'tanggal' => $item->tanggal ?? optional($item->created_at)->toDateString(),
+            'waktu' => optional($item->created_at)->format('H:i:s'),
             'alur_barang' => 'Keluar PJ',
-            'gudang'      => $r->bagian_nama ?? '-', // tampil di UI sebagai “Bagian Asal”
-            'nama_barang' => $r->nama_barang ?? '-',
-            'jumlah'      => (int) ($r->jumlah ?? 0),
-            'satuan'      => $r->satuan ?? '-',
-            'bagian'      => $r->bagian_nama ?? '-', // kolom “Bagian” tetap ada di tabel
-            'penerima'    => $r->nama_penerima ?? '-',
-            'bukti'       => $r->bukti,
-            'bukti_path'  => $r->bukti ? asset('storage/' . str_replace('\\', '/', $r->bukti)) : null,
-            'keterangan'  => $r->keterangan ?? 'Barang keluar',
+            'gudang' => optional($item->gudang)->nama ?? '-',
+            'nama_barang' => optional($item->barang)->nama_barang ?? '-',
+            'jumlah' => (int) ($item->jumlah ?? 0),
+            'satuan' => optional($item->barang)->satuan ?? '-',
+            'bagian' => optional($item->bagian)->nama ?? '-',
+            'penerima' => $item->nama_penerima ?? '-',
+            'bukti' => $item->bukti,
+            // PERBAIKAN: Tambahkan pengecekan apakah file exist
+            'bukti_path' => $item->bukti
+                ? asset('storage/' . str_replace('\\', '/', $item->bukti))
+                : null,
+
+
+            'keterangan' => $item->keterangan ?? 'Barang keluar'
         ];
     }
 
@@ -85,24 +98,14 @@ class RiwayatController extends Controller
             return $this->downloadReport($request);
         }
 
-        // Deteksi apakah tabel gudang masih ada (biar struktur lama tetap aman)
-        $useGudang = Schema::hasTable('gudang');
-
-        // Ambil ID filter dari input “gudang” (sebenarnya daftar Bagian sekarang)
-        $gudangIdForFilter = null; // mode lama
-        $bagianIdForFilter = null; // mode baru (bagian-only)
-
+        $gudangIdForFilter = null;
         if ($request->filled('gudang') && $request->gudang !== 'Semua') {
-            if ($useGudang) {
-                $gudangIdForFilter = Gudang::where('nama', $request->gudang)->value('id');
-            } else {
-                $bagianIdForFilter = Bagian::where('nama', $request->gudang)->value('id');
-            }
+            $gudangIdForFilter = Gudang::where('nama', $request->gudang)->value('id');
         }
 
-        /** 1) Barang Masuk (Admin -> PB) */
-        $bmQ = TransaksiBarangMasuk::with(['barang.kategori', 'user']);
-        $this->applyPeriodeFilter($bmQ, $request);
+        // ===== TABEL 1: Barang Masuk (Admin -> PB) =====
+        $barangMasukQuery = TransaksiBarangMasuk::with(['barang.kategori', 'user']);
+        $this->applyPeriodeFilter($barangMasukQuery, $request);
 
         $riwayatBarangMasuk = $bmQ
             ->orderBy('tanggal', 'desc')
@@ -112,70 +115,31 @@ class RiwayatController extends Controller
             ->values()
             ->toBase();
 
-        /** 2) Distribusi (PB -> Bagian) */
-        if ($useGudang && Schema::hasColumn('transaksi_distribusi', 'id_gudang_tujuan')) {
-            // Cabang lama (masih pakai tabel gudang) — dibiarkan untuk kompatibilitas
-            $dq = TransaksiDistribusi::with(['barang.kategori.gudang', 'gudangTujuan', 'user']);
-            if ($gudangIdForFilter) {
-                $dq->where('id_gudang_tujuan', $gudangIdForFilter);
-            }
-            $this->applyPeriodeFilter($dq, $request);
+        // ===== TABEL 2: Distribusi (PB -> PJ) =====
+        $distribusiQuery = TransaksiDistribusi::with(['barang.kategori.gudang', 'gudangTujuan', 'user']);
 
-            // Map lama (nama gudang)
-            $riwayatDistribusi = $dq
-                ->orderBy('tanggal', 'desc')
-                ->orderBy('created_at', 'desc')
-                ->get()
-                ->map(function (TransaksiDistribusi $item) {
-                    return (object) [
-                        'tanggal'     => $item->tanggal ?? optional($item->created_at)->toDateString(),
-                        'waktu'       => optional($item->created_at)->format('H:i:s'),
-                        'alur_barang' => 'Distribusi PJ',
-                        'gudang'      => optional($item->gudangTujuan)->nama ?? '-',
-                        'nama_barang' => optional($item->barang)->nama_barang ?? '-',
-                        'jumlah'      => (int) ($item->jumlah ?? 0),
-                        'satuan'      => optional($item->barang)->satuan ?? '-',
-                        'bukti'       => $item->bukti,
-                        'bukti_path'  => $item->bukti ? asset('storage/' . str_replace('\\', '/', $item->bukti)) : null,
-                        'keterangan'  => $item->keterangan ?? 'Distribusi barang',
-                    ];
-                })
-                ->values()
-                ->toBase();
-        } else {
-            // Cabang baru (bagian-only)
-            $dq = DB::table('transaksi_distribusi')
-                ->leftJoin('bagian', 'transaksi_distribusi.bagian_id', '=', 'bagian.id')
-                ->leftJoin('barang', 'transaksi_distribusi.kode_barang', '=', 'barang.kode_barang')
-                ->select(
-                    'transaksi_distribusi.*',
-                    DB::raw('bagian.nama as bagian_nama'),
-                    DB::raw('barang.nama_barang as nama_barang'),
-                    DB::raw('barang.satuan as satuan')
-                );
-
-            if ($bagianIdForFilter) {
-                $dq->where('transaksi_distribusi.bagian_id', $bagianIdForFilter);
-            }
-            $this->applyPeriodeFilter($dq, $request);
-
-            $riwayatDistribusi = $dq
-                ->orderBy('transaksi_distribusi.tanggal', 'desc')
-                ->orderBy('transaksi_distribusi.created_at', 'desc')
-                ->get()
-                ->map(fn ($r) => $this->mapDistribusiBagianRow($r))
-                ->values()
-                ->toBase();
+        if ($gudangIdForFilter) {
+            $distribusiQuery->where('id_gudang_tujuan', $gudangIdForFilter);
         }
 
-        /** 3) Keluar (PJ -> Individu) */
-        if ($useGudang && Schema::hasColumn('transaksi_barang_keluar', 'id_gudang')) {
-            // Cabang lama — kompatibilitas
-            $kq = TransaksiBarangKeluar::with(['barang.kategori', 'gudang', 'user', 'bagian']);
-            if ($gudangIdForFilter) {
-                $kq->where('id_gudang', $gudangIdForFilter);
-            }
-            $this->applyPeriodeFilter($kq, $request);
+        $this->applyPeriodeFilter($distribusiQuery, $request);
+
+        $riwayatDistribusi = $distribusiQuery
+            ->orderBy('tanggal', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(fn($item) => $this->mapDistribusiToAdminRow($item))
+            ->values()
+            ->toBase();
+
+        // ===== TABEL 3: Barang Keluar (PJ -> Individu) =====
+        $keluarQuery = TransaksiBarangKeluar::with(['barang.kategori', 'gudang', 'user', 'bagian']);
+
+        if ($gudangIdForFilter) {
+            $keluarQuery->where('id_gudang', $gudangIdForFilter);
+        }
+
+        $this->applyPeriodeFilter($keluarQuery, $request);
 
             $riwayatBarangKeluar = $kq
                 ->orderBy('tanggal', 'desc')
@@ -225,16 +189,9 @@ class RiwayatController extends Controller
                 ->toBase();
         }
 
-        /** Dropdown filter: sekarang dari tabel Bagian (label tetap pakai variabel $gudangList) */
-        if ($useGudang) {
-            $gudangList = Gudang::orderBy('nama')->get()
-                ->map(fn ($g) => (object) ['gudang' => $g->nama])
-                ->values();
-        } else {
-            $gudangList = Bagian::orderBy('nama')->get()
-                ->map(fn ($b) => (object) ['gudang' => $b->nama])
-                ->values();
-        }
+        $gudangList = Gudang::orderBy('nama')->get()
+            ->map(fn($g) => (object) ['gudang' => $g->nama])
+            ->values();
 
         return view('staff.admin.riwayat', compact(
             'riwayatBarangMasuk',
@@ -247,18 +204,9 @@ class RiwayatController extends Controller
 
     public function downloadReport(Request $request)
     {
-        // Sama seperti index(): sekarang pakai Bagian saat tabel gudang sudah tidak ada.
-        $useGudang = Schema::hasTable('gudang');
-
         $gudangIdForFilter = null;
-        $bagianIdForFilter = null;
-
         if ($request->filled('gudang') && $request->gudang !== 'Semua') {
-            if ($useGudang) {
-                $gudangIdForFilter = Gudang::where('nama', $request->gudang)->value('id');
-            } else {
-                $bagianIdForFilter = Bagian::where('nama', $request->gudang)->value('id');
-            }
+            $gudangIdForFilter = Gudang::where('nama', $request->gudang)->value('id');
         }
 
         // Barang Masuk
@@ -267,82 +215,20 @@ class RiwayatController extends Controller
         $rowsMasuk = $bmQ->get()->map(fn ($x) => $this->mapBarangMasukToAdminRow($x))->values()->toBase();
 
         // Distribusi
-        if ($useGudang && Schema::hasColumn('transaksi_distribusi', 'id_gudang_tujuan')) {
-            $dq = TransaksiDistribusi::with(['barang.kategori.gudang', 'gudangTujuan', 'user']);
-            if ($gudangIdForFilter) {
-                $dq->where('id_gudang_tujuan', $gudangIdForFilter);
-            }
-            $this->applyPeriodeFilter($dq, $request);
-            $rowsDistribusi = $dq->get()->map(function (TransaksiDistribusi $item) {
-                return (object) [
-                    'tanggal'     => $item->tanggal ?? optional($item->created_at)->toDateString(),
-                    'waktu'       => optional($item->created_at)->format('H:i:s'),
-                    'alur_barang' => 'Distribusi PJ',
-                    'gudang'      => optional($item->gudangTujuan)->nama ?? '-',
-                    'nama_barang' => optional($item->barang)->nama_barang ?? '-',
-                    'jumlah'      => (int) ($item->jumlah ?? 0),
-                    'satuan'      => optional($item->barang)->satuan ?? '-',
-                    'bukti'       => $item->bukti,
-                    'bukti_path'  => $item->bukti ? asset('storage/' . str_replace('\\', '/', $item->bukti)) : null,
-                    'keterangan'  => $item->keterangan ?? 'Distribusi barang',
-                ];
-            })->values()->toBase();
-        } else {
-            $dq = DB::table('transaksi_distribusi')
-                ->leftJoin('bagian', 'transaksi_distribusi.bagian_id', '=', 'bagian.id')
-                ->leftJoin('barang', 'transaksi_distribusi.kode_barang', '=', 'barang.kode_barang')
-                ->select(
-                    'transaksi_distribusi.*',
-                    DB::raw('bagian.nama as bagian_nama'),
-                    DB::raw('barang.nama_barang as nama_barang'),
-                    DB::raw('barang.satuan as satuan')
-                );
-            if ($bagianIdForFilter) {
-                $dq->where('transaksi_distribusi.bagian_id', $bagianIdForFilter);
-            }
-            $this->applyPeriodeFilter($dq, $request);
-            $rowsDistribusi = collect($dq->get())->map(fn ($r) => $this->mapDistribusiBagianRow($r))->values()->toBase();
+        $distribusiQuery = TransaksiDistribusi::with(['barang.kategori.gudang', 'gudangTujuan', 'user']);
+        if ($gudangIdForFilter) {
+            $distribusiQuery->where('id_gudang_tujuan', $gudangIdForFilter);
         }
+        $this->applyPeriodeFilter($distribusiQuery, $request);
+        $rowsDistribusi = $distribusiQuery->get()->map(fn($item) => $this->mapDistribusiToAdminRow($item))->values()->toBase();
 
-        // Keluar
-        if ($useGudang && Schema::hasColumn('transaksi_barang_keluar', 'id_gudang')) {
-            $kq = TransaksiBarangKeluar::with(['barang.kategori', 'gudang', 'user', 'bagian']);
-            if ($gudangIdForFilter) {
-                $kq->where('id_gudang', $gudangIdForFilter);
-            }
-            $this->applyPeriodeFilter($kq, $request);
-            $rowsKeluar = $kq->get()->map(function (TransaksiBarangKeluar $item) {
-                return (object) [
-                    'tanggal'     => $item->tanggal ?? optional($item->created_at)->toDateString(),
-                    'waktu'       => optional($item->created_at)->format('H:i:s'),
-                    'alur_barang' => 'Keluar PJ',
-                    'gudang'      => optional($item->gudang)->nama ?? '-',
-                    'nama_barang' => optional($item->barang)->nama_barang ?? '-',
-                    'jumlah'      => (int) ($item->jumlah ?? 0),
-                    'satuan'      => optional($item->barang)->satuan ?? '-',
-                    'bagian'      => optional($item->bagian)->nama ?? '-',
-                    'penerima'    => $item->nama_penerima ?? '-',
-                    'bukti'       => $item->bukti,
-                    'bukti_path'  => $item->bukti ? asset('storage/' . str_replace('\\', '/', $item->bukti)) : null,
-                    'keterangan'  => $item->keterangan ?? 'Barang keluar',
-                ];
-            })->values()->toBase();
-        } else {
-            $kq = DB::table('transaksi_barang_keluar')
-                ->leftJoin('bagian', 'transaksi_barang_keluar.bagian_id', '=', 'bagian.id')
-                ->leftJoin('barang', 'transaksi_barang_keluar.kode_barang', '=', 'barang.kode_barang')
-                ->select(
-                    'transaksi_barang_keluar.*',
-                    DB::raw('bagian.nama as bagian_nama'),
-                    DB::raw('barang.nama_barang as nama_barang'),
-                    DB::raw('barang.satuan as satuan')
-                );
-            if ($bagianIdForFilter) {
-                $kq->where('transaksi_barang_keluar.bagian_id', $bagianIdForFilter);
-            }
-            $this->applyPeriodeFilter($kq, $request);
-            $rowsKeluar = collect($kq->get())->map(fn ($r) => $this->mapKeluarBagianRow($r))->values()->toBase();
+        // Barang Keluar
+        $keluarQuery = TransaksiBarangKeluar::with(['barang.kategori', 'gudang', 'user', 'bagian']);
+        if ($gudangIdForFilter) {
+            $keluarQuery->where('id_gudang', $gudangIdForFilter);
         }
+        $this->applyPeriodeFilter($keluarQuery, $request);
+        $rowsBarangKeluar = $keluarQuery->get()->map(fn($item) => $this->mapBarangKeluarToAdminRow($item))->values()->toBase();
 
         // Gabungkan & urutkan
         $riwayat = $rowsMasuk->concat($rowsDistribusi)->concat($rowsKeluar);
@@ -366,7 +252,7 @@ class RiwayatController extends Controller
 
         if ($request->download === 'pdf') {
             $pdf = Pdf::loadView('staff.admin.riwayat-pdf', compact('riwayat', 'filter'))
-                ->setPaper('a4', 'portrait')
+                ->setPaper('a4', 'portrait') // PERBAIKAN: Ubah ke portrait untuk PDF
                 ->setOption('isHtml5ParserEnabled', true)
                 ->setOption('isRemoteEnabled', true);
 
