@@ -29,11 +29,11 @@
                         <input type="hidden" name="alur_barang" value="{{ request('alur_barang', 'Semua') }}">
                     </div>
 
-                    <!-- Filter Gudang -->
+                    <!-- Filter Bagian -->
                     <div class="riwayat-filter-group riwayat-filter-dropdown">
                         <button class="btn riwayat-btn-filter dropdown-toggle" type="button" id="gudangDropdown"
                             data-bs-toggle="dropdown" aria-expanded="false">
-                            <span>{{ request('gudang', 'Semua') == 'Semua' ? 'Pilih Gudang' : request('gudang') }}</span>
+                            <span>{{ request('gudang', 'Semua') == 'Semua' ? 'Pilih Bagian' : request('gudang') }}</span>
                             <i class="bi bi-chevron-right dropdown-arrow"></i>
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="gudangDropdown">
@@ -176,7 +176,7 @@
                                     <tr>
                                         <th>No</th>
                                         <th>Tanggal <br> Waktu</th>
-                                        <th>Gudang</th>
+                                        <th>Bagian</th>
                                         <th>Nama Barang</th>
                                         <th>Jumlah</th>
                                         <th>Satuan</th>
@@ -283,7 +283,7 @@
                                     <tr>
                                         <th>No</th>
                                         <th>Tanggal <br> Waktu </th>
-                                        <th>Gudang Tujuan</th>
+                                        <th>Bagian Tujuan</th>
                                         <th>Nama Barang</th>
                                         <th>Jumlah</th>
                                         <th>Satuan</th>
@@ -392,7 +392,7 @@
                                     <tr>
                                         <th>No</th>
                                         <th>Tanggal <br> Waktu </th>
-                                        <th>Gudang Asal</th>
+                                        <th>Bagian Asal</th>
                                         <th>Nama Barang</th>
                                         <th>Jumlah</th>
                                         <th>Satuan</th>
