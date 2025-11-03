@@ -35,11 +35,14 @@ class DashboardController extends Controller
          * - Keluar: dari transaksi_barang_keluar (Bagian → Individu)
          */
 
-        $bagianLabels = $bagians->pluck('nama')->values();
+        $bagianLabels = [];
         $masukData = [];
         $keluarData = [];
 
         foreach ($bagians as $bagian) {
+            // Gunakan nama pendek untuk label
+            $bagianLabels[] = $this->shortenBagianName($bagian->nama);
+
             // MASUK: dari transaksi_distribusi ke bagian ini
             $masuk = TransaksiDistribusi::where('bagian_id', $bagian->id)
                 ->sum('jumlah');
@@ -49,7 +52,7 @@ class DashboardController extends Controller
             $keluar = TransaksiBarangKeluar::where('bagian_id', $bagian->id)
                 ->sum('jumlah');
             $keluarData[] = (int) $keluar;
-        }
+        }   
 
         /* =========================================================
          * GRAFIK PENGELUARAN PER TAHUN (DALAM TOTAL HARGA)
@@ -315,4 +318,22 @@ class DashboardController extends Controller
             $idx += count($palette);
         return $palette[$idx];
     }
+    private function shortenBagianName($nama)
+    {
+        $shortNames = [
+            'Tata Pemerintahan' => 'Tata Pemerintahan',
+            'Kesejahteraan Rakyat & Kemasyarakatan' => 'Kesra',
+            'Hukum & HAM' => 'Hukum & HAM',
+            'ADM Pembangunan' => 'ADM Pembangunan',
+            'Perekonomian' => 'Perekonomian',
+            'ADM Pelayanan Pengadaan Barang & Jasa' => 'ADM Pengadaan',
+            'Protokol' => 'Protokol',
+            'Organisasi' => 'Organisasi',
+            'Umum & Rumah Tangga' => 'Umum & RT',
+            'Perencanaan & Keuangan' => 'Perencanaan'
+        ];
+
+        return $shortNames[$nama] ?? $nama;
+    }
+
 }
