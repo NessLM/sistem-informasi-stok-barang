@@ -5,77 +5,35 @@ namespace App\Http\Controllers\Pb;
 use App\Http\Controllers\Controller;
 use App\Models\Kategori;
 use App\Models\Barang;
-use App\Models\Gudang;
+use App\Models\Bagian;
 use App\Models\PbStok;
-use App\Models\PjStok;
 use Illuminate\Http\Request;
 use App\Helpers\MenuHelper;
+use Illuminate\Support\Facades\DB;
 
 class DataKeseluruhan extends Controller
 {
     public function index(Request $request)
     {
         $menu = MenuHelper::pbMenu();
-        $search = $request->input('search');
 
-        // Ambil Gudang Utama
-        $gudangUtama = Gudang::where('nama', 'Gudang Utama')
-            ->orWhere('nama', 'LIKE', '%Utama%')
-            ->first();
+        // Ambil semua kategori
+        $kategori = Kategori::all();
+        
+        // Ambil semua bagian untuk filter
+        $bagian = Bagian::all();
 
-        if (!$gudangUtama) {
-            return back()->with('toast', [
-                'type' => 'error',
-                'title' => 'Error!',
-                'message' => 'Gudang Utama tidak ditemukan. Pastikan ada gudang dengan nama "Gudang Utama" di database.'
-            ]);
+        // Jika ada filter/search, tampilkan hasil pencarian
+        $pbStokData = null;
+        if ($this->hasFilter($request)) {
+            $pbStokData = $this->getFilteredPbStok($request);
         }
-
-        // Filter kategori hanya dari Gudang Utama dengan eager load barang dan stok
-        // PERUBAHAN: Hapus whereHas pbStok agar barang stok 0 juga tampil
-        $kategoriQuery = Kategori::with([
-            'barang' => function ($q) use ($search) {
-                if ($search) {
-                    $q->where('nama_barang', 'like', "%{$search}%")
-                        ->orWhere('kode_barang', 'like', "%{$search}%");
-                }
-                // Eager load pbStok untuk mendapatkan stok PB
-                $q->with(['pbStok']);
-            },
-            'gudang'
-        ])->where('gudang_id', $gudangUtama->id);
-
-        $kategori = $kategoriQuery->get();
-
-        // Ambil semua gudang KECUALI Gudang Utama untuk dropdown distribusi
-        $gudang = Gudang::where('id', '!=', $gudangUtama->id)->get();
-
-        $selectedGudang = $gudangUtama;
-
-        $request->validate([
-            'harga_min' => 'nullable|numeric|min:0',
-            'harga_max' => 'nullable|numeric|min:0',
-        ]);
-
-        if (
-            $request->filled('harga_min') &&
-            $request->filled('harga_max') &&
-            $request->harga_min > $request->harga_max
-        ) {
-            return back()->withErrors([
-                'harga_min' => 'Harga minimum tidak boleh lebih besar dari harga maksimum'
-            ]);
-        }
-
-        // Filter barang hanya dari Gudang Utama menggunakan pb_stok
-        $barang = $this->getFilteredBarang($request, $gudangUtama->id);
 
         return view('staff.pb.datakeseluruhan', compact(
             'kategori',
-            'barang',
-            'menu',
-            'gudang',
-            'selectedGudang'
+            'bagian',
+            'pbStokData',
+            'menu'
         ));
     }
 
@@ -85,57 +43,37 @@ class DataKeseluruhan extends Controller
     public function searchSuggestions(Request $request)
     {
         $query = $request->get('q', '');
-        $gudangId = $request->get('gudang_id');
 
         if (strlen($query) < 2) {
             return response()->json([]);
         }
 
-        // Jika tidak ada gudang_id, ambil Gudang Utama sebagai default
-        if (!$gudangId) {
-            $gudangUtama = Gudang::where('nama', 'Gudang Utama')
-                ->orWhere('nama', 'LIKE', '%Utama%')
-                ->first();
-            $gudangId = $gudangUtama ? $gudangUtama->id : null;
-        }
-
-        // Query barang dengan relasi kategori dan gudang
-        // Untuk PB, ambil dari pb_stok
-        $barangQuery = Barang::with(['kategori.gudang', 'pbStok'])
-            ->where(function ($q) use ($query) {
+        // Query pb_stok dengan relasi barang, kategori, dan bagian
+        $pbStok = PbStok::with(['barang.kategori', 'bagian'])
+            ->whereHas('barang', function ($q) use ($query) {
                 $q->where('nama_barang', 'like', "%{$query}%")
-                    ->orWhere('kode_barang', 'like', "%{$query}%");
-            });
+                  ->orWhere('kode_barang', 'like', "%{$query}%");
+            })
+            ->limit(10)
+            ->get();
 
-        // Filter by gudang jika ada
-        if ($gudangId) {
-            $barangQuery->whereHas('kategori', function ($q) use ($gudangId) {
-                $q->where('gudang_id', $gudangId);
-            });
-        }
-
-        // PERUBAHAN: Hapus whereHas pbStok agar barang stok 0 juga tampil
-        $barang = $barangQuery->limit(10)->get();
-
-        $results = $barang->map(function ($item) {
-            // Ambil stok dari tabel pb_stok
-            $stok = $item->pbStok ? $item->pbStok->stok : 0;
-
+        $results = $pbStok->map(function ($item) {
             // Tentukan status stok
             $stockStatus = 'available';
-            if ($stok == 0) {
+            if ($item->stok == 0) {
                 $stockStatus = 'empty';
-            } elseif ($stok <= 10) {
+            } elseif ($item->stok <= 10) {
                 $stockStatus = 'low';
             }
 
             return [
-                'id' => $item->kode_barang,
-                'nama' => $item->nama_barang,
+                'id' => $item->id,
+                'nama' => $item->barang->nama_barang ?? '-',
                 'kode' => $item->kode_barang,
-                'stok' => $stok,
-                'kategori' => $item->kategori->nama ?? '-',
-                'gudang' => $item->kategori->gudang->nama ?? '-',
+                'stok' => $item->stok,
+                'harga' => 'Rp ' . number_format($item->barang->harga ?? 0, 0, ',', '.'),
+                'kategori' => $item->barang->kategori->nama ?? '-',
+                'bagian' => $item->bagian->nama ?? '-',
                 'stock_status' => $stockStatus
             ];
         })->values();
@@ -144,91 +82,92 @@ class DataKeseluruhan extends Controller
     }
 
     /**
-     * API: Get kategori by gudang ID
+     * Cek apakah ada filter yang aktif
      */
-    public function getKategoriByGudang($gudangId)
+    private function hasFilter(Request $request)
     {
-        try {
-            $kategori = Kategori::where('gudang_id', $gudangId)
-                ->orderBy('nama', 'asc')
-                ->get(['id', 'nama']);
-
-            return response()->json($kategori);
-        } catch (\Exception $e) {
-            \Log::error('Error fetching kategori by gudang: ' . $e->getMessage());
-            return response()->json([
-                'error' => 'Gagal memuat kategori',
-                'message' => $e->getMessage()
-            ], 500);
-        }
+        return $request->filled('search') ||
+               $request->filled('kode') ||
+               $request->filled('stok_min') ||
+               $request->filled('stok_max') ||
+               $request->filled('kategori_id') ||
+               $request->filled('bagian_id') ||
+               $request->filled('harga_min') ||
+               $request->filled('harga_max');
     }
 
     /**
-     * Helper: Mendapatkan stok barang di pb_stok
+     * Filter dan ambil data pb_stok dengan eager loading
      */
-    private function getStokBarangPb($kodeBarang)
+    private function getFilteredPbStok(Request $request)
     {
-        $stok = PbStok::where('kode_barang', $kodeBarang)->first();
-        return $stok ? $stok->stok : 0;
-    }
+        // Validasi input harga
+        $request->validate([
+            'harga_min' => 'nullable|numeric|min:0',
+            'harga_max' => 'nullable|numeric|min:0',
+            'stok_min' => 'nullable|integer|min:0',
+            'stok_max' => 'nullable|integer|min:0',
+        ]);
 
-    /**
-     * Filter dan ambil barang dengan eager loading stok dari pb_stok
-     */
-    private function getFilteredBarang(Request $request, $gudangId = null)
-    {
-        $query = Barang::with(['kategori.gudang', 'pbStok']);
-
-        // Filter berdasarkan gudang
-        if ($gudangId) {
-            $query->whereHas('kategori', function ($q) use ($gudangId) {
-                $q->where('gudang_id', $gudangId);
-            });
-
-            // PERUBAHAN: Hapus whereHas pbStok agar barang stok 0 juga tampil
+        if (
+            $request->filled('harga_min') &&
+            $request->filled('harga_max') &&
+            $request->harga_min > $request->harga_max
+        ) {
+            return collect(); // Return empty collection
         }
 
+        // Query pb_stok dengan relasi
+        $query = PbStok::with(['barang.kategori', 'bagian']);
+
+        // Filter berdasarkan search (nama atau kode barang)
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function ($q) use ($search) {
+            $query->whereHas('barang', function ($q) use ($search) {
                 $q->where('nama_barang', 'like', "%{$search}%")
-                    ->orWhere('kode_barang', 'like', "%{$search}%");
+                  ->orWhere('kode_barang', 'like', "%{$search}%");
             });
         }
 
+        // Filter berdasarkan kode barang
         if ($request->filled('kode')) {
             $query->where('kode_barang', 'like', "%{$request->kode}%");
         }
 
-        // Filter stok berdasarkan pb_stok
-        if ($request->filled('stok_min') || $request->filled('stok_max')) {
-            $query->whereHas('pbStok', function ($q) use ($request) {
-                if ($request->filled('stok_min')) {
-                    $q->where('stok', '>=', (int) $request->stok_min);
-                }
-                if ($request->filled('stok_max')) {
-                    $q->where('stok', '<=', (int) $request->stok_max);
-                }
+        // Filter berdasarkan stok
+        if ($request->filled('stok_min')) {
+            $query->where('stok', '>=', (int) $request->stok_min);
+        }
+        if ($request->filled('stok_max')) {
+            $query->where('stok', '<=', (int) $request->stok_max);
+        }
+
+        // Filter berdasarkan kategori
+        if ($request->filled('kategori_id')) {
+            $query->whereHas('barang', function ($q) use ($request) {
+                $q->where('id_kategori', $request->kategori_id);
             });
         }
 
-        if ($request->filled('kategori_id')) {
-            $query->where('id_kategori', $request->kategori_id);
+        // Filter berdasarkan bagian
+        if ($request->filled('bagian_id')) {
+            $query->where('bagian_id', $request->bagian_id);
         }
 
-        if ($request->filled('satuan')) {
-            $query->where('satuan', $request->satuan);
-        }
-
-        if ($request->filled('harga_min') && $request->filled('harga_max')) {
-            $query->whereBetween('harga_barang', [
-                (float) $request->harga_min,
-                (float) $request->harga_max,
-            ]);
-        } elseif ($request->filled('harga_min')) {
-            $query->where('harga_barang', '>=', (float) $request->harga_min);
-        } elseif ($request->filled('harga_max')) {
-            $query->where('harga_barang', '<=', (float) $request->harga_max);
+        // Filter berdasarkan harga (dari tabel barang)
+        if ($request->filled('harga_min') || $request->filled('harga_max')) {
+            $query->whereHas('barang', function ($q) use ($request) {
+                if ($request->filled('harga_min') && $request->filled('harga_max')) {
+                    $q->whereBetween('harga_barang', [
+                        (float) $request->harga_min,
+                        (float) $request->harga_max
+                    ]);
+                } elseif ($request->filled('harga_min')) {
+                    $q->where('harga_barang', '>=', (float) $request->harga_min);
+                } elseif ($request->filled('harga_max')) {
+                    $q->where('harga_barang', '<=', (float) $request->harga_max);
+                }
+            });
         }
 
         return $query->get();
