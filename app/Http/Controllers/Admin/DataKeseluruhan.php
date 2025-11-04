@@ -18,6 +18,9 @@ class DataKeseluruhan extends Controller
     {
         $menu = MenuHelper::adminMenu();
         $search = $request->input('search');
+        
+        // Tentukan tab aktif
+        $activeTab = $request->input('tab', 'data-keseluruhan');
 
         // Ambil kategori + relasi barang
         $kategoriQuery = Kategori::with([
@@ -34,8 +37,8 @@ class DataKeseluruhan extends Controller
         $bagian = Bagian::all();
         $hasilCari = collect();
 
-        // Jika ada filter/search
-        if ($this->hasAnyFilter($request)) {
+        // Jika ada filter/search (hanya untuk tab data-keseluruhan)
+        if ($activeTab === 'data-keseluruhan' && $this->hasAnyFilter($request)) {
             $query = Barang::with(['kategori', 'pbStok.bagian', 'stokBagian.bagian']);
 
             if ($search) {
@@ -54,7 +57,6 @@ class DataKeseluruhan extends Controller
             if ($request->filled('bagian_id')) {
                 $bagianId = $request->bagian_id;
 
-                // Filter barang yang ada di pb_stok atau stok_bagian untuk bagian ini
                 $query->where(function ($q) use ($bagianId) {
                     $q->whereHas('pbStok', function ($q2) use ($bagianId) {
                         $q2->where('bagian_id', $bagianId);
@@ -70,13 +72,11 @@ class DataKeseluruhan extends Controller
                 $max = (int) ($request->stok_max ?? PHP_INT_MAX);
 
                 if ($request->filled('bagian_id')) {
-                    // Filter stok bagian tertentu
                     $query->whereHas('stokBagian', function ($q) use ($min, $max, $request) {
                         $q->where('bagian_id', $request->bagian_id)
                             ->whereBetween('stok', [$min, $max]);
                     });
                 } else {
-                    // Filter stok pusat (PB)
                     $query->whereHas('pbStok', function ($q) use ($min, $max) {
                         $q->whereBetween('stok', [$min, $max]);
                     });
@@ -86,7 +86,6 @@ class DataKeseluruhan extends Controller
             // Filter harga
             if ($request->filled('harga_min') || $request->filled('harga_max')) {
                 if ($request->filled('bagian_id')) {
-                    // Harga dari stok_bagian
                     $query->whereHas('stokBagian', function ($q) use ($request) {
                         $q->where('bagian_id', $request->bagian_id);
                         if ($request->filled('harga_min')) {
@@ -97,7 +96,6 @@ class DataKeseluruhan extends Controller
                         }
                     });
                 } else {
-                    // Harga dari pb_stok
                     $query->whereHas('pbStok', function ($q) use ($request) {
                         if ($request->filled('harga_min')) {
                             $q->where('harga', '>=', (float) $request->harga_min);
@@ -121,7 +119,6 @@ class DataKeseluruhan extends Controller
                 $rows = collect();
 
                 if ($request->filled('bagian_id')) {
-                    // Tampilkan hanya bagian yang dipilih
                     $bagianId = (int) $request->bagian_id;
 
                     // Cek di pb_stok
@@ -183,7 +180,8 @@ class DataKeseluruhan extends Controller
             'kategori',
             'menu',
             'bagian',
-            'hasilCari'
+            'hasilCari',
+            'activeTab'
         ));
     }
 
@@ -191,7 +189,6 @@ class DataKeseluruhan extends Controller
     {
         $filterFields = [
             'search',
-            'kode',
             'stok_min',
             'stok_max',
             'kategori_id',
@@ -220,7 +217,7 @@ class DataKeseluruhan extends Controller
             'nama' => $request->nama,
         ]);
 
-        return redirect()->route('admin.datakeseluruhan.index')
+        return redirect()->route('admin.datakeseluruhan.index', ['tab' => 'barang-kategori'])
             ->with('toast', [
                 'type' => 'success',
                 'title' => 'Berhasil!',
@@ -237,15 +234,14 @@ class DataKeseluruhan extends Controller
             'id_kategori' => 'required|exists:kategori,id',
         ]);
 
-        // Buat barang baru
-        $barang = Barang::create([
+        Barang::create([
             'kode_barang' => $request->kode_barang,
             'nama_barang' => $request->nama_barang,
             'satuan' => $request->satuan,
             'id_kategori' => $request->id_kategori,
         ]);
 
-        return redirect()->route('admin.datakeseluruhan.index')
+        return redirect()->route('admin.datakeseluruhan.index', ['tab' => 'barang-kategori'])
             ->with('toast', [
                 'type' => 'success',
                 'title' => 'Berhasil!',
@@ -264,19 +260,46 @@ class DataKeseluruhan extends Controller
             'id_kategori' => 'required|exists:kategori,id',
         ]);
 
-        $barang->update([
-            'kode_barang' => $request->kode_barang,
-            'nama_barang' => $request->nama_barang,
-            'satuan' => $request->satuan,
-            'id_kategori' => $request->id_kategori,
-        ]);
+        DB::beginTransaction();
+        try {
+            $oldKode = $barang->kode_barang;
+            $newKode = $request->kode_barang;
 
-        return redirect()->route('admin.datakeseluruhan.index')
-            ->with('toast', [
-                'type' => 'success',
-                'title' => 'Berhasil!',
-                'message' => 'Barang berhasil diperbarui.'
-            ]);
+            // Update data barang (tanpa kode barang dulu)
+            $barang->nama_barang = $request->nama_barang;
+            $barang->satuan = $request->satuan;
+            $barang->id_kategori = $request->id_kategori;
+            
+            // Jika kode barang berubah
+            if ($oldKode !== $newKode) {
+                // Update foreign key di tabel terkait menggunakan raw query
+                DB::statement('UPDATE pb_stok SET kode_barang = ? WHERE kode_barang = ?', [$newKode, $oldKode]);
+                DB::statement('UPDATE stok_bagian SET kode_barang = ? WHERE kode_barang = ?', [$newKode, $oldKode]);
+                
+                // Sekarang update kode_barang di tabel barang
+                $barang->kode_barang = $newKode;
+            }
+            
+            $barang->save();
+
+            DB::commit();
+
+            return redirect()->route('admin.datakeseluruhan.index', ['tab' => 'barang-kategori'])
+                ->with('toast', [
+                    'type' => 'success',
+                    'title' => 'Berhasil!',
+                    'message' => 'Barang berhasil diperbarui.'
+                ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->route('admin.datakeseluruhan.index', ['tab' => 'barang-kategori'])
+                ->with('toast', [
+                    'type' => 'error',
+                    'title' => 'Gagal!',
+                    'message' => 'Gagal memperbarui barang: ' . $e->getMessage()
+                ]);
+        }
     }
 
     public function destroyBarang($kode_barang)
@@ -293,7 +316,7 @@ class DataKeseluruhan extends Controller
 
             DB::commit();
 
-            return redirect()->route('admin.datakeseluruhan.index')
+            return redirect()->route('admin.datakeseluruhan.index', ['tab' => 'barang-kategori'])
                 ->with('toast', [
                     'type' => 'success',
                     'title' => 'Berhasil!',
@@ -302,7 +325,7 @@ class DataKeseluruhan extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->route('admin.datakeseluruhan.index')
+            return redirect()->route('admin.datakeseluruhan.index', ['tab' => 'barang-kategori'])
                 ->with('toast', [
                     'type' => 'error',
                     'title' => 'Gagal!',
@@ -330,18 +353,20 @@ class DataKeseluruhan extends Controller
 
             DB::commit();
 
-            return redirect()->route('admin.datakeseluruhan.index')->with('toast', [
-                'type' => 'success',
-                'title' => 'Berhasil!',
-                'message' => "Kategori '{$namaKategori}' berhasil dihapus.",
-            ]);
+            return redirect()->route('admin.datakeseluruhan.index', ['tab' => 'barang-kategori'])
+                ->with('toast', [
+                    'type' => 'success',
+                    'title' => 'Berhasil!',
+                    'message' => "Kategori '{$namaKategori}' berhasil dihapus.",
+                ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->route('admin.datakeseluruhan.index')->with('toast', [
-                'type' => 'error',
-                'title' => 'Gagal!',
-                'message' => 'Gagal menghapus kategori: ' . $e->getMessage(),
-            ]);
+            return redirect()->route('admin.datakeseluruhan.index', ['tab' => 'barang-kategori'])
+                ->with('toast', [
+                    'type' => 'error',
+                    'title' => 'Gagal!',
+                    'message' => 'Gagal menghapus kategori: ' . $e->getMessage(),
+                ]);
         }
     }
 
