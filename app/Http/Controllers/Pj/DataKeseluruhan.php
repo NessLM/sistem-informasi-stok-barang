@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Pj;
 use App\Http\Controllers\Controller;
 use App\Models\Kategori;
 use App\Models\StokBagian;
-use Illuminate\Support\Facades\Schema; // dipakai di fix #2 di bawah
+use Illuminate\Support\Facades\Schema;
 use App\Models\Gudang;
 use App\Models\PjStok;
 use App\Models\TransaksiBarangKeluar;
@@ -20,9 +20,6 @@ class DataKeseluruhan extends Controller
 {
     /**
      * Halaman Data Keseluruhan (PJ)
-     *
-     * - Menampilkan kategori + barang dengan stok > 0 (seperti sebelumnya).
-     * - Tambahan: Ringkasan ketersediaan & tabel "Barang Habis" (stok = 0).
      */
     public function index(Request $request)
     {
@@ -34,9 +31,13 @@ class DataKeseluruhan extends Controller
 
         /* =================== MODE GUDANG (legacy) =================== */
         if ($gudang) {
+            // Ambil SEMUA kategori yang ada di gudang ini
             $kategori = Kategori::where('gudang_id', $gudang->id)
-                ->with('gudang')->get();
+                ->with('gudang')
+                ->orderBy('nama')
+                ->get();
 
+            // Load barang untuk setiap kategori (stok > 0)
             foreach ($kategori as $k) {
                 $k->barang = DB::table('pj_stok')
                     ->join('barang', 'pj_stok.kode_barang', '=', 'barang.kode_barang')
@@ -62,7 +63,6 @@ class DataKeseluruhan extends Controller
             }
 
             $selectedGudang = $gudang;
-            // ⬇️ kirim VARIABEL bernama $bagian ke view
             $bagian = Bagian::whereNotIn('nama', ['Umum', 'Gudang', 'Operasional'])
                 ->orderBy('nama')->get();
 
@@ -75,6 +75,7 @@ class DataKeseluruhan extends Controller
                 ->where('pj_stok.id_gudang', $gudang->id)
                 ->select('pj_stok.stok', 'barang.kode_barang', 'barang.nama_barang', 'barang.satuan', 'kategori.nama as kategori_nama')
                 ->get();
+            
             $countEmpty = $allRows->where('stok', 0)->count();
             $countLow   = $allRows->filter(fn($r) => $r->stok > 0 && $r->stok < $lowThreshold)->count();
             $countOk    = max($allRows->count() - $countEmpty - $countLow, 0);
@@ -100,20 +101,18 @@ class DataKeseluruhan extends Controller
             ));
         }
 
-        /* =================== MODE BAGIAN (baru) =================== */
+        /* =================== MODE BAGIAN (DIPERBAIKI - TAMPILKAN SEMUA KATEGORI) =================== */
         if ($bagianUser) {
-            $kategori = DB::table('stok_bagian')
-                ->join('barang', 'stok_bagian.kode_barang', '=', 'barang.kode_barang')
-                ->join('kategori', 'barang.id_kategori', '=', 'kategori.id')
-                ->where('stok_bagian.bagian_id', $bagianUser->id)
-                ->select('kategori.id', 'kategori.nama')
-                ->distinct()->orderBy('kategori.nama')->get()
+            // Ambil SEMUA kategori yang ada di sistem (bukan hanya yang memiliki stok)
+            $kategori = Kategori::orderBy('nama')
+                ->get()
                 ->map(function ($k) use ($bagianUser) {
+                    // Load barang yang ada di stok bagian untuk kategori ini
                     $items = DB::table('stok_bagian')
                         ->join('barang', 'stok_bagian.kode_barang', '=', 'barang.kode_barang')
                         ->where('stok_bagian.bagian_id', $bagianUser->id)
                         ->where('barang.id_kategori', $k->id)
-                        ->where('stok_bagian.stok', '>', 0)
+                        ->where('stok_bagian.stok', '>', 0) // Hanya tampilkan yang stok > 0
                         ->select(
                             'barang.kode_barang as kode',
                             'barang.nama_barang as nama',
@@ -129,18 +128,20 @@ class DataKeseluruhan extends Controller
                             'stok_tersedia' => $i->stok_tersedia,
                             'id_kategori' => $k->id,
                         ]);
+                    
                     return (object)[
                         'id' => $k->id,
                         'nama' => $k->nama,
-                        'barang' => $items,
+                        'barang' => $items, // Bisa kosong jika tidak ada stok di bagian ini
                         'gudang' => (object)['nama' => 'Bagian ' . $bagianUser->nama],
                     ];
                 });
 
-            // spoof gudang utk blade & kirim $bagian (koleksi) ke view
+            // Spoof gudang untuk blade & kirim $bagian (koleksi) ke view
             $selectedGudang = (object)['id' => null, 'nama' => 'Bagian ' . $bagianUser->nama];
             $bagian         = collect([$bagianUser]);
 
+            // Handle pencarian/filter
             $barang = collect([]);
             if ($request->hasAny(['search', 'kode', 'stok_min', 'stok_max', 'kategori_id', 'satuan'])) {
                 $q = DB::table('stok_bagian')
@@ -180,6 +181,7 @@ class DataKeseluruhan extends Controller
                     ]);
             }
 
+            // Hitung ringkasan
             $lowThreshold = 10;
             $allRows = DB::table('stok_bagian')
                 ->join('barang', 'stok_bagian.kode_barang', '=', 'barang.kode_barang')
@@ -187,6 +189,7 @@ class DataKeseluruhan extends Controller
                 ->where('stok_bagian.bagian_id', $bagianUser->id)
                 ->select('stok_bagian.stok', 'barang.kode_barang', 'barang.nama_barang', 'barang.satuan', 'kategori.nama as kategori_nama')
                 ->get();
+            
             $countEmpty = $allRows->where('stok', 0)->count();
             $countLow   = $allRows->filter(fn($r) => $r->stok > 0 && $r->stok < $lowThreshold)->count();
             $countOk    = max($allRows->count() - $countEmpty - $countLow, 0);
@@ -215,15 +218,8 @@ class DataKeseluruhan extends Controller
         abort(403, 'Anda tidak memiliki akses ke bagian manapun.');
     }
 
-
-
     /**
      * API: Search suggestions untuk autocomplete
-     * - Hanya mengembalikan stok > 0 (agar tombol "Barang Keluar" valid).
-     */
-    /**
-     * API: Search suggestions untuk autocomplete
-     * - Hanya mengembalikan stok > 0 (agar tombol "Barang Keluar" valid).
      */
     public function searchSuggestions(Request $request)
     {
@@ -234,50 +230,73 @@ class DataKeseluruhan extends Controller
             return response()->json([]);
         }
 
-        if (!$user->gudang_id) {
+        // MODE GUDANG
+        if ($user->gudang_id) {
+            $results = DB::table('pj_stok')
+                ->join('barang', 'pj_stok.kode_barang', '=', 'barang.kode_barang')
+                ->join('kategori', 'pj_stok.id_kategori', '=', 'kategori.id')
+                ->join('gudang', 'pj_stok.id_gudang', '=', 'gudang.id')
+                ->where('pj_stok.id_gudang', $user->gudang_id)
+                ->where('pj_stok.stok', '>', 0)
+                ->where(function ($q) use ($query) {
+                    $q->where('barang.nama_barang', 'like', "%{$query}%")
+                        ->orWhere('barang.kode_barang', 'like', "%{$query}%");
+                })
+                ->select(
+                    'barang.kode_barang',
+                    'barang.nama_barang as nama',
+                    'pj_stok.stok',
+                    'kategori.nama as kategori',
+                    'gudang.nama as gudang'
+                )
+                ->limit(10)
+                ->get();
+        }
+        // MODE BAGIAN
+        elseif ($user->bagian_id) {
+            $results = DB::table('stok_bagian')
+                ->join('barang', 'stok_bagian.kode_barang', '=', 'barang.kode_barang')
+                ->join('kategori', 'barang.id_kategori', '=', 'kategori.id')
+                ->join('bagian', 'stok_bagian.bagian_id', '=', 'bagian.id')
+                ->where('stok_bagian.bagian_id', $user->bagian_id)
+                ->where('stok_bagian.stok', '>', 0)
+                ->where(function ($q) use ($query) {
+                    $q->where('barang.nama_barang', 'like', "%{$query}%")
+                        ->orWhere('barang.kode_barang', 'like', "%{$query}%");
+                })
+                ->select(
+                    'barang.kode_barang',
+                    'barang.nama_barang as nama',
+                    'stok_bagian.stok',
+                    'kategori.nama as kategori',
+                    'bagian.nama as gudang'
+                )
+                ->limit(10)
+                ->get();
+        } else {
             return response()->json([]);
         }
 
-        // Query dengan JOIN pj_stok - PERBAIKAN: langsung join gudang dari pj_stok
-        $results = DB::table('pj_stok')
-            ->join('barang', 'pj_stok.kode_barang', '=', 'barang.kode_barang')
-            ->join('kategori', 'pj_stok.id_kategori', '=', 'kategori.id')
-            ->join('gudang', 'pj_stok.id_gudang', '=', 'gudang.id')
-            ->where('pj_stok.id_gudang', $user->gudang_id)
-            ->where('pj_stok.stok', '>', 0)
-            ->where(function ($q) use ($query) {
-                $q->where('barang.nama_barang', 'like', "%{$query}%")
-                    ->orWhere('barang.kode_barang', 'like', "%{$query}%");
-            })
-            ->select(
-                'barang.kode_barang',
-                'barang.nama_barang as nama',
-                'pj_stok.stok',
-                'kategori.nama as kategori',
-                'gudang.nama as gudang'
-            )
-            ->limit(10)
-            ->get()
-            ->map(function ($item) {
-                $stockStatus = 'available';
-                if ($item->stok == 0) {
-                    $stockStatus = 'empty';
-                } elseif ($item->stok <= 10) {
-                    $stockStatus = 'low';
-                }
+        $mapped = $results->map(function ($item) {
+            $stockStatus = 'available';
+            if ($item->stok == 0) {
+                $stockStatus = 'empty';
+            } elseif ($item->stok <= 10) {
+                $stockStatus = 'low';
+            }
 
-                return [
-                    'kode_barang' => $item->kode_barang,
-                    'nama' => $item->nama,
-                    'kode' => $item->kode_barang,
-                    'stok' => $item->stok,
-                    'kategori' => $item->kategori,
-                    'gudang' => $item->gudang,
-                    'stock_status' => $stockStatus
-                ];
-            });
+            return [
+                'kode_barang' => $item->kode_barang,
+                'nama' => $item->nama,
+                'kode' => $item->kode_barang,
+                'stok' => $item->stok,
+                'kategori' => $item->kategori,
+                'gudang' => $item->gudang,
+                'stock_status' => $stockStatus
+            ];
+        });
 
-        return response()->json($results);
+        return response()->json($mapped);
     }
 
     /**
@@ -287,20 +306,18 @@ class DataKeseluruhan extends Controller
     {
         Log::info('=== BARANG KELUAR REQUEST ===', ['kode_barang' => $kode_barang, 'all' => $request->all()]);
 
-        // Validasi
         $validated = $request->validate([
             'jumlah'        => 'required|integer|min:1',
             'nama_penerima' => 'required|string|max:255',
             'tanggal'       => 'nullable|date',
-            'bagian_id'     => 'nullable|exists:bagian,id', // required kalau user tidak punya bagian default
+            'bagian_id'     => 'nullable|exists:bagian,id',
             'keterangan'    => 'nullable|string',
             'bukti'         => 'nullable|file|mimes:jpeg,jpg,png,pdf|max:2048',
         ]);
 
         $user = Auth::user();
-
-        // Tentukan bagian sumber: dari form (dropdown) atau default dari user
         $bagianId = $validated['bagian_id'] ?? $user->bagian_id;
+        
         if (!$bagianId) {
             return back()->with('toast', [
                 'type' => 'error',
@@ -309,7 +326,6 @@ class DataKeseluruhan extends Controller
             ]);
         }
 
-        // Upload bukti (opsional)
         $buktiPath = null;
         if ($request->hasFile('bukti')) {
             $file     = $request->file('bukti');
@@ -336,9 +352,8 @@ class DataKeseluruhan extends Controller
 
             $sisaStok = null;
 
-            // ===== MODE GUDANG (legacy) → pakai pj_stok kalau memang masih ada tabelnya
+            // MODE GUDANG
             if ($user->gudang_id && Schema::hasTable('pj_stok')) {
-                /** @var \App\Models\PjStok|null $pjStok */
                 $pjStok = PjStok::where('kode_barang', $kode_barang)
                     ->where('id_gudang', $user->gudang_id)
                     ->lockForUpdate()
@@ -362,14 +377,12 @@ class DataKeseluruhan extends Controller
                 $pjStok->decrement('stok', $jumlah);
                 $sisaStok = $pjStok->stok;
 
-                // Set id_gudang hanya kalau kolomnya memang ada
                 if (Schema::hasColumn('transaksi_barang_keluar', 'id_gudang')) {
                     $dataToInsert['id_gudang'] = $user->gudang_id;
                 }
             }
-            // ===== MODE BAGIAN (baru) → pakai stok_bagian
+            // MODE BAGIAN
             else {
-                /** @var \App\Models\StokBagian|null $stokBagian */
                 $stokBagian = StokBagian::where('kode_barang', $kode_barang)
                     ->where('bagian_id', $bagianId)
                     ->lockForUpdate()
@@ -394,8 +407,7 @@ class DataKeseluruhan extends Controller
                 $sisaStok = $stokBagian->stok;
             }
 
-            // Simpan transaksi keluar
-            $trx = TransaksiBarangKeluar::create($dataToInsert);
+            TransaksiBarangKeluar::create($dataToInsert);
 
             DB::commit();
 
@@ -414,7 +426,6 @@ class DataKeseluruhan extends Controller
             ]);
         }
     }
-
 
     /**
      * Filter barang berdasarkan kriteria (stok > 0)
