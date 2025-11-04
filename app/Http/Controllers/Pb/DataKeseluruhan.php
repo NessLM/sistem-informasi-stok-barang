@@ -19,7 +19,7 @@ class DataKeseluruhan extends Controller
 
         // Ambil semua kategori
         $kategori = Kategori::all();
-        
+
         // Ambil semua bagian untuk filter
         $bagian = Bagian::all();
 
@@ -39,6 +39,7 @@ class DataKeseluruhan extends Controller
 
     /**
      * API: Search suggestions untuk autocomplete
+     * IMPROVED: Sekarang bisa search berdasarkan nama bagian juga!
      */
     public function searchSuggestions(Request $request)
     {
@@ -48,16 +49,25 @@ class DataKeseluruhan extends Controller
             return response()->json([]);
         }
 
+        $queryLower = strtolower($query);
+
         // Query pb_stok dengan relasi barang, kategori, dan bagian
         $pbStok = PbStok::with(['barang.kategori', 'bagian'])
-            ->whereHas('barang', function ($q) use ($query) {
-                $q->where('nama_barang', 'like', "%{$query}%")
-                  ->orWhere('kode_barang', 'like', "%{$query}%");
+            ->where(function ($q) use ($query, $queryLower) {
+                // Search di nama barang atau kode barang
+                $q->whereHas('barang', function ($subQ) use ($query) {
+                    $subQ->where('nama_barang', 'like', "%{$query}%")
+                        ->orWhere('kode_barang', 'like', "%{$query}%");
+                })
+                    // ATAU search di nama bagian
+                    ->orWhereHas('bagian', function ($subQ) use ($query) {
+                    $subQ->where('nama', 'like', "%{$query}%");
+                });
             })
-            ->limit(10)
+            ->limit(15) // Naikkan limit karena bisa lebih banyak hasil
             ->get();
 
-        $results = $pbStok->map(function ($item) {
+        $results = $pbStok->map(function ($item) use ($queryLower) {
             // Tentukan status stok
             $stockStatus = 'available';
             if ($item->stok == 0) {
@@ -66,15 +76,24 @@ class DataKeseluruhan extends Controller
                 $stockStatus = 'low';
             }
 
+            // Highlight match type
+            $matchType = 'barang'; // default
+            $namaBagian = $item->bagian->nama ?? '-';
+
+            if (stripos($namaBagian, $queryLower) !== false) {
+                $matchType = 'bagian';
+            }
+
             return [
                 'id' => $item->id,
                 'nama' => $item->barang->nama_barang ?? '-',
                 'kode' => $item->kode_barang,
                 'stok' => $item->stok,
-                'harga' => 'Rp ' . number_format($item->barang->harga ?? 0, 0, ',', '.'),
+                'harga' => 'Rp ' . number_format($item->harga ?? 0, 0, ',', '.'),
                 'kategori' => $item->barang->kategori->nama ?? '-',
-                'bagian' => $item->bagian->nama ?? '-',
-                'stock_status' => $stockStatus
+                'bagian' => $namaBagian,
+                'stock_status' => $stockStatus,
+                'match_type' => $matchType // untuk styling
             ];
         })->values();
 
@@ -87,13 +106,13 @@ class DataKeseluruhan extends Controller
     private function hasFilter(Request $request)
     {
         return $request->filled('search') ||
-               $request->filled('kode') ||
-               $request->filled('stok_min') ||
-               $request->filled('stok_max') ||
-               $request->filled('kategori_id') ||
-               $request->filled('bagian_id') ||
-               $request->filled('harga_min') ||
-               $request->filled('harga_max');
+            $request->filled('kode') ||
+            $request->filled('stok_min') ||
+            $request->filled('stok_max') ||
+            $request->filled('kategori_id') ||
+            $request->filled('bagian_id') ||
+            $request->filled('harga_min') ||
+            $request->filled('harga_max');
     }
 
     /**
@@ -120,12 +139,19 @@ class DataKeseluruhan extends Controller
         // Query pb_stok dengan relasi
         $query = PbStok::with(['barang.kategori', 'bagian']);
 
-        // Filter berdasarkan search (nama atau kode barang)
+        // Filter berdasarkan search (nama, kode barang, atau nama bagian)
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->whereHas('barang', function ($q) use ($search) {
-                $q->where('nama_barang', 'like', "%{$search}%")
-                  ->orWhere('kode_barang', 'like', "%{$search}%");
+            $query->where(function ($q) use ($search) {
+                // Search di barang
+                $q->whereHas('barang', function ($subQ) use ($search) {
+                    $subQ->where('nama_barang', 'like', "%{$search}%")
+                        ->orWhere('kode_barang', 'like', "%{$search}%");
+                })
+                    // ATAU search di bagian
+                    ->orWhereHas('bagian', function ($subQ) use ($search) {
+                        $subQ->where('nama', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -154,20 +180,12 @@ class DataKeseluruhan extends Controller
             $query->where('bagian_id', $request->bagian_id);
         }
 
-        // Filter berdasarkan harga (dari tabel barang)
-        if ($request->filled('harga_min') || $request->filled('harga_max')) {
-            $query->whereHas('barang', function ($q) use ($request) {
-                if ($request->filled('harga_min') && $request->filled('harga_max')) {
-                    $q->whereBetween('harga_barang', [
-                        (float) $request->harga_min,
-                        (float) $request->harga_max
-                    ]);
-                } elseif ($request->filled('harga_min')) {
-                    $q->where('harga_barang', '>=', (float) $request->harga_min);
-                } elseif ($request->filled('harga_max')) {
-                    $q->where('harga_barang', '<=', (float) $request->harga_max);
-                }
-            });
+        // Filter berdasarkan harga
+        if ($request->filled('harga_min')) {
+            $query->where('harga', '>=', (float) $request->harga_min);
+        }
+        if ($request->filled('harga_max')) {
+            $query->where('harga', '<=', (float) $request->harga_max);
         }
 
         return $query->get();
