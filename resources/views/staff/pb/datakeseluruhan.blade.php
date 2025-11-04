@@ -13,6 +13,65 @@
                 background-color: #ffcccc !important;
                 border-left: 4px solid #dc3545 !important;
             }
+
+            /* Autocomplete Styles */
+            .search-suggestion-item {
+                padding: 12px;
+                cursor: pointer;
+                border-bottom: 1px solid #e5e7eb;
+                transition: all 0.2s ease;
+            }
+
+            .search-suggestion-item:hover,
+            .search-suggestion-item.active {
+                background-color: #f3f4f6;
+            }
+
+            .suggestion-name {
+                font-weight: 600;
+                color: #111827;
+                margin-bottom: 4px;
+                display: flex;
+                align-items: center;
+            }
+
+            .suggestion-code {
+                font-size: 13px;
+                color: #6b7280;
+                margin-bottom: 4px;
+            }
+
+            .suggestion-meta {
+                font-size: 12px;
+                color: #9ca3af;
+            }
+
+            .stock-status {
+                padding: 2px 8px;
+                border-radius: 4px;
+                font-weight: 500;
+            }
+
+            .stock-available {
+                background-color: #d1fae5;
+                color: #065f46;
+            }
+
+            .stock-low {
+                background-color: #fef3c7;
+                color: #92400e;
+            }
+
+            .stock-empty {
+                background-color: #fee2e2;
+                color: #991b1b;
+            }
+
+            .loading-suggestion {
+                padding: 12px;
+                text-align: center;
+                color: #6b7280;
+            }
         </style>
 
     @endpush
@@ -20,12 +79,12 @@
         <!-- Toast notification -->
         @if (session('toast'))
             <div id="toast-notif" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-                              z-index: 2000; display: flex; justify-content: center; pointer-events: none;">
+                                  z-index: 2000; display: flex; justify-content: center; pointer-events: none;">
                 <div class="toast-message" style="background: #fff; border-radius: 12px; padding: 14px 22px;
-                                box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;
-                                min-width: 280px; max-width: 360px; transition: opacity .5s ease;">
+                                    box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;
+                                    min-width: 280px; max-width: 360px; transition: opacity .5s ease;">
                     <div style="font-weight: 600; font-size: 16px; margin-bottom: 4px;
-                                  color: {{ session('toast.type') === 'success' ? '#28a745' : '#dc3545' }};">
+                                      color: {{ session('toast.type') === 'success' ? '#28a745' : '#dc3545' }};">
                         {{ session('toast.title') }}
                     </div>
                     <div style="color:#333; font-size: 14px; line-height: 1.4;">
@@ -55,8 +114,8 @@
                 <form action="{{ route('pb.datakeseluruhan.index') }}" method="GET" class="input-group" id="searchForm">
                     <span class="input-group-text"><i class="bi bi-search"></i></span>
                     <input type="text" name="search" id="searchInput" class="form-control"
-                        placeholder="Telusuri barang (nama atau kode)" value="{{ request('search') }}"
-                        autocomplete="off">
+                        placeholder="Cari barang (nama, kode) atau bagian (contoh: tata pemerintahan)"
+                        value="{{ request('search') }}" autocomplete="off">
                     <button class="btn btn-outline-secondary" type="submit">Cari</button>
                 </form>
                 <div id="searchSuggestions" class="dropdown-menu w-100 position-absolute"
@@ -460,15 +519,22 @@
                             '<div class="loading-suggestion">Tidak ada barang ditemukan</div>';
                         return;
                     }
+
                     let html = '';
                     suggestions.forEach((item, index) => {
                         const stockStatusClass = `stock-${item.stock_status}`;
                         const stockText = item.stock_status === 'empty' ? 'Habis' :
                             item.stock_status === 'low' ? 'Sedikit' : 'Tersedia';
+
+                        // Badge untuk menunjukkan match type
+                        const matchBadge = item.match_type === 'bagian'
+                            ? '<span style="background:#10b981;color:white;padding:2px 8px;border-radius:4px;font-size:11px;margin-left:8px;">📍 Bagian</span>'
+                            : '';
+
                         html += `
                                 <div class="search-suggestion-item" data-index="${index}">
-                                    <div class="suggestion-name">${item.nama}</div>
-                                    <div class="suggestion-code">ID: ${item.id} | Kode: ${item.kode} | Bagian: ${item.bagian}</div>
+                                    <div class="suggestion-name">${item.nama} ${matchBadge}</div>
+                                    <div class="suggestion-code">ID: ${item.id} | Kode: ${item.kode} | Bagian: <strong>${item.bagian}</strong></div>
                                     <div class="suggestion-meta">
                                         <small>Kategori: ${item.kategori} | Stok: ${item.stok} | ${item.harga} | 
                                         <span class="stock-status ${stockStatusClass}">${stockText}</span></small>
@@ -478,6 +544,7 @@
                     });
                     suggestionsContainer.innerHTML = html;
                     suggestionsContainer.style.display = 'block';
+
                     suggestionsContainer.querySelectorAll('.search-suggestion-item').forEach(item => {
                         item.addEventListener('click', function () {
                             const index = parseInt(this.dataset.index);
