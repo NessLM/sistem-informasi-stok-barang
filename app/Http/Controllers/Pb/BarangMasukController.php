@@ -14,11 +14,6 @@ class BarangMasukController extends Controller
 {
     /**
      * Proses barang masuk ke PB Stok
-     *
-     * Catatan penting:
-     * - Sekarang controller ini menerima PARAM apa pun:
-     *   bisa kode_barang (contoh "PE0003"), bisa id pb_stok (contoh 223),
-     *   atau id barang (contoh 57). Semuanya dinormalisasi ke kode_barang.
      */
     public function store(Request $request, $kodeBarang)
     {
@@ -26,12 +21,17 @@ class BarangMasukController extends Controller
         Log::info("Param diterima (kodeBarang/id): {$kodeBarang}");
         Log::info("Request Data: " . json_encode($request->all()));
 
-        $request->validate([
+        // Validasi input
+        $validated = $request->validate([
+            'bagian_id'  => 'required|exists:bagian,id',
             'jumlah'     => 'required|integer|min:1',
+            'harga'      => 'required|numeric|min:0',
             'tanggal'    => 'nullable|date',
             'keterangan' => 'nullable|string|max:500',
             'bukti'      => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
+
+        Log::info("Validasi berhasil. Data: " . json_encode($validated));
 
         $buktiPath = null;
 
@@ -43,9 +43,7 @@ class BarangMasukController extends Controller
             $tanggal = $request->tanggal ?: now()->format('Y-m-d');
 
             /**
-             * ===========================================================
              * NORMALISASI PARAM → dapatkan $barang & $kodeCanonical
-             * ===========================================================
              */
             $kodeCanonical = null;
             $barang = Barang::where('kode_barang', $kodeBarang)->lockForUpdate()->first();
@@ -79,21 +77,25 @@ class BarangMasukController extends Controller
             }
 
             Log::info("Barang ditemukan: {$barang->nama_barang} (kode: {$kodeCanonical})");
+            Log::info("Bagian Tujuan ID: {$validated['bagian_id']}");
 
             /**
-             * ===========================================================
-             * Ambil / buat PB Stok utk kode ini
-             * ===========================================================
+             * Ambil / buat PB Stok untuk kode_barang + bagian_id ini
              */
-            $pbStok = PbStok::where('kode_barang', $kodeCanonical)->lockForUpdate()->first();
+            $pbStok = PbStok::where('kode_barang', $kodeCanonical)
+                ->where('bagian_id', $validated['bagian_id'])
+                ->lockForUpdate()
+                ->first();
 
             if (!$pbStok) {
-                Log::info("PB Stok belum ada, membuat baru...");
+                Log::info("PB Stok belum ada untuk bagian ini, membuat baru...");
                 $pbStok = PbStok::create([
                     'kode_barang' => $kodeCanonical,
+                    'bagian_id'   => $validated['bagian_id'],
                     'stok'        => 0,
+                    'harga'       => $validated['harga'],
                 ]);
-                Log::info("PB Stok baru dibuat - ID: {$pbStok->id}, Stok: 0");
+                Log::info("PB Stok baru dibuat - ID: {$pbStok->id}, Bagian ID: {$pbStok->bagian_id}, Stok: 0");
             }
 
             $stokSebelum = $pbStok->stok;
@@ -110,15 +112,16 @@ class BarangMasukController extends Controller
             }
 
             /**
-             * Update stok
+             * Update stok + harga
              */
-            $stokBaru = $stokSebelum + (int)$request->jumlah;
-            Log::info("Stok yang akan diset: {$stokBaru} (tambah {$request->jumlah})");
+            $stokBaru = $stokSebelum + (int)$validated['jumlah'];
+            Log::info("Stok yang akan diset: {$stokBaru} (tambah {$validated['jumlah']})");
 
             $affected = DB::table('pb_stok')
                 ->where('id', $pbStok->id)
                 ->update([
                     'stok'       => $stokBaru,
+                    'harga'      => $validated['harga'],
                     'updated_at' => now(),
                 ]);
 
@@ -129,20 +132,21 @@ class BarangMasukController extends Controller
 
             // Verifikasi
             $ver = DB::table('pb_stok')->where('id', $pbStok->id)->first();
-            Log::info("Verifikasi dari DB - Stok sekarang: {$ver->stok}");
+            Log::info("Verifikasi dari DB - Stok sekarang: {$ver->stok}, Harga: {$ver->harga}");
             if ((int)$ver->stok !== (int)$stokBaru) {
                 throw new \Exception("Verifikasi gagal! Expected: {$stokBaru}, Actual: {$ver->stok}");
             }
 
             /**
              * Catat transaksi masuk
-             * (kolom stok_sebelum/stok_sesudah memang TIDAK ada — jangan dimasukkan)
              */
             $transaksiId = DB::table('transaksi_barang_masuk')->insertGetId([
                 'kode_barang' => $kodeCanonical,
-                'jumlah'      => (int)$request->jumlah,
+                'bagian_id'   => $validated['bagian_id'],
+                'jumlah'      => (int)$validated['jumlah'],
+                'harga'       => $validated['harga'],
                 'tanggal'     => $tanggal,
-                'keterangan'  => $request->keterangan ?? null,
+                'keterangan'  => $validated['keterangan'] ?? null,
                 'bukti'       => $buktiPath,
                 'user_id'     => auth()->id(),
                 'created_at'  => now(),
@@ -154,12 +158,15 @@ class BarangMasukController extends Controller
             DB::commit();
             Log::info("=== TRANSACTION COMMITTED SUCCESSFULLY ===");
 
+            // Ambil data final
             $after = DB::table('pb_stok')->where('id', $pbStok->id)->first();
+            $bagian = DB::table('bagian')->where('id', $validated['bagian_id'])->first();
+            $namaBagian = $bagian ? $bagian->nama : "Bagian ID {$validated['bagian_id']}";
 
             return back()->with('toast', [
                 'type'    => 'success',
                 'title'   => 'Berhasil!',
-                'message' => "Stok {$barang->nama_barang} bertambah {$request->jumlah} {$barang->satuan}. Total stok: {$after->stok}",
+                'message' => "Barang '{$barang->nama_barang}' berhasil masuk ke {$namaBagian}. Jumlah: {$validated['jumlah']} {$barang->satuan}. Stok bagian tersebut sekarang: {$after->stok}",
             ]);
 
         } catch (\Exception $e) {
