@@ -396,7 +396,6 @@
                                         <th>Nama Barang</th>
                                         <th>Jumlah</th>
                                         <th>Satuan</th>
-                                        <th>Bagian</th>
                                         <th>Penerima</th>
                                         <th>Keterangan</th>
                                         <th>Bukti</th>
@@ -416,7 +415,6 @@
                                             <td class="fw-medium">{{ $item->nama_barang }}</td>
                                             <td><span class="fw-medium">{{ $item->jumlah }}</span></td>
                                             <td>{{ $item->satuan }}</td>
-                                            <td>{{ $item->bagian }}</td>
                                             <td>{{ $item->penerima }}</td>
                                             <td>
                                                 @if ($item->keterangan && strlen($item->keterangan) > 55)
@@ -445,7 +443,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="10" class="riwayat-empty-state text-center py-4">
+                                            <td colspan="9" class="riwayat-empty-state text-center py-4">
                                                 <i class="bi bi-inbox"></i>
                                                 <p>Tidak ada data barang keluar ditemukan</p>
                                             </td>
