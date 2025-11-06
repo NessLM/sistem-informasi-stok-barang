@@ -5,194 +5,180 @@ namespace App\Http\Controllers\Pb;
 use App\Http\Controllers\Controller;
 use App\Models\Barang;
 use App\Models\PbStok;
-use App\Models\Kategori;
 use App\Models\Bagian;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class DistribusiController extends Controller
 {
-    /**
-     * Proses distribusi barang dari PB ke Bagian
-     */
-    public function store(Request $request, $kodeBarang)
+    public function store(Request $request, $paramKodeBarang)
     {
         Log::info("=== MULAI PROSES DISTRIBUSI PB KE BAGIAN ===");
-        Log::info("Kode Barang (raw param): {$kodeBarang}");
+        Log::info("Param Kode Barang: {$paramKodeBarang}");
         Log::info("Request Data: " . json_encode($request->all()));
 
-        // Validasi input
+        // STEP 0: Validasi
         $validated = $request->validate([
-            'jumlah' => 'required|integer|min:1',
-            'tanggal' => 'nullable|date',
+            'bagian_id'  => 'required|exists:bagian,id',
+            'jumlah'     => 'required|integer|min:1',
+            'tanggal'    => 'nullable|date',
             'keterangan' => 'nullable|string|max:500',
-            'bukti' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'bukti'      => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'harga'      => 'nullable|numeric|min:0',
         ]);
-
-        Log::info("Validasi berhasil. Data: " . json_encode($validated));
 
         $buktiPath = null;
 
         try {
             DB::beginTransaction();
-            Log::info("Transaction dimulai");
+            Log::info("== TRANSACTION BEGIN ==");
 
-            // ===== STEP 1: Resolve barang dari param (kode / id) =====
-            [$kodeBarang, $barang] = $this->resolveKodeBarangOrFail($kodeBarang);
-            Log::info("Barang ditemukan: {$barang->nama_barang} (kode: {$kodeBarang}, ID Kategori: {$barang->id_kategori})");
+            // STEP 1: Resolve barang
+            [$kodeBarang, $barang] = $this->resolveKodeBarangOrFail($paramKodeBarang);
+            Log::info("Barang: {$barang->nama_barang} (kode: {$kodeBarang})");
 
-            // ===== STEP 2: Ambil kategori asal =====
-            $kategoriUtama = Kategori::find($barang->id_kategori);
+            // STEP 2: Total stok PB (lock)
+            $totalPb = PbStok::where('kode_barang', $kodeBarang)
+                ->lockForUpdate()
+                ->sum('stok');
+            if ($totalPb <= 0) throw new \Exception("Barang belum ada di PB Stok.");
+            if ($totalPb < (int)$validated['jumlah'])
+                throw new \Exception("Stok PB tidak mencukupi. Tersedia: {$totalPb}, Diminta: {$validated['jumlah']}");
 
-            if (!$kategoriUtama) {
-                throw new \Exception("Kategori barang tidak ditemukan");
-            }
+            // STEP 3: Tujuan & harga
+            $bagianTujuan = (int) $validated['bagian_id'];
+            $hargaSatuan = $request->filled('harga')
+                ? (float) $request->harga
+                : (float) (PbStok::where('kode_barang', $kodeBarang)->max('harga') ?? 0);
 
-            Log::info("Kategori: {$kategoriUtama->nama} (ID: {$kategoriUtama->id})");
-
-            // ===== STEP 3: Cek stok PB dengan LOCK =====
-            Log::info("STEP 3: Mencari PB Stok dengan kode_barang = '{$kodeBarang}'");
-
-            $pbStok = PbStok::where('kode_barang', $kodeBarang)->lockForUpdate()->first();
-
-            if (!$pbStok) {
-                throw new \Exception("Barang belum ada di PB Stok. Silakan tambahkan barang masuk terlebih dahulu.");
-            }
-
-            Log::info("STEP 3: PbStok ditemukan - ID: {$pbStok->id}, Stok AWAL: {$pbStok->stok}, Bagian ID: {$pbStok->bagian_id}");
-
-            // Validasi bagian_id ada
-            if (!$pbStok->bagian_id) {
-                throw new \Exception("Record PB Stok ini tidak memiliki bagian tujuan. Silakan update data terlebih dahulu.");
-            }
-
-            // Validasi stok cukup
-            if ($pbStok->stok < $validated['jumlah']) {
-                throw new \Exception(
-                    "Stok PB tidak mencukupi. Tersedia: {$pbStok->stok}, Diminta: {$validated['jumlah']}"
-                );
-            }
-
-            Log::info("STEP 3: Validasi stok OK - Tersedia: {$pbStok->stok}, Diminta: {$validated['jumlah']}");
-
-            $bagianTujuan = $pbStok->bagian_id;
-
-            // ===== STEP 4: Upload bukti jika ada =====
+            // STEP 4: Upload bukti
             if ($request->hasFile('bukti')) {
                 $file = $request->file('bukti');
                 $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
                 $buktiPath = $file->storeAs('bukti-distribusi', $fileName, 'public');
-
-                Log::info("STEP 4: Bukti file diupload: {$buktiPath}");
-                Log::info("STEP 4: Nama file: {$fileName}");
             }
 
-            // ===== STEP 5: Kurangi stok PB =====
-            Log::info("STEP 5: Mulai kurangi stok PB");
+            // STEP 5: Kurangi stok PB agregat
+            $sisa = (int) $validated['jumlah'];
 
-            $stokBaruPb = $pbStok->stok - $validated['jumlah'];
+            // 5a) Prioritaskan baris pb_stok dengan harga yg sama
+            $primary = PbStok::where('kode_barang', $kodeBarang)
+                ->where('harga', $hargaSatuan)
+                ->orderByDesc('stok')
+                ->lockForUpdate()
+                ->get();
 
-            DB::table('pb_stok')
-                ->where('id', $pbStok->id)
-                ->update([
-                    'stok' => $stokBaruPb,
-                    'updated_at' => now()
-                ]);
+            foreach ($primary as $row) {
+                if ($sisa <= 0) break;
+                $ambil = min($row->stok, $sisa);
+                if ($ambil > 0) {
+                    DB::table('pb_stok')->where('id', $row->id)->update([
+                        'stok'       => $row->stok - $ambil,
+                        'updated_at' => now(),
+                    ]);
+                    Log::info("PB cut (match price) id={$row->id} -= {$ambil}");
+                    $sisa -= $ambil;
+                }
+            }
 
-            Log::info("STEP 5: Stok PB diupdate. Stok baru: {$stokBaruPb}");
+            // 5b) Jika masih kurang, ambil dari baris lain
+            if ($sisa > 0) {
+                $fallback = PbStok::where('kode_barang', $kodeBarang)
+                    ->where(function ($q) use ($hargaSatuan) {
+                        $q->whereNull('harga')->orWhere('harga', '<>', $hargaSatuan);
+                    })
+                    ->orderByDesc('stok')
+                    ->lockForUpdate()
+                    ->get();
 
-            // ===== STEP 6: Tambah/Update stok Bagian =====
-            Log::info("STEP 6: Mencari StokBagian - Kode: '{$kodeBarang}', Bagian ID: {$bagianTujuan}");
+                foreach ($fallback as $row) {
+                    if ($sisa <= 0) break;
+                    $ambil = min($row->stok, $sisa);
+                    if ($ambil > 0) {
+                        DB::table('pb_stok')->where('id', $row->id)->update([
+                            'stok'       => $row->stok - $ambil,
+                            'updated_at' => now(),
+                        ]);
+                        Log::info("PB cut (fallback) id={$row->id} -= {$ambil}");
+                        $sisa -= $ambil;
+                    }
+                }
+            }
 
+            if ($sisa > 0) {
+                throw new \Exception("Stok PB tidak mencukupi (sisa kebutuhan: {$sisa}).");
+            }
+
+
+            // STEP 6: Update/insert stok_bagian
             $stokBagian = DB::table('stok_bagian')
                 ->where('kode_barang', $kodeBarang)
                 ->where('bagian_id', $bagianTujuan)
                 ->lockForUpdate()
                 ->first();
 
+            $stokBagianHasHarga = in_array('harga', Schema::getColumnListing('stok_bagian'));
+
             if ($stokBagian) {
-                Log::info("STEP 6: StokBagian DITEMUKAN - ID: {$stokBagian->id}, Stok AWAL: {$stokBagian->stok}");
+                $update = [
+                    'stok'       => $stokBagian->stok + (int)$validated['jumlah'],
+                    'updated_at' => now(),
+                ];
+                if ($stokBagianHasHarga) $update['harga'] = $hargaSatuan;
 
-                $stokBaruBagian = $stokBagian->stok + $validated['jumlah'];
-
-                DB::table('stok_bagian')
-                    ->where('id', $stokBagian->id)
-                    ->update([
-                        'stok' => $stokBaruBagian,
-                        'harga' => $pbStok->harga,
-                        'updated_at' => now()
-                    ]);
-
-                Log::info("STEP 6: StokBagian diupdate. Stok baru: {$stokBaruBagian}");
-
+                DB::table('stok_bagian')->where('id', $stokBagian->id)->update($update);
             } else {
-                Log::info("STEP 6: StokBagian TIDAK DITEMUKAN, membuat baru");
-
-                $stokBagianId = DB::table('stok_bagian')->insertGetId([
+                $insert = [
                     'kode_barang' => $kodeBarang,
-                    'bagian_id' => $bagianTujuan,
-                    'stok' => $validated['jumlah'],
-                    'harga' => $pbStok->harga,
-                    'created_at' => now(),
-                    'updated_at' => now()
-                ]);
+                    'bagian_id'   => $bagianTujuan,
+                    'stok'        => (int)$validated['jumlah'],
+                    'created_at'  => now(),
+                    'updated_at'  => now(),
+                ];
+                if ($stokBagianHasHarga) $insert['harga'] = $hargaSatuan;
 
-                Log::info("STEP 6: StokBagian baru dibuat - ID: {$stokBagianId}, Stok: {$validated['jumlah']}");
+                DB::table('stok_bagian')->insertGetId($insert);
             }
 
-            // ===== STEP 7: Simpan transaksi distribusi =====
+            // STEP 7: Catat ke transaksi_distribusi SAJA
             $tanggal = $validated['tanggal'] ?? now()->toDateString();
-
-            Log::info("STEP 7: Membuat transaksi distribusi");
-
-            $transaksiId = DB::table('transaksi_distribusi')->insertGetId([
+            $tdPayload = [
                 'kode_barang' => $kodeBarang,
-                'bagian_id' => $bagianTujuan,
-                'jumlah' => $validated['jumlah'],
-                'harga' => $pbStok->harga,
-                'tanggal' => $tanggal,
-                'user_id' => auth()->id(),
-                'keterangan' => $validated['keterangan'] ?? null,
-                'bukti' => $buktiPath,
-                'created_at' => now(),
-                'updated_at' => now()
-            ]);
+                'bagian_id'   => $bagianTujuan,
+                'jumlah'      => (int)$validated['jumlah'],
+                'tanggal'     => $tanggal,
+                'user_id'     => auth()->id(),
+                'keterangan'  => $validated['keterangan'] ?? null,
+                'bukti'       => $buktiPath,
+                'created_at'  => now(),
+                'updated_at'  => now(),
+            ];
+            if (in_array('harga', Schema::getColumnListing('transaksi_distribusi'))) {
+                $tdPayload['harga'] = $hargaSatuan;
+            }
+            $transaksiId = DB::table('transaksi_distribusi')->insertGetId($tdPayload);
+            Log::info("Transaksi Distribusi dibuat: id={$transaksiId}");
 
-            Log::info("STEP 7: Transaksi dibuat - ID: {$transaksiId}");
-
-            // Commit transaksi
+            // STEP 8: Commit + toast
             DB::commit();
-            Log::info("=== TRANSACTION COMMITTED SUCCESSFULLY ===");
 
-            // Ambil data final
-            $afterCommitPb = DB::table('pb_stok')->where('id', $pbStok->id)->first();
-            
-            // Ambil nama bagian
-            $bagian = Bagian::find($bagianTujuan);
-            $namaBagian = $bagian ? $bagian->nama : "Bagian ID {$bagianTujuan}";
-
-            // Pesan sukses
-            $message = "Barang '{$barang->nama_barang}' berhasil didistribusikan ke {$namaBagian}. Jumlah: {$validated['jumlah']}. Stok PB tersisa: {$afterCommitPb->stok}";
+            $totalAfter = PbStok::where('kode_barang', $kodeBarang)->sum('stok');
+            $namaBagian = optional(Bagian::find($bagianTujuan))->nama ?? "Bagian ID {$bagianTujuan}";
+            $message = "Barang '{$barang->nama_barang}' berhasil didistribusikan ke {$namaBagian}. Jumlah: {$validated['jumlah']}. Stok PB tersisa: {$totalAfter}";
 
             return back()->with('toast', [
                 'type' => 'success',
                 'title' => 'Berhasil!',
                 'message' => $message
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error("=== TRANSACTION ROLLED BACK ===");
-            Log::error("Error Message: " . $e->getMessage());
-            Log::error("Error Line: " . $e->getLine());
+            if ($buktiPath) Storage::disk('public')->delete($buktiPath);
 
-            // Hapus file jika upload gagal
-            if ($buktiPath) {
-                Storage::disk('public')->delete($buktiPath);
-            }
-
+            Log::error("Distribusi gagal: {$e->getMessage()} @ line " . $e->getLine());
             return back()->with('toast', [
                 'type' => 'error',
                 'title' => 'Gagal!',
@@ -201,32 +187,19 @@ class DistribusiController extends Controller
         }
     }
 
-    /**
-     * Helper: resolve param menjadi kode_barang + row Barang (dengan lock)
-     */
     private function resolveKodeBarangOrFail(string $param): array
     {
         $p = trim($param);
 
-        // 1) coba sebagai kode_barang
         $barang = Barang::where('kode_barang', $p)->lockForUpdate()->first();
-        if ($barang) {
-            return [$barang->kode_barang, $barang];
-        }
+        if ($barang) return [$barang->kode_barang, $barang];
 
-        // 2) kalau angka: coba pb_stok.id -> ambil barang; jika tidak, coba barang.id
         if (ctype_digit($p)) {
-            // pb_stok.id -> barang (butuh relasi 'barang' di model PbStok)
             $pb = PbStok::with('barang')->lockForUpdate()->find((int)$p);
-            if ($pb && $pb->barang) {
-                return [$pb->barang->kode_barang, $pb->barang];
-            }
+            if ($pb && $pb->barang) return [$pb->barang->kode_barang, $pb->barang];
 
-            // barang.id -> barang
             $b = Barang::lockForUpdate()->find((int)$p);
-            if ($b) {
-                return [$b->kode_barang, $b];
-            }
+            if ($b) return [$b->kode_barang, $b];
         }
 
         throw new \Exception("Barang dengan kode {$param} tidak ditemukan");

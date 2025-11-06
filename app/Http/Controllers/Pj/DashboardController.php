@@ -13,6 +13,7 @@ use App\Models\StokBagian;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
+
 class DashboardController extends Controller
 {
     /**
@@ -51,7 +52,6 @@ class DashboardController extends Controller
             // ===== Pengeluaran per Tahun (default 9 tahun terakhir) =====
             [$years, $pengeluaranLabels, $pengeluaranData, $colorsForYears] =
                 $this->buildPengeluaranPerTahunForGudang($gudang->id);
-
         } else {
             // MODE BAGIAN
             $contextForView   = (object) ['nama' => 'Bagian ' . $bagian->nama];
@@ -126,7 +126,7 @@ class DashboardController extends Controller
     /** Label bulan pendek (Jan–Des) */
     private function monthLabels(): array
     {
-        return ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+        return ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
     }
 
     /**
@@ -144,15 +144,15 @@ class DashboardController extends Controller
         $rowsMasuk = TransaksiDistribusi::selectRaw('MONTH(COALESCE(tanggal, created_at)) as m, SUM(jumlah) as total')
             ->where('id_gudang_tujuan', $gudangId)
             ->whereYear(DB::raw('COALESCE(tanggal, created_at)'), $year)
-            ->groupBy('m')->pluck('total','m')->toArray();
-        foreach ($rowsMasuk as $m => $t) $masuk[$m-1] = (int) $t;
+            ->groupBy('m')->pluck('total', 'm')->toArray();
+        foreach ($rowsMasuk as $m => $t) $masuk[$m - 1] = (int) $t;
 
         // KELUAR (Keluar dari gudang)
         $rowsKeluar = TransaksiBarangKeluar::selectRaw('MONTH(COALESCE(tanggal, created_at)) as m, SUM(jumlah) as total')
             ->where('id_gudang', $gudangId)
             ->whereYear(DB::raw('COALESCE(tanggal, created_at)'), $year)
-            ->groupBy('m')->pluck('total','m')->toArray();
-        foreach ($rowsKeluar as $m => $t) $keluar[$m-1] = (int) $t;
+            ->groupBy('m')->pluck('total', 'm')->toArray();
+        foreach ($rowsKeluar as $m => $t) $keluar[$m - 1] = (int) $t;
 
         return [$labels, $masuk, $keluar];
     }
@@ -166,17 +166,39 @@ class DashboardController extends Controller
     private function buildMonthlyForBagian(int $bagianId, int $year): array
     {
         $labels = $this->monthLabels();
-        $masuk  = array_fill(0, 12, 0); // Bagian tidak punya "masuk"
+        $masuk  = array_fill(0, 12, 0);
         $keluar = array_fill(0, 12, 0);
 
-        $rowsKeluar = TransaksiBarangKeluar::selectRaw('MONTH(COALESCE(tanggal, created_at)) as m, SUM(jumlah) as total')
+        // MASUK = Distribusi PB -> Bagian ini (tanpa join gudang)
+        $rowsMasuk = TransaksiDistribusi::query()
+            ->selectRaw('MONTH(COALESCE(tanggal, created_at)) as m, SUM(jumlah) as total')
             ->where('bagian_id', $bagianId)
             ->whereYear(DB::raw('COALESCE(tanggal, created_at)'), $year)
-            ->groupBy('m')->pluck('total','m')->toArray();
-        foreach ($rowsKeluar as $m => $t) $keluar[$m-1] = (int) $t;
+            ->groupBy('m')
+            ->pluck('total', 'm')
+            ->toArray();
+
+        foreach ($rowsMasuk as $m => $t) {
+            $masuk[max(1, min(12, (int)$m)) - 1] = (int) $t;
+        }
+
+        // KELUAR = TBK milik bagian ini (tetap)
+        $rowsKeluar = TransaksiBarangKeluar::query()
+            ->selectRaw('MONTH(COALESCE(tanggal, created_at)) as m, SUM(jumlah) as total')
+            ->where('bagian_id', $bagianId)
+            ->whereYear(DB::raw('COALESCE(tanggal, created_at)'), $year)
+            ->groupBy('m')
+            ->pluck('total', 'm')
+            ->toArray();
+
+        foreach ($rowsKeluar as $m => $t) {
+            $keluar[max(1, min(12, (int)$m)) - 1] = (int) $t;
+        }
 
         return [$labels, $masuk, $keluar];
     }
+
+
 
     // ====== (SISA) BUILDER BAR lama disimpan untuk kompatibilitas ======
     private function buildBagianChartForGudang(int $gudangId): array
@@ -270,7 +292,7 @@ class DashboardController extends Controller
 
         // window 3/5 bulan terakhir: contoh Nov -> Sep–Nov atau Jul–Nov
         $curr = (int) date('n'); // 1..12
-        if (in_array($filter, ['3m','5m'], true)) {
+        if (in_array($filter, ['3m', '5m'], true)) {
             $n     = $filter === '3m' ? 3 : 5;
             $start = max(1, $curr - $n + 1);
             $len   = min($n, $curr - $start + 1); // clamp ke awal tahun bila perlu
@@ -406,10 +428,14 @@ class DashboardController extends Controller
     {
         $currentYear = (int) date('Y');
         switch ($filter) {
-            case '5y':  return range($currentYear - 4, $currentYear);
-            case '7y':  return range($currentYear - 6, $currentYear);
-            case '10y': return range($currentYear - 9, $currentYear);
-            default:    return range($currentYear - 8, $currentYear); // DEFAULT: 9 tahun terakhir
+            case '5y':
+                return range($currentYear - 4, $currentYear);
+            case '7y':
+                return range($currentYear - 6, $currentYear);
+            case '10y':
+                return range($currentYear - 9, $currentYear);
+            default:
+                return range($currentYear - 8, $currentYear); // DEFAULT: 9 tahun terakhir
         }
     }
 }

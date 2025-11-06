@@ -12,6 +12,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\RiwayatExportPb;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class RiwayatController extends Controller
 {
@@ -25,9 +26,9 @@ class RiwayatController extends Controller
             'waktu'         => optional($item->created_at)->format('H:i:s'),
             'alur_barang'   => 'Masuk',
             'gudang'        => 'Gudang Utama', // Barang masuk ke PB (Gudang Utama)
-            'nama_barang'   => optional($item->barang)->nama_barang ?? '-',
+            'nama_barang'   => $item->__barang_nama ?? (optional($item->barang)->nama_barang ?? '-'),
             'jumlah'        => (int) ($item->jumlah ?? 0),
-            'satuan'        => optional($item->barang)->satuan ?? '-',
+            'satuan'        => $item->__barang_satuan ?? (optional($item->barang)->satuan ?? '-'),
             'keterangan'  => $item->keterangan ?? 'Barang masuk',
             'bukti'         => $item->bukti,
             'bukti_path'    => $item->bukti ? asset('storage/' . $item->bukti) : null,
@@ -50,7 +51,7 @@ class RiwayatController extends Controller
             'nama_barang'     => optional($item->barang)->nama_barang ?? '-',
             'jumlah'          => (int) ($item->jumlah ?? 0),
             'satuan'          => optional($item->barang)->satuan ?? '-',
-            'gudang_tujuan'   => optional($item->gudangTujuan)->nama ?? '-',
+            'gudang_tujuan' => $item->__bagian_nama ?? '-',   // <- pasti isi dari join
             'keterangan'      => $item->keterangan ?? 'Barang Keluar',
             'bukti'           => $item->bukti,
             'bukti_path'      => $item->bukti ? asset('storage/' . $item->bukti) : null,
@@ -92,11 +93,15 @@ class RiwayatController extends Controller
         // ---------------------------------------------------------------
         // KELUAR: Transaksi Distribusi (dari PB ke PJ)
         // ---------------------------------------------------------------
-        $distribusiQuery = TransaksiDistribusi::with([
-            'barang.kategori',
-            'gudangTujuan',
-            'user'
-        ]);
+        $distribusiQuery = TransaksiDistribusi::query()
+            ->leftJoin('bagian as bg', 'bg.id', '=', 'transaksi_distribusi.bagian_id')
+            ->leftJoin('barang as b', 'b.kode_barang', '=', 'transaksi_distribusi.kode_barang')
+            ->select([
+                'transaksi_distribusi.*',
+                DB::raw('bg.nama as __bagian_nama'),
+                DB::raw('b.satuan as __barang_satuan'),
+                DB::raw('b.nama_barang as __barang_nama'),
+            ]);
 
         // Filter gudang tujuan
         if ($request->filled('gudang') && $request->gudang !== 'Semua') {
