@@ -18,7 +18,7 @@ class DataKeseluruhan extends Controller
     {
         $menu = MenuHelper::adminMenu();
         $search = $request->input('search');
-        
+
         // Tentukan tab aktif
         $activeTab = $request->input('tab', 'data-keseluruhan');
 
@@ -42,11 +42,38 @@ class DataKeseluruhan extends Controller
             $query = Barang::with(['kategori', 'pbStok.bagian', 'stokBagian.bagian']);
 
             if ($search) {
-                $query->where(function ($q) use ($search) {
+                $kw = mb_strtolower($search);
+
+                $query->where(function ($q) use ($search, $kw) {
+                    // Nama & Kode
                     $q->where('nama_barang', 'like', "%{$search}%")
-                        ->orWhere('kode_barang', 'like', "%{$search}%");
+                        ->orWhere('kode_barang', 'like', "%{$search}%")
+
+                        // + Kategori
+                        ->orWhereHas('kategori', function ($qq) use ($search) {
+                            $qq->where('nama', 'like', "%{$search}%");
+                        })
+
+                        // + Bagian (baik yang di PB maupun di stok_bagian)
+                        ->orWhereHas('pbStok.bagian', function ($qq) use ($search) {
+                            $qq->where('nama', 'like', "%{$search}%");
+                        })
+                        ->orWhereHas('stokBagian.bagian', function ($qq) use ($search) {
+                            $qq->where('nama', 'like', "%{$search}%");
+                        });
+
+                    // + Lokasi sebagai keyword
+                    if (str_contains($kw, 'gudang utama') || str_contains($kw, 'gudang') || str_contains($kw, 'pusat') || $kw === 'pb') {
+                        $q->orWhereHas('pbStok', function () { /* match lokasi Gudang Utama */
+                        });
+                    }
+                    if (str_contains($kw, 'bagian') || $kw === 'pj') {
+                        $q->orWhereHas('stokBagian', function () { /* match lokasi Bagian */
+                        });
+                    }
                 });
             }
+
 
             // Filter kategori
             if ($request->filled('kategori_id')) {
@@ -114,66 +141,98 @@ class DataKeseluruhan extends Controller
 
             $barang = $query->get();
 
+            // ---- bantuan filter berdasar teks pencarian (bagian & lokasi) ----
+            $kw = mb_strtolower($search ?? '');
+
+            // deteksi keyword lokasi
+            $matchGudangUtama = str_contains($kw, 'gudang utama') || str_contains($kw, 'gudang') || str_contains($kw, 'pusat') || $kw === 'pb';
+            $matchLokasiBagian = str_contains($kw, 'bagian') || $kw === 'pj';
+
+            // deteksi nama bagian dari teks (pakai koleksi $bagian yang sudah di-load di atas)
+            $bagianIdsFromSearch = [];
+            if (!empty($search)) {
+                $bagianIdsFromSearch = $bagian
+                    ->filter(fn($bg) => stripos($bg->nama, $search) !== false)
+                    ->pluck('id')
+                    ->toArray();
+            }
+
+
             // Flatten hasil untuk tampilan
-            $hasilCari = $barang->flatMap(function ($b) use ($request) {
+            $hasilCari = $barang->flatMap(function ($b) use ($request, $bagianIdsFromSearch, $matchGudangUtama, $matchLokasiBagian) {
                 $rows = collect();
 
                 if ($request->filled('bagian_id')) {
+                    // MODE: ada filter bagian_id eksplisit (tetap seperti semula)
                     $bagianId = (int) $request->bagian_id;
 
-                    // Cek di pb_stok
                     $pbStok = $b->pbStok->where('bagian_id', $bagianId)->first();
                     if ($pbStok) {
                         $rows->push((object) [
-                            'b' => $b,
-                            'stok' => (int) ($pbStok->stok ?? 0),
-                            'bagian' => $pbStok->bagian->nama ?? '-',
-                            'lokasi' => 'Gudang Utama',
-                            'kategori' => $b->kategori->nama ?? '-',
-                            'harga' => $pbStok->harga ?? 0,
+                            'b'       => $b,
+                            'stok'    => (int) ($pbStok->stok ?? 0),
+                            'bagian'  => $pbStok->bagian->nama ?? '-',
+                            'lokasi'  => 'Gudang Utama',
+                            'kategori'=> $b->kategori->nama ?? '-',
+                            'harga'   => $pbStok->harga ?? 0,
                         ]);
                     }
 
-                    // Cek di stok_bagian
                     $stokBagian = $b->stokBagian->where('bagian_id', $bagianId)->first();
                     if ($stokBagian) {
                         $rows->push((object) [
-                            'b' => $b,
-                            'stok' => (int) ($stokBagian->stok ?? 0),
-                            'bagian' => $stokBagian->bagian->nama ?? '-',
-                            'lokasi' => 'Bagian',
-                            'kategori' => $b->kategori->nama ?? '-',
-                            'harga' => $stokBagian->harga ?? 0,
+                            'b'       => $b,
+                            'stok'    => (int) ($stokBagian->stok ?? 0),
+                            'bagian'  => $stokBagian->bagian->nama ?? '-',
+                            'lokasi'  => 'Bagian',
+                            'kategori'=> $b->kategori->nama ?? '-',
+                            'harga'   => $stokBagian->harga ?? 0,
                         ]);
                     }
                 } else {
-                    // Tampilkan semua dari pb_stok
-                    foreach ($b->pbStok as $pb) {
-                        $rows->push((object) [
-                            'b' => $b,
-                            'stok' => (int) ($pb->stok ?? 0),
-                            'bagian' => $pb->bagian->nama ?? '-',
-                            'lokasi' => 'Gudang Utama',
-                            'kategori' => $b->kategori->nama ?? '-',
-                            'harga' => $pb->harga ?? 0,
-                        ]);
+                    // MODE: tidak ada bagian_id eksplisit
+                    $filterByBagian = !empty($bagianIdsFromSearch);
+                    $lokasiPBOnly = !$filterByBagian && $matchGudangUtama && !$matchLokasiBagian;
+                    $lokasiBagianOnly = !$filterByBagian && $matchLokasiBagian && !$matchGudangUtama;
+
+                    // PB (Gudang Utama)
+                    if (!$lokasiBagianOnly) {
+                        foreach ($b->pbStok as $pb) {
+                            if ($filterByBagian && !in_array($pb->bagian_id, $bagianIdsFromSearch)) {
+                                continue; // kalau user ketik nama bagian, tampilkan hanya bagian tsb
+                            }
+                            $rows->push((object) [
+                                'b'       => $b,
+                                'stok'    => (int) ($pb->stok ?? 0),
+                                'bagian'  => $pb->bagian->nama ?? '-',
+                                'lokasi'  => 'Gudang Utama',
+                                'kategori'=> $b->kategori->nama ?? '-',
+                                'harga'   => $pb->harga ?? 0,
+                            ]);
+                        }
                     }
 
-                    // Tampilkan semua dari stok_bagian
-                    foreach ($b->stokBagian as $sb) {
-                        $rows->push((object) [
-                            'b' => $b,
-                            'stok' => (int) ($sb->stok ?? 0),
-                            'bagian' => $sb->bagian->nama ?? '-',
-                            'lokasi' => 'Bagian',
-                            'kategori' => $b->kategori->nama ?? '-',
-                            'harga' => $sb->harga ?? 0,
-                        ]);
+                    // Stok Bagian
+                    if (!$lokasiPBOnly) {
+                        foreach ($b->stokBagian as $sb) {
+                            if ($filterByBagian && !in_array($sb->bagian_id, $bagianIdsFromSearch)) {
+                                continue;
+                            }
+                            $rows->push((object) [
+                                'b'       => $b,
+                                'stok'    => (int) ($sb->stok ?? 0),
+                                'bagian'  => $sb->bagian->nama ?? '-',
+                                'lokasi'  => 'Bagian',
+                                'kategori'=> $b->kategori->nama ?? '-',
+                                'harga'   => $sb->harga ?? 0,
+                            ]);
+                        }
                     }
                 }
 
                 return $rows;
             });
+
         }
 
         return view('staff.admin.datakeseluruhan', compact(
@@ -269,17 +328,17 @@ class DataKeseluruhan extends Controller
             $barang->nama_barang = $request->nama_barang;
             $barang->satuan = $request->satuan;
             $barang->id_kategori = $request->id_kategori;
-            
+
             // Jika kode barang berubah
             if ($oldKode !== $newKode) {
                 // Update foreign key di tabel terkait menggunakan raw query
                 DB::statement('UPDATE pb_stok SET kode_barang = ? WHERE kode_barang = ?', [$newKode, $oldKode]);
                 DB::statement('UPDATE stok_bagian SET kode_barang = ? WHERE kode_barang = ?', [$newKode, $oldKode]);
-                
+
                 // Sekarang update kode_barang di tabel barang
                 $barang->kode_barang = $newKode;
             }
-            
+
             $barang->save();
 
             DB::commit();
@@ -290,7 +349,6 @@ class DataKeseluruhan extends Controller
                     'title' => 'Berhasil!',
                     'message' => 'Barang berhasil diperbarui.'
                 ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->route('admin.datakeseluruhan.index', ['tab' => 'barang-kategori'])
@@ -322,7 +380,6 @@ class DataKeseluruhan extends Controller
                     'title' => 'Berhasil!',
                     'message' => "Barang {$namaBarang} berhasil dihapus."
                 ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->route('admin.datakeseluruhan.index', ['tab' => 'barang-kategori'])
@@ -401,13 +458,35 @@ class DataKeseluruhan extends Controller
             return response()->json([]);
         }
 
+        $kw = mb_strtolower($search);
+
         $barangList = Barang::with(['kategori', 'pbStok.bagian', 'stokBagian.bagian'])
-            ->where(function ($q) use ($search) {
+            ->where(function ($q) use ($search, $kw) {
                 $q->where('nama_barang', 'like', "%{$search}%")
-                    ->orWhere('kode_barang', 'like', "%{$search}%");
+                    ->orWhere('kode_barang', 'like', "%{$search}%")
+                    // + Kategori
+                    ->orWhereHas('kategori', function ($qq) use ($search) {
+                        $qq->where('nama', 'like', "%{$search}%");
+                    })
+                    // + Bagian
+                    ->orWhereHas('pbStok.bagian', function ($qq) use ($search) {
+                        $qq->where('nama', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('stokBagian.bagian', function ($qq) use ($search) {
+                        $qq->where('nama', 'like', "%{$search}%");
+                    });
+
+                // + Lokasi keyword
+                if (str_contains($kw, 'gudang utama') || str_contains($kw, 'gudang') || str_contains($kw, 'pusat') || $kw === 'pb') {
+                    $q->orWhereHas('pbStok', function () {});
+                }
+                if (str_contains($kw, 'bagian') || $kw === 'pj') {
+                    $q->orWhereHas('stokBagian', function () {});
+                }
             })
-            ->limit(10)
+            ->limit(25)
             ->get();
+
 
         $rows = collect();
 

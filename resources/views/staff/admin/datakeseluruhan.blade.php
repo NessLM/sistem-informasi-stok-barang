@@ -997,6 +997,7 @@
                                             <div class="dropdown-item cursor-pointer" data-index="${index}" style="cursor: pointer;">
                                                 <div class="fw-bold">${item.nama}</div>
                                                 <small class="text-muted">Kode: ${item.kode} | Kategori: ${item.kategori}</small><br>
+                                                <small class="text-muted">Bagian: ${item.bagian} | Lokasi: ${item.lokasi}</small><br>
                                                 <small>Stok: <span class="${stockStatusClass}">${item.stok} - ${stockText}</span></small>
                                             </div>
                                         `;
