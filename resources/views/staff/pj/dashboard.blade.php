@@ -11,7 +11,7 @@
             <div class="summary-section">
                 {{-- Header dengan judul --}}
                 <div class="summary-header">
-                    <h2>Ringkasan - {{ $gudang->nama }}</h2>
+                    <h2>Ringkasan</h2>
                     {{-- Tidak ada filter gudang untuk PJ --}}
                 </div>
 
@@ -97,7 +97,7 @@
             <div class="wide-chart-section">
                 <div class="chart-header chart-header--horizontal">
                     <div class="chart-header-horizontal-item">
-                        <h2>Grafik Pengeluaran per Tahun - {{ $gudang->nama }}</h2>
+                        <h2>Grafik Pengeluaran per Tahun</h2>
                     </div>
 
                     <div class="chart-header-horizontal-item">

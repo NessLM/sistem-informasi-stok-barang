@@ -23,7 +23,7 @@
         <style>
             .row-low-stock {
                 background-color: #ffcccc !important;
-                border-left: 4px solid #dc3545 !important;
+                border-left: 4px solid #fd7e14 !important;
             }
         </style>
 
@@ -72,7 +72,7 @@
                         $title = 'Data Gudang ' . $gudangNama;
                     }
                 @endphp
-                <h4 class="mb-0">{{ $title }}</h4>
+                <h4 class="mb-0" style="font-weight: 600;">Data Gudang</h4>
                 <div class="d-flex flex-wrap gap-2">
                     <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalFilterBarang">
                         <i class="bi bi-funnel"></i> Filter
@@ -262,7 +262,7 @@
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <h5 class="m-0">
                             <i class="bi bi-exclamation-triangle-fill me-1"></i>
-                            Barang Habis - {{ $selectedGudang->nama ?? 'Gudang' }}
+                            Barang Habis
                             <span class="badge bg-danger ms-2">{{ $barangHabis->count() }}</span>
                         </h5>
                     </div>
@@ -336,22 +336,14 @@
                                 <input type="date" name="tanggal" id="tanggalKeluar" class="form-control">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Bagian <small class="text-danger">*</span></label>
-                                <select name="bagian_id" class="form-select" required>
-                                    <option value="">-- Pilih Bagian --</option>
-                                    @foreach ($bagian as $b)
-                                        <option value="{{ $b->id }}">{{ $b->nama }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-12">
                                 <label class="form-label">Keterangan <small
                                         class="text-muted">(Opsional)</small></label>
-                                <textarea name="keterangan" class="form-control" rows="3"
+                                <textarea name="keterangan" class="form-control" rows="1"
                                     placeholder="Masukkan keterangan"></textarea>
                             </div>
                             <div class="col-12">
-                                <label class="form-label">Bukti</label>
+                                <label class="form-label">Bukti <small
+                                        class="text-muted">(Opsional)</small> </label>
                                 <div class="border rounded p-4 text-center" style="background-color: #f8f9fa;">
                                     <input type="file" name="bukti" id="buktiBrgKeluar" class="d-none"
                                         accept="image/*,.pdf">
@@ -489,7 +481,7 @@
                                 <div class="suggestion-name">${item.nama}</div>
                                 <div class="suggestion-code">Kode: ${item.kode}</div>
                                 <div class="suggestion-meta">
-                                    <small>Kategori: ${item.kategori} | Gudang: ${item.gudang} | Stok: ${item.stok} |
+                                    <small>Kategori: ${item.kategori} | Stok: ${item.stok} |
                                     <span class="stock-status ${stockStatusClass}">${stockText}</span></small>
                                 </div>
                             </div>
