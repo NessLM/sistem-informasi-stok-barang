@@ -244,7 +244,7 @@
                                     <thead class="table-dark">
                                         <tr>
                                             <th>STRUKTUR DATA</th>
-                                            <th style="width:120px" class="text-center">AKSI</th>
+                                            <th style="width:200px" class="text-center">AKSI</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -490,8 +490,8 @@
                                                     @foreach ($k->barang as $i => $b)
                                                         <tr>
                                                             <td>{{ $i + 1 }}</td>
-                                                            <td><strong>{{ $b->nama_barang }}</strong></td>
-                                                            <td><span class="badge bg-secondary">{{ $b->kode_barang }}</span></td>
+                                                            <td>{{ $b->nama_barang }}</td>
+                                                            <td>{{ $b->kode_barang }}</td>
                                                             <td>{{ $b->satuan }}</td>
                                                             <td class="text-center">
                                                                 <div class="d-flex gap-2 justify-content-center">
