@@ -142,6 +142,7 @@
                                 <tr>
                                     <th>No</th>
                                     <th>Tanggal <br> Waktu </th>
+                                    <th>Bagian Asal</th>
                                     <th>Nama Barang</th>
                                     <th>Jumlah</th>
                                     <th>Satuan</th>
@@ -161,6 +162,7 @@
                                                 class="text-muted">{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }}
                                                 WIB</small>
                                         </td>
+                                        <td class="fw-medium" data-label="Bagian Asal">{{ $item->gudang }}</td>
                                         <td class="fw-medium" data-label="Nama Barang">{{ $item->nama_barang }}</td>
                                         <td data-label="Jumlah"><span class="fw-medium">{{ $item->jumlah }}</span>
                                         </td>
