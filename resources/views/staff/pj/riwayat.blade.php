@@ -254,7 +254,6 @@
                                     <th>Nama Barang</th>
                                     <th>Jumlah</th>
                                     <th>Satuan</th>
-                                    <th>Bagian</th>
                                     <th>Nama Penerima</th>
                                     <th>Keterangan</th>
                                     <th>Bukti</th>
@@ -274,7 +273,6 @@
                                         <td class="fw-medium">{{ $item->nama_barang }}</td>
                                         <td><span>{{ $item->jumlah }}</span></td>
                                         <td>{{ $item->satuan ?? '-' }}</td>
-                                        <td>{{ $item->bagian ?? '-' }}</td>
                                         <td>{{ $item->nama_penerima ?? '-' }}</td>
                                         <td data-label="Keterangan"
                                             style="white-space: normal !important; word-wrap: break-word !important; word-break: break-word !important; max-width: 200px; vertical-align: top;">
@@ -306,7 +304,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="9" class="riwayat-empty-state text-center py-4">
+                                        <td colspan="8" class="riwayat-empty-state text-center py-4">
                                             <i class="bi bi-inbox"></i>
                                             <p>Tidak ada data barang keluar ditemukan</p>
                                         </td>

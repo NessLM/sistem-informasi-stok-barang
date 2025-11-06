@@ -23,7 +23,7 @@
         <style>
             .row-low-stock {
                 background-color: #ffcccc !important;
-                border-left: 4px solid #dc3545 !important;
+                border-left: 4px solid #fd7e14 !important;
             }
         </style>
 
@@ -72,7 +72,7 @@
                         $title = 'Data Gudang ' . $gudangNama;
                     }
                 @endphp
-                <h4 class="mb-0">{{ $title }}</h4>
+                <h4 class="mb-0" style="font-weight: 600;">Data Gudang</h4>
                 <div class="d-flex flex-wrap gap-2">
                     <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalFilterBarang">
                         <i class="bi bi-funnel"></i> Filter
@@ -262,7 +262,7 @@
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <h5 class="m-0">
                             <i class="bi bi-exclamation-triangle-fill me-1"></i>
-                            Barang Habis - {{ $selectedGudang->nama ?? 'Gudang' }}
+                            Barang Habis
                             <span class="badge bg-danger ms-2">{{ $barangHabis->count() }}</span>
                         </h5>
                     </div>
