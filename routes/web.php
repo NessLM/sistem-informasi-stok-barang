@@ -183,9 +183,12 @@ Route::prefix('pb')->name('pb.')->middleware(['auth', 'role:Pengurus Barang Peng
     Route::post('/distribusi/{kodeBarang}', [PbDistribusiController::class, 'store'])
         ->name('barang.distribusi');
 
-    // Riwayat & Laporan PB
+    // Riwayat
     Route::get('/riwayat', [PbRiwayatController::class, 'index'])->name('riwayat.index');
-    Route::get('/laporan', [PbLaporanController::class, 'index'])->name('laporan');
+
+    // Laporan (Controller)
+        Route::get('/laporan', PbLaporanController::class)->name('laporan');
+    
 });
 
 
@@ -233,7 +236,6 @@ Route::prefix('pj')->name('pj.')
         Route::get('/riwayat', [PjRiwayatController::class, 'index'])
             ->name('riwayat.index');
 
-        // Laporan (placeholder)
         // Laporan (Controller)
         Route::get('/laporan', PjLaporanController::class)->name('laporan');
     });
