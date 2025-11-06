@@ -481,7 +481,7 @@
                                 <div class="suggestion-name">${item.nama}</div>
                                 <div class="suggestion-code">Kode: ${item.kode}</div>
                                 <div class="suggestion-meta">
-                                    <small>Kategori: ${item.kategori} | Gudang: ${item.gudang} | Stok: ${item.stok} |
+                                    <small>Kategori: ${item.kategori} | Stok: ${item.stok} |
                                     <span class="stock-status ${stockStatusClass}">${stockText}</span></small>
                                 </div>
                             </div>

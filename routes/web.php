@@ -235,6 +235,6 @@ Route::prefix('pj')->name('pj.')
         // Laporan (placeholder)
         Route::get('/laporan', function () {
             $menu = \App\Helpers\MenuHelper::pjMenu();
-            return view('staff.pj.laporan.index', compact('menu'));
-        })->name('laporan.index');
+            return view('laporan.index', compact('menu'));
+        })->name('laporan');
     });

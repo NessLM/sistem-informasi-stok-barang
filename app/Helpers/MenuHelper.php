@@ -92,6 +92,13 @@ class MenuHelper
                 'route' => 'pj.riwayat.index',
                 'active' => request()->routeIs('pj.riwayat.*'),
             ],
+
+            [
+                'label' => 'Laporan',
+                'icon' => 'bi-file-earmark-bar-graph-fill',
+                'route' => 'pj.laporan',
+                'active' => request()->routeIs('pj.laporan.*'),
+            ],
         ];
     }
 
@@ -109,19 +116,19 @@ class MenuHelper
     {
         // Hilangkan kata "Gudang" di awal (case insensitive)
         $cleaned = preg_replace('/^gudang\s+/i', '', $gudangName);
-        
+
         // Konversi ke lowercase dan ganti spasi dengan dash
         $slug = strtolower(str_replace([' ', '_'], '-', $cleaned));
-        
+
         // Hilangkan karakter khusus kecuali dash
         $slug = preg_replace('/[^a-z0-9\-]/', '', $slug);
-        
+
         // Hilangkan dash berlebih
         $slug = preg_replace('/-+/', '-', $slug);
-        
+
         // Hilangkan dash di awal dan akhir
         $slug = trim($slug, '-');
-        
+
         return $slug;
     }
 
@@ -135,14 +142,14 @@ class MenuHelper
     {
         // Cari gudang berdasarkan slug yang dibuat
         $gudangs = Gudang::all();
-        
+
         foreach ($gudangs as $gudang) {
             $gudangSlug = self::createSlugFromGudangName($gudang->nama);
             if ($gudangSlug === $slug) {
                 return $gudang->nama;
             }
         }
-        
+
         // Jika tidak ditemukan, coba konversi manual
         return ucfirst(str_replace('-', ' ', $slug));
     }
