@@ -244,7 +244,7 @@
                                     <thead class="table-dark">
                                         <tr>
                                             <th>STRUKTUR DATA</th>
-                                            <th style="width:120px" class="text-center">AKSI</th>
+                                            <th style="width:200px" class="text-center">AKSI</th>
                                         </tr>
                                     </thead>
                                     <tbody>

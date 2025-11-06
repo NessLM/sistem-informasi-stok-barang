@@ -79,12 +79,12 @@
         <!-- Toast notification -->
         @if (session('toast'))
             <div id="toast-notif" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-                                  z-index: 2000; display: flex; justify-content: center; pointer-events: none;">
+                                      z-index: 2000; display: flex; justify-content: center; pointer-events: none;">
                 <div class="toast-message" style="background: #fff; border-radius: 12px; padding: 14px 22px;
-                                    box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;
-                                    min-width: 280px; max-width: 360px; transition: opacity .5s ease;">
+                                        box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;
+                                        min-width: 280px; max-width: 360px; transition: opacity .5s ease;">
                     <div style="font-weight: 600; font-size: 16px; margin-bottom: 4px;
-                                      color: {{ session('toast.type') === 'success' ? '#28a745' : '#dc3545' }};">
+                                          color: {{ session('toast.type') === 'success' ? '#28a745' : '#dc3545' }};">
                         {{ session('toast.title') }}
                     </div>
                     <div style="color:#333; font-size: 14px; line-height: 1.4;">
@@ -211,7 +211,7 @@
                                         <td class="text-center">
                                             <div class="d-flex flex-wrap justify-content-center gap-2">
                                                 <button class="btn btn-sm btn-success" onclick="toggleDetail({{ $k->id }})">
-                                                    <i class="bi bi-eye"></i> Lihat ({{ $stokInKategori->count() }})
+                                                    <i class="bi bi-eye"></i> Lihat
                                                 </button>
                                             </div>
                                         </td>
@@ -532,15 +532,15 @@
                             : '';
 
                         html += `
-                                <div class="search-suggestion-item" data-index="${index}">
-                                    <div class="suggestion-name">${item.nama} ${matchBadge}</div>
-                                    <div class="suggestion-code">ID: ${item.id} | Kode: ${item.kode} | Bagian: <strong>${item.bagian}</strong></div>
-                                    <div class="suggestion-meta">
-                                        <small>Kategori: ${item.kategori} | Stok: ${item.stok} | ${item.harga} | 
-                                        <span class="stock-status ${stockStatusClass}">${stockText}</span></small>
+                                    <div class="search-suggestion-item" data-index="${index}">
+                                        <div class="suggestion-name">${item.nama} ${matchBadge}</div>
+                                        <div class="suggestion-code">ID: ${item.id} | Kode: ${item.kode} | Bagian: <strong>${item.bagian}</strong></div>
+                                        <div class="suggestion-meta">
+                                            <small>Kategori: ${item.kategori} | Stok: ${item.stok} | ${item.harga} | 
+                                            <span class="stock-status ${stockStatusClass}">${stockText}</span></small>
+                                        </div>
                                     </div>
-                                </div>
-                            `;
+                                `;
                     });
                     suggestionsContainer.innerHTML = html;
                     suggestionsContainer.style.display = 'block';
