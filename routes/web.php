@@ -35,6 +35,7 @@ use App\Http\Controllers\Pj\LaporanController as PjLaporanController;
 /* =========================================================================
  | AUTH
  * ========================================================================= */
+
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'store'])->name('login.attempt');
 Route::post('/logout', [AuthController::class, 'destroy'])->name('logout');
@@ -233,8 +234,6 @@ Route::prefix('pj')->name('pj.')
             ->name('riwayat.index');
 
         // Laporan (placeholder)
-        Route::get('/laporan', function () {
-            $menu = \App\Helpers\MenuHelper::pjMenu();
-            return view('laporan.index', compact('menu'));
-        })->name('laporan');
+        // Laporan (Controller)
+        Route::get('/laporan', PjLaporanController::class)->name('laporan');
     });
