@@ -142,11 +142,10 @@
                                 <tr>
                                     <th>No</th>
                                     <th>Tanggal <br> Waktu </th>
-                                    <th>Gudang Utama</th>
                                     <th>Nama Barang</th>
                                     <th>Jumlah</th>
                                     <th>Satuan</th>
-                                    <th>Keterangan</th> <!-- Lebar lebih untuk keterangan -->
+                                    <th>Keterangan</th>
                                     <th>Bukti</th>
                                 </tr>
                             </thead>
@@ -162,7 +161,6 @@
                                                 class="text-muted">{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }}
                                                 WIB</small>
                                         </td>
-                                        <td class="fw-medium" data-label="Gudang">{{ $item->gudang }}</td>
                                         <td class="fw-medium" data-label="Nama Barang">{{ $item->nama_barang }}</td>
                                         <td data-label="Jumlah"><span class="fw-medium">{{ $item->jumlah }}</span>
                                         </td>
@@ -197,7 +195,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="8" class="riwayat-empty-state text-center py-4">
+                                        <td colspan="7" class="riwayat-empty-state text-center py-4">
                                             <i class="bi bi-inbox"></i>
                                             <p>Tidak ada data barang masuk ditemukan</p>
                                         </td>
