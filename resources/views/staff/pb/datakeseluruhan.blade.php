@@ -101,12 +101,12 @@
         <!-- Toast notification -->
         @if (session('toast'))
             <div id="toast-notif" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-                                      z-index: 2000; display: flex; justify-content: center; pointer-events: none;">
+                                  z-index: 2000; display: flex; justify-content: center; pointer-events: none;">
                 <div class="toast-message" style="background: #fff; border-radius: 12px; padding: 14px 22px;
-                                        box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;
-                                        min-width: 280px; max-width: 360px; transition: opacity .5s ease;">
+                                    box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;
+                                    min-width: 280px; max-width: 360px; transition: opacity .5s ease;">
                     <div style="font-weight: 600; font-size: 16px; margin-bottom: 4px;
-                                          color: {{ session('toast.type') === 'success' ? '#28a745' : '#dc3545' }};">
+                                      color: {{ session('toast.type') === 'success' ? '#28a745' : '#dc3545' }};">
                         {{ session('toast.title') }}
                     </div>
                     <div style="color:#333; font-size: 14px; line-height: 1.4;">
@@ -472,95 +472,6 @@
                             </tbody>
                         </table>
                     </div>
-                @else
-                    <div class="alert alert-warning">Tidak ada data ditemukan untuk kriteria pencarian Anda</div>
-                @endif
-            @endif
-            {{-- Jika tidak ada filter/search - Tampilkan per kategori --}}
-            @if (
-                    !request()->filled('search') &&
-                    !request()->filled('kode') &&
-                    !request()->filled('stok_min') &&
-                    !request()->filled('stok_max') &&
-                    !request()->filled('kategori_id') &&
-                    !request()->filled('bagian_id') &&
-                    !request()->filled('harga_min') &&
-                    !request()->filled('harga_max')
-                )
-                <div class="table-responsive mt-3">
-                    <table class="table table-bordered">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>KATEGORI</th>
-                                <th style="width:180px" class="text-center">AKSI</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($kategori as $k)
-                                @php
-                                    // Ambil semua pb_stok yang barangnya dalam kategori ini
-                                    $stokInKategori = \App\Models\PbStok::with(['barang', 'bagian'])
-                                        ->whereHas('barang', function ($q) use ($k) {
-                                            $q->where('id_kategori', $k->id);
-                                        })
-                                        ->get();
-                                @endphp
-                                @if($stokInKategori->count() > 0)
-                                    <tr>
-                                        <td>{{ $k->nama }}</td>
-                                        <td class="text-center">
-                                            <div class="d-flex flex-wrap justify-content-center gap-2">
-                                                <button class="btn btn-sm btn-success" onclick="toggleDetail({{ $k->id }})">
-                                                    <i class="bi bi-eye"></i> Lihat
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr id="detail-{{ $k->id }}" style="display:none;">
-                                        <td colspan="2">
-                                            <div class="table-responsive">
-                                                <table class="table table-bordered">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>ID</th>
-                                                            <th>Kode Barang</th>
-                                                            <th>Nama Barang</th>
-                                                            <th>Bagian</th>
-                                                            <th>Stok</th>
-                                                            <th>Harga</th>
-                                                            <th>Aksi</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        @foreach ($stokInKategori as $item)
-                                                            <tr @if ($item->stok < 10) class="row-low-stock" @endif>
-                                                                <td>{{ $item->id }}</td>
-                                                                <td>{{ $item->kode_barang }}</td>
-                                                                <td>{{ $item->barang->nama_barang ?? '-' }}</td>
-                                                                <td>{{ $item->bagian->nama ?? '-' }}</td>
-                                                                <td>{{ $item->stok }}</td>
-                                                                <td>Rp {{ number_format($item->harga ?? 0, 0, ',', '.') }}</td>
-                                                                <td>
-                                                                    <button type="button" class="btn btn-primary btn-sm"
-                                                                        data-bs-toggle="modal" data-bs-target="#modalKelolaBarang"
-                                                                        data-id="{{ $item->id }}"
-                                                                        data-nama="{{ $item->barang->nama_barang ?? '-' }}"
-                                                                        data-kode="{{ $item->kode_barang }}"
-                                                                        data-stok="{{ $item->stok }}">
-                                                                        <i class="bi bi-box-seam"></i> Kelola
-                                                                    </button>
-                                                                </td>
-                                                            </tr>
-                                                        @endforeach
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endif
-                            @endforeach
-                        </tbody>
-                    </table>
                 </div>
             </div>
         </section>
@@ -908,7 +819,6 @@
                             item.stock_status === 'low' ? 'Sedikit' : 'Tersedia';
 
                         html += `
-<<<<<<< HEAD
                             <div class="search-suggestion-item" data-index="${index}">
                                 <div class="suggestion-name">${item.nama}</div>
                                 <div class="suggestion-code">Kode: ${item.kode} | ${tabName === 'data-keseluruhan' ? 'Kategori: ' + item.kategori : 'Bagian: ' + item.bagian}</div>
@@ -918,17 +828,6 @@
                                 </div>
                             </div>
                         `;
-=======
-                                    <div class="search-suggestion-item" data-index="${index}">
-                                        <div class="suggestion-name">${item.nama} ${matchBadge}</div>
-                                        <div class="suggestion-code">ID: ${item.id} | Kode: ${item.kode} | Bagian: <strong>${item.bagian}</strong></div>
-                                        <div class="suggestion-meta">
-                                            <small>Kategori: ${item.kategori} | Stok: ${item.stok} | ${item.harga} | 
-                                            <span class="stock-status ${stockStatusClass}">${stockText}</span></small>
-                                        </div>
-                                    </div>
-                                `;
->>>>>>> 7ed13d992a1891b817f6cd74826fb62e56cb4387
                     });
                     
                     suggestionsContainer.innerHTML = html;
