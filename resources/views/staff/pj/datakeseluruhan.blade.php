@@ -336,22 +336,14 @@
                                 <input type="date" name="tanggal" id="tanggalKeluar" class="form-control">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Bagian <small class="text-danger">*</span></label>
-                                <select name="bagian_id" class="form-select" required>
-                                    <option value="">-- Pilih Bagian --</option>
-                                    @foreach ($bagian as $b)
-                                        <option value="{{ $b->id }}">{{ $b->nama }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-12">
                                 <label class="form-label">Keterangan <small
                                         class="text-muted">(Opsional)</small></label>
-                                <textarea name="keterangan" class="form-control" rows="3"
+                                <textarea name="keterangan" class="form-control" rows="1"
                                     placeholder="Masukkan keterangan"></textarea>
                             </div>
                             <div class="col-12">
-                                <label class="form-label">Bukti</label>
+                                <label class="form-label">Bukti <small
+                                        class="text-muted">(Opsional)</small> </label>
                                 <div class="border rounded p-4 text-center" style="background-color: #f8f9fa;">
                                     <input type="file" name="bukti" id="buktiBrgKeluar" class="d-none"
                                         accept="image/*,.pdf">
