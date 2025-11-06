@@ -1,17 +1,47 @@
 <x-layouts.app title="Data Keseluruhan" :menu="$menu">
     @php
-        $pbStokData = $pbStokData ?? collect();
+        $barangData = $barangData ?? collect();
         $kategori = $kategori ?? collect();
         $bagian = $bagian ?? collect();
+        $activeTab = $activeTab ?? 'data-keseluruhan';
     @endphp
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    
     @push('styles')
         <link rel="stylesheet" href="{{ asset('assets/css/staff/pb/data_keseluruhan_pb.css') }}">
         <style>
             .row-low-stock {
                 background-color: #ffcccc !important;
                 border-left: 4px solid #dc3545 !important;
+            }
+
+            /* Tab Navigation Styles - CENTERED */
+            .nav-tabs-custom {
+                border-bottom: 2px solid #dee2e6;
+                margin-bottom: 1.5rem;
+                display: flex;
+                justify-content: center;
+            }
+            
+            .nav-tabs-custom .nav-link {
+                border: none;
+                color: #6c757d;
+                font-weight: 500;
+                padding: 0.75rem 1.5rem;
+                margin-right: 0.5rem;
+                border-bottom: 3px solid transparent;
+                transition: all 0.3s ease;
+            }
+            
+            .nav-tabs-custom .nav-link:hover {
+                color: #0d6efd;
+                border-bottom-color: #0d6efd;
+                background: transparent;
+            }
+            
+            .nav-tabs-custom .nav-link.active {
+                color: #0d6efd;
+                border-bottom-color: #0d6efd;
+                background: transparent;
             }
 
             /* Autocomplete Styles */
@@ -31,8 +61,6 @@
                 font-weight: 600;
                 color: #111827;
                 margin-bottom: 4px;
-                display: flex;
-                align-items: center;
             }
 
             .suggestion-code {
@@ -66,15 +94,9 @@
                 background-color: #fee2e2;
                 color: #991b1b;
             }
-
-            .loading-suggestion {
-                padding: 12px;
-                text-align: center;
-                color: #6b7280;
-            }
         </style>
-
     @endpush
+
     <main class="page-wrap container py-4">
         <!-- Toast notification -->
         @if (session('toast'))
@@ -100,334 +122,488 @@
                 }, 3000);
             </script>
         @endif
+
         <section class="card shadow-sm p-3">
-            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-                <h4>Data Keseluruhan Stok PB</h4>
-                <div class="d-flex flex-wrap gap-2">
-                    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalFilterBarang">
-                        <i class="bi bi-funnel"></i> Filter
-                    </button>
+            <!-- Tab Navigation - CENTERED -->
+            <ul class="nav nav-tabs nav-tabs-custom" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link {{ $activeTab === 'data-keseluruhan' ? 'active' : '' }}" 
+                       href="{{ route('pb.datakeseluruhan.index', ['tab' => 'data-keseluruhan']) }}">
+                        <i class="bi bi-grid-3x3-gap"></i> Data Keseluruhan
+                    </a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link {{ $activeTab === 'distribusi' ? 'active' : '' }}" 
+                       href="{{ route('pb.datakeseluruhan.index', ['tab' => 'distribusi']) }}">
+                        <i class="bi bi-box-arrow-right"></i> Distribusi
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Tab Content -->
+            <div class="tab-content">
+                <!-- TAB 1: DATA KESELURUHAN -->
+                <div class="tab-pane fade {{ $activeTab === 'data-keseluruhan' ? 'show active' : '' }}" 
+                     id="data-keseluruhan" role="tabpanel">
+                    
+                    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                        <h5 class="mb-0">Data Keseluruhan Barang</h5>
+                        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalFilterBarang">
+                            <i class="bi bi-funnel"></i> Filter
+                        </button>
+                    </div>
+
+                    {{-- Search Form dengan Autocomplete --}}
+                    <div class="position-relative mb-3">
+                        <form action="{{ route('pb.datakeseluruhan.index') }}" method="GET" class="input-group" id="searchForm">
+                            <input type="hidden" name="tab" value="data-keseluruhan">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" name="search" id="searchInput" class="form-control"
+                                placeholder="Cari barang (nama, kode, kategori)"
+                                value="{{ request('search') }}" autocomplete="off">
+                            <button class="btn btn-outline-secondary" type="submit">Cari</button>
+                        </form>
+                        <div id="searchSuggestions" class="dropdown-menu w-100 position-absolute"
+                            style="z-index: 1050; max-height: 300px; overflow-y: auto; display: none;">
+                        </div>
+                    </div>
+
+                    {{-- Jika ada filter/search --}}
+                    @if ($barangData && $barangData->count() > 0)
+                        <h6 class="mt-3">Hasil Pencarian - Data Barang</h6>
+                        <div class="table-responsive">
+                            <table class="table table-bordered mt-2">
+                                <thead class="table-secondary">
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Kode Barang</th>
+                                        <th>Nama Barang</th>
+                                        <th>Kategori</th>
+                                        <th>Satuan</th>
+                                        <th>Harga Barang</th>
+                                        <th>Total Stok (PB)</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($barangData as $i => $item)
+                                        @php
+                                            $totalStok = $item->pbStok->sum('stok');
+                                        @endphp
+                                        <tr @if ($totalStok < 10) class="row-low-stock" @endif>
+                                            <td>{{ $i + 1 }}</td>
+                                            <td>{{ $item->kode_barang }}</td>
+                                            <td>{{ $item->nama_barang }}</td>
+                                            <td>{{ $item->kategori->nama ?? '-' }}</td>
+                                            <td>{{ $item->satuan }}</td>
+                                            <td>Rp {{ number_format($item->harga_barang ?? 0, 0, ',', '.') }}</td>
+                                            <td>{{ $totalStok }}</td>
+                                            <td>
+                                                <button type="button" class="btn btn-success btn-sm" 
+                                                    data-bs-toggle="modal" data-bs-target="#modalBarangMasuk"
+                                                    data-kode="{{ $item->kode_barang }}"
+                                                    data-nama="{{ $item->nama_barang }}"
+                                                    data-total-stok="{{ $totalStok }}">
+                                                    <i class="bi bi-box-arrow-in-down"></i> Barang Masuk
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @elseif(request()->filled('search') || request()->filled('kategori_id') || request()->filled('satuan'))
+                        <div class="alert alert-warning">Tidak ada data ditemukan untuk kriteria pencarian Anda</div>
+                    @else
+                        {{-- Tampilan Nested Default - Data Barang per Kategori --}}
+                        <h6 class="mt-3">Data Barang Gudang Utama</h6>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>KATEGORI</th>
+                                        <th style="width:180px" class="text-center">AKSI</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($kategori as $k)
+                                        @php
+                                            $barangInKategori = \App\Models\Barang::with(['pbStok', 'kategori'])
+                                                ->where('id_kategori', $k->id)
+                                                ->get();
+                                        @endphp
+                                        @if($barangInKategori->count() > 0)
+                                            <tr>
+                                                <td>{{ $k->nama }}</td>
+                                                <td class="text-center">
+                                                    <button class="btn btn-sm btn-success" onclick="toggleDetail('barang', {{ $k->id }})">
+                                                        <i class="bi bi-eye"></i> Lihat ({{ $barangInKategori->count() }})
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr id="detail-barang-{{ $k->id }}" style="display:none;">
+                                                <td colspan="2">
+                                                    <div class="table-responsive">
+                                                        <table class="table table-striped table-sm">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>No</th>
+                                                                    <th>Kode</th>
+                                                                    <th>Nama Barang</th>
+                                                                    <th>Satuan</th>
+                                                                    <th>Harga Barang</th>
+                                                                    <th>Total Stok (PB)</th>
+                                                                    <th>Detail Stok per Bagian</th>
+                                                                    <th>Aksi</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                @foreach ($barangInKategori as $idx => $item)
+                                                                    @php
+                                                                        $totalStok = $item->pbStok->sum('stok');
+                                                                    @endphp
+                                                                    <tr @if ($totalStok < 10) class="row-low-stock" @endif>
+                                                                        <td>{{ $idx + 1 }}</td>
+                                                                        <td>{{ $item->kode_barang }}</td>
+                                                                        <td>{{ $item->nama_barang }}</td>
+                                                                        <td>{{ $item->satuan }}</td>
+                                                                        <td>Rp {{ number_format($item->harga_barang ?? 0, 0, ',', '.') }}</td>
+                                                                        <td><strong>{{ $totalStok }}</strong></td>
+                                                                        <td>
+                                                                            @if($item->pbStok->count() > 0)
+                                                                                <small>
+                                                                                    @foreach($item->pbStok as $pb)
+                                                                                        <span class="badge bg-info">{{ $pb->bagian->nama ?? '-' }}: {{ $pb->stok }}</span>
+                                                                                    @endforeach
+                                                                                </small>
+                                                                            @else
+                                                                                <small class="text-muted">Belum ada stok</small>
+                                                                            @endif
+                                                                        </td>
+                                                                        <td>
+                                                                            <button type="button" class="btn btn-success btn-sm"
+                                                                                data-bs-toggle="modal" data-bs-target="#modalBarangMasuk"
+                                                                                data-kode="{{ $item->kode_barang }}"
+                                                                                data-nama="{{ $item->nama_barang }}"
+                                                                                data-total-stok="{{ $totalStok }}">
+                                                                                <i class="bi bi-box-arrow-in-down"></i> Barang Masuk
+                                                                            </button>
+                                                                        </td>
+                                                                    </tr>
+                                                                @endforeach
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endif
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {{-- Data per Bagian (Stok Bagian) - View Only --}}
+                        <h6 class="mt-4">Data Per Bagian (Stok_Bagian) - View Only</h6>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>BAGIAN</th>
+                                        <th style="width:180px" class="text-center">AKSI</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($bagian as $bg)
+                                        @php
+                                            $stokDiBagian = \App\Models\StokBagian::with(['barang.kategori', 'bagian'])
+                                                ->where('bagian_id', $bg->id)
+                                                ->get();
+                                        @endphp
+                                        @if($stokDiBagian->count() > 0)
+                                            <tr class="table-secondary">
+                                                <td>{{ $bg->nama }}</td>
+                                                <td class="text-center">
+                                                    <button class="btn btn-sm btn-primary" onclick="toggleDetail('bagian', {{ $bg->id }})">
+                                                        <i class="bi bi-chevron-down"></i> Expand ({{ $stokDiBagian->count() }})
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr id="detail-bagian-{{ $bg->id }}" style="display:none;">
+                                                <td colspan="2">
+                                                    {{-- Group by kategori --}}
+                                                    @php
+                                                        $grouped = $stokDiBagian->groupBy(function($item) {
+                                                            return $item->barang->kategori->nama ?? 'Tanpa Kategori';
+                                                        });
+                                                    @endphp
+                                                    @foreach($grouped as $katNama => $items)
+                                                        <div class="mb-3">
+                                                            <h6 class="text-primary mt-2">Kategori: {{ $katNama }}</h6>
+                                                            <div class="table-responsive">
+                                                                <table class="table table-striped table-sm">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th>No</th>
+                                                                            <th>Kode</th>
+                                                                            <th>Nama Barang</th>
+                                                                            <th>Stok</th>
+                                                                            <th>Harga</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        @foreach($items as $idx => $sb)
+                                                                            <tr @if ($sb->stok < 10) class="row-low-stock" @endif>
+                                                                                <td>{{ $idx + 1 }}</td>
+                                                                                <td>{{ $sb->kode_barang }}</td>
+                                                                                <td>{{ $sb->barang->nama_barang ?? '-' }}</td>
+                                                                                <td>{{ $sb->stok }}</td>
+                                                                                <td>Rp {{ number_format($sb->harga ?? 0, 0, ',', '.') }}</td>
+                                                                            </tr>
+                                                                        @endforeach
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    @endforeach
+                                                </td>
+                                            </tr>
+                                        @endif
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @endif
                 </div>
-            </div>
-            {{-- Search Form dengan Autocomplete --}}
-            <div class="position-relative mb-3">
-                <form action="{{ route('pb.datakeseluruhan.index') }}" method="GET" class="input-group" id="searchForm">
-                    <span class="input-group-text"><i class="bi bi-search"></i></span>
-                    <input type="text" name="search" id="searchInput" class="form-control"
-                        placeholder="Cari barang (nama, kode) atau bagian (contoh: tata pemerintahan)"
-                        value="{{ request('search') }}" autocomplete="off">
-                    <button class="btn btn-outline-secondary" type="submit">Cari</button>
-                </form>
-                <div id="searchSuggestions" class="dropdown-menu w-100 position-absolute"
-                    style="z-index: 1050; max-height: 300px; overflow-y: auto; display: none;">
-                </div>
-            </div>
-            {{-- Jika ada filter/search --}}
-            @if (
-                    request()->filled('search') ||
-                    request()->filled('kode') ||
-                    request()->filled('stok_min') ||
-                    request()->filled('stok_max') ||
-                    request()->filled('kategori_id') ||
-                    request()->filled('bagian_id') ||
-                    request()->filled('harga_min') ||
-                    request()->filled('harga_max')
-                )
-                <h5 class="mt-3">Hasil Pencarian</h5>
-                @if ($pbStokData->count() > 0)
+
+                <!-- TAB 2: DISTRIBUSI -->
+                <div class="tab-pane fade {{ $activeTab === 'distribusi' ? 'show active' : '' }}" 
+                     id="distribusi" role="tabpanel">
+                    
+                    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                        <h5 class="mb-0">Distribusi Barang ke Bagian</h5>
+                    </div>
+
+                    {{-- Search untuk Distribusi --}}
+                    <div class="position-relative mb-3">
+                        <form action="{{ route('pb.datakeseluruhan.index') }}" method="GET" class="input-group" id="searchFormDistribusi">
+                            <input type="hidden" name="tab" value="distribusi">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" name="search" id="searchInputDistribusi" class="form-control"
+                                placeholder="Cari barang untuk distribusi"
+                                value="{{ request('search') }}" autocomplete="off">
+                            <button class="btn btn-outline-secondary" type="submit">Cari</button>
+                        </form>
+                        <div id="searchSuggestionsDistribusi" class="dropdown-menu w-100 position-absolute"
+                            style="z-index: 1050; max-height: 300px; overflow-y: auto; display: none;">
+                        </div>
+                    </div>
+
+                    {{-- Tampilan per Kategori --}}
                     <div class="table-responsive">
-                        <table class="table table-bordered mt-2">
-                            <thead class="table-secondary">
+                        <table class="table table-bordered">
+                            <thead class="table-dark">
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Kode Barang</th>
-                                    <th>Nama Barang</th>
-                                    <th>Kategori</th>
-                                    <th>Bagian</th>
-                                    <th>Stok</th>
-                                    <th>Harga</th>
-                                    <th>Aksi</th>
+                                    <th>KATEGORI</th>
+                                    <th style="width:180px" class="text-center">AKSI</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($pbStokData as $item)
-                                    <tr @if ($item->stok < 10) class="row-low-stock" @endif>
-                                        <td>{{ $item->id }}</td>
-                                        <td>{{ $item->kode_barang }}</td>
-                                        <td>{{ $item->barang->nama_barang ?? '-' }}</td>
-                                        <td>{{ $item->barang->kategori->nama ?? '-' }}</td>
-                                        <td>{{ $item->bagian->nama ?? '-' }}</td>
-                                        <td>{{ $item->stok }}</td>
-                                        <td>Rp {{ number_format($item->harga ?? 0, 0, ',', '.') }}</td>
-                                        <td>
-                                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                                                data-bs-target="#modalKelolaBarang" data-id="{{ $item->id }}"
-                                                data-nama="{{ $item->barang->nama_barang ?? '-' }}"
-                                                data-kode="{{ $item->kode_barang }}" data-stok="{{ $item->stok }}">
-                                                <i class="bi bi-box-seam"></i> Kelola
-                                            </button>
-                                        </td>
-                                    </tr>
+                                @foreach ($kategori as $k)
+                                    @php
+                                        $pbStokKategori = \App\Models\PbStok::with(['barang', 'bagian'])
+                                            ->whereHas('barang', function ($q) use ($k) {
+                                                $q->where('id_kategori', $k->id);
+                                            })
+                                            ->get();
+                                    @endphp
+                                    @if($pbStokKategori->count() > 0)
+                                        <tr>
+                                            <td>{{ $k->nama }}</td>
+                                            <td class="text-center">
+                                                <button class="btn btn-sm btn-warning" onclick="toggleDistribusi({{ $k->id }})">
+                                                    <i class="bi bi-box-seam"></i> Lihat ({{ $pbStokKategori->count() }})
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr id="distribusi-{{ $k->id }}" style="display:none;">
+                                            <td colspan="2">
+                                                <div class="table-responsive">
+                                                    <table class="table table-striped table-sm">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>No</th>
+                                                                <th>Kode</th>
+                                                                <th>Nama Barang</th>
+                                                                <th>Bagian (PB)</th>
+                                                                <th>Stok Tersedia</th>
+                                                                <th>Harga</th>
+                                                                <th>Aksi</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @foreach ($pbStokKategori as $idx => $pb)
+                                                                <tr @if ($pb->stok < 10) class="row-low-stock" @endif>
+                                                                    <td>{{ $idx + 1 }}</td>
+                                                                    <td>{{ $pb->kode_barang }}</td>
+                                                                    <td>{{ $pb->barang->nama_barang ?? '-' }}</td>
+                                                                    <td>{{ $pb->bagian->nama ?? '-' }}</td>
+                                                                    <td>{{ $pb->stok }}</td>
+                                                                    <td>Rp {{ number_format($pb->harga ?? 0, 0, ',', '.') }}</td>
+                                                                    <td>
+                                                                        <button type="button" class="btn btn-warning btn-sm"
+                                                                            data-bs-toggle="modal" data-bs-target="#modalDistribusi"
+                                                                            data-id="{{ $pb->id }}"
+                                                                            data-nama="{{ $pb->barang->nama_barang ?? '-' }}"
+                                                                            data-kode="{{ $pb->kode_barang }}"
+                                                                            data-stok="{{ $pb->stok }}"
+                                                                            data-harga="{{ $pb->harga }}">
+                                                                            <i class="bi bi-box-arrow-right"></i> Distribusi
+                                                                        </button>
+                                                                    </td>
+                                                                </tr>
+                                                            @endforeach
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endif
                                 @endforeach
                             </tbody>
                         </table>
                     </div>
-                @else
-                    <div class="alert alert-warning">Tidak ada data ditemukan untuk kriteria pencarian Anda</div>
-                @endif
-            @endif
-            {{-- Jika tidak ada filter/search - Tampilkan per kategori --}}
-            @if (
-                    !request()->filled('search') &&
-                    !request()->filled('kode') &&
-                    !request()->filled('stok_min') &&
-                    !request()->filled('stok_max') &&
-                    !request()->filled('kategori_id') &&
-                    !request()->filled('bagian_id') &&
-                    !request()->filled('harga_min') &&
-                    !request()->filled('harga_max')
-                )
-                <div class="table-responsive mt-3">
-                    <table class="table table-bordered">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>KATEGORI</th>
-                                <th style="width:180px" class="text-center">AKSI</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($kategori as $k)
-                                @php
-                                    // Ambil semua pb_stok yang barangnya dalam kategori ini
-                                    $stokInKategori = \App\Models\PbStok::with(['barang', 'bagian'])
-                                        ->whereHas('barang', function ($q) use ($k) {
-                                            $q->where('id_kategori', $k->id);
-                                        })
-                                        ->get();
-                                @endphp
-                                @if($stokInKategori->count() > 0)
-                                    <tr>
-                                        <td>{{ $k->nama }}</td>
-                                        <td class="text-center">
-                                            <div class="d-flex flex-wrap justify-content-center gap-2">
-                                                <button class="btn btn-sm btn-success" onclick="toggleDetail({{ $k->id }})">
-                                                    <i class="bi bi-eye"></i> Lihat ({{ $stokInKategori->count() }})
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr id="detail-{{ $k->id }}" style="display:none;">
-                                        <td colspan="2">
-                                            <div class="table-responsive">
-                                                <table class="table table-bordered">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>ID</th>
-                                                            <th>Kode Barang</th>
-                                                            <th>Nama Barang</th>
-                                                            <th>Bagian</th>
-                                                            <th>Stok</th>
-                                                            <th>Harga</th>
-                                                            <th>Aksi</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        @foreach ($stokInKategori as $item)
-                                                            <tr @if ($item->stok < 10) class="row-low-stock" @endif>
-                                                                <td>{{ $item->id }}</td>
-                                                                <td>{{ $item->kode_barang }}</td>
-                                                                <td>{{ $item->barang->nama_barang ?? '-' }}</td>
-                                                                <td>{{ $item->bagian->nama ?? '-' }}</td>
-                                                                <td>{{ $item->stok }}</td>
-                                                                <td>Rp {{ number_format($item->harga ?? 0, 0, ',', '.') }}</td>
-                                                                <td>
-                                                                    <button type="button" class="btn btn-primary btn-sm"
-                                                                        data-bs-toggle="modal" data-bs-target="#modalKelolaBarang"
-                                                                        data-id="{{ $item->id }}"
-                                                                        data-nama="{{ $item->barang->nama_barang ?? '-' }}"
-                                                                        data-kode="{{ $item->kode_barang }}"
-                                                                        data-stok="{{ $item->stok }}">
-                                                                        <i class="bi bi-box-seam"></i> Kelola
-                                                                    </button>
-                                                                </td>
-                                                            </tr>
-                                                        @endforeach
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endif
-                            @endforeach
-                        </tbody>
-                    </table>
                 </div>
-            @endif
+            </div>
         </section>
     </main>
-    <!-- Modal Kelola Barang -->
-    <div class="modal fade" id="modalKelolaBarang" tabindex="-1">
+
+    <!-- Modal Barang Masuk -->
+    <div class="modal fade" id="modalBarangMasuk" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
-                <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title fw-semibold">Kelola Barang: <span id="kelolaBarangNama"
-                            class="text-primary"></span></h5>
+                <div class="modal-header">
+                    <h5 class="modal-title">Barang Masuk: <span id="barangMasukNama" class="text-primary"></span></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body pt-3">
-                    <!-- Tab Navigation -->
-                    <ul class="nav nav-tabs mb-4" id="kelolaTab" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="tab-barang-masuk" data-bs-toggle="tab"
-                                data-bs-target="#content-barang-masuk" type="button" role="tab">
-                                <i class="bi bi-box-arrow-in-down"></i> Barang Masuk
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="tab-distribusi" data-bs-toggle="tab"
-                                data-bs-target="#content-distribusi" type="button" role="tab">
-                                <i class="bi bi-box-arrow-right"></i> Barang Keluar
-                            </button>
-                        </li>
-                    </ul>
-                    <!-- Tab Content -->
-                    <div class="tab-content" id="kelolaTabContent">
-                        <!-- Content: Barang Masuk -->
-                        <div class="tab-pane fade show active" id="content-barang-masuk" role="tabpanel">
-                            <form method="POST" id="formBarangMasuk" enctype="multipart/form-data">
-                                @csrf
-                                <input type="hidden" name="kode_barang" id="barangMasukKode">
-                                <input type="hidden" name="pb_stok_id" id="barangMasukPbStokId">
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <label class="form-label">Nama Barang</label>
-                                        <input type="text" id="barangMasukNama" class="form-control" readonly>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Jumlah Masuk</label>
-                                        <input type="number" name="jumlah" class="form-control"
-                                            placeholder="Masukkan Jumlah" required min="1">
-                                        <small class="text-muted d-block mt-1">
-                                            Stok Saat Ini: <span id="stokTersediaMasuk">0</span>
-                                        </small>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Tanggal Masuk <small
-                                                class="text-muted">(Opsional)</small></label>
-                                        <input type="date" name="tanggal" id="tanggalMasuk" class="form-control">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Keterangan</label>
-                                        <input type="text" name="keterangan" class="form-control"
-                                            placeholder="Masukkan keterangan">
-                                    </div>
-                                    <div class="col-12">
-                                        <label class="form-label">Bukti Barang Masuk</label>
-                                        <div class="border rounded p-4 text-center" style="background-color: #f8f9fa;">
-                                            <input type="file" name="bukti" id="buktiBrgMasuk" class="d-none"
-                                                accept="image/*,.pdf">
-                                            <label for="buktiBrgMasuk" class="d-block" style="cursor: pointer;">
-                                                <i class="bi bi-cloud-upload"
-                                                    style="font-size: 2rem; color: #6c757d;"></i>
-                                                <div class="mt-2" style="color: #6c757d; font-size: 0.875rem;">Klik
-                                                    untuk Upload</div>
-                                            </label>
-                                            <div id="fileNameMasuk" class="mt-2 text-primary small"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="d-flex justify-content-end gap-2 mt-4">
-                                    <button type="button" class="btn btn-secondary px-4"
-                                        data-bs-dismiss="modal">Batal</button>
-                                    <button type="submit" class="btn btn-success px-4">
-                                        <i class="bi bi-check-circle"></i> Simpan Barang Masuk
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                        <!-- Content: Barang Keluar -->
-                        <div class="tab-pane fade" id="content-distribusi" role="tabpanel">
-                            <form method="POST" id="formDistribusi" enctype="multipart/form-data">
-                                @csrf
-                                <input type="hidden" name="kode_barang" id="distribusiBarangKode">
-                                <input type="hidden" name="pb_stok_id" id="distribusiPbStokId">
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <label class="form-label">Nama Barang</label>
-                                        <input type="text" id="distribusiBarangNama" class="form-control" readonly>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Jumlah Keluar</label>
-                                        <input type="number" name="jumlah" class="form-control"
-                                            placeholder="Masukkan Jumlah" required min="1">
-                                        <small class="text-muted d-block mt-1">
-                                            Stok tersedia: <span id="stokTersediaKeluar">0</span>
-                                        </small>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Tanggal Keluar <small
-                                                class="text-muted">(Opsional)</small></label>
-                                        <input type="date" name="tanggal" id="tanggalDistribusi" class="form-control">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Keterangan</label>
-                                        <input type="text" name="keterangan" class="form-control"
-                                            placeholder="Masukkan keterangan">
-                                    </div>
-                                    <div class="col-12">
-                                        <div class="alert alert-info">
-                                            <i class="bi bi-info-circle"></i>
-                                            Barang akan didistribusikan dari stok record ini
-                                        </div>
-                                    </div>
-                                    <div class="col-12">
-                                        <label class="form-label">Bukti Barang Keluar</label>
-                                        <div class="border rounded p-4 text-center" style="background-color: #f8f9fa;">
-                                            <input type="file" name="bukti" id="buktiBrgDistribusi" class="d-none"
-                                                accept="image/*,.pdf">
-                                            <label for="buktiBrgDistribusi" class="d-block" style="cursor: pointer;">
-                                                <i class="bi bi-cloud-upload"
-                                                    style="font-size: 2rem; color: #6c757d;"></i>
-                                                <div class="mt-2" style="color: #6c757d; font-size: 0.875rem;">Klik
-                                                    untuk Upload</div>
-                                            </label>
-                                            <div id="fileNameDistribusi" class="mt-2 text-primary small"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="d-flex justify-content-end gap-2 mt-4">
-                                    <button type="button" class="btn btn-secondary px-4"
-                                        data-bs-dismiss="modal">Batal</button>
-                                    <button type="submit" class="btn btn-warning px-4">
-                                        <i class="bi bi-send"></i> Simpan Barang Keluar
-                                    </button>
-                                </div>
-                            </form>
+                <form method="POST" id="formBarangMasuk" enctype="multipart/form-data">
+                    @csrf
+                    <input type="hidden" name="kode_barang" id="barangMasukKode">
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Bagian Tujuan</label>
+                                <select name="bagian_id" id="bagianTujuan" class="form-select" required>
+                                    <option value="">-- Pilih Bagian --</option>
+                                    @foreach($bagian as $bg)
+                                        <option value="{{ $bg->id }}">{{ $bg->nama }}</option>
+                                    @endforeach
+                                </select>
+                                <small class="text-muted">Pilih bagian yang akan menerima barang masuk</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Jumlah Masuk</label>
+                                <input type="number" name="jumlah" class="form-control" placeholder="Masukkan Jumlah" required min="1">
+                                <small class="text-muted d-block mt-1">
+                                    Total Stok Saat Ini: <span id="stokSekarang">0</span>
+                                </small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Harga Satuan</label>
+                                <input type="number" name="harga" class="form-control" placeholder="Masukkan Harga" required min="0" step="0.01">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Tanggal Masuk <small class="text-muted">(Opsional)</small></label>
+                                <input type="date" name="tanggal" class="form-control">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Keterangan</label>
+                                <input type="text" name="keterangan" class="form-control" placeholder="Masukkan keterangan">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Bukti Barang Masuk</label>
+                                <input type="file" name="bukti" class="form-control" accept="image/*,.pdf">
+                            </div>
                         </div>
                     </div>
-                </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-circle"></i> Simpan
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
+
+    <!-- Modal Distribusi -->
+    <div class="modal fade" id="modalDistribusi" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Distribusi Barang: <span id="distribusiNama" class="text-warning"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST" id="formDistribusi" enctype="multipart/form-data">
+                    @csrf
+                    <input type="hidden" name="kode_barang" id="distribusiKode">
+                    <input type="hidden" name="pb_stok_id" id="distribusiPbStokId">
+                    <input type="hidden" name="harga" id="distribusiHarga">
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Tujuan Bagian</label>
+                                <select name="bagian_id" class="form-select" required>
+                                    <option value="">-- Pilih Bagian --</option>
+                                    @foreach($bagian as $bg)
+                                        <option value="{{ $bg->id }}">{{ $bg->nama }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Jumlah Distribusi</label>
+                                <input type="number" name="jumlah" id="jumlahDistribusi" class="form-control" 
+                                       placeholder="Masukkan Jumlah" required min="1">
+                                <small class="text-muted d-block mt-1">
+                                    Stok Tersedia: <span id="stokTersedia">0</span>
+                                </small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Tanggal Distribusi <small class="text-muted">(Opsional)</small></label>
+                                <input type="date" name="tanggal" class="form-control">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Keterangan</label>
+                                <input type="text" name="keterangan" class="form-control" placeholder="Masukkan keterangan">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Bukti Distribusi</label>
+                                <input type="file" name="bukti" class="form-control" accept="image/*,.pdf">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-send"></i> Distribusi
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     {{-- Modal Filter --}}
-    <div class="modal fade" id="modalFilterBarang" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="modalFilterBarang" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <form action="{{ route('pb.datakeseluruhan.index') }}" method="GET" class="modal-content">
+                <input type="hidden" name="tab" value="data-keseluruhan">
                 <div class="modal-header">
-                    <h5 class="modal-title">Filter Stok</h5>
+                    <h5 class="modal-title">Filter Barang</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Rentang Harga</label>
-                            <div class="d-flex gap-2">
-                                <input type="number" name="harga_min" class="form-control" placeholder="Min Harga"
-                                    value="{{ request('harga_min') }}" step="0.01" min="0">
-                                <input type="number" name="harga_max" class="form-control" placeholder="Max Harga"
-                                    value="{{ request('harga_max') }}" step="0.01" min="0">
-                            </div>
-                        </div>
                         <div class="col-md-6">
                             <label class="form-label">Kategori</label>
                             <select name="kategori_id" class="form-select">
@@ -440,18 +616,18 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Bagian</label>
-                            <select name="bagian_id" class="form-select">
-                                <option value="">-- Semua Bagian --</option>
-                                @foreach ($bagian as $b)
-                                    <option value="{{ $b->id }}" @if (request('bagian_id') == $b->id) selected @endif>
-                                        {{ $b->nama }}
-                                    </option>
-                                @endforeach
+                            <label class="form-label">Satuan</label>
+                            <select name="satuan" class="form-select">
+                                <option value="">-- Semua Satuan --</option>
+                                <option value="Pcs" @if (request('satuan') == 'Pcs') selected @endif>Pcs</option>
+                                <option value="Unit" @if (request('satuan') == 'Unit') selected @endif>Unit</option>
+                                <option value="Box" @if (request('satuan') == 'Box') selected @endif>Box</option>
+                                <option value="Kg" @if (request('satuan') == 'Kg') selected @endif>Kg</option>
+                                <option value="Liter" @if (request('satuan') == 'Liter') selected @endif>Liter</option>
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Stok</label>
+                            <label class="form-label">Stok Total (PB)</label>
                             <div class="d-flex gap-2">
                                 <input type="number" name="stok_min" class="form-control" placeholder="Stok Minimum"
                                     value="{{ request('stok_min') }}" min="0">
@@ -459,45 +635,160 @@
                                     value="{{ request('stok_max') }}" min="0">
                             </div>
                         </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Rentang Harga Barang</label>
+                            <div class="d-flex gap-2">
+                                <input type="number" name="harga_min" class="form-control" placeholder="Min Harga"
+                                    value="{{ request('harga_min') }}" step="0.01" min="0">
+                                <input type="number" name="harga_max" class="form-control" placeholder="Max Harga"
+                                    value="{{ request('harga_max') }}" step="0.01" min="0">
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <a href="{{ route('pb.datakeseluruhan.index') }}" class="btn btn-secondary">Reset Filter</a>
+                    <a href="{{ route('pb.datakeseluruhan.index', ['tab' => 'data-keseluruhan']) }}" class="btn btn-secondary">Reset Filter</a>
                     <button class="btn btn-primary" type="submit">Terapkan Filter</button>
                 </div>
             </form>
         </div>
     </div>
+
     @push('scripts')
         <script>
-            // Toggle detail function
-            function toggleDetail(id) {
-                let el = document.getElementById('detail-' + id);
+            // Toggle Functions
+            function toggleDetail(type, id) {
+                let el = document.getElementById('detail-' + type + '-' + id);
                 if (el.style.display === 'none') {
                     el.style.display = 'table-row';
                 } else {
                     el.style.display = 'none';
                 }
             }
-            // Autocomplete search functionality
+
+            function toggleDistribusi(id) {
+                let el = document.getElementById('distribusi-' + id);
+                if (el.style.display === 'none') {
+                    el.style.display = 'table-row';
+                } else {
+                    el.style.display = 'none';
+                }
+            }
+
             document.addEventListener('DOMContentLoaded', function () {
-                const searchInput = document.getElementById('searchInput');
-                const suggestionsContainer = document.getElementById('searchSuggestions');
+                // Autocomplete untuk Tab Data Keseluruhan
+                setupAutocomplete('searchInput', 'searchSuggestions', 'searchForm', 'data-keseluruhan');
+                
+                // Autocomplete untuk Tab Distribusi
+                setupAutocomplete('searchInputDistribusi', 'searchSuggestionsDistribusi', 'searchFormDistribusi', 'distribusi');
+
+                // Handle Modal Barang Masuk
+                const modalBarangMasuk = document.getElementById("modalBarangMasuk");
+                if (modalBarangMasuk) {
+                    modalBarangMasuk.addEventListener("show.bs.modal", function (event) {
+                        const button = event.relatedTarget;
+                        const barangKode = button.getAttribute("data-kode");
+                        const barangNama = button.getAttribute("data-nama");
+                        const totalStok = parseInt(button.getAttribute("data-total-stok") || "0", 10);
+
+                        document.getElementById("barangMasukNama").textContent = barangNama;
+                        document.getElementById("barangMasukKode").value = barangKode;
+                        document.getElementById("stokSekarang").textContent = isFinite(totalStok) ? totalStok : 0;
+
+                        // Reset form
+                        document.getElementById('formBarangMasuk').reset();
+                        document.getElementById("barangMasukKode").value = barangKode;
+                    });
+                }
+
+                // Handle Modal Distribusi
+                const modalDistribusi = document.getElementById("modalDistribusi");
+                if (modalDistribusi) {
+                    modalDistribusi.addEventListener("show.bs.modal", function (event) {
+                        const button = event.relatedTarget;
+                        const pbStokId = button.getAttribute("data-id");
+                        const barangNama = button.getAttribute("data-nama");
+                        const barangKode = button.getAttribute("data-kode");
+                        const stok = parseInt(button.getAttribute("data-stok") || "0", 10);
+                        const harga = button.getAttribute("data-harga");
+
+                        document.getElementById("distribusiNama").textContent = barangNama;
+                        document.getElementById("distribusiPbStokId").value = pbStokId;
+                        document.getElementById("distribusiKode").value = barangKode;
+                        document.getElementById("distribusiHarga").value = harga;
+                        document.getElementById("stokTersedia").textContent = isFinite(stok) ? stok : 0;
+
+                        // Set max untuk jumlah distribusi
+                        const inputJumlah = document.getElementById('jumlahDistribusi');
+                        if (inputJumlah) inputJumlah.max = isFinite(stok) ? stok : 0;
+
+                        // Reset form
+                        document.getElementById('formDistribusi').reset();
+                        document.getElementById("distribusiPbStokId").value = pbStokId;
+                        document.getElementById("distribusiKode").value = barangKode;
+                        document.getElementById("distribusiHarga").value = harga;
+                    });
+                }
+
+                // Form submit handlers
+                const formBarangMasuk = document.getElementById('formBarangMasuk');
+                if (formBarangMasuk) {
+                    formBarangMasuk.addEventListener('submit', function (e) {
+                        e.preventDefault();
+                        
+                        // Validasi bagian_id harus dipilih
+                        const bagianId = document.getElementById('bagianTujuan').value;
+                        if (!bagianId) {
+                            alert('Silakan pilih bagian tujuan terlebih dahulu!');
+                            return false;
+                        }
+                        
+                        // Validasi harga harus diisi
+                        const harga = this.querySelector('input[name="harga"]').value;
+                        if (!harga || parseFloat(harga) <= 0) {
+                            alert('Silakan masukkan harga yang valid!');
+                            return false;
+                        }
+                        
+                        const kodeBarang = document.getElementById('barangMasukKode').value;
+                        this.action = `/pb/barang-masuk/${kodeBarang}`;
+                        this.submit();
+                    });
+                }
+
+                const formDistribusi = document.getElementById('formDistribusi');
+                if (formDistribusi) {
+                    formDistribusi.addEventListener('submit', function (e) {
+                        e.preventDefault();
+                        const pbStokId = document.getElementById('distribusiPbStokId').value;
+                        this.action = `/pb/distribusi/${pbStokId}`;
+                        this.submit();
+                    });
+                }
+            });
+
+            // Setup Autocomplete Function
+            function setupAutocomplete(inputId, suggestionsId, formId, tabName) {
+                const searchInput = document.getElementById(inputId);
+                const suggestionsContainer = document.getElementById(suggestionsId);
+                
+                if (!searchInput || !suggestionsContainer) return;
+
                 let currentSuggestions = [];
                 let activeSuggestionIndex = -1;
                 let searchTimeout;
-                if (!searchInput || !suggestionsContainer) {
-                    return;
-                }
+
                 function fetchSuggestions(query) {
                     if (query.length < 2) {
                         hideSuggestions();
                         return;
                     }
+
                     showLoading();
                     clearTimeout(searchTimeout);
+                    
                     searchTimeout = setTimeout(() => {
-                        fetch(`/pb/api/search-barang?q=${encodeURIComponent(query)}`)
+                        fetch(`/pb/api/search-barang?q=${encodeURIComponent(query)}&tab=${tabName}`)
                             .then(response => response.json())
                             .then(data => {
                                 currentSuggestions = data;
@@ -509,14 +800,15 @@
                             });
                     }, 300);
                 }
+
                 function showLoading() {
-                    suggestionsContainer.innerHTML = '<div class="loading-suggestion">Mencari...</div>';
+                    suggestionsContainer.innerHTML = '<div class="loading-suggestion" style="padding:12px;text-align:center;color:#6b7280;">Mencari...</div>';
                     suggestionsContainer.style.display = 'block';
                 }
+
                 function displaySuggestions(suggestions) {
                     if (suggestions.length === 0) {
-                        suggestionsContainer.innerHTML =
-                            '<div class="loading-suggestion">Tidak ada barang ditemukan</div>';
+                        suggestionsContainer.innerHTML = '<div class="loading-suggestion" style="padding:12px;text-align:center;color:#6b7280;">Tidak ada barang ditemukan</div>';
                         return;
                     }
 
@@ -526,22 +818,18 @@
                         const stockText = item.stock_status === 'empty' ? 'Habis' :
                             item.stock_status === 'low' ? 'Sedikit' : 'Tersedia';
 
-                        // Badge untuk menunjukkan match type
-                        const matchBadge = item.match_type === 'bagian'
-                            ? '<span style="background:#10b981;color:white;padding:2px 8px;border-radius:4px;font-size:11px;margin-left:8px;">📍 Bagian</span>'
-                            : '';
-
                         html += `
-                                <div class="search-suggestion-item" data-index="${index}">
-                                    <div class="suggestion-name">${item.nama} ${matchBadge}</div>
-                                    <div class="suggestion-code">ID: ${item.id} | Kode: ${item.kode} | Bagian: <strong>${item.bagian}</strong></div>
-                                    <div class="suggestion-meta">
-                                        <small>Kategori: ${item.kategori} | Stok: ${item.stok} | ${item.harga} | 
-                                        <span class="stock-status ${stockStatusClass}">${stockText}</span></small>
-                                    </div>
+                            <div class="search-suggestion-item" data-index="${index}">
+                                <div class="suggestion-name">${item.nama}</div>
+                                <div class="suggestion-code">Kode: ${item.kode} | ${tabName === 'data-keseluruhan' ? 'Kategori: ' + item.kategori : 'Bagian: ' + item.bagian}</div>
+                                <div class="suggestion-meta">
+                                    <small>Stok: ${item.stok} | ${item.harga} | 
+                                    <span class="stock-status ${stockStatusClass}">${stockText}</span></small>
                                 </div>
-                            `;
+                            </div>
+                        `;
                     });
+                    
                     suggestionsContainer.innerHTML = html;
                     suggestionsContainer.style.display = 'block';
 
@@ -552,19 +840,22 @@
                         });
                     });
                 }
+
                 function hideSuggestions() {
                     suggestionsContainer.style.display = 'none';
                     activeSuggestionIndex = -1;
                 }
+
                 function selectSuggestion(index) {
                     if (currentSuggestions[index]) {
                         const suggestion = currentSuggestions[index];
                         searchInput.value = suggestion.nama;
                         hideSuggestions();
-                        const form = document.getElementById('searchForm');
+                        const form = document.getElementById(formId);
                         form.submit();
                     }
                 }
+
                 function updateActiveSuggestion(suggestions) {
                     suggestions.forEach((item, index) => {
                         if (index === activeSuggestionIndex) {
@@ -574,12 +865,15 @@
                         }
                     });
                 }
+
                 // Event listeners
                 searchInput.addEventListener('input', function () {
                     fetchSuggestions(this.value.trim());
                 });
+
                 searchInput.addEventListener('keydown', function (e) {
                     const suggestions = suggestionsContainer.querySelectorAll('.search-suggestion-item');
+                    
                     if (e.key === 'ArrowDown') {
                         e.preventDefault();
                         activeSuggestionIndex = Math.min(activeSuggestionIndex + 1, suggestions.length - 1);
@@ -597,110 +891,19 @@
                         hideSuggestions();
                     }
                 });
+
                 searchInput.addEventListener('focus', function () {
                     if (this.value.trim().length >= 2) {
                         fetchSuggestions(this.value.trim());
                     }
                 });
+
                 document.addEventListener('click', function (e) {
                     if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
                         hideSuggestions();
                     }
                 });
-                // Handle Modal Kelola Barang
-                const modalKelola = document.getElementById("modalKelolaBarang");
-                if (modalKelola) {
-                    modalKelola.addEventListener("show.bs.modal", function (event) {
-                        const button = event.relatedTarget;
-                        const pbStokId = button.getAttribute("data-id");
-                        const barangNama = button.getAttribute("data-nama");
-                        const barangKode = button.getAttribute("data-kode");
-                        const stok = parseInt(button.getAttribute("data-stok") || "0", 10);
-                        // Set data untuk kedua form
-                        document.getElementById("kelolaBarangNama").textContent = barangNama;
-                        document.getElementById("barangMasukPbStokId").value = pbStokId;
-                        document.getElementById("barangMasukKode").value = barangKode;
-                        document.getElementById("barangMasukNama").value = barangNama;
-                        document.getElementById("distribusiPbStokId").value = pbStokId;
-                        document.getElementById("distribusiBarangKode").value = barangKode;
-                        document.getElementById("distribusiBarangNama").value = barangNama;
-                        // tampilkan stok di dua tab 
-                        const elMasuk = document.getElementById("stokTersediaMasuk");
-                        const elKeluar = document.getElementById("stokTersediaKeluar");
-                        if (elMasuk) elMasuk.textContent = isFinite(stok) ? stok : 0;
-                        if (elKeluar) elKeluar.textContent = isFinite(stok) ? stok : 0;
-
-                        // batasi jumlah distribusi <= stok
-                        const inputJumlahKeluar = document.querySelector('#content-distribusi input[name="jumlah"]');
-                        if (inputJumlahKeluar) inputJumlahKeluar.max = isFinite(stok) ? stok : 0;
-
-                        // Reset ke tab pertama
-                        const firstTab = document.getElementById('tab-barang-masuk');
-                        const firstTabContent = document.getElementById('content-barang-masuk');
-                        const secondTab = document.getElementById('tab-distribusi');
-                        const secondTabContent = document.getElementById('content-distribusi');
-
-                        firstTab.classList.add('active');
-                        firstTabContent.classList.add('show', 'active');
-                        secondTab.classList.remove('active');
-                        secondTabContent.classList.remove('show', 'active');
-
-                        // Reset forms
-                        document.getElementById('formBarangMasuk').reset();
-                        document.getElementById('formDistribusi').reset();
-
-                        // Set kembali nilai barang setelah reset
-                        document.getElementById("barangMasukPbStokId").value = pbStokId;
-                        document.getElementById("barangMasukKode").value = barangKode;
-                        document.getElementById("barangMasukNama").value = barangNama;
-                        document.getElementById("distribusiPbStokId").value = pbStokId;
-                        document.getElementById("distribusiBarangKode").value = barangKode;
-                        document.getElementById("distribusiBarangNama").value = barangNama;
-
-                        // Clear file previews
-                        document.getElementById('fileNameMasuk').textContent = '';
-                        document.getElementById('fileNameDistribusi').textContent = '';
-                    });
-                }
-
-                // File preview handlers
-                const buktiBrgMasuk = document.getElementById('buktiBrgMasuk');
-                if (buktiBrgMasuk) {
-                    buktiBrgMasuk.addEventListener('change', function () {
-                        const fileName = this.files[0]?.name || '';
-                        document.getElementById('fileNameMasuk').textContent = fileName ? `File: ${fileName}` : '';
-                    });
-                }
-
-                const buktiBrgDistribusi = document.getElementById('buktiBrgDistribusi');
-                if (buktiBrgDistribusi) {
-                    buktiBrgDistribusi.addEventListener('change', function () {
-                        const fileName = this.files[0]?.name || '';
-                        document.getElementById('fileNameDistribusi').textContent = fileName ? `File: ${fileName}` : '';
-                    });
-                }
-
-                // Form submit handlers
-                const formBarangMasuk = document.getElementById('formBarangMasuk');
-                if (formBarangMasuk) {
-                    formBarangMasuk.addEventListener('submit', function (e) {
-                        e.preventDefault();
-                        const pbStokId = document.getElementById('barangMasukPbStokId').value;
-                        this.action = `/pb/barang-masuk/${pbStokId}`;
-                        this.submit();
-                    });
-                }
-
-                const formDistribusi = document.getElementById('formDistribusi');
-                if (formDistribusi) {
-                    formDistribusi.addEventListener('submit', function (e) {
-                        e.preventDefault();
-                        const pbStokId = document.getElementById('distribusiPbStokId').value;
-                        this.action = `/pb/distribusi/${pbStokId}`;
-                        this.submit();
-                    });
-                }
-            });
+            }
         </script>
     @endpush
 </x-layouts.app>
