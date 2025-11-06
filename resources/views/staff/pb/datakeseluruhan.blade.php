@@ -472,8 +472,6 @@
                             </tbody>
                         </table>
                     </div>
-<<<<<<< HEAD
-=======
                 @else
                     <div class="alert alert-warning">Tidak ada data ditemukan untuk kriteria pencarian Anda</div>
                 @endif
@@ -563,7 +561,6 @@
                             @endforeach
                         </tbody>
                     </table>
->>>>>>> 7ed13d992a1891b817f6cd74826fb62e56cb4387
                 </div>
             </div>
         </section>
