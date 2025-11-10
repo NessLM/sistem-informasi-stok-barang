@@ -38,7 +38,7 @@ class DataKeseluruhan extends Controller
                 ->orderBy('nama')
                 ->get();
 
-            // Load barang untuk setiap kategori (stok > 0)
+            // Load barang untuk setiap kategori (stok > 0)s
             foreach ($kategori as $k) {
                 $k->barang = DB::table('pj_stok')
                     ->join('barang', 'pj_stok.kode_barang', '=', 'barang.kode_barang')

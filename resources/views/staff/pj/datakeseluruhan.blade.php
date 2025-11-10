@@ -370,7 +370,7 @@
                                                       onsubmit="return confirm('Yakin ingin mengembalikan barang ini ke PB Stok?\n\nBarang: {{ $item->nama_barang }}\nJumlah: {{ $item->jumlah }} {{ $item->satuan }}')">
                                                     @csrf
                                                     <button type="submit" class="btn btn-sm btn-return w-100">
-                                                        <i class="bi bi-arrow-left-circle"></i> Kembalikan
+                                                        <i class="bi bi-arrow-left-circle"></i> Kembalikan+
                                                     </button>
                                                 </form>
                                             </div>

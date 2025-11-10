@@ -239,7 +239,7 @@ Route::prefix('pj')->name('pj.')
         Route::post('/pj/kembalikan-barang/{id}', [DataKeseluruhan::class, 'kembalikanBarang'])
     ->name('pj.kembalikan-barang');
 
-    // Di dalam Route::prefix('pj')->name('pj.')...
+    // Di dalam Route::prefix('pj')->name('pj.')..
 Route::post('/kembalikan-barang/{id}', [PjDataKeseluruhanController::class, 'kembalikanBarang'])
     ->name('kembalikan-barang');
 
