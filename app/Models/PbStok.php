@@ -13,7 +13,9 @@ class PbStok extends Model
 
     protected $fillable = [
         'kode_barang',
+        'bagian_id',
         'stok',
+        'harga',
     ];
 
     protected $casts = [

@@ -791,355 +791,293 @@
     </div>
 
     @push('scripts')
+<script>
+    // Toggle untuk kelola barang masuk per kategori
+    function toggleKelolaBarangMasuk(id) {
+        const el = document.getElementById('kelola-masuk-' + id);
+        const btn = event.currentTarget;
+        const icon = btn.querySelector('i');
 
-        <script>
-            // Toggle untuk Kelola Barang Masuk
-            function toggleKelolaBarangMasuk(id) {
-                let el = document.getElementById('kelola-masuk-' + id);
-                let btn = event.currentTarget;
-                let icon = btn.querySelector('i');
+        if (el.style.display === 'none' || el.style.display === '') {
+            el.style.display = 'table-row';
+            icon.classList.remove('bi-chevron-down');
+            icon.classList.add('bi-chevron-up');
+        } else {
+            el.style.display = 'none';
+            icon.classList.remove('bi-chevron-up');
+            icon.classList.add('bi-chevron-down');
+        }
+    }
 
-                if (el.style.display === 'none') {
-                    el.style.display = 'table-row';
-                    icon.classList.remove('bi-chevron-down');
-                    icon.classList.add('bi-chevron-up');
-                } else {
-                    el.style.display = 'none';
-                    icon.classList.remove('bi-chevron-up');
-                    icon.classList.add('bi-chevron-down');
-                }
-            }
+    // Toggle detail kategori / bagian
+    function toggleDetail(type, id) {
+        const el = document.getElementById('detail-' + type + '-' + id);
+        if (!el) return;
+        el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'table-row' : 'none';
+    }
 
-            // Handle Modal Barang Masuk
-            // Handle Modal Barang Masuk
-            const modalBarangMasuk = document.getElementById("modalBarangMasuk");
-            if (modalBarangMasuk) {
-                modalBarangMasuk.addEventListener("show.bs.modal", function (event) {
-                    const button = event.relatedTarget;
-                    const barangKode = button.getAttribute("data-kode");
-                    const barangNama = button.getAttribute("data-nama");
-                    const barangSatuan = button.getAttribute("data-satuan");
+    function toggleDistribusi(id) {
+        const el = document.getElementById('distribusi-' + id);
+        if (!el) return;
+        el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'table-row' : 'none';
+    }
 
-                    // Set nilai ke form
-                    document.getElementById("barangMasukNama").value = barangNama;
-                    document.getElementById("barangMasukKode").value = barangKode;
-                    document.getElementById("barangMasukKodeDisplay").value = barangKode;
-                    document.getElementById("satuanDisplay").textContent = barangSatuan;
+    document.addEventListener('DOMContentLoaded', function () {
+        // Autocomplete
+        setupAutocomplete('searchInput', 'searchSuggestions', 'searchForm', 'data-keseluruhan');
+        setupAutocomplete('searchInputDistribusi', 'searchSuggestionsDistribusi', 'searchFormDistribusi', 'distribusi');
 
-                    // ✅ KOSONGKAN INPUT HARGA (user wajib isi manual)
-                    document.getElementById("hargaBarangMasuk").value = '';
+        /**
+         * MODAL BARANG MASUK
+         */
+        const modalBarangMasuk = document.getElementById('modalBarangMasuk');
+        const formBarangMasuk = document.getElementById('formBarangMasuk');
 
-                    // Reset form fields yang lain
-                    document.querySelector('input[name="jumlah"]').value = '';
-                    document.querySelector('select[name="bagian_id"]').value = '';
-                    document.querySelector('textarea[name="keterangan"]').value = '';
-                    document.querySelector('input[name="bukti"]').value = '';
-                });
-            }
+        if (modalBarangMasuk && formBarangMasuk) {
+            modalBarangMasuk.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const barangKode = button.getAttribute('data-kode');
+                const barangNama = button.getAttribute('data-nama');
+                const barangSatuan = button.getAttribute('data-satuan') || 'Unit';
 
-            // Form submit handler untuk Barang Masuk
-            const formBarangMasuk = document.getElementById('formBarangMasuk');
-            if (formBarangMasuk) {
-                formBarangMasuk.addEventListener('submit', function (e) {
-                    e.preventDefault();
+                // Reset form setiap buka modal
+                formBarangMasuk.reset();
 
-                    // Validasi bagian_id harus dipilih
-                    const bagianId = document.getElementById('bagianTujuanMasuk').value;
-                    if (!bagianId) {
-                        alert('Silakan pilih bagian tujuan terlebih dahulu!');
-                        return false;
-                    }
-
-                    // Validasi harga harus diisi
-                    const harga = document.getElementById('hargaBarangMasuk').value;
-                    if (!harga || parseFloat(harga) <= 0) {
-                        alert('Silakan masukkan harga yang valid!');
-                        return false;
-                    }
-
-                    const kodeBarang = document.getElementById('barangMasukKode').value;
-                    this.action = `/pb/barang-masuk/${kodeBarang}`;
-                    this.submit();
-                });
-            }
-            // Toggle Functions
-            function toggleDetail(type, id) {
-                let el = document.getElementById('detail-' + type + '-' + id);
-                if (el.style.display === 'none') {
-                    el.style.display = 'table-row';
-                } else {
-                    el.style.display = 'none';
-                }
-            }
-
-            function toggleDistribusi(id) {
-                let el = document.getElementById('distribusi-' + id);
-                if (el.style.display === 'none') {
-                    el.style.display = 'table-row';
-                } else {
-                    el.style.display = 'none';
-                }
-            }
-
-            document.addEventListener('DOMContentLoaded', function () {
-                // Autocomplete untuk Tab Data Keseluruhan
-                setupAutocomplete('searchInput', 'searchSuggestions', 'searchForm', 'data-keseluruhan');
-
-                // Autocomplete untuk Tab Distribusi
-                setupAutocomplete('searchInputDistribusi', 'searchSuggestionsDistribusi', 'searchFormDistribusi', 'distribusi');
-
-                // Handle Modal Barang Masuk
-                const modalBarangMasuk = document.getElementById("modalBarangMasuk");
-                if (modalBarangMasuk) {
-                    modalBarangMasuk.addEventListener("show.bs.modal", function (event) {
-                        const button = event.relatedTarget;
-                        const barangKode = button.getAttribute("data-kode");
-                        const barangNama = button.getAttribute("data-nama");
-                        const totalStok = parseInt(button.getAttribute("data-total-stok") || "0", 10);
-
-                        document.getElementById("barangMasukNama").textContent = barangNama;
-                        document.getElementById("barangMasukKode").value = barangKode;
-                        document.getElementById("stokSekarang").textContent = isFinite(totalStok) ? totalStok : 0;
-
-                        // Reset form
-                        document.getElementById('formBarangMasuk').reset();
-                        document.getElementById("barangMasukKode").value = barangKode;
-                    });
-                }
-
-                // Handle Modal Distribusi
-                // Handle Modal Distribusi
-                // Handle Modal Distribusi
-                const modalDistribusi = document.getElementById("modalDistribusi");
-                if (modalDistribusi) {
-                    modalDistribusi.addEventListener("show.bs.modal", function (event) {
-                        const button = event.relatedTarget;
-
-                        // Ambil data dari button
-                        const pbStokId = button.getAttribute("data-id");
-                        const barangKode = button.getAttribute("data-kode");
-                        const barangNama = button.getAttribute("data-nama");
-                        const stok = parseInt(button.getAttribute("data-stok") || "0", 10);
-                        const harga = parseFloat(button.getAttribute("data-harga") || "0");
-                        const bagianId = button.getAttribute("data-bagian-id");
-                        const bagianNama = button.getAttribute("data-bagian-nama");
-
-                        // Set hidden fields
-                        document.getElementById("distribusiPbStokId").value = pbStokId;
-                        document.getElementById("distribusiKode").value = barangKode;
-                        document.getElementById("distribusiHarga").value = harga;
-                        document.getElementById("distribusiBagianId").value = bagianId;
-
-                        // Set display fields (read-only)
-                        document.getElementById("distribusiNama").value = barangNama;
-                        document.getElementById("distribusiKodeDisplay").value = barangKode;
-                        document.getElementById("distribusiBagianNama").value = bagianNama;
-                        document.getElementById("distribusiHargaDisplay").value = new Intl.NumberFormat('id-ID').format(harga);
-                        document.getElementById("stokTersedia").value = stok + ' Unit';
-
-                        // Set max untuk jumlah distribusi
-                        const inputJumlah = document.getElementById('jumlahDistribusi');
-                        if (inputJumlah) {
-                            inputJumlah.max = isFinite(stok) ? stok : 0;
-                            inputJumlah.value = ''; // Reset value
-                        }
-
-                        // Reset keterangan dan bukti
-                        document.querySelector('textarea[name="keterangan"]').value = '';
-                        document.querySelector('input[name="bukti"]').value = '';
-                        document.querySelector('input[name="tanggal"]').value = '{{ date("Y-m-d") }}';
-                    });
-                }
-                // Form submit handlers
-                const formBarangMasuk = document.getElementById('formBarangMasuk');
-                if (formBarangMasuk) {
-                    formBarangMasuk.addEventListener('submit', function (e) {
-                        e.preventDefault();
-
-                        // Validasi bagian_id harus dipilih
-                        const bagianId = document.getElementById('bagianTujuan').value;
-                        if (!bagianId) {
-                            alert('Silakan pilih bagian tujuan terlebih dahulu!');
-                            return false;
-                        }
-
-                        // Validasi harga harus diisi
-                        const harga = this.querySelector('input[name="harga"]').value;
-                        if (!harga || parseFloat(harga) <= 0) {
-                            alert('Silakan masukkan harga yang valid!');
-                            return false;
-                        }
-
-                        const kodeBarang = document.getElementById('barangMasukKode').value;
-                        this.action = `/pb/barang-masuk/${kodeBarang}`;
-                        this.submit();
-                    });
-                }
-
-                // Form submit handler untuk Distribusi
-                const formDistribusi = document.getElementById('formDistribusi');
-                if (formDistribusi) {
-                    formDistribusi.addEventListener('submit', function (e) {
-                        e.preventDefault();
-
-                        // Validasi jumlah tidak boleh melebihi stok
-                        const jumlah = parseInt(document.getElementById('jumlahDistribusi').value);
-                        const maxStok = parseInt(document.getElementById('jumlahDistribusi').max);
-
-                        if (!jumlah || jumlah <= 0) {
-                            alert('Jumlah distribusi harus lebih dari 0!');
-                            return false;
-                        }
-
-                        if (jumlah > maxStok) {
-                            alert(`Jumlah distribusi tidak boleh melebihi stok tersedia (${maxStok})!`);
-                            return false;
-                        }
-
-                        const pbStokId = document.getElementById('distribusiPbStokId').value;
-                        this.action = `/pb/distribusi/${pbStokId}`;
-                        this.submit();
-                    });
-                }
+                // Set nilai field
+                document.getElementById('barangMasukNama').value = barangNama;
+                document.getElementById('barangMasukKode').value = barangKode;
+                document.getElementById('barangMasukKodeDisplay').value = barangKode;
+                document.getElementById('satuanDisplay').textContent = barangSatuan;
             });
 
-            // Setup Autocomplete Function
-            function setupAutocomplete(inputId, suggestionsId, formId, tabName) {
-                const searchInput = document.getElementById(inputId);
-                const suggestionsContainer = document.getElementById(suggestionsId);
+            formBarangMasuk.addEventListener('submit', function (e) {
+                e.preventDefault();
 
-                if (!searchInput || !suggestionsContainer) return;
-
-                let currentSuggestions = [];
-                let activeSuggestionIndex = -1;
-                let searchTimeout;
-
-                function fetchSuggestions(query) {
-                    if (query.length < 2) {
-                        hideSuggestions();
-                        return;
-                    }
-
-                    showLoading();
-                    clearTimeout(searchTimeout);
-
-                    searchTimeout = setTimeout(() => {
-                        fetch(`/pb/api/search-barang?q=${encodeURIComponent(query)}&tab=${tabName}`)
-                            .then(response => response.json())
-                            .then(data => {
-                                currentSuggestions = data;
-                                displaySuggestions(data);
-                            })
-                            .catch(error => {
-                                console.error('Search error:', error);
-                                hideSuggestions();
-                            });
-                    }, 300);
+                const bagianId = document.getElementById('bagianTujuanMasuk').value;
+                if (!bagianId) {
+                    alert('Silakan pilih bagian tujuan terlebih dahulu!');
+                    return;
                 }
 
-                function showLoading() {
-                    suggestionsContainer.innerHTML = '<div class="loading-suggestion" style="padding:12px;text-align:center;color:#6b7280;">Mencari...</div>';
-                    suggestionsContainer.style.display = 'block';
+                const harga = document.getElementById('hargaBarangMasuk').value;
+                if (!harga || parseFloat(harga) <= 0) {
+                    alert('Silakan masukkan harga yang valid!');
+                    return;
                 }
 
-                function displaySuggestions(suggestions) {
-                    if (suggestions.length === 0) {
-                        suggestionsContainer.innerHTML = '<div class="loading-suggestion" style="padding:12px;text-align:center;color:#6b7280;">Tidak ada barang ditemukan</div>';
-                        return;
-                    }
-
-                    let html = '';
-                    suggestions.forEach((item, index) => {
-                        const stockStatusClass = `stock-${item.stock_status}`;
-                        const stockText = item.stock_status === 'empty' ? 'Habis' :
-                            item.stock_status === 'low' ? 'Sedikit' : 'Tersedia';
-
-                        html += `
-                                                                                                <div class="search-suggestion-item" data-index="${index}">
-                                                                                                    <div class="suggestion-name">${item.nama}</div>
-                                                                                                    <div class="suggestion-code">Kode: ${item.kode} | ${tabName === 'data-keseluruhan' ? 'Kategori: ' + item.kategori : 'Bagian: ' + item.bagian}</div>
-                                                                                                    <div class="suggestion-meta">
-                                                                                                        <small>Stok: ${item.stok} | ${item.harga} | 
-                                                                                                        <span class="stock-status ${stockStatusClass}">${stockText}</span></small>
-                                                                                                    </div>
-                                                                                                </div>
-                                                                                            `;
-                    });
-
-                    suggestionsContainer.innerHTML = html;
-                    suggestionsContainer.style.display = 'block';
-
-                    suggestionsContainer.querySelectorAll('.search-suggestion-item').forEach(item => {
-                        item.addEventListener('click', function () {
-                            const index = parseInt(this.dataset.index);
-                            selectSuggestion(index);
-                        });
-                    });
+                const jumlah = this.querySelector('input[name="jumlah"]').value;
+                if (!jumlah || parseInt(jumlah) <= 0) {
+                    alert('Silakan masukkan jumlah stok yang valid!');
+                    return;
                 }
 
-                function hideSuggestions() {
-                    suggestionsContainer.style.display = 'none';
-                    activeSuggestionIndex = -1;
+                const kodeBarang = document.getElementById('barangMasukKode').value;
+                this.action = `/pb/barang-masuk/${kodeBarang}`;
+                this.submit();
+            });
+        }
+
+        /**
+         * MODAL DISTRIBUSI
+         */
+        const modalDistribusi = document.getElementById('modalDistribusi');
+        const formDistribusi = document.getElementById('formDistribusi');
+
+        if (modalDistribusi && formDistribusi) {
+            modalDistribusi.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+
+                const pbStokId   = button.getAttribute('data-id');
+                const barangKode = button.getAttribute('data-kode');
+                const barangNama = button.getAttribute('data-nama');
+                const stok       = parseInt(button.getAttribute('data-stok') || '0', 10);
+                const harga      = parseFloat(button.getAttribute('data-harga') || '0');
+                const bagianId   = button.getAttribute('data-bagian-id');
+                const bagianNama = button.getAttribute('data-bagian-nama');
+
+                // Hidden
+                document.getElementById('distribusiPbStokId').value = pbStokId;
+                document.getElementById('distribusiKode').value = barangKode;
+                document.getElementById('distribusiHarga').value = harga;
+                document.getElementById('distribusiBagianId').value = bagianId;
+
+                // Display
+                document.getElementById('distribusiNama').value = barangNama;
+                document.getElementById('distribusiKodeDisplay').value = barangKode;
+                document.getElementById('distribusiBagianNama').value = bagianNama;
+                document.getElementById('distribusiHargaDisplay').value =
+                    new Intl.NumberFormat('id-ID').format(harga);
+                document.getElementById('stokTersedia').value = `${stok} Unit`;
+
+                // Jumlah distribusi
+                const inputJumlah = document.getElementById('jumlahDistribusi');
+                inputJumlah.max = isFinite(stok) ? stok : 0;
+                inputJumlah.value = '';
+
+                // Reset lain
+                formDistribusi.reset();
+                document.querySelector('#formDistribusi input[name="tanggal"]').value = '{{ date("Y-m-d") }}';
+            });
+
+            formDistribusi.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                const jumlah = parseInt(document.getElementById('jumlahDistribusi').value || '0', 10);
+                const maxStok = parseInt(document.getElementById('jumlahDistribusi').max || '0', 10);
+
+                if (!jumlah || jumlah <= 0) {
+                    alert('Jumlah distribusi harus lebih dari 0!');
+                    return;
                 }
 
-                function selectSuggestion(index) {
-                    if (currentSuggestions[index]) {
-                        const suggestion = currentSuggestions[index];
-                        searchInput.value = suggestion.nama;
-                        hideSuggestions();
-                        const form = document.getElementById(formId);
-                        form.submit();
-                    }
+                if (jumlah > maxStok) {
+                    alert(`Jumlah distribusi tidak boleh melebihi stok tersedia (${maxStok})!`);
+                    return;
                 }
 
-                function updateActiveSuggestion(suggestions) {
-                    suggestions.forEach((item, index) => {
-                        if (index === activeSuggestionIndex) {
-                            item.classList.add('active');
-                        } else {
-                            item.classList.remove('active');
-                        }
-                    });
-                }
+                const pbStokId = document.getElementById('distribusiPbStokId').value;
+                this.action = `/pb/distribusi/${pbStokId}`;
+                this.submit();
+            });
+        }
+    });
 
-                // Event listeners
-                searchInput.addEventListener('input', function () {
-                    fetchSuggestions(this.value.trim());
-                });
+    // Autocomplete function (biarkan seperti sebelumnya, hanya dirapikan)
+    function setupAutocomplete(inputId, suggestionsId, formId, tabName) {
+        const searchInput = document.getElementById(inputId);
+        const suggestionsContainer = document.getElementById(suggestionsId);
+        if (!searchInput || !suggestionsContainer) return;
 
-                searchInput.addEventListener('keydown', function (e) {
-                    const suggestions = suggestionsContainer.querySelectorAll('.search-suggestion-item');
+        let currentSuggestions = [];
+        let activeSuggestionIndex = -1;
+        let searchTimeout;
 
-                    if (e.key === 'ArrowDown') {
-                        e.preventDefault();
-                        activeSuggestionIndex = Math.min(activeSuggestionIndex + 1, suggestions.length - 1);
-                        updateActiveSuggestion(suggestions);
-                    } else if (e.key === 'ArrowUp') {
-                        e.preventDefault();
-                        activeSuggestionIndex = Math.max(activeSuggestionIndex - 1, -1);
-                        updateActiveSuggestion(suggestions);
-                    } else if (e.key === 'Enter') {
-                        if (activeSuggestionIndex >= 0) {
-                            e.preventDefault();
-                            selectSuggestion(activeSuggestionIndex);
-                        }
-                    } else if (e.key === 'Escape') {
-                        hideSuggestions();
-                    }
-                });
-
-                searchInput.addEventListener('focus', function () {
-                    if (this.value.trim().length >= 2) {
-                        fetchSuggestions(this.value.trim());
-                    }
-                });
-
-                document.addEventListener('click', function (e) {
-                    if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
-                        hideSuggestions();
-                    }
-                });
+        function fetchSuggestions(query) {
+            if (query.length < 2) {
+                hideSuggestions();
+                return;
             }
-        </script>
-    @endpush
+
+            showLoading();
+            clearTimeout(searchTimeout);
+
+            searchTimeout = setTimeout(() => {
+                fetch(`/pb/api/search-barang?q=${encodeURIComponent(query)}&tab=${tabName}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        currentSuggestions = data;
+                        displaySuggestions(data);
+                    })
+                    .catch(() => hideSuggestions());
+            }, 300);
+        }
+
+        function showLoading() {
+            suggestionsContainer.innerHTML =
+                '<div style="padding:12px;text-align:center;color:#6b7280;">Mencari...</div>';
+            suggestionsContainer.style.display = 'block';
+        }
+
+        function displaySuggestions(suggestions) {
+            if (!suggestions.length) {
+                suggestionsContainer.innerHTML =
+                    '<div style="padding:12px;text-align:center;color:#6b7280;">Tidak ada barang ditemukan</div>';
+                return;
+            }
+
+            let html = '';
+            suggestions.forEach((item, index) => {
+                const stockStatusClass = `stock-${item.stock_status}`;
+                const stockText =
+                    item.stock_status === 'empty' ? 'Habis' :
+                    item.stock_status === 'low' ? 'Sedikit' : 'Tersedia';
+
+                html += `
+                    <div class="search-suggestion-item" data-index="${index}">
+                        <div class="suggestion-name">${item.nama}</div>
+                        <div class="suggestion-code">
+                            Kode: ${item.kode} |
+                            ${tabName === 'data-keseluruhan'
+                                ? 'Kategori: ' + item.kategori
+                                : 'Bagian: ' + item.bagian}
+                        </div>
+                        <div class="suggestion-meta">
+                            <small>
+                                Stok: ${item.stok} | ${item.harga} |
+                                <span class="stock-status ${stockStatusClass}">${stockText}</span>
+                            </small>
+                        </div>
+                    </div>`;
+            });
+
+            suggestionsContainer.innerHTML = html;
+            suggestionsContainer.style.display = 'block';
+
+            suggestionsContainer.querySelectorAll('.search-suggestion-item').forEach(item => {
+                item.addEventListener('click', function () {
+                    const idx = parseInt(this.dataset.index);
+                    selectSuggestion(idx);
+                });
+            });
+        }
+
+        function hideSuggestions() {
+            suggestionsContainer.style.display = 'none';
+            activeSuggestionIndex = -1;
+        }
+
+        function selectSuggestion(index) {
+            if (currentSuggestions[index]) {
+                const suggestion = currentSuggestions[index];
+                searchInput.value = suggestion.nama;
+                hideSuggestions();
+                document.getElementById(formId).submit();
+            }
+        }
+
+        function updateActiveSuggestion(suggestions) {
+            suggestions.forEach((item, index) => {
+                item.classList.toggle('active', index === activeSuggestionIndex);
+            });
+        }
+
+        searchInput.addEventListener('input', function () {
+            fetchSuggestions(this.value.trim());
+        });
+
+        searchInput.addEventListener('keydown', function (e) {
+            const suggestions = suggestionsContainer.querySelectorAll('.search-suggestion-item');
+            if (!suggestions.length) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                activeSuggestionIndex = Math.min(activeSuggestionIndex + 1, suggestions.length - 1);
+                updateActiveSuggestion(suggestions);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                activeSuggestionIndex = Math.max(activeSuggestionIndex - 1, 0);
+                updateActiveSuggestion(suggestions);
+            } else if (e.key === 'Enter' && activeSuggestionIndex >= 0) {
+                e.preventDefault();
+                selectSuggestion(activeSuggestionIndex);
+            } else if (e.key === 'Escape') {
+                hideSuggestions();
+            }
+        });
+
+        searchInput.addEventListener('focus', function () {
+            if (this.value.trim().length >= 2) {
+                fetchSuggestions(this.value.trim());
+            }
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+                hideSuggestions();
+            }
+        });
+    }
+</script>
+@endpush
+
 </x-layouts.app>
