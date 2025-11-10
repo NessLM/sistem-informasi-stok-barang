@@ -823,12 +823,16 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
+        const today = "{{ date('Y-m-d') }}";
+
         // Autocomplete
         setupAutocomplete('searchInput', 'searchSuggestions', 'searchForm', 'data-keseluruhan');
         setupAutocomplete('searchInputDistribusi', 'searchSuggestionsDistribusi', 'searchFormDistribusi', 'distribusi');
 
         /**
+         * =======================
          * MODAL BARANG MASUK
+         * =======================
          */
         const modalBarangMasuk = document.getElementById('modalBarangMasuk');
         const formBarangMasuk = document.getElementById('formBarangMasuk');
@@ -840,14 +844,18 @@
                 const barangNama = button.getAttribute('data-nama');
                 const barangSatuan = button.getAttribute('data-satuan') || 'Unit';
 
-                // Reset form setiap buka modal
+                // Reset hanya field input form
                 formBarangMasuk.reset();
 
-                // Set nilai field
+                // Set nilai hidden + readonly
                 document.getElementById('barangMasukNama').value = barangNama;
                 document.getElementById('barangMasukKode').value = barangKode;
                 document.getElementById('barangMasukKodeDisplay').value = barangKode;
                 document.getElementById('satuanDisplay').textContent = barangSatuan;
+
+                // Tanggal default hari ini
+                const tgl = formBarangMasuk.querySelector('input[name="tanggal"]');
+                if (tgl) tgl.value = today;
             });
 
             formBarangMasuk.addEventListener('submit', function (e) {
@@ -878,7 +886,19 @@
         }
 
         /**
-         * MODAL DISTRIBUSI
+         * =======================
+         * MODAL DISTRIBUSI BARANG
+         * =======================
+         * Auto-fill:
+         * - Nama Barang
+         * - Kode Barang
+         * - Bagian Tujuan
+         * - Harga Satuan
+         * - Stok Tersedia (PB)
+         * User isi sendiri:
+         * - jumlahDistribusi
+         * - keterangan
+         * - bukti
          */
         const modalDistribusi = document.getElementById('modalDistribusi');
         const formDistribusi = document.getElementById('formDistribusi');
@@ -887,43 +907,53 @@
             modalDistribusi.addEventListener('show.bs.modal', function (event) {
                 const button = event.relatedTarget;
 
-                const pbStokId   = button.getAttribute('data-id');
-                const barangKode = button.getAttribute('data-kode');
-                const barangNama = button.getAttribute('data-nama');
+                // Reset form terlebih dahulu supaya field editable bersih
+                formDistribusi.reset();
+
+                // Ambil data dari tombol
+                const pbStokId   = button.getAttribute('data-id') || '';
+                const barangKode = button.getAttribute('data-kode') || '';
+                const barangNama = button.getAttribute('data-nama') || '';
                 const stok       = parseInt(button.getAttribute('data-stok') || '0', 10);
                 const harga      = parseFloat(button.getAttribute('data-harga') || '0');
-                const bagianId   = button.getAttribute('data-bagian-id');
-                const bagianNama = button.getAttribute('data-bagian-nama');
+                const bagianId   = button.getAttribute('data-bagian-id') || '';
+                const bagianNama = button.getAttribute('data-bagian-nama') || '';
 
-                // Hidden
+                // Hidden (untuk proses backend)
                 document.getElementById('distribusiPbStokId').value = pbStokId;
                 document.getElementById('distribusiKode').value = barangKode;
                 document.getElementById('distribusiHarga').value = harga;
                 document.getElementById('distribusiBagianId').value = bagianId;
 
-                // Display
+                // Readonly display
                 document.getElementById('distribusiNama').value = barangNama;
                 document.getElementById('distribusiKodeDisplay').value = barangKode;
                 document.getElementById('distribusiBagianNama').value = bagianNama;
                 document.getElementById('distribusiHargaDisplay').value =
                     new Intl.NumberFormat('id-ID').format(harga);
-                document.getElementById('stokTersedia').value = `${stok} Unit`;
+                document.getElementById('stokTersedia').value =
+                    (isFinite(stok) ? stok : 0) + ' Unit';
 
-                // Jumlah distribusi
+                // Jumlah distribusi → user isi sendiri
                 const inputJumlah = document.getElementById('jumlahDistribusi');
-                inputJumlah.max = isFinite(stok) ? stok : 0;
-                inputJumlah.value = '';
+                if (inputJumlah) {
+                    inputJumlah.max = isFinite(stok) ? stok : 0;
+                    inputJumlah.value = '';
+                }
 
-                // Reset lain
-                formDistribusi.reset();
-                document.querySelector('#formDistribusi input[name="tanggal"]').value = '{{ date("Y-m-d") }}';
+                // Tanggal default hari ini
+                const tgl = formDistribusi.querySelector('input[name="tanggal"]');
+                if (tgl) tgl.value = today;
+
+                // Keterangan & bukti sengaja dikosongkan (user isi manual)
             });
 
             formDistribusi.addEventListener('submit', function (e) {
                 e.preventDefault();
 
-                const jumlah = parseInt(document.getElementById('jumlahDistribusi').value || '0', 10);
-                const maxStok = parseInt(document.getElementById('jumlahDistribusi').max || '0', 10);
+                const jumlahInput = document.getElementById('jumlahDistribusi');
+                const jumlah = parseInt(jumlahInput.value || '0', 10);
+                const maxStok = parseInt(jumlahInput.max || '0', 10);
 
                 if (!jumlah || jumlah <= 0) {
                     alert('Jumlah distribusi harus lebih dari 0!');
@@ -942,7 +972,9 @@
         }
     });
 
-    // Autocomplete function (biarkan seperti sebelumnya, hanya dirapikan)
+    // =======================
+    // AUTOCOMPLETE
+    // =======================
     function setupAutocomplete(inputId, suggestionsId, formId, tabName) {
         const searchInput = document.getElementById(inputId);
         const suggestionsContainer = document.getElementById(suggestionsId);
@@ -1079,5 +1111,6 @@
     }
 </script>
 @endpush
+
 
 </x-layouts.app>
