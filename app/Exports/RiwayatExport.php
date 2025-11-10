@@ -76,6 +76,7 @@ class RiwayatMasukSheet implements FromCollection, WithHeadings, WithMapping, Wi
             'Tanggal',
             'Waktu',
             'Gudang',
+            'Bagian', // Kolom baru ditambahkan
             'Nama Barang',
             'Jumlah',
             'Satuan',
@@ -93,6 +94,7 @@ class RiwayatMasukSheet implements FromCollection, WithHeadings, WithMapping, Wi
         $waktu = isset($riwayat->waktu) ? 
                  \Carbon\Carbon::parse($riwayat->waktu)->format('H:i') . ' WIB' : '-';
         $gudang = $riwayat->gudang ?? '-';
+        $bagian = $riwayat->bagian_nama ?? ($riwayat->bagian ?? '-'); // Ambil dari bagian_nama atau bagian
         $namaBarang = $riwayat->nama_barang ?? '-';
         $jumlah = $riwayat->jumlah ?? '0';
         $satuan = $riwayat->satuan ?? '-';
@@ -103,6 +105,7 @@ class RiwayatMasukSheet implements FromCollection, WithHeadings, WithMapping, Wi
             $tanggal,
             $waktu,
             $gudang,
+            $bagian, // Data bagian
             $namaBarang,
             $jumlah,
             $satuan,
@@ -113,7 +116,7 @@ class RiwayatMasukSheet implements FromCollection, WithHeadings, WithMapping, Wi
     public function styles(Worksheet $sheet)
     {
         $lastRow = max(1, $this->riwayat->count() + 1);
-        $dataRange = 'A1:H' . $lastRow;
+        $dataRange = 'A1:I' . $lastRow; // Diubah dari H ke I karena tambahan 1 kolom
         
         // Apply borders to all cells
         $sheet->getStyle($dataRange)->applyFromArray([
@@ -125,22 +128,23 @@ class RiwayatMasukSheet implements FromCollection, WithHeadings, WithMapping, Wi
         ]);
 
         // Set semua kolom ke center alignment
-        $sheet->getStyle('A2:H' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('A2:H' . $lastRow)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+        $sheet->getStyle('A2:I' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A2:I' . $lastRow)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
         
-        // Set Nama Barang (E) dan Keterangan (H) ke left alignment
-        $sheet->getStyle('E2:E' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
-        $sheet->getStyle('H2:H' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+        // Set Nama Barang (F) dan Keterangan (I) ke left alignment
+        $sheet->getStyle('F2:F' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+        $sheet->getStyle('I2:I' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
 
         // Set column widths
         $sheet->getColumnDimension('A')->setWidth(8);
         $sheet->getColumnDimension('B')->setWidth(15);
         $sheet->getColumnDimension('C')->setWidth(12);
         $sheet->getColumnDimension('D')->setWidth(20);
-        $sheet->getColumnDimension('E')->setWidth(30);
-        $sheet->getColumnDimension('F')->setWidth(10);
-        $sheet->getColumnDimension('G')->setWidth(10);
-        $sheet->getColumnDimension('H')->setWidth(25);
+        $sheet->getColumnDimension('E')->setWidth(30); // Lebar untuk kolom Bagian
+        $sheet->getColumnDimension('F')->setWidth(30); // Diubah dari E ke F
+        $sheet->getColumnDimension('G')->setWidth(10); // Diubah dari F ke G
+        $sheet->getColumnDimension('H')->setWidth(10); // Diubah dari G ke H
+        $sheet->getColumnDimension('I')->setWidth(25); // Diubah dari H ke I
 
         return [
             1 => [
