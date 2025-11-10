@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Schema;
 use App\Models\Gudang;
 use App\Models\PjStok;
 use App\Models\TransaksiBarangKeluar;
+use App\Models\TransaksiDistribusi;
 use App\Models\Bagian;
 use Illuminate\Http\Request;
 use App\Helpers\MenuHelper;
@@ -89,6 +90,24 @@ class DataKeseluruhan extends Controller
                 'kategori' => (object)['nama' => $i->kategori_nama],
             ])->values();
 
+            // Ambil data barang masuk dari transaksi_distribusi
+            $barangMasuk = DB::table('transaksi_distribusi')
+                ->join('barang', 'transaksi_distribusi.kode_barang', '=', 'barang.kode_barang')
+                ->where('transaksi_distribusi.bagian_id', $gudang->id)
+                ->orderBy('transaksi_distribusi.tanggal', 'desc')
+                ->select(
+                    'transaksi_distribusi.id',
+                    'transaksi_distribusi.tanggal',
+                    'barang.kode_barang',
+                    'barang.nama_barang',
+                    'transaksi_distribusi.jumlah',
+                    'barang.satuan',
+                    'transaksi_distribusi.keterangan',
+                    'transaksi_distribusi.bukti'
+                )
+                ->limit(50)
+                ->get();
+
             return view('staff.pj.datakeseluruhan', compact(
                 'menu',
                 'kategori',
@@ -96,6 +115,7 @@ class DataKeseluruhan extends Controller
                 'selectedGudang',
                 'bagian',
                 'barangHabis',
+                'barangMasuk',
                 'lowThreshold',
                 'ringkasanCounts'
             ));
@@ -112,7 +132,7 @@ class DataKeseluruhan extends Controller
                         ->join('barang', 'stok_bagian.kode_barang', '=', 'barang.kode_barang')
                         ->where('stok_bagian.bagian_id', $bagianUser->id)
                         ->where('barang.id_kategori', $k->id)
-                        ->where('stok_bagian.stok', '>', 0) // Hanya tampilkan yang stok > 0
+                        ->where('stok_bagian.stok', '>', 0)
                         ->select(
                             'barang.kode_barang as kode',
                             'barang.nama_barang as nama',
@@ -132,7 +152,7 @@ class DataKeseluruhan extends Controller
                     return (object)[
                         'id' => $k->id,
                         'nama' => $k->nama,
-                        'barang' => $items, // Bisa kosong jika tidak ada stok di bagian ini
+                        'barang' => $items,
                         'gudang' => (object)['nama' => 'Bagian ' . $bagianUser->nama],
                     ];
                 });
@@ -203,6 +223,24 @@ class DataKeseluruhan extends Controller
                 'kategori' => (object)['nama' => $i->kategori_nama],
             ])->values();
 
+            // Ambil data barang masuk dari transaksi_distribusi untuk bagian
+            $barangMasuk = DB::table('transaksi_distribusi')
+                ->join('barang', 'transaksi_distribusi.kode_barang', '=', 'barang.kode_barang')
+                ->where('transaksi_distribusi.bagian_id', $bagianUser->id)
+                ->orderBy('transaksi_distribusi.tanggal', 'desc')
+                ->select(
+                    'transaksi_distribusi.id',
+                    'transaksi_distribusi.tanggal',
+                    'barang.kode_barang',
+                    'barang.nama_barang',
+                    'transaksi_distribusi.jumlah',
+                    'barang.satuan',
+                    'transaksi_distribusi.keterangan',
+                    'transaksi_distribusi.bukti'
+                )
+                ->limit(50)
+                ->get();
+
             return view('staff.pj.datakeseluruhan', compact(
                 'menu',
                 'kategori',
@@ -210,6 +248,7 @@ class DataKeseluruhan extends Controller
                 'selectedGudang',
                 'bagian',
                 'barangHabis',
+                'barangMasuk',
                 'lowThreshold',
                 'ringkasanCounts'
             ));
@@ -423,6 +462,154 @@ class DataKeseluruhan extends Controller
                 'type' => 'error',
                 'title' => 'Error',
                 'message' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Kembalikan barang ke PB Stok
+     */
+    public function kembalikanBarang($id)
+    {
+        Log::info('=== KEMBALIKAN BARANG REQUEST ===', ['transaksi_id' => $id]);
+
+        $user = Auth::user();
+
+        DB::beginTransaction();
+        try {
+            // Ambil data transaksi distribusi
+            $transaksi = DB::table('transaksi_distribusi')
+                ->where('id', $id)
+                ->first();
+
+            if (!$transaksi) {
+                return back()->with('toast', [
+                    'type' => 'error',
+                    'title' => 'Data Tidak Ditemukan',
+                    'message' => 'Transaksi distribusi tidak ditemukan.'
+                ]);
+            }
+
+            // Validasi: Hanya bisa mengembalikan barang ke gudang/bagian yang sesuai
+            if ($user->gudang_id && $transaksi->bagian_id != $user->gudang_id) {
+                return back()->with('toast', [
+                    'type' => 'error',
+                    'title' => 'Akses Ditolak',
+                    'message' => 'Anda tidak memiliki akses untuk mengembalikan barang ini.'
+                ]);
+            }
+
+            if ($user->bagian_id && $transaksi->bagian_id != $user->bagian_id) {
+                return back()->with('toast', [
+                    'type' => 'error',
+                    'title' => 'Akses Ditolak',
+                    'message' => 'Anda tidak memiliki akses untuk mengembalikan barang ini.'
+                ]);
+            }
+
+            $kodeBarang = $transaksi->kode_barang;
+            $jumlah = $transaksi->jumlah;
+
+            // Ambil data barang untuk mendapatkan id_kategori
+            $barang = DB::table('barang')
+                ->where('kode_barang', $kodeBarang)
+                ->first();
+
+            if (!$barang) {
+                throw new \Exception('Data barang tidak ditemukan.');
+            }
+
+            // MODE GUDANG - Kembalikan ke pj_stok
+            if ($user->gudang_id && Schema::hasTable('pj_stok')) {
+                // Cek apakah sudah ada di pj_stok
+                $pjStok = PjStok::where('kode_barang', $kodeBarang)
+                    ->where('id_gudang', $user->gudang_id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($pjStok) {
+                    // Jika sudah ada, tambahkan stok
+                    $pjStok->increment('stok', $jumlah);
+                } else {
+                    // Jika belum ada, buat record baru
+                    PjStok::create([
+                        'kode_barang' => $kodeBarang,
+                        'id_gudang' => $user->gudang_id,
+                        'id_kategori' => $barang->id_kategori,
+                        'stok' => $jumlah,
+                    ]);
+                }
+
+                $namaLokasi = 'Gudang';
+            }
+            // MODE BAGIAN - Kembalikan ke pb_stok
+            else if ($user->bagian_id) {
+                // Kurangi stok dari stok_bagian terlebih dahulu
+                $stokBagian = StokBagian::where('kode_barang', $kodeBarang)
+                    ->where('bagian_id', $user->bagian_id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($stokBagian) {
+                    if ($stokBagian->stok >= $jumlah) {
+                        $stokBagian->decrement('stok', $jumlah);
+                    }
+                }
+
+                // Cek apakah sudah ada di pb_stok
+                $pbStok = DB::table('pb_stok')
+                    ->where('kode_barang', $kodeBarang)
+                    ->where('bagian_id', $user->bagian_id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($pbStok) {
+                    // Jika sudah ada, tambahkan stok
+                    DB::table('pb_stok')
+                        ->where('kode_barang', $kodeBarang)
+                        ->where('bagian_id', $user->bagian_id)
+                        ->increment('stok', $jumlah);
+                } else {
+                    // Jika belum ada, buat record baru
+                    DB::table('pb_stok')->insert([
+                        'kode_barang' => $kodeBarang,
+                        'bagian_id' => $user->bagian_id,
+                        'stok' => $jumlah,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+
+                $bagianData = Bagian::find($user->bagian_id);
+                $namaLokasi = 'PB ' . ($bagianData->nama ?? '');
+            } else {
+                throw new \Exception('User tidak memiliki akses gudang atau bagian.');
+            }
+
+            // Hapus transaksi distribusi setelah berhasil dikembalikan
+            DB::table('transaksi_distribusi')
+                ->where('id', $id)
+                ->delete();
+
+            DB::commit();
+
+            return back()->with('toast', [
+                'type' => 'success',
+                'title' => 'Berhasil',
+                'message' => "Barang berhasil dikembalikan ke {$namaLokasi}. Jumlah: {$jumlah}"
+            ]);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('Kembalikan barang gagal', [
+                'err' => $e->getMessage(), 
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->with('toast', [
+                'type' => 'error',
+                'title' => 'Error',
+                'message' => 'Gagal mengembalikan barang: ' . $e->getMessage()
             ]);
         }
     }
