@@ -27,17 +27,36 @@ class RiwayatController extends Controller
      */
     private function mapBarangMasukToAdminRow(TransaksiBarangMasuk $item)
     {
+
+        // Debug: cek data yang ada
+        $bagianNama = '-';
+
+        // Cek berbagai kemungkinan sumber data bagian
+        if ($item->relationLoaded('bagian') && $item->bagian) {
+            $bagianNama = $item->bagian->nama;
+        }
+        // Jika ada kolom bagian_id, load manual
+        elseif ($item->bagian_id) {
+            $bagian = \App\Models\Bagian::find($item->bagian_id);
+            $bagianNama = $bagian ? $bagian->nama : '-';
+        }
+        // Jika tidak ada data bagian sama sekali
+        else {
+            $bagianNama = 'Tidak ada data bagian';
+        }
+
         return (object) [
             'tanggal'     => $item->tanggal ?? optional($item->created_at)->toDateString(),
             'waktu'       => optional($item->created_at)->format('H:i:s'),
             'alur_barang' => 'Masuk PB',
-            'gudang'      => 'Gudang Utama', // <— tetap
+            'gudang'      => 'Gudang Utama',
             'nama_barang' => optional($item->barang)->nama_barang ?? '-',
             'jumlah'      => (int) ($item->jumlah ?? 0),
             'satuan'      => optional($item->barang)->satuan ?? '-',
             'bukti'       => $item->bukti,
             'bukti_path'  => $item->bukti ? asset('storage/' . str_replace('\\', '/', $item->bukti)) : null,
             'keterangan'  => $item->keterangan ?? 'Barang masuk',
+            'bagian_nama' => $bagianNama,
         ];
     }
 
@@ -101,14 +120,14 @@ class RiwayatController extends Controller
         }
 
         /** 1) Barang Masuk (Admin -> PB) */
-        $bmQ = TransaksiBarangMasuk::with(['barang.kategori', 'user']);
+        $bmQ = TransaksiBarangMasuk::with(['barang.kategori', 'user', 'bagian']); // Tambahkan 'bagian' di sini
         $this->applyPeriodeFilter($bmQ, $request);
 
         $riwayatBarangMasuk = $bmQ
             ->orderBy('tanggal', 'desc')
             ->orderBy('created_at', 'desc')
             ->get()
-            ->map(fn ($item) => $this->mapBarangMasukToAdminRow($item))
+            ->map(fn($item) => $this->mapBarangMasukToAdminRow($item))
             ->values()
             ->toBase();
 
@@ -163,7 +182,7 @@ class RiwayatController extends Controller
                 ->orderBy('transaksi_distribusi.tanggal', 'desc')
                 ->orderBy('transaksi_distribusi.created_at', 'desc')
                 ->get()
-                ->map(fn ($r) => $this->mapDistribusiBagianRow($r))
+                ->map(fn($r) => $this->mapDistribusiBagianRow($r))
                 ->values()
                 ->toBase();
         }
@@ -220,7 +239,7 @@ class RiwayatController extends Controller
                 ->orderBy('transaksi_barang_keluar.tanggal', 'desc')
                 ->orderBy('transaksi_barang_keluar.created_at', 'desc')
                 ->get()
-                ->map(fn ($r) => $this->mapKeluarBagianRow($r))
+                ->map(fn($r) => $this->mapKeluarBagianRow($r))
                 ->values()
                 ->toBase();
         }
@@ -228,11 +247,11 @@ class RiwayatController extends Controller
         /** Dropdown filter: sekarang dari tabel Bagian (label tetap pakai variabel $gudangList) */
         if ($useGudang) {
             $gudangList = Gudang::orderBy('nama')->get()
-                ->map(fn ($g) => (object) ['gudang' => $g->nama])
+                ->map(fn($g) => (object) ['gudang' => $g->nama])
                 ->values();
         } else {
             $gudangList = Bagian::orderBy('nama')->get()
-                ->map(fn ($b) => (object) ['gudang' => $b->nama])
+                ->map(fn($b) => (object) ['gudang' => $b->nama])
                 ->values();
         }
 
@@ -264,7 +283,7 @@ class RiwayatController extends Controller
         // Barang Masuk
         $bmQ = TransaksiBarangMasuk::with(['barang.kategori', 'user']);
         $this->applyPeriodeFilter($bmQ, $request);
-        $rowsMasuk = $bmQ->get()->map(fn ($x) => $this->mapBarangMasukToAdminRow($x))->values()->toBase();
+        $rowsMasuk = $bmQ->get()->map(fn($x) => $this->mapBarangMasukToAdminRow($x))->values()->toBase();
 
         // Distribusi
         if ($useGudang && Schema::hasColumn('transaksi_distribusi', 'id_gudang_tujuan')) {
@@ -301,7 +320,7 @@ class RiwayatController extends Controller
                 $dq->where('transaksi_distribusi.bagian_id', $bagianIdForFilter);
             }
             $this->applyPeriodeFilter($dq, $request);
-            $rowsDistribusi = collect($dq->get())->map(fn ($r) => $this->mapDistribusiBagianRow($r))->values()->toBase();
+            $rowsDistribusi = collect($dq->get())->map(fn($r) => $this->mapDistribusiBagianRow($r))->values()->toBase();
         }
 
         // Keluar
@@ -341,7 +360,7 @@ class RiwayatController extends Controller
                 $kq->where('transaksi_barang_keluar.bagian_id', $bagianIdForFilter);
             }
             $this->applyPeriodeFilter($kq, $request);
-            $rowsKeluar = collect($kq->get())->map(fn ($r) => $this->mapKeluarBagianRow($r))->values()->toBase();
+            $rowsKeluar = collect($kq->get())->map(fn($r) => $this->mapKeluarBagianRow($r))->values()->toBase();
         }
 
         // Gabungkan & urutkan

@@ -2119,3 +2119,13 @@ input[type="date"]:focus {
 .alert {
     animation: fadeInDown 0.4s ease-out;
 }
+
+
+/* Di file assets/css/staff/admin/riwayat.css */
+.riwayat-bagian-nama {
+    font-size: 0.75rem;
+    color: #6c757d;
+    line-height: 1.2;
+    margin-top: 2px;
+    display: block;
+}

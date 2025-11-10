@@ -176,7 +176,7 @@
                                     <tr>
                                         <th>No</th>
                                         <th>Tanggal <br> Waktu</th>
-                                        <th>Bagian</th>
+                                        <th>Gudang <br> Bagian </th>
                                         <th>Nama Barang</th>
                                         <th>Jumlah</th>
                                         <th>Satuan</th>
@@ -194,7 +194,13 @@
                                                     class="text-muted">{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }}
                                                     WIB</small>
                                             </td>
-                                            <td class="fw-medium">{{ $item->gudang }}</td>
+                                            <td>
+                                                <span class="fw-medium">{{ $item->gudang }}</span>
+                                                @if ($item->bagian_nama && $item->bagian_nama != '-')
+                                                    <br>
+                                                    <small class="text-muted">{{ $item->bagian_nama }}</small>
+                                                @endif
+                                            </td>
                                             <td class="fw-medium">{{ $item->nama_barang }}</td>
                                             <td><span class="fw-medium">{{ $item->jumlah }}</span></td>
                                             <td><span class="fw-medium">{{ $item->satuan }}</span></td>
@@ -861,6 +867,6 @@
     @endpush
 
     @push('styles')
-       <link rel="stylesheet" href="{{ asset('assets/css/staff/admin/riwayat.css') }}">
+        <link rel="stylesheet" href="{{ asset('assets/css/staff/admin/riwayat.css') }}">
     @endpush
 </x-layouts.app>

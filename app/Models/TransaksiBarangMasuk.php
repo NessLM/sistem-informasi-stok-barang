@@ -31,6 +31,14 @@ class TransaksiBarangMasuk extends Model
         return $this->belongsTo(Barang::class, 'kode_barang', 'kode_barang');
     }
 
+    /**
+     * Relasi ke model Bagian
+     */
+    public function bagian()
+    {
+        return $this->belongsTo(Bagian::class, 'bagian_id');
+    }
+
     // Relasi ke User
     public function user()
     {

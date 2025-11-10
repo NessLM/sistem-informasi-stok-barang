@@ -403,7 +403,13 @@
                                 {{ \Carbon\Carbon::parse($r->tanggal)->format('d/m/Y') }}<br>
                                 {{ \Carbon\Carbon::parse($r->waktu)->format('H:i') }} WIB
                             </td>
-                            <td>{{ $r->gudang }}</td>
+                            <td>
+                                {{ $r->gudang }}
+                                @if (isset($r->bagian_nama) && $r->bagian_nama && $r->bagian_nama != '-')
+                                    <br>
+                                    <span class="bagian-nama">{{ $r->bagian_nama }}</span>
+                                @endif
+                            </td>
                             <td>{{ $r->nama_barang }}</td>
                             <td>{{ $r->jumlah }}</td>
                             <td>{{ $r->satuan }}</td>
@@ -509,7 +515,7 @@
                     <tr>
                         <td colspan="4" style="text-align:center; font-weight:bold;">Total Barang Keluar</td>
                         <td style="font-weight:bold; text-align:center;">{{ $totalKeluar }}</td>
-                        <td colspan="2"></td>
+                        <td colspan="4"></td>
                     </tr>
                 </tbody>
             </table>

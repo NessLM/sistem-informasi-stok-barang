@@ -196,11 +196,10 @@ class RiwayatKeluarSheet implements FromCollection, WithHeadings, WithMapping, W
             'No',
             'Tanggal',
             'Waktu',
-            'Gudang Asal',
+            'Bagian Asal',
             'Nama Barang',
             'Jumlah',
             'Satuan',
-            'Bagian',
             'Penerima',
             'Keterangan'
         ];
@@ -218,7 +217,6 @@ class RiwayatKeluarSheet implements FromCollection, WithHeadings, WithMapping, W
             $riwayat->nama_barang,
             $riwayat->jumlah,
             $riwayat->satuan,
-            $riwayat->bagian,
             $riwayat->penerima,
             $riwayat->keterangan ?? '-'
         ];
