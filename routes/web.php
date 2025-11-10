@@ -235,6 +235,13 @@ Route::prefix('pj')->name('pj.')
         // Riwayat
         Route::get('/riwayat', [PjRiwayatController::class, 'index'])
             ->name('riwayat.index');
+        
+        Route::post('/pj/kembalikan-barang/{id}', [DataKeseluruhan::class, 'kembalikanBarang'])
+    ->name('pj.kembalikan-barang');
+
+    // Di dalam Route::prefix('pj')->name('pj.')..
+Route::post('/kembalikan-barang/{id}', [PjDataKeseluruhanController::class, 'kembalikanBarang'])
+    ->name('kembalikan-barang');
 
         // Laporan (Controller)
         Route::get('/laporan', PjLaporanController::class)->name('laporan');

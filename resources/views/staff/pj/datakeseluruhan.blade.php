@@ -13,6 +13,7 @@
         $kategori = $kategori ?? collect();   // kategori + barang (stok > 0)
         // Tambahan dari controller:
         $barangHabis = $barangHabis ?? collect();  // list barang stok = 0
+        $barangMasuk = $barangMasuk ?? collect();  // list barang masuk dari transaksi_distribusi
         $lowThreshold = $lowThreshold ?? 10;         // ambang "menipis"
         $ringkasanCounts = $ringkasanCounts ?? ['ok' => 0, 'low' => 0, 'empty' => 0];
     @endphp
@@ -24,6 +25,22 @@
             .row-low-stock {
                 background-color: #ffcccc !important;
                 border-left: 4px solid #fd7e14 !important;
+            }
+            .incoming-card {
+                border-left: 4px solid #28a745;
+            }
+            .incoming-card .card-body {
+                background-color: #f8f9fa;
+            }
+            .btn-return {
+                background-color: #ffc107;
+                border-color: #ffc107;
+                color: #000;
+            }
+            .btn-return:hover {
+                background-color: #e0a800;
+                border-color: #d39e00;
+                color: #000;
             }
         </style>
 
@@ -80,7 +97,7 @@
                 </div>
             </div>
 
-            {{-- === RINGKASAN KETERSEDIAAN (baru) === --}}
+            {{-- === RINGKASAN KETERSEDIAAN === --}}
             <div class="summary-badges d-flex flex-wrap gap-2 mb-3">
                 <a href="#sec-empty" class="badge badge-empty text-decoration-none">
                     <span class="badge-dot" style="background:#dc3545"></span>
@@ -254,7 +271,7 @@
         </section>
 
         {{-- =========================
-        SEKS I BARANG HABIS (BARU)
+        SECTION BARANG HABIS
         ========================= --}}
         @if(($barangHabis ?? collect())->count())
             <section id="sec-empty" class="card empty-card mt-4">
@@ -287,6 +304,77 @@
                                         </td>
                                         <td>{{ $item->kategori->nama ?? '-' }}</td>
                                         <td>{{ $item->satuan ?? '-' }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        @endif
+
+        {{-- =========================
+        SECTION BARANG MASUK (UPDATED WITH KEMBALIKAN BUTTON)
+        ========================= --}}
+        @if(($barangMasuk ?? collect())->count())
+            <section id="sec-incoming" class="card incoming-card shadow-sm mt-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="m-0">
+                            <i class="bi bi-box-arrow-in-down-right me-1 text-success"></i>
+                            Barang Masuk
+                            <span class="badge bg-success ms-2">{{ $barangMasuk->count() }}</span>
+                        </h5>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover align-middle">
+                            <thead class="table-success">
+                                <tr>
+                                    <th style="width:50px">No</th>
+                                    <th style="width:140px">Tanggal Waktu</th>
+                                    <th>Nama Barang</th>
+                                    <th style="width:100px">Jumlah</th>
+                                    <th style="width:100px">Satuan</th>
+                                    <th style="width:200px">Keterangan</th>
+                                    <th style="width:180px">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($barangMasuk as $index => $item)
+                                    <tr>
+                                        <td class="text-center">{{ $index + 1 }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y H:i') }} WIB</td>
+                                        <td>
+                                            <strong>{{ $item->nama_barang }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ $item->kode_barang }}</small>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-success">{{ $item->jumlah }}</span>
+                                        </td>
+                                        <td>{{ $item->satuan }}</td>
+                                        <td>{{ $item->keterangan ?? '-' }}</td>
+                                        <td class="text-center">
+                                            <div class="d-flex flex-column gap-2">
+                                                @if($item->bukti)
+                                                    <a href="{{ asset('storage/' . $item->bukti) }}" 
+                                                       target="_blank" 
+                                                       class="btn btn-sm btn-outline-primary">
+                                                        <i class="bi bi-file-earmark-text"></i> Lihat Bukti
+                                                    </a>
+                                                @endif
+                                                
+                                                <form action="{{ route('pj.kembalikan-barang', $item->id) }}" 
+                                                      method="POST" 
+                                                      onsubmit="return confirm('Yakin ingin mengembalikan barang ini ke PB Stok?\n\nBarang: {{ $item->nama_barang }}\nJumlah: {{ $item->jumlah }} {{ $item->satuan }}')">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-return w-100">
+                                                        <i class="bi bi-arrow-left-circle"></i> Kembalikan+
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -422,6 +510,7 @@
             </form>
         </div>
     </div>
+    
     @push('scripts')
         {{-- JavaScript --}}
         <script>
