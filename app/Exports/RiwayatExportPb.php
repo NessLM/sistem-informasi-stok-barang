@@ -89,7 +89,7 @@ class BarangMasukSheet implements FromCollection, WithHeadings, WithMapping, Wit
         
         // Format tanggal dan waktu sesuai dengan data dari Controller
         $tanggal = isset($riwayat->tanggal) ? Carbon::parse($riwayat->tanggal)->format('d/m/Y') : '-';
-        $waktu = isset($riwayat->waktu) ? $riwayat->waktu : '-';
+        $waktu = isset($riwayat->waktu) ? Carbon::parse($riwayat->waktu)->format('H:i') . ' WIB' : '-';
         
         return [
             $rowNumber,
@@ -108,13 +108,8 @@ class BarangMasukSheet implements FromCollection, WithHeadings, WithMapping, Wit
         $lastRow = max(1, $this->riwayat->count() + 1);
         $dataRange = 'A1:H' . $lastRow;
         
-        // Style untuk header
-        $sheet->getStyle('A1:H1')->applyFromArray([
-            'font' => ['bold' => true],
-            'fill' => [
-                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                'startColor' => ['argb' => 'FFE2E2E2']
-            ],
+        // Apply borders to all cells
+        $sheet->getStyle($dataRange)->applyFromArray([
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
@@ -122,35 +117,37 @@ class BarangMasukSheet implements FromCollection, WithHeadings, WithMapping, Wit
             ],
         ]);
 
-        // Style untuk data
-        if ($lastRow > 1) {
-            $sheet->getStyle('A2:H' . $lastRow)->applyFromArray([
-                'borders' => [
-                    'allBorders' => [
-                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                    ],
-                ],
-            ]);
-        }
+        // Set semua kolom ke center alignment untuk data
+        $sheet->getStyle('A2:H' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A2:H' . $lastRow)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+        
+        // Set Nama Barang (E) dan Keterangan (H) ke left alignment
+        $sheet->getStyle('E2:E' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+        $sheet->getStyle('H2:H' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
 
         // Set column widths
         $sheet->getColumnDimension('A')->setWidth(8);
-        $sheet->getColumnDimension('B')->setWidth(12);
-        $sheet->getColumnDimension('C')->setWidth(10);
-        $sheet->getColumnDimension('D')->setWidth(15);
-        $sheet->getColumnDimension('E')->setWidth(20);
-        $sheet->getColumnDimension('F')->setWidth(12);
-        $sheet->getColumnDimension('G')->setWidth(15);
-        $sheet->getColumnDimension('H')->setWidth(30);
+        $sheet->getColumnDimension('B')->setWidth(15);
+        $sheet->getColumnDimension('C')->setWidth(12);
+        $sheet->getColumnDimension('D')->setWidth(20);
+        $sheet->getColumnDimension('E')->setWidth(30);
+        $sheet->getColumnDimension('F')->setWidth(10);
+        $sheet->getColumnDimension('G')->setWidth(10);
+        $sheet->getColumnDimension('H')->setWidth(25);
 
-        // Center align untuk kolom tertentu
-        $sheet->getStyle('A:A')->getAlignment()->setHorizontal('center');
-        $sheet->getStyle('F:F')->getAlignment()->setHorizontal('center');
-        $sheet->getStyle('B:B')->getAlignment()->setHorizontal('center');
-        $sheet->getStyle('C:C')->getAlignment()->setHorizontal('center');
-        $sheet->getStyle('G:G')->getAlignment()->setHorizontal('center');
-
-        return [];
+        return [
+            1 => [
+                'font' => ['bold' => true],
+                'fill' => [
+                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                    'startColor' => ['argb' => 'FFE2E2E2']
+                ],
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                    'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
+                ]
+            ],
+        ];
     }
 
     public function title(): string
@@ -179,7 +176,7 @@ class DistribusiBarangSheet implements FromCollection, WithHeadings, WithMapping
             'No',
             'Tanggal',
             'Waktu',
-            'Gudang Tujuan',
+            'Bagian Tujuan',
             'Nama Barang', 
             'Jumlah',
             'Satuan',
@@ -194,7 +191,7 @@ class DistribusiBarangSheet implements FromCollection, WithHeadings, WithMapping
         
         // Format tanggal dan waktu sesuai dengan data dari Controller
         $tanggal = isset($riwayat->tanggal) ? Carbon::parse($riwayat->tanggal)->format('d/m/Y') : '-';
-        $waktu = isset($riwayat->waktu) ? $riwayat->waktu : '-';
+        $waktu = isset($riwayat->waktu) ? Carbon::parse($riwayat->waktu)->format('H:i') . ' WIB' : '-';
         
         return [
             $rowNumber,
@@ -213,13 +210,8 @@ class DistribusiBarangSheet implements FromCollection, WithHeadings, WithMapping
         $lastRow = max(1, $this->riwayat->count() + 1);
         $dataRange = 'A1:H' . $lastRow;
         
-        // Style untuk header
-        $sheet->getStyle('A1:H1')->applyFromArray([
-            'font' => ['bold' => true],
-            'fill' => [
-                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                'startColor' => ['argb' => 'FFE2E2E2']
-            ],
+        // Apply borders to all cells
+        $sheet->getStyle($dataRange)->applyFromArray([
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
@@ -227,35 +219,37 @@ class DistribusiBarangSheet implements FromCollection, WithHeadings, WithMapping
             ],
         ]);
 
-        // Style untuk data
-        if ($lastRow > 1) {
-            $sheet->getStyle('A2:H' . $lastRow)->applyFromArray([
-                'borders' => [
-                    'allBorders' => [
-                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                    ],
-                ],
-            ]);
-        }
+        // Set semua kolom ke center alignment untuk data
+        $sheet->getStyle('A2:H' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A2:H' . $lastRow)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+        
+        // Set Nama Barang (E) dan Keterangan (H) ke left alignment
+        $sheet->getStyle('E2:E' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+        $sheet->getStyle('H2:H' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
 
         // Set column widths
         $sheet->getColumnDimension('A')->setWidth(8);
-        $sheet->getColumnDimension('B')->setWidth(12);
-        $sheet->getColumnDimension('C')->setWidth(10);
-        $sheet->getColumnDimension('D')->setWidth(15);
-        $sheet->getColumnDimension('E')->setWidth(20);
-        $sheet->getColumnDimension('F')->setWidth(12);
-        $sheet->getColumnDimension('G')->setWidth(15);
-        $sheet->getColumnDimension('H')->setWidth(30);
+        $sheet->getColumnDimension('B')->setWidth(15);
+        $sheet->getColumnDimension('C')->setWidth(12);
+        $sheet->getColumnDimension('D')->setWidth(20);
+        $sheet->getColumnDimension('E')->setWidth(30);
+        $sheet->getColumnDimension('F')->setWidth(10);
+        $sheet->getColumnDimension('G')->setWidth(10);
+        $sheet->getColumnDimension('H')->setWidth(25);
 
-        // Center align untuk kolom tertentu
-        $sheet->getStyle('A:A')->getAlignment()->setHorizontal('center');
-        $sheet->getStyle('F:F')->getAlignment()->setHorizontal('center');
-        $sheet->getStyle('B:B')->getAlignment()->setHorizontal('center');
-        $sheet->getStyle('C:C')->getAlignment()->setHorizontal('center');
-        $sheet->getStyle('G:G')->getAlignment()->setHorizontal('center');
-
-        return [];
+        return [
+            1 => [
+                'font' => ['bold' => true],
+                'fill' => [
+                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                    'startColor' => ['argb' => 'FFE2E2E2']
+                ],
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                    'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
+                ]
+            ],
+        ];
     }
 
     public function title(): string
@@ -273,25 +267,65 @@ class EmptyDataSheet implements FromCollection, WithStyles, WithTitle
 
     public function styles(Worksheet $sheet)
     {
+        $lastRow = 5;
+        $dataRange = 'A1:D' . $lastRow;
+        
+        // Apply borders to all cells
+        $sheet->getStyle($dataRange)->applyFromArray([
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                ],
+            ],
+        ]);
+
         $sheet->mergeCells('A1:D1');
         $sheet->setCellValue('A1', 'TIDAK ADA DATA');
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
         $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A1')->getAlignment()->setVertical('center');
+        $sheet->getStyle('A1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+        $sheet->getStyle('A1')->getFill()->getStartColor()->setARGB('FFE2E2E2');
         
         $sheet->mergeCells('A2:D2');
         $sheet->setCellValue('A2', 'Tidak ada data riwayat barang yang ditemukan untuk filter yang dipilih.');
         $sheet->getStyle('A2')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A2')->getAlignment()->setVertical('center');
         
-        $sheet->getColumnDimension('A')->setWidth(30);
-        $sheet->getColumnDimension('B')->setWidth(30);
-        $sheet->getColumnDimension('C')->setWidth(30);
-        $sheet->getColumnDimension('D')->setWidth(30);
+        $sheet->getColumnDimension('A')->setWidth(20);
+        $sheet->getColumnDimension('B')->setWidth(20);
+        $sheet->getColumnDimension('C')->setWidth(20);
+        $sheet->getColumnDimension('D')->setWidth(20);
         
-        return [];
+        // Set row heights
+        $sheet->getRowDimension(1)->setRowHeight(30);
+        $sheet->getRowDimension(2)->setRowHeight(25);
+        
+        return [
+            1 => [
+                'font' => ['bold' => true, 'size' => 16],
+                'fill' => [
+                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                    'startColor' => ['argb' => 'FFE2E2E2']
+                ],
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                    'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
+                ]
+            ],
+            2 => [
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                    'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
+                ]
+            ],
+        ];
     }
+
 
     public function title(): string
     {
         return 'Tidak Ada Data';
     }
 }
+

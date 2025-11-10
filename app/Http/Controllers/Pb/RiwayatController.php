@@ -21,11 +21,30 @@ class RiwayatController extends Controller
      */
     private function mapBarangMasukToPbRow(TransaksiBarangMasuk $item)
     {
+
+        // Debug: cek data yang ada
+        $bagianNama = '-';
+
+        // Cek berbagai kemungkinan sumber data bagian
+        if ($item->relationLoaded('bagian') && $item->bagian) {
+            $bagianNama = $item->bagian->nama;
+        }
+        // Jika ada kolom bagian_id, load manual
+        elseif ($item->bagian_id) {
+            $bagian = \App\Models\Bagian::find($item->bagian_id);
+            $bagianNama = $bagian ? $bagian->nama : '-';
+        }
+        // Jika tidak ada data bagian sama sekali
+        else {
+            $bagianNama = 'Tidak ada data bagian';
+        }
+
         return (object) [
             'tanggal'       => $item->tanggal ?? optional($item->created_at)->toDateString(),
             'waktu'         => optional($item->created_at)->format('H:i:s'),
             'alur_barang'   => 'Masuk',
             'gudang'        => 'Gudang Utama', // Barang masuk ke PB (Gudang Utama)
+            'bagian_nama' => $bagianNama,
             'nama_barang'   => $item->__barang_nama ?? (optional($item->barang)->nama_barang ?? '-'),
             'jumlah'        => (int) ($item->jumlah ?? 0),
             'satuan'        => $item->__barang_satuan ?? (optional($item->barang)->satuan ?? '-'),

@@ -345,7 +345,7 @@
                 <tr>
                     <th class="col-no">No</th>
                     <th class="col-tanggal">Tanggal, Waktu</th>
-                    <th class="col-gudang">Gudang Tujuan</th>
+                    <th class="col-tujuan">Bagian Tujuan</th>
                     <th class="col-nama">Nama Barang</th>
                     <th class="col-jumlah">Jumlah</th>
                     <th class="col-satuan">Satuan</th>

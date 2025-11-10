@@ -142,7 +142,7 @@
                                 <tr>
                                     <th>No</th>
                                     <th>Tanggal <br> Waktu </th>
-                                    <th>Bagian Asal</th>
+                                    <th>Gudang <br> Bagian Asal </th>
                                     <th>Nama Barang</th>
                                     <th>Jumlah</th>
                                     <th>Satuan</th>
@@ -162,7 +162,13 @@
                                                 class="text-muted">{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }}
                                                 WIB</small>
                                         </td>
-                                        <td class="fw-medium" data-label="Bagian Asal">{{ $item->gudang }}</td>
+                                        <td>
+                                                <span class="fw-medium">{{ $item->gudang }}</span>
+                                                @if ($item->bagian_nama && $item->bagian_nama != '-')
+                                                    <br>
+                                                    <small class="text-muted">{{ $item->bagian_nama }}</small>
+                                                @endif
+                                            </td>
                                         <td class="fw-medium" data-label="Nama Barang">{{ $item->nama_barang }}</td>
                                         <td data-label="Jumlah"><span class="fw-medium">{{ $item->jumlah }}</span>
                                         </td>
@@ -252,7 +258,7 @@
                                     <th>Nama Barang</th>
                                     <th>Jumlah</th>
                                     <th>Satuan</th>
-                                    <th>Keterangan</th> <!-- Lebar lebih untuk keterangan -->
+                                    <th>Keterangan</th>
                                     <th>Bukti</th>
                                 </tr>
                             </thead>
