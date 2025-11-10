@@ -92,7 +92,6 @@ class BarangMasukSheet implements FromCollection, WithHeadings, WithMapping, Wit
             'No',
             'Tanggal',
             'Waktu',
-            'Gudang',
             'Nama Barang',
             'Jumlah',
             'Satuan',
@@ -117,7 +116,6 @@ class BarangMasukSheet implements FromCollection, WithHeadings, WithMapping, Wit
                    \Carbon\Carbon::parse($riwayat->tanggal)->format('d/m/Y') : '-';
         $waktu = isset($riwayat->waktu) ? 
                  \Carbon\Carbon::parse($riwayat->waktu)->format('H:i') . ' WIB' : '-';
-        $gudang = $riwayat->gudang ?? '-';
         $namaBarang = $riwayat->nama_barang ?? '-';
         $jumlah = $riwayat->jumlah ?? '0';
         $satuan = $riwayat->satuan ?? '-';
@@ -127,7 +125,6 @@ class BarangMasukSheet implements FromCollection, WithHeadings, WithMapping, Wit
             $rowNumber,
             $tanggal,
             $waktu,
-            $gudang,
             $namaBarang,
             $jumlah,
             $satuan,
@@ -138,7 +135,7 @@ class BarangMasukSheet implements FromCollection, WithHeadings, WithMapping, Wit
     public function styles(Worksheet $sheet)
     {
         $lastRow = max(1, $this->riwayat->count() + 1);
-        $dataRange = 'A1:H' . $lastRow;
+        $dataRange = 'A1:G' . $lastRow;
         
         $sheet->getStyle($dataRange)->applyFromArray([
             'borders' => [
@@ -149,22 +146,21 @@ class BarangMasukSheet implements FromCollection, WithHeadings, WithMapping, Wit
         ]);
 
         // Set semua kolom ke center alignment
-        $sheet->getStyle('A2:H' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('A2:H' . $lastRow)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+        $sheet->getStyle('A2:G' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A2:G' . $lastRow)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
         
-        // Set Nama Barang (E) dan Keterangan (H) ke left alignment
-        $sheet->getStyle('E2:E' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
-        $sheet->getStyle('H2:H' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+        // Set Nama Barang (E) dan Keterangan (G) ke left alignment
+        $sheet->getStyle('E2:D' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+        $sheet->getStyle('G2:G' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
 
         // Set column widths
         $sheet->getColumnDimension('A')->setWidth(8);
         $sheet->getColumnDimension('B')->setWidth(15);
         $sheet->getColumnDimension('C')->setWidth(12);
-        $sheet->getColumnDimension('D')->setWidth(20);
-        $sheet->getColumnDimension('E')->setWidth(30);
+        $sheet->getColumnDimension('D')->setWidth(30);
+        $sheet->getColumnDimension('E')->setWidth(10);
         $sheet->getColumnDimension('F')->setWidth(10);
-        $sheet->getColumnDimension('G')->setWidth(10);
-        $sheet->getColumnDimension('H')->setWidth(25);
+        $sheet->getColumnDimension('G')->setWidth(25);
 
         return [
             1 => [
@@ -208,11 +204,10 @@ class BarangKeluarSheet implements FromCollection, WithHeadings, WithMapping, Wi
             'No',
             'Tanggal',
             'Waktu',
-            'Gudang',
             'Nama Barang', 
             'Jumlah',
             'Satuan',
-            'Bagian',
+            'Nama Penerima',
             'Keterangan'
         ];
     }
@@ -234,22 +229,20 @@ class BarangKeluarSheet implements FromCollection, WithHeadings, WithMapping, Wi
                    \Carbon\Carbon::parse($riwayat->tanggal)->format('d/m/Y') : '-';
         $waktu = isset($riwayat->waktu) ? 
                  \Carbon\Carbon::parse($riwayat->waktu)->format('H:i') . ' WIB' : '-';
-        $gudang = $riwayat->gudang ?? '-';
         $namaBarang = $riwayat->nama_barang ?? '-';
         $jumlah = $riwayat->jumlah ?? '0';
         $satuan = $riwayat->satuan ?? '-';
-        $bagian = $riwayat->bagian ?? '-';
+        $penerima = $riwayat->nama_penerima ?? '-' ;
         $keterangan = $riwayat->keterangan ?? '-';
         
         return [
             $rowNumber,
             $tanggal,
             $waktu,
-            $gudang,
             $namaBarang,
             $jumlah,
             $satuan,
-            $bagian,
+            $penerima,
             $keterangan
         ];
     }
@@ -257,7 +250,7 @@ class BarangKeluarSheet implements FromCollection, WithHeadings, WithMapping, Wi
     public function styles(Worksheet $sheet)
     {
         $lastRow = max(1, $this->riwayat->count() + 1);
-        $dataRange = 'A1:I' . $lastRow;
+        $dataRange = 'A1:H' . $lastRow;
         
         $sheet->getStyle($dataRange)->applyFromArray([
             'borders' => [
@@ -268,23 +261,22 @@ class BarangKeluarSheet implements FromCollection, WithHeadings, WithMapping, Wi
         ]);
 
         // Set semua kolom ke center alignment
-        $sheet->getStyle('A2:I' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('A2:I' . $lastRow)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+        $sheet->getStyle('A2:H' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A2:H' . $lastRow)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
         
         // Set Nama Barang (E) dan Keterangan (I) ke left alignment
-        $sheet->getStyle('E2:E' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
-        $sheet->getStyle('I2:I' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+        $sheet->getStyle('E2:D' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+        $sheet->getStyle('I2:H' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
 
         // Set column widths
         $sheet->getColumnDimension('A')->setWidth(8);
         $sheet->getColumnDimension('B')->setWidth(15);
         $sheet->getColumnDimension('C')->setWidth(12);
-        $sheet->getColumnDimension('D')->setWidth(20);
-        $sheet->getColumnDimension('E')->setWidth(30);
+        $sheet->getColumnDimension('D')->setWidth(30);
+        $sheet->getColumnDimension('E')->setWidth(10);
         $sheet->getColumnDimension('F')->setWidth(10);
-        $sheet->getColumnDimension('G')->setWidth(10);
-        $sheet->getColumnDimension('H')->setWidth(20);
-        $sheet->getColumnDimension('I')->setWidth(25);
+        $sheet->getColumnDimension('G')->setWidth(20);
+        $sheet->getColumnDimension('H')->setWidth(25);
 
         return [
             1 => [

@@ -341,11 +341,10 @@
                 <tr>
                     <th class="col-no">No</th>
                     <th class="col-tanggal">Tanggal, Waktu</th>
-                    <th class="col-gudang">Gudang</th>
                     <th class="col-nama">Nama Barang</th>
                     <th class="col-jumlah">Jumlah</th>
                     <th class="col-satuan">Satuan</th>
-                    <th class="col-bagian">Bagian</th>
+                    <th class="col-nama">Nama Penerima</th>
                     <th class="col-keterangan">Keterangan</th>
                 </tr>
             </thead>
@@ -362,16 +361,15 @@
                             {{ \Carbon\Carbon::parse($r->tanggal)->format('d/m/Y') }}<br>
                             {{ \Carbon\Carbon::parse($r->waktu)->format('H:i') }} WIB
                         </td>
-                        <td>{{ $r->gudang }}</td>
                         <td>{{ $r->nama_barang }}</td>
                         <td>{{ $r->jumlah }}</td>
                         <td>{{ $r->satuan }}</td>
-                        <td>{{ $r->bagian }}</td>
+                        <td>{{ $r->nama_penerima }}</td>
                         <td>{{ $r->keterangan ?? '-' }}</td>
                     </tr>
                 @endforeach
                 <tr>
-                    <td colspan="4" style="text-align:center; font-weight:bold;">Total Barang Keluar</td>
+                    <td colspan="3" style="text-align:center; font-weight:bold;">Total Barang Keluar</td>
                     <td style="font-weight:bold;">{{ $totalKeluar }}</td>
                     <td colspan="3"></td>
                 </tr>
