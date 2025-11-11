@@ -101,6 +101,7 @@
         @if (session('toast'))
             <div id="toast-notif"
                 style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+                <!-- Toast notification -->
                                                                                                           z-index: 2000; display: flex; justify-content: center; pointer-events: none;">
                 <div class="toast-message"
                     style="background: #fff; border-radius: 12px; padding: 14px 22px;
@@ -126,6 +127,7 @@
         @endif
 
         <section class="card shadow-sm p-3">
+            <!-- Tab Navigation - CENTERED -->
             <ul class="nav nav-tabs nav-tabs-custom" role="tablist">
                 <li class="nav-item" role="presentation">
                     <a class="nav-link {{ $activeTab === 'data-keseluruhan' ? 'active' : '' }}"
@@ -141,7 +143,9 @@
                 </li>
             </ul>
 
+            <!-- Tab Content -->
             <div class="tab-content">
+                <!-- TAB 1: DATA KESELURUHAN -->    
                 <div class="tab-pane fade {{ $activeTab === 'data-keseluruhan' ? 'show active' : '' }}"
                     id="data-keseluruhan" role="tabpanel">
 
@@ -374,6 +378,7 @@
                     @endif
                 </div>
 
+                <!-- TAB 2: KELOLA BARANG MASUK -->
                 <div class="tab-pane fade {{ $activeTab === 'distribusi' ? 'show active' : '' }}" id="distribusi"
                     role="tabpanel">
 
@@ -480,6 +485,7 @@
         </section>
     </main>
 
+    <!-- Modal Barang Masuk -->
     <div class="modal fade" id="modalBarangMasuk" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
@@ -499,6 +505,7 @@
                         </div>
 
                         <div class="row g-3">
+                            <!-- Nama Barang (Read-only) -->
                             <div class="col-md-6">
                                 <label class="form-label ">
                                     Nama Barang
@@ -507,6 +514,7 @@
                             </div>
 
                             <div class="col-md-6">
+                            <!-- Kode Barang (Read-only) -->
                                 <label class="form-label ">
                                     Kode Barang
                                 </label>
@@ -514,6 +522,7 @@
                             </div>
 
                             <div class="col-md-6">
+                            <!-- Harga Barang -->    
                                 <label class="form-label ">
                                     Harga Satuan <span class="text-danger">*</span>
                                 </label>
@@ -525,6 +534,7 @@
                                 <small class="text-muted">Masukkan harga per satuan barang</small>
                             </div>
 
+                            <!-- Bagian Tujuan -->
                             <div class="col-md-6">
                                 <label class="form-label ">
                                     Bagian  <span class="text-danger">*</span>
@@ -538,6 +548,7 @@
                                 <small class="text-muted">Pilih bagian yang akan menerima barang</small>
                             </div>
 
+                            <!-- Jumlah Masuk -->
                             <div class="col-md-6">
                                 <label class="form-label ">
                                     Stok Masuk <span class="text-danger">*</span>
@@ -550,6 +561,7 @@
                                 <small class="text-muted">Jumlah barang yang masuk</small>
                             </div>
 
+                            <!-- Tanggal Masuk -->
                             <div class="col-md-6">
                                 <label class="form-label ">
                                     Tanggal Masuk
@@ -558,6 +570,7 @@
                                 <small class="text-muted">Kosongkan untuk menggunakan tanggal hari ini</small>
                             </div>
 
+                            <!-- Keterangan -->
                             <div class="col-12">
                                 <label class="form-label ">
                                     Keterangan
@@ -566,6 +579,7 @@
                                     placeholder="Contoh: Pembelian dari supplier PT. XYZ"></textarea>
                             </div>
 
+                            <!-- Bukti -->
                             <div class="col-12">
                                 <label class="form-label ">
                                     Bukti Barang Masuk
@@ -590,6 +604,7 @@
         </div>
     </div>
 
+     <!-- Modal Distribusi -->
     <div class="modal fade" id="modalDistribusi" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
@@ -612,6 +627,7 @@
                             Distribusi akan mengurangi stok dari gudang utama (PB) dan menambahkan ke bagian tujuan.
                         </div>
 
+                        <!-- Nama Barang (Read-only) -->
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label ">
@@ -620,6 +636,7 @@
                                 <input type="text" id="distribusiNama" class="form-control bg-light" readonly>
                             </div>
 
+                            <!-- Kode Barang (Read-only) -->
                             <div class="col-md-6">
                                 <label class="form-label ">
                                     Kode Barang
@@ -627,6 +644,7 @@
                                 <input type="text" id="distribusiKodeDisplay" class="form-control bg-light" readonly>
                             </div>
 
+                            <!-- Bagian Tujuan (Auto Fill - Read-only) -->
                             <div class="col-md-6">
                                 <label class="form-label ">
                                     Bagian Tujuan
@@ -635,6 +653,7 @@
                                 <small class="text-muted">Barang akan didistribusikan ke bagian ini</small>
                             </div>
 
+                            <!-- Harga (Auto Fill - Read-only) -->
                             <div class="col-md-6">
                                 <label class="form-label ">
                                     Harga Satuan
@@ -647,6 +666,7 @@
                                 <small class="text-muted">Harga per satuan barang</small>
                             </div>
 
+                            <!-- Stok Tersedia (Read-only) -->
                             <div class="col-md-6">
                                 <label class="form-label ">
                                     Stok Tersedia di Gudang Utama
@@ -655,6 +675,7 @@
                                 <small class="text-muted">Stok yang tersedia untuk didistribusikan</small>
                             </div>
 
+                            <!-- Jumlah Distribusi -->
                             <div class="col-md-6">
                                 <label class="form-label ">
                                     Jumlah Distribusi <span class="text-danger">*</span>
@@ -664,6 +685,7 @@
                                 <small class="text-muted">Jumlah barang yang akan didistribusikan</small>
                             </div>
 
+                            <!-- Tanggal Distribusi -->
                             <div class="col-md-12">
                                 <label class="form-label ">
                                     Tanggal Distribusi
@@ -672,6 +694,7 @@
                                 <small class="text-muted">Kosongkan untuk menggunakan tanggal hari ini</small>
                             </div>
 
+                            <!-- Keterangan -->
                             <div class="col-12">
                                 <label class="form-label ">
                                     Keterangan
@@ -680,6 +703,7 @@
                                     placeholder="Contoh: Distribusi untuk kebutuhan operasional bagian"></textarea>
                             </div>
 
+                            <!-- Bukti Distribusi -->
                             <div class="col-12">
                                 <label class="form-label ">
                                     Bukti Distribusi
