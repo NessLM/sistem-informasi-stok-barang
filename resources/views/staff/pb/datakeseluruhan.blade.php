@@ -98,7 +98,6 @@
     @endpush
 
     <main class="page-wrap container py-4">
-        <!-- Toast notification -->
         @if (session('toast'))
             <div id="toast-notif"
                 style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
@@ -127,7 +126,6 @@
         @endif
 
         <section class="card shadow-sm p-3">
-            <!-- Tab Navigation - CENTERED -->
             <ul class="nav nav-tabs nav-tabs-custom" role="tablist">
                 <li class="nav-item" role="presentation">
                     <a class="nav-link {{ $activeTab === 'data-keseluruhan' ? 'active' : '' }}"
@@ -143,9 +141,7 @@
                 </li>
             </ul>
 
-            <!-- Tab Content -->
             <div class="tab-content">
-                <!-- TAB 1: DATA KESELURUHAN -->
                 <div class="tab-pane fade {{ $activeTab === 'data-keseluruhan' ? 'show active' : '' }}"
                     id="data-keseluruhan" role="tabpanel">
 
@@ -378,7 +374,6 @@
                     @endif
                 </div>
 
-                <!-- TAB 2: KELOLA BARANG MASUK -->
                 <div class="tab-pane fade {{ $activeTab === 'distribusi' ? 'show active' : '' }}" id="distribusi"
                     role="tabpanel">
 
@@ -485,7 +480,6 @@
         </section>
     </main>
 
-    <!-- Modal Barang Masuk -->
     <div class="modal fade" id="modalBarangMasuk" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
@@ -505,7 +499,6 @@
                         </div>
 
                         <div class="row g-3">
-                            <!-- Nama Barang (Read-only) -->
                             <div class="col-md-6">
                                 <label class="form-label ">
                                     Nama Barang
@@ -513,7 +506,6 @@
                                 <input type="text" id="barangMasukNama" class="form-control" readonly>
                             </div>
 
-                            <!-- Kode Barang (Read-only) -->
                             <div class="col-md-6">
                                 <label class="form-label ">
                                     Kode Barang
@@ -521,7 +513,6 @@
                                 <input type="text" id="barangMasukKodeDisplay" class="form-control" readonly>
                             </div>
 
-                            <!-- Harga Barang -->
                             <div class="col-md-6">
                                 <label class="form-label ">
                                     Harga Satuan <span class="text-danger">*</span>
@@ -534,7 +525,6 @@
                                 <small class="text-muted">Masukkan harga per satuan barang</small>
                             </div>
 
-                            <!-- Bagian Tujuan -->
                             <div class="col-md-6">
                                 <label class="form-label ">
                                     Bagian  <span class="text-danger">*</span>
@@ -548,7 +538,6 @@
                                 <small class="text-muted">Pilih bagian yang akan menerima barang</small>
                             </div>
 
-                            <!-- Jumlah Masuk -->
                             <div class="col-md-6">
                                 <label class="form-label ">
                                     Stok Masuk <span class="text-danger">*</span>
@@ -561,7 +550,6 @@
                                 <small class="text-muted">Jumlah barang yang masuk</small>
                             </div>
 
-                            <!-- Tanggal Masuk -->
                             <div class="col-md-6">
                                 <label class="form-label ">
                                     Tanggal Masuk
@@ -570,7 +558,6 @@
                                 <small class="text-muted">Kosongkan untuk menggunakan tanggal hari ini</small>
                             </div>
 
-                            <!-- Keterangan -->
                             <div class="col-12">
                                 <label class="form-label ">
                                     Keterangan
@@ -579,7 +566,6 @@
                                     placeholder="Contoh: Pembelian dari supplier PT. XYZ"></textarea>
                             </div>
 
-                            <!-- Bukti -->
                             <div class="col-12">
                                 <label class="form-label ">
                                     Bukti Barang Masuk
@@ -604,7 +590,6 @@
         </div>
     </div>
 
-    <!-- Modal Distribusi -->
     <div class="modal fade" id="modalDistribusi" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
@@ -628,7 +613,6 @@
                         </div>
 
                         <div class="row g-3">
-                            <!-- Nama Barang (Read-only) -->
                             <div class="col-md-6">
                                 <label class="form-label ">
                                     Nama Barang
@@ -636,7 +620,6 @@
                                 <input type="text" id="distribusiNama" class="form-control bg-light" readonly>
                             </div>
 
-                            <!-- Kode Barang (Read-only) -->
                             <div class="col-md-6">
                                 <label class="form-label ">
                                     Kode Barang
@@ -644,7 +627,6 @@
                                 <input type="text" id="distribusiKodeDisplay" class="form-control bg-light" readonly>
                             </div>
 
-                            <!-- Bagian Tujuan (Auto Fill - Read-only) -->
                             <div class="col-md-6">
                                 <label class="form-label ">
                                     Bagian Tujuan
@@ -653,7 +635,6 @@
                                 <small class="text-muted">Barang akan didistribusikan ke bagian ini</small>
                             </div>
 
-                            <!-- Harga (Auto Fill - Read-only) -->
                             <div class="col-md-6">
                                 <label class="form-label ">
                                     Harga Satuan
@@ -666,7 +647,6 @@
                                 <small class="text-muted">Harga per satuan barang</small>
                             </div>
 
-                            <!-- Stok Tersedia (Read-only) -->
                             <div class="col-md-6">
                                 <label class="form-label ">
                                     Stok Tersedia di Gudang Utama
@@ -675,7 +655,6 @@
                                 <small class="text-muted">Stok yang tersedia untuk didistribusikan</small>
                             </div>
 
-                            <!-- Jumlah Distribusi -->
                             <div class="col-md-6">
                                 <label class="form-label ">
                                     Jumlah Distribusi <span class="text-danger">*</span>
@@ -685,7 +664,6 @@
                                 <small class="text-muted">Jumlah barang yang akan didistribusikan</small>
                             </div>
 
-                            <!-- Tanggal Distribusi -->
                             <div class="col-md-12">
                                 <label class="form-label ">
                                     Tanggal Distribusi
@@ -694,7 +672,6 @@
                                 <small class="text-muted">Kosongkan untuk menggunakan tanggal hari ini</small>
                             </div>
 
-                            <!-- Keterangan -->
                             <div class="col-12">
                                 <label class="form-label ">
                                     Keterangan
@@ -703,7 +680,6 @@
                                     placeholder="Contoh: Distribusi untuk kebutuhan operasional bagian"></textarea>
                             </div>
 
-                            <!-- Bukti Distribusi -->
                             <div class="col-12">
                                 <label class="form-label ">
                                     Bukti Distribusi
@@ -822,6 +798,17 @@
         el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'table-row' : 'none';
     }
 
+    // Helper function to disable the submit button and show loading text
+    function disableSubmitButton(form) {
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            // Use spinner and change text to indicate processing
+            submitBtn.innerHTML =
+                `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Memproses...`;
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         const today = "{{ date('Y-m-d') }}";
 
@@ -843,6 +830,14 @@
                 const barangKode = button.getAttribute('data-kode');
                 const barangNama = button.getAttribute('data-nama');
                 const barangSatuan = button.getAttribute('data-satuan') || 'Unit';
+                
+                // --- Tambahkan logika untuk mereset tombol submit saat modal dibuka ulang ---
+                const submitBtn = formBarangMasuk.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = `Simpan Barang Masuk`; // Restore original text
+                }
+                // --- Akhir logika reset tombol submit ---
 
                 // Reset hanya field input form
                 formBarangMasuk.reset();
@@ -879,6 +874,9 @@
                     return;
                 }
 
+                // FIX: Disable button to prevent spamming
+                disableSubmitButton(this);
+
                 const kodeBarang = document.getElementById('barangMasukKode').value;
                 this.action = `/pb/barang-masuk/${kodeBarang}`;
                 this.submit();
@@ -906,6 +904,14 @@
         if (modalDistribusi && formDistribusi) {
             modalDistribusi.addEventListener('show.bs.modal', function (event) {
                 const button = event.relatedTarget;
+
+                // --- Tambahkan logika untuk mereset tombol submit saat modal dibuka ulang ---
+                const submitBtn = formDistribusi.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = ` Proses Distribusi`; // Restore original text
+                }
+                // --- Akhir logika reset tombol submit ---
 
                 // Reset form terlebih dahulu supaya field editable bersih
                 formDistribusi.reset();
@@ -964,6 +970,9 @@
                     alert(`Jumlah distribusi tidak boleh melebihi stok tersedia (${maxStok})!`);
                     return;
                 }
+
+                // FIX: Disable button to prevent spamming
+                disableSubmitButton(this);
 
                 const pbStokId = document.getElementById('distribusiPbStokId').value;
                 this.action = `/pb/distribusi/${pbStokId}`;
