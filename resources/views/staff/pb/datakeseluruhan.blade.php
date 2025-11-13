@@ -101,15 +101,15 @@
         @if (session('toast'))
             <div id="toast-notif"
                 style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-                <!-- Toast notification -->
-                                                                                                          z-index: 2000; display: flex; justify-content: center; pointer-events: none;">
+                                    <!-- Toast notification -->
+                                                                                                                              z-index: 2000; display: flex; justify-content: center; pointer-events: none;">
                 <div class="toast-message"
                     style="background: #fff; border-radius: 12px; padding: 14px 22px;
-                                                                                                            box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;
-                                                                                                            min-width: 280px; max-width: 360px; transition: opacity .5s ease;">
+                                                                                                                                box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;
+                                                                                                                                min-width: 280px; max-width: 360px; transition: opacity .5s ease;">
                     <div
                         style="font-weight: 600; font-size: 16px; margin-bottom: 4px;
-                                                                                                              color: {{ session('toast.type') === 'success' ? '#28a745' : '#dc3545' }};">
+                                                                                                                                  color: {{ session('toast.type') === 'success' ? '#28a745' : '#dc3545' }};">
                         {{ session('toast.title') }}
                     </div>
                     <div style="color:#333; font-size: 14px; line-height: 1.4;">
@@ -145,7 +145,7 @@
 
             <!-- Tab Content -->
             <div class="tab-content">
-                <!-- TAB 1: DATA KESELURUHAN -->    
+                <!-- TAB 1: DATA KESELURUHAN -->
                 <div class="tab-pane fade {{ $activeTab === 'data-keseluruhan' ? 'show active' : '' }}"
                     id="data-keseluruhan" role="tabpanel">
 
@@ -489,8 +489,9 @@
     <div class="modal fade" id="modalBarangMasuk" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
-                <div class="modal-headerbg-success text">
-                    <h5 class="modal-title">
+                <div class="modal-header bg-success text">
+                    <h5 class="modal-title text-white
+">
                         Form Barang Masuk
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
@@ -514,7 +515,7 @@
                             </div>
 
                             <div class="col-md-6">
-                            <!-- Kode Barang (Read-only) -->
+                                <!-- Kode Barang (Read-only) -->
                                 <label class="form-label ">
                                     Kode Barang
                                 </label>
@@ -522,7 +523,7 @@
                             </div>
 
                             <div class="col-md-6">
-                            <!-- Harga Barang -->    
+                                <!-- Harga Barang -->
                                 <label class="form-label ">
                                     Harga Satuan <span class="text-danger">*</span>
                                 </label>
@@ -537,7 +538,7 @@
                             <!-- Bagian Tujuan -->
                             <div class="col-md-6">
                                 <label class="form-label ">
-                                    Bagian  <span class="text-danger">*</span>
+                                    Bagian <span class="text-danger">*</span>
                                 </label>
                                 <select name="bagian_id" id="bagianTujuanMasuk" class="form-select" required>
                                     <option value="">-- Pilih Bagian --</option>
@@ -604,7 +605,7 @@
         </div>
     </div>
 
-     <!-- Modal Distribusi -->
+    <!-- Modal Distribusi -->
     <div class="modal fade" id="modalDistribusi" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
@@ -717,10 +718,10 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                             Batal
+                            Batal
                         </button>
-                        <button type="submit" class="btn btn-warning">
-                             Proses Distribusi
+                        <button type="submit" class="btn btn-warning text-white" style="font-size: 14px;">
+                            Proses Distribusi
                         </button>
                     </div>
                 </form>
@@ -729,7 +730,7 @@
     </div>
 
     {{-- Modal Filter --}}
-    <div class="modal fade" id="modalFilterBarang" tabindex="-1">
+    <div class=" modal fade" id="modalFilterBarang" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <form action="{{ route('pb.datakeseluruhan.index') }}" method="GET" class="modal-content">
                 <input type="hidden" name="tab" value="data-keseluruhan">
@@ -754,10 +755,13 @@
                             <label class="form-label">Satuan</label>
                             <select name="satuan" class="form-select">
                                 <option value="">-- Semua Satuan --</option>
-                                <option value="Pcs" @if (request('satuan') == 'Pcs') selected @endif>Pcs</option>
+                                <option value="Pcs" @if (request('satuan') == 'Pcs') selected @endif>
+                                    Pcs</option>
                                 <option value="Unit" @if (request('satuan') == 'Unit') selected @endif>Unit</option>
-                                <option value="Box" @if (request('satuan') == 'Box') selected @endif>Box</option>
-                                <option value="Kg" @if (request('satuan') == 'Kg') selected @endif>Kg</option>
+                                <option value="Box" @if (request('satuan') == 'Box') selected @endif>
+                                    Box</option>
+                                <option value="Kg" @if (request('satuan') == 'Kg') selected @endif>Kg
+                                </option>
                                 <option value="Liter" @if (request('satuan') == 'Liter') selected @endif>Liter</option>
                             </select>
                         </div>
@@ -791,359 +795,359 @@
     </div>
 
     @push('scripts')
-<script>
-    // Toggle untuk kelola barang masuk per kategori
-    function toggleKelolaBarangMasuk(id) {
-        const el = document.getElementById('kelola-masuk-' + id);
-        const btn = event.currentTarget;
-        const icon = btn.querySelector('i');
+        <script>
+            // Toggle untuk kelola barang masuk per kategori
+            function toggleKelolaBarangMasuk(id) {
+                const el = document.getElementById('kelola-masuk-' + id);
+                const btn = event.currentTarget;
+                const icon = btn.querySelector('i');
 
-        if (el.style.display === 'none' || el.style.display === '') {
-            el.style.display = 'table-row';
-            icon.classList.remove('bi-chevron-down');
-            icon.classList.add('bi-chevron-up');
-        } else {
-            el.style.display = 'none';
-            icon.classList.remove('bi-chevron-up');
-            icon.classList.add('bi-chevron-down');
-        }
-    }
-
-    // Toggle detail kategori / bagian
-    function toggleDetail(type, id) {
-        const el = document.getElementById('detail-' + type + '-' + id);
-        if (!el) return;
-        el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'table-row' : 'none';
-    }
-
-    function toggleDistribusi(id) {
-        const el = document.getElementById('distribusi-' + id);
-        if (!el) return;
-        el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'table-row' : 'none';
-    }
-
-    // Helper function to disable the submit button and show loading text
-    function disableSubmitButton(form) {
-        const submitBtn = form.querySelector('button[type="submit"]');
-        if (submitBtn) {
-            submitBtn.disabled = true;
-            // Use spinner and change text to indicate processing
-            submitBtn.innerHTML =
-                `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Memproses...`;
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        const today = "{{ date('Y-m-d') }}";
-
-        // Autocomplete
-        setupAutocomplete('searchInput', 'searchSuggestions', 'searchForm', 'data-keseluruhan');
-        setupAutocomplete('searchInputDistribusi', 'searchSuggestionsDistribusi', 'searchFormDistribusi', 'distribusi');
-
-        /**
-         * =======================
-         * MODAL BARANG MASUK
-         * =======================
-         */
-        const modalBarangMasuk = document.getElementById('modalBarangMasuk');
-        const formBarangMasuk = document.getElementById('formBarangMasuk');
-
-        if (modalBarangMasuk && formBarangMasuk) {
-            modalBarangMasuk.addEventListener('show.bs.modal', function (event) {
-                const button = event.relatedTarget;
-                const barangKode = button.getAttribute('data-kode');
-                const barangNama = button.getAttribute('data-nama');
-                const barangSatuan = button.getAttribute('data-satuan') || 'Unit';
-                
-                // --- Tambahkan logika untuk mereset tombol submit saat modal dibuka ulang ---
-                const submitBtn = formBarangMasuk.querySelector('button[type="submit"]');
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = `Simpan Barang Masuk`; // Restore original text
+                if (el.style.display === 'none' || el.style.display === '') {
+                    el.style.display = 'table-row';
+                    icon.classList.remove('bi-chevron-down');
+                    icon.classList.add('bi-chevron-up');
+                } else {
+                    el.style.display = 'none';
+                    icon.classList.remove('bi-chevron-up');
+                    icon.classList.add('bi-chevron-down');
                 }
-                // --- Akhir logika reset tombol submit ---
-
-                // Reset hanya field input form
-                formBarangMasuk.reset();
-
-                // Set nilai hidden + readonly
-                document.getElementById('barangMasukNama').value = barangNama;
-                document.getElementById('barangMasukKode').value = barangKode;
-                document.getElementById('barangMasukKodeDisplay').value = barangKode;
-                document.getElementById('satuanDisplay').textContent = barangSatuan;
-
-                // Tanggal default hari ini
-                const tgl = formBarangMasuk.querySelector('input[name="tanggal"]');
-                if (tgl) tgl.value = today;
-            });
-
-            formBarangMasuk.addEventListener('submit', function (e) {
-                e.preventDefault();
-
-                const bagianId = document.getElementById('bagianTujuanMasuk').value;
-                if (!bagianId) {
-                    alert('Silakan pilih bagian tujuan terlebih dahulu!');
-                    return;
-                }
-
-                const harga = document.getElementById('hargaBarangMasuk').value;
-                if (!harga || parseFloat(harga) <= 0) {
-                    alert('Silakan masukkan harga yang valid!');
-                    return;
-                }
-
-                const jumlah = this.querySelector('input[name="jumlah"]').value;
-                if (!jumlah || parseInt(jumlah) <= 0) {
-                    alert('Silakan masukkan jumlah stok yang valid!');
-                    return;
-                }
-
-                // FIX: Disable button to prevent spamming
-                disableSubmitButton(this);
-
-                const kodeBarang = document.getElementById('barangMasukKode').value;
-                this.action = `/pb/barang-masuk/${kodeBarang}`;
-                this.submit();
-            });
-        }
-
-        /**
-         * =======================
-         * MODAL DISTRIBUSI BARANG
-         * =======================
-         * Auto-fill:
-         * - Nama Barang
-         * - Kode Barang
-         * - Bagian Tujuan
-         * - Harga Satuan
-         * - Stok Tersedia (PB)
-         * User isi sendiri:
-         * - jumlahDistribusi
-         * - keterangan
-         * - bukti
-         */
-        const modalDistribusi = document.getElementById('modalDistribusi');
-        const formDistribusi = document.getElementById('formDistribusi');
-
-        if (modalDistribusi && formDistribusi) {
-            modalDistribusi.addEventListener('show.bs.modal', function (event) {
-                const button = event.relatedTarget;
-
-                // --- Tambahkan logika untuk mereset tombol submit saat modal dibuka ulang ---
-                const submitBtn = formDistribusi.querySelector('button[type="submit"]');
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = ` Proses Distribusi`; // Restore original text
-                }
-                // --- Akhir logika reset tombol submit ---
-
-                // Reset form terlebih dahulu supaya field editable bersih
-                formDistribusi.reset();
-
-                // Ambil data dari tombol
-                const pbStokId   = button.getAttribute('data-id') || '';
-                const barangKode = button.getAttribute('data-kode') || '';
-                const barangNama = button.getAttribute('data-nama') || '';
-                const stok       = parseInt(button.getAttribute('data-stok') || '0', 10);
-                const harga      = parseFloat(button.getAttribute('data-harga') || '0');
-                const bagianId   = button.getAttribute('data-bagian-id') || '';
-                const bagianNama = button.getAttribute('data-bagian-nama') || '';
-
-                // Hidden (untuk proses backend)
-                document.getElementById('distribusiPbStokId').value = pbStokId;
-                document.getElementById('distribusiKode').value = barangKode;
-                document.getElementById('distribusiHarga').value = harga;
-                document.getElementById('distribusiBagianId').value = bagianId;
-
-                // Readonly display
-                document.getElementById('distribusiNama').value = barangNama;
-                document.getElementById('distribusiKodeDisplay').value = barangKode;
-                document.getElementById('distribusiBagianNama').value = bagianNama;
-                document.getElementById('distribusiHargaDisplay').value =
-                    new Intl.NumberFormat('id-ID').format(harga);
-                document.getElementById('stokTersedia').value =
-                    (isFinite(stok) ? stok : 0) + ' Unit';
-
-                // Jumlah distribusi → user isi sendiri
-                const inputJumlah = document.getElementById('jumlahDistribusi');
-                if (inputJumlah) {
-                    inputJumlah.max = isFinite(stok) ? stok : 0;
-                    inputJumlah.value = '';
-                }
-
-                // Tanggal default hari ini
-                const tgl = formDistribusi.querySelector('input[name="tanggal"]');
-                if (tgl) tgl.value = today;
-
-                // Keterangan & bukti sengaja dikosongkan (user isi manual)
-            });
-
-            formDistribusi.addEventListener('submit', function (e) {
-                e.preventDefault();
-
-                const jumlahInput = document.getElementById('jumlahDistribusi');
-                const jumlah = parseInt(jumlahInput.value || '0', 10);
-                const maxStok = parseInt(jumlahInput.max || '0', 10);
-
-                if (!jumlah || jumlah <= 0) {
-                    alert('Jumlah distribusi harus lebih dari 0!');
-                    return;
-                }
-
-                if (jumlah > maxStok) {
-                    alert(`Jumlah distribusi tidak boleh melebihi stok tersedia (${maxStok})!`);
-                    return;
-                }
-
-                // FIX: Disable button to prevent spamming
-                disableSubmitButton(this);
-
-                const pbStokId = document.getElementById('distribusiPbStokId').value;
-                this.action = `/pb/distribusi/${pbStokId}`;
-                this.submit();
-            });
-        }
-    });
-
-    // =======================
-    // AUTOCOMPLETE
-    // =======================
-    function setupAutocomplete(inputId, suggestionsId, formId, tabName) {
-        const searchInput = document.getElementById(inputId);
-        const suggestionsContainer = document.getElementById(suggestionsId);
-        if (!searchInput || !suggestionsContainer) return;
-
-        let currentSuggestions = [];
-        let activeSuggestionIndex = -1;
-        let searchTimeout;
-
-        function fetchSuggestions(query) {
-            if (query.length < 2) {
-                hideSuggestions();
-                return;
             }
 
-            showLoading();
-            clearTimeout(searchTimeout);
-
-            searchTimeout = setTimeout(() => {
-                fetch(`/pb/api/search-barang?q=${encodeURIComponent(query)}&tab=${tabName}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        currentSuggestions = data;
-                        displaySuggestions(data);
-                    })
-                    .catch(() => hideSuggestions());
-            }, 300);
-        }
-
-        function showLoading() {
-            suggestionsContainer.innerHTML =
-                '<div style="padding:12px;text-align:center;color:#6b7280;">Mencari...</div>';
-            suggestionsContainer.style.display = 'block';
-        }
-
-        function displaySuggestions(suggestions) {
-            if (!suggestions.length) {
-                suggestionsContainer.innerHTML =
-                    '<div style="padding:12px;text-align:center;color:#6b7280;">Tidak ada barang ditemukan</div>';
-                return;
+            // Toggle detail kategori / bagian
+            function toggleDetail(type, id) {
+                const el = document.getElementById('detail-' + type + '-' + id);
+                if (!el) return;
+                el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'table-row' : 'none';
             }
 
-            let html = '';
-            suggestions.forEach((item, index) => {
-                const stockStatusClass = `stock-${item.stock_status}`;
-                const stockText =
-                    item.stock_status === 'empty' ? 'Habis' :
-                    item.stock_status === 'low' ? 'Sedikit' : 'Tersedia';
+            function toggleDistribusi(id) {
+                const el = document.getElementById('distribusi-' + id);
+                if (!el) return;
+                el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'table-row' : 'none';
+            }
 
-                html += `
-                    <div class="search-suggestion-item" data-index="${index}">
-                        <div class="suggestion-name">${item.nama}</div>
-                        <div class="suggestion-code">
-                            Kode: ${item.kode} |
-                            ${tabName === 'data-keseluruhan'
+            // Helper function to disable the submit button and show loading text
+            function disableSubmitButton(form) {
+                const submitBtn = form.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    // Use spinner and change text to indicate processing
+                    submitBtn.innerHTML =
+                        `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Memproses...`;
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                const today = "{{ date('Y-m-d') }}";
+
+                // Autocomplete
+                setupAutocomplete('searchInput', 'searchSuggestions', 'searchForm', 'data-keseluruhan');
+                setupAutocomplete('searchInputDistribusi', 'searchSuggestionsDistribusi', 'searchFormDistribusi', 'distribusi');
+
+                /**
+                 * =======================
+                 * MODAL BARANG MASUK
+                 * =======================
+                 */
+                const modalBarangMasuk = document.getElementById('modalBarangMasuk');
+                const formBarangMasuk = document.getElementById('formBarangMasuk');
+
+                if (modalBarangMasuk && formBarangMasuk) {
+                    modalBarangMasuk.addEventListener('show.bs.modal', function (event) {
+                        const button = event.relatedTarget;
+                        const barangKode = button.getAttribute('data-kode');
+                        const barangNama = button.getAttribute('data-nama');
+                        const barangSatuan = button.getAttribute('data-satuan') || 'Unit';
+
+                        // --- Tambahkan logika untuk mereset tombol submit saat modal dibuka ulang ---
+                        const submitBtn = formBarangMasuk.querySelector('button[type="submit"]');
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = `Simpan Barang Masuk`; // Restore original text
+                        }
+                        // --- Akhir logika reset tombol submit ---
+
+                        // Reset hanya field input form
+                        formBarangMasuk.reset();
+
+                        // Set nilai hidden + readonly
+                        document.getElementById('barangMasukNama').value = barangNama;
+                        document.getElementById('barangMasukKode').value = barangKode;
+                        document.getElementById('barangMasukKodeDisplay').value = barangKode;
+                        document.getElementById('satuanDisplay').textContent = barangSatuan;
+
+                        // Tanggal default hari ini
+                        const tgl = formBarangMasuk.querySelector('input[name="tanggal"]');
+                        if (tgl) tgl.value = today;
+                    });
+
+                    formBarangMasuk.addEventListener('submit', function (e) {
+                        e.preventDefault();
+
+                        const bagianId = document.getElementById('bagianTujuanMasuk').value;
+                        if (!bagianId) {
+                            alert('Silakan pilih bagian tujuan terlebih dahulu!');
+                            return;
+                        }
+
+                        const harga = document.getElementById('hargaBarangMasuk').value;
+                        if (!harga || parseFloat(harga) <= 0) {
+                            alert('Silakan masukkan harga yang valid!');
+                            return;
+                        }
+
+                        const jumlah = this.querySelector('input[name="jumlah"]').value;
+                        if (!jumlah || parseInt(jumlah) <= 0) {
+                            alert('Silakan masukkan jumlah stok yang valid!');
+                            return;
+                        }
+
+                        // FIX: Disable button to prevent spamming
+                        disableSubmitButton(this);
+
+                        const kodeBarang = document.getElementById('barangMasukKode').value;
+                        this.action = `/pb/barang-masuk/${kodeBarang}`;
+                        this.submit();
+                    });
+                }
+
+                /**
+                 * =======================
+                 * MODAL DISTRIBUSI BARANG
+                 * =======================
+                 * Auto-fill:
+                 * - Nama Barang
+                 * - Kode Barang
+                 * - Bagian Tujuan
+                 * - Harga Satuan
+                 * - Stok Tersedia (PB)
+                 * User isi sendiri:
+                 * - jumlahDistribusi
+                 * - keterangan
+                 * - bukti
+                 */
+                const modalDistribusi = document.getElementById('modalDistribusi');
+                const formDistribusi = document.getElementById('formDistribusi');
+
+                if (modalDistribusi && formDistribusi) {
+                    modalDistribusi.addEventListener('show.bs.modal', function (event) {
+                        const button = event.relatedTarget;
+
+                        // --- Tambahkan logika untuk mereset tombol submit saat modal dibuka ulang ---
+                        const submitBtn = formDistribusi.querySelector('button[type="submit"]');
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = ` Proses Distribusi`; // Restore original text
+                        }
+                        // --- Akhir logika reset tombol submit ---
+
+                        // Reset form terlebih dahulu supaya field editable bersih
+                        formDistribusi.reset();
+
+                        // Ambil data dari tombol
+                        const pbStokId = button.getAttribute('data-id') || '';
+                        const barangKode = button.getAttribute('data-kode') || '';
+                        const barangNama = button.getAttribute('data-nama') || '';
+                        const stok = parseInt(button.getAttribute('data-stok') || '0', 10);
+                        const harga = parseFloat(button.getAttribute('data-harga') || '0');
+                        const bagianId = button.getAttribute('data-bagian-id') || '';
+                        const bagianNama = button.getAttribute('data-bagian-nama') || '';
+
+                        // Hidden (untuk proses backend)
+                        document.getElementById('distribusiPbStokId').value = pbStokId;
+                        document.getElementById('distribusiKode').value = barangKode;
+                        document.getElementById('distribusiHarga').value = harga;
+                        document.getElementById('distribusiBagianId').value = bagianId;
+
+                        // Readonly display
+                        document.getElementById('distribusiNama').value = barangNama;
+                        document.getElementById('distribusiKodeDisplay').value = barangKode;
+                        document.getElementById('distribusiBagianNama').value = bagianNama;
+                        document.getElementById('distribusiHargaDisplay').value =
+                            new Intl.NumberFormat('id-ID').format(harga);
+                        document.getElementById('stokTersedia').value =
+                            (isFinite(stok) ? stok : 0) + ' Unit';
+
+                        // Jumlah distribusi → user isi sendiri
+                        const inputJumlah = document.getElementById('jumlahDistribusi');
+                        if (inputJumlah) {
+                            inputJumlah.max = isFinite(stok) ? stok : 0;
+                            inputJumlah.value = '';
+                        }
+
+                        // Tanggal default hari ini
+                        const tgl = formDistribusi.querySelector('input[name="tanggal"]');
+                        if (tgl) tgl.value = today;
+
+                        // Keterangan & bukti sengaja dikosongkan (user isi manual)
+                    });
+
+                    formDistribusi.addEventListener('submit', function (e) {
+                        e.preventDefault();
+
+                        const jumlahInput = document.getElementById('jumlahDistribusi');
+                        const jumlah = parseInt(jumlahInput.value || '0', 10);
+                        const maxStok = parseInt(jumlahInput.max || '0', 10);
+
+                        if (!jumlah || jumlah <= 0) {
+                            alert('Jumlah distribusi harus lebih dari 0!');
+                            return;
+                        }
+
+                        if (jumlah > maxStok) {
+                            alert(`Jumlah distribusi tidak boleh melebihi stok tersedia (${maxStok})!`);
+                            return;
+                        }
+
+                        // FIX: Disable button to prevent spamming
+                        disableSubmitButton(this);
+
+                        const pbStokId = document.getElementById('distribusiPbStokId').value;
+                        this.action = `/pb/distribusi/${pbStokId}`;
+                        this.submit();
+                    });
+                }
+            });
+
+            // =======================
+            // AUTOCOMPLETE
+            // =======================
+            function setupAutocomplete(inputId, suggestionsId, formId, tabName) {
+                const searchInput = document.getElementById(inputId);
+                const suggestionsContainer = document.getElementById(suggestionsId);
+                if (!searchInput || !suggestionsContainer) return;
+
+                let currentSuggestions = [];
+                let activeSuggestionIndex = -1;
+                let searchTimeout;
+
+                function fetchSuggestions(query) {
+                    if (query.length < 2) {
+                        hideSuggestions();
+                        return;
+                    }
+
+                    showLoading();
+                    clearTimeout(searchTimeout);
+
+                    searchTimeout = setTimeout(() => {
+                        fetch(`/pb/api/search-barang?q=${encodeURIComponent(query)}&tab=${tabName}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                currentSuggestions = data;
+                                displaySuggestions(data);
+                            })
+                            .catch(() => hideSuggestions());
+                    }, 300);
+                }
+
+                function showLoading() {
+                    suggestionsContainer.innerHTML =
+                        '<div style="padding:12px;text-align:center;color:#6b7280;">Mencari...</div>';
+                    suggestionsContainer.style.display = 'block';
+                }
+
+                function displaySuggestions(suggestions) {
+                    if (!suggestions.length) {
+                        suggestionsContainer.innerHTML =
+                            '<div style="padding:12px;text-align:center;color:#6b7280;">Tidak ada barang ditemukan</div>';
+                        return;
+                    }
+
+                    let html = '';
+                    suggestions.forEach((item, index) => {
+                        const stockStatusClass = `stock-${item.stock_status}`;
+                        const stockText =
+                            item.stock_status === 'empty' ? 'Habis' :
+                                item.stock_status === 'low' ? 'Sedikit' : 'Tersedia';
+
+                        html += `
+                                        <div class="search-suggestion-item" data-index="${index}">
+                                            <div class="suggestion-name">${item.nama}</div>
+                                            <div class="suggestion-code">
+                                                Kode: ${item.kode} |
+                                                ${tabName === 'data-keseluruhan'
                                 ? 'Kategori: ' + item.kategori
                                 : 'Bagian: ' + item.bagian}
-                        </div>
-                        <div class="suggestion-meta">
-                            <small>
-                                Stok: ${item.stok} | ${item.harga} |
-                                <span class="stock-status ${stockStatusClass}">${stockText}</span>
-                            </small>
-                        </div>
-                    </div>`;
-            });
+                                            </div>
+                                            <div class="suggestion-meta">
+                                                <small>
+                                                    Stok: ${item.stok} | ${item.harga} |
+                                                    <span class="stock-status ${stockStatusClass}">${stockText}</span>
+                                                </small>
+                                            </div>
+                                        </div>`;
+                    });
 
-            suggestionsContainer.innerHTML = html;
-            suggestionsContainer.style.display = 'block';
+                    suggestionsContainer.innerHTML = html;
+                    suggestionsContainer.style.display = 'block';
 
-            suggestionsContainer.querySelectorAll('.search-suggestion-item').forEach(item => {
-                item.addEventListener('click', function () {
-                    const idx = parseInt(this.dataset.index);
-                    selectSuggestion(idx);
+                    suggestionsContainer.querySelectorAll('.search-suggestion-item').forEach(item => {
+                        item.addEventListener('click', function () {
+                            const idx = parseInt(this.dataset.index);
+                            selectSuggestion(idx);
+                        });
+                    });
+                }
+
+                function hideSuggestions() {
+                    suggestionsContainer.style.display = 'none';
+                    activeSuggestionIndex = -1;
+                }
+
+                function selectSuggestion(index) {
+                    if (currentSuggestions[index]) {
+                        const suggestion = currentSuggestions[index];
+                        searchInput.value = suggestion.nama;
+                        hideSuggestions();
+                        document.getElementById(formId).submit();
+                    }
+                }
+
+                function updateActiveSuggestion(suggestions) {
+                    suggestions.forEach((item, index) => {
+                        item.classList.toggle('active', index === activeSuggestionIndex);
+                    });
+                }
+
+                searchInput.addEventListener('input', function () {
+                    fetchSuggestions(this.value.trim());
                 });
-            });
-        }
 
-        function hideSuggestions() {
-            suggestionsContainer.style.display = 'none';
-            activeSuggestionIndex = -1;
-        }
+                searchInput.addEventListener('keydown', function (e) {
+                    const suggestions = suggestionsContainer.querySelectorAll('.search-suggestion-item');
+                    if (!suggestions.length) return;
 
-        function selectSuggestion(index) {
-            if (currentSuggestions[index]) {
-                const suggestion = currentSuggestions[index];
-                searchInput.value = suggestion.nama;
-                hideSuggestions();
-                document.getElementById(formId).submit();
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        activeSuggestionIndex = Math.min(activeSuggestionIndex + 1, suggestions.length - 1);
+                        updateActiveSuggestion(suggestions);
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        activeSuggestionIndex = Math.max(activeSuggestionIndex - 1, 0);
+                        updateActiveSuggestion(suggestions);
+                    } else if (e.key === 'Enter' && activeSuggestionIndex >= 0) {
+                        e.preventDefault();
+                        selectSuggestion(activeSuggestionIndex);
+                    } else if (e.key === 'Escape') {
+                        hideSuggestions();
+                    }
+                });
+
+                searchInput.addEventListener('focus', function () {
+                    if (this.value.trim().length >= 2) {
+                        fetchSuggestions(this.value.trim());
+                    }
+                });
+
+                document.addEventListener('click', function (e) {
+                    if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+                        hideSuggestions();
+                    }
+                });
             }
-        }
-
-        function updateActiveSuggestion(suggestions) {
-            suggestions.forEach((item, index) => {
-                item.classList.toggle('active', index === activeSuggestionIndex);
-            });
-        }
-
-        searchInput.addEventListener('input', function () {
-            fetchSuggestions(this.value.trim());
-        });
-
-        searchInput.addEventListener('keydown', function (e) {
-            const suggestions = suggestionsContainer.querySelectorAll('.search-suggestion-item');
-            if (!suggestions.length) return;
-
-            if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                activeSuggestionIndex = Math.min(activeSuggestionIndex + 1, suggestions.length - 1);
-                updateActiveSuggestion(suggestions);
-            } else if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                activeSuggestionIndex = Math.max(activeSuggestionIndex - 1, 0);
-                updateActiveSuggestion(suggestions);
-            } else if (e.key === 'Enter' && activeSuggestionIndex >= 0) {
-                e.preventDefault();
-                selectSuggestion(activeSuggestionIndex);
-            } else if (e.key === 'Escape') {
-                hideSuggestions();
-            }
-        });
-
-        searchInput.addEventListener('focus', function () {
-            if (this.value.trim().length >= 2) {
-                fetchSuggestions(this.value.trim());
-            }
-        });
-
-        document.addEventListener('click', function (e) {
-            if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
-                hideSuggestions();
-            }
-        });
-    }
-</script>
-@endpush
+        </script>
+    @endpush
 
 
 </x-layouts.app>
