@@ -1,10 +1,23 @@
 <x-layouts.app title="Data Keseluruhan" :menu="$menu">
     @php
-        $barangData = $barangData ?? collect();
-        $kategori = $kategori ?? collect();
-        $bagian = $bagian ?? collect();
+        // Pastikan selalu collection, biar nggak kejadian "foreach string given"
+        $barangData      = $barangData ?? collect();      // hasil search PbStok (Gudang Utama)
+        $stokBagianData  = $stokBagianData ?? collect();  // hasil search StokBagian
+        $barangMasukData = $barangMasukData ?? collect(); // hasil search Kelola Barang Masuk
+
+        $kategori = (isset($kategori) && $kategori instanceof \Illuminate\Support\Collection)
+            ? $kategori
+            : collect();
+
+        $bagian = (isset($bagian) && $bagian instanceof \Illuminate\Support\Collection)
+            ? $bagian
+            : collect();
+
         $activeTab = $activeTab ?? 'data-keseluruhan';
     @endphp
+
+
+
 
     @push('styles')
         <link rel="stylesheet" href="{{ asset('assets/css/staff/pb/data_keseluruhan_pb.css') }}">
@@ -101,15 +114,15 @@
         @if (session('toast'))
             <div id="toast-notif"
                 style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-                                    <!-- Toast notification -->
-                                                                                                                              z-index: 2000; display: flex; justify-content: center; pointer-events: none;">
+                                        <!-- Toast notification -->
+                                                                                                                                  z-index: 2000; display: flex; justify-content: center; pointer-events: none;">
                 <div class="toast-message"
                     style="background: #fff; border-radius: 12px; padding: 14px 22px;
-                                                                                                                                box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;
-                                                                                                                                min-width: 280px; max-width: 360px; transition: opacity .5s ease;">
+                                                                                                                                    box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;
+                                                                                                                                    min-width: 280px; max-width: 360px; transition: opacity .5s ease;">
                     <div
                         style="font-weight: 600; font-size: 16px; margin-bottom: 4px;
-                                                                                                                                  color: {{ session('toast.type') === 'success' ? '#28a745' : '#dc3545' }};">
+                                                                                                                                      color: {{ session('toast.type') === 'success' ? '#28a745' : '#dc3545' }};">
                         {{ session('toast.title') }}
                     </div>
                     <div style="color:#333; font-size: 14px; line-height: 1.4;">
@@ -174,8 +187,11 @@
                     </div>
 
                     {{-- Jika ada filter/search --}}
-                    @if ($barangData && $barangData->count() > 0)
-                        <h6 class="mt-3">Hasil Pencarian - Data Barang</h6>
+                    @if ($barangData->count() > 0 || $stokBagianData->count() > 0)
+
+                    {{-- HASIL PENCARIAN: DATA BARANG GUDANG UTAMA (PbStok) --}}
+                    @if ($barangData->count() > 0)
+                        <h6 class="mt-3">Hasil Pencarian - Data Barang Gudang Utama</h6>
                         <div class="table-responsive">
                             <table class="table table-bordered mt-2">
                                 <thead class="table-secondary">
@@ -185,29 +201,44 @@
                                         <th>Nama Barang</th>
                                         <th>Kategori</th>
                                         <th>Satuan</th>
-                                        <th>Harga Barang</th>
-                                        <th>Total Stok (PB)</th>
+                                        <th>Bagian</th>
+                                        <th>Stok (PB)</th>
+                                        <th>Harga</th>
                                         <th>Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($barangData as $i => $item)
                                         @php
-                                            $totalStok = $item->pbStok->sum('stok');
+                                            // $item = PbStok
+                                            $namaBarang = $item->barang->nama_barang ?? '-';
+                                            $kategoriNm = $item->barang->kategori->nama ?? '-';
+                                            $satuan     = $item->barang->satuan ?? '-';
+                                            $bagianNm   = $item->bagian->nama ?? '-';
+                                            $stok       = $item->stok ?? 0;
+                                            $harga      = $item->harga ?? 0;
                                         @endphp
-                                        <tr @if ($totalStok < 10) class="row-low-stock" @endif>
+                                        <tr @if ($stok < 10) class="row-low-stock" @endif>
                                             <td>{{ $i + 1 }}</td>
                                             <td>{{ $item->kode_barang }}</td>
-                                            <td>{{ $item->nama_barang }}</td>
-                                            <td>{{ $item->kategori->nama ?? '-' }}</td>
-                                            <td>{{ $item->satuan }}</td>
-                                            <td>Rp {{ number_format($item->harga_barang ?? 0, 0, ',', '.') }}</td>
-                                            <td>{{ $totalStok }}</td>
+                                            <td>{{ $namaBarang }}</td>
+                                            <td>{{ $kategoriNm }}</td>
+                                            <td>{{ $satuan }}</td>
+                                            <td>{{ $bagianNm }}</td>
+                                            <td>{{ $stok }}</td>
+                                            <td>Rp {{ number_format($harga, 0, ',', '.') }}</td>
                                             <td>
-                                                <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal"
-                                                    data-bs-target="#modalBarangMasuk" data-kode="{{ $item->kode_barang }}"
-                                                    data-nama="{{ $item->nama_barang }}" data-total-stok="{{ $totalStok }}">
-                                                    <i class="bi bi-box-arrow-in-down"></i> Barang Masuk
+                                                {{-- Aksi DISTRIBUSI (bukan Barang Masuk) --}}
+                                                <button type="button" class="btn btn-warning btn-sm"
+                                                        data-bs-toggle="modal" data-bs-target="#modalDistribusi"
+                                                        data-id="{{ $item->id }}"
+                                                        data-kode="{{ $item->kode_barang }}"
+                                                        data-nama="{{ $namaBarang }}"
+                                                        data-stok="{{ $stok }}"
+                                                        data-harga="{{ $harga }}"
+                                                        data-bagian-id="{{ $item->bagian_id ?? '' }}"
+                                                        data-bagian-nama="{{ $bagianNm }}">
+                                                    <i class="bi bi-send"></i> Distribusi
                                                 </button>
                                             </td>
                                         </tr>
@@ -215,167 +246,217 @@
                                 </tbody>
                             </table>
                         </div>
-                    @elseif(request()->filled('search') || request()->filled('kategori_id') || request()->filled('satuan'))
-                        <div class="alert alert-warning">Tidak ada data ditemukan untuk kriteria pencarian Anda</div>
-                    @else
-                        {{-- Tampilan Default - Data Barang Gudang Utama per Kategori --}}
-                        <h6 class="mt-3">Data Barang Gudang Utama</h6>
+                    @endif
+
+                    {{-- HASIL PENCARIAN: STOK PER BAGIAN (StokBagian) --}}
+                    @if ($stokBagianData->count() > 0)
+                        <h6 class="mt-4"><strong>Hasil Pencarian - Stok Per Bagian</strong></h6>
                         <div class="table-responsive">
-                            <table class="table table-bordered">
-                                <thead class="table-dark">
+                            <table class="table table-bordered mt-2">
+                                <thead class="table-secondary">
                                     <tr>
-                                        <th>KATEGORI</th>
-                                        <th style="width:180px" class="text-center">AKSI</th>
+                                        <th>No</th>
+                                        <th>Bagian</th>
+                                        <th>Kode Barang</th>
+                                        <th>Nama Barang</th>
+                                        <th>Kategori</th>
+                                        <th>Satuan</th>
+                                        <th>Stok</th>
+                                        <th>Harga</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($kategori as $k)
+                                    @foreach ($stokBagianData as $i => $sb)
                                         @php
-                                            // Ambil semua pb_stok yang barangnya dalam kategori ini
-                                            $stokInKategori = \App\Models\PbStok::with(['barang', 'bagian'])
-                                                ->whereHas('barang', function ($q) use ($k) {
-                                                    $q->where('id_kategori', $k->id);
-                                                })
-                                                ->get();
+                                            $namaBarang = $sb->barang->nama_barang ?? '-';
+                                            $kategoriNm = $sb->barang->kategori->nama ?? '-';
+                                            $satuan     = $sb->barang->satuan ?? '-';
+                                            $bagianNm   = $sb->bagian->nama ?? '-';
+                                            $stok       = $sb->stok ?? 0;
+                                            $harga      = $sb->harga ?? 0;
                                         @endphp
-                                        @if($stokInKategori->count() > 0)
-                                            <tr>
-                                                <td>{{ $k->nama }}</td>
-                                                <td class="text-center">
-                                                    <button class="btn btn-sm btn-success"
-                                                        onclick="toggleDetail('barang', {{ $k->id }})">
-                                                        <i class="bi bi-eye"></i> Lihat ({{ $stokInKategori->count() }})
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                            <tr id="detail-barang-{{ $k->id }}" style="display:none;">
-                                                <td colspan="2">
-                                                    <div class="table-responsive">
-                                                        <table class="table table-striped table-sm">
-                                                            <thead>
-                                                                <tr>
-                                                                    <th>No</th>
-
-                                                                    <th>Kode Barang</th>
-                                                                    <th>Nama Barang</th>
-                                                                    <th>Bagian</th>
-
-                                                                    <th>Stok</th>
-                                                                    <th>Harga</th>
-                                                                    <th>Aksi</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                @foreach ($stokInKategori as $idx => $item)
-                                                                    <tr @if ($item->stok < 10) class="row-low-stock" @endif>
-                                                                        <td>{{ $idx + 1 }}</td>
-
-                                                                        <td>{{ $item->kode_barang }}</td>
-                                                                        <td>{{ $item->barang->nama_barang ?? '-' }}</td>
-                                                                        <td>
-                                                                            {{ $item->bagian->nama ?? '-' }}
-                                                                        </td>
-
-                                                                        <td>{{ $item->stok }}</td>
-                                                                        <td>Rp {{ number_format($item->harga ?? 0, 0, ',', '.') }}</td>
-                                                                        <td>
-                                                                            <button type="button" class="btn btn-warning btn-sm"
-                                                                                data-bs-toggle="modal" data-bs-target="#modalDistribusi"
-                                                                                data-id="{{ $item->id }}"
-                                                                                data-kode="{{ $item->kode_barang }}"
-                                                                                data-nama="{{ $item->barang->nama_barang ?? '-' }}"
-                                                                                data-stok="{{ $item->stok }}"
-                                                                                data-harga="{{ $item->harga ?? 0 }}"
-                                                                                data-bagian-id="{{ $item->bagian_id ?? '' }}"
-                                                                                data-bagian-nama="{{ $item->bagian->nama ?? 'Tidak ada bagian' }}">
-                                                                                <i class="bi bi-send"></i> Distribusi
-                                                                            </button>
-                                                                        </td>
-                                                                    </tr>
-                                                                @endforeach
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        @endif
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                        {{-- Data per Bagian (Stok Bagian) - View Only --}}
-                        <h6 class="mt-4"> <strong> Stok Per Bagian - View Only</strong></h6>
-                        <div class="table-responsive">
-                            <table class="table table-bordered">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>BAGIAN</th>
-                                        <th style="width:180px" class="text-center">AKSI</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($bagian as $bg)
-                                        @php
-                                            $stokDiBagian = \App\Models\StokBagian::with(['barang.kategori', 'bagian'])
-                                                ->where('bagian_id', $bg->id)
-                                                ->get();
-                                        @endphp
-                                        @if($stokDiBagian->count() > 0)
-                                            <tr class="table-secondary">
-                                                <td>{{ $bg->nama }}</td>
-                                                <td class="text-center">
-                                                    <button class="btn btn-sm btn-primary"
-                                                        onclick="toggleDetail('bagian', {{ $bg->id }})">
-                                                        <i class="bi bi-chevron-down"></i> Expand ({{ $stokDiBagian->count() }})
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                            <tr id="detail-bagian-{{ $bg->id }}" style="display:none;">
-                                                <td colspan="2">
-                                                    {{-- Group by kategori --}}
-                                                    @php
-                                                        $grouped = $stokDiBagian->groupBy(function ($item) {
-                                                            return $item->barang->kategori->nama ?? 'Tanpa Kategori';
-                                                        });
-                                                    @endphp
-                                                    @foreach($grouped as $katNama => $items)
-                                                        <div class="mb-3">
-                                                            <h6 class="text-primary mt-2">Kategori: {{ $katNama }}</h6>
-                                                            <div class="table-responsive">
-                                                                <table class="table table-striped table-sm">
-                                                                    <thead>
-                                                                        <tr>
-                                                                            <th>No</th>
-                                                                            <th>Kode</th>
-                                                                            <th>Nama Barang</th>
-                                                                            <th>Stok</th>
-                                                                            <th>Harga</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        @foreach($items as $idx => $sb)
-                                                                            <tr @if ($sb->stok < 10) class="row-low-stock" @endif>
-                                                                                <td>{{ $idx + 1 }}</td>
-                                                                                <td>{{ $sb->kode_barang }}</td>
-                                                                                <td>{{ $sb->barang->nama_barang ?? '-' }}</td>
-                                                                                <td>{{ $sb->stok }}</td>
-                                                                                <td>Rp {{ number_format($sb->harga ?? 0, 0, ',', '.') }}
-                                                                                </td>
-                                                                            </tr>
-                                                                        @endforeach
-                                                                    </tbody>
-                                                                </table>
-                                                            </div>
-                                                        </div>
-                                                    @endforeach
-                                                </td>
-                                            </tr>
-                                        @endif
+                                        <tr @if ($stok < 10) class="row-low-stock" @endif>
+                                            <td>{{ $i + 1 }}</td>
+                                            <td>{{ $bagianNm }}</td>
+                                            <td>{{ $sb->kode_barang }}</td>
+                                            <td>{{ $namaBarang }}</td>
+                                            <td>{{ $kategoriNm }}</td>
+                                            <td>{{ $satuan }}</td>
+                                            <td>{{ $stok }}</td>
+                                            <td>Rp {{ number_format($harga, 0, ',', '.') }}</td>
+                                        </tr>
                                     @endforeach
                                 </tbody>
                             </table>
                         </div>
                     @endif
+
+                    @elseif(
+                    request()->filled('search') ||
+                    request()->filled('kategori_id') ||
+                    request()->filled('satuan') ||
+                    request()->filled('stok_min') ||
+                    request()->filled('stok_max') ||
+                    request()->filled('harga_min') ||
+                    request()->filled('harga_max')
+                    )
+                    <div class="alert alert-warning">
+                        Tidak ada data ditemukan untuk kriteria pencarian Anda
+                    </div>
+                    @else
+                    {{-- Tampilan Default - Data Barang Gudang Utama per Kategori --}}
+                    <h6 class="mt-3">Data Barang Gudang Utama</h6>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>KATEGORI</th>
+                                    <th style="width:180px" class="text-center">AKSI</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($kategori as $k)
+                                    @php
+                                        // Ambil semua pb_stok yang barangnya dalam kategori ini
+                                        $stokInKategori = \App\Models\PbStok::with(['barang', 'bagian'])
+                                            ->whereHas('barang', function ($q) use ($k) {
+                                                $q->where('id_kategori', $k->id);
+                                            })
+                                            ->get();
+                                    @endphp
+                                    @if($stokInKategori->count() > 0)
+                                        <tr>
+                                            <td>{{ $k->nama }}</td>
+                                            <td class="text-center">
+                                                <button class="btn btn-sm btn-success"
+                                                    onclick="toggleDetail('barang', {{ $k->id }})">
+                                                    <i class="bi bi-eye"></i> Lihat ({{ $stokInKategori->count() }})
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr id="detail-barang-{{ $k->id }}" style="display:none;">
+                                            <td colspan="2">
+                                                <div class="table-responsive">
+                                                    <table class="table table-striped table-sm">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>No</th>
+                                                                <th>Kode Barang</th>
+                                                                <th>Nama Barang</th>
+                                                                <th>Bagian</th>
+                                                                <th>Stok</th>
+                                                                <th>Harga</th>
+                                                                <th>Aksi</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @foreach ($stokInKategori as $idx => $item)
+                                                                <tr @if ($item->stok < 10) class="row-low-stock" @endif>
+                                                                    <td>{{ $idx + 1 }}</td>
+                                                                    <td>{{ $item->kode_barang }}</td>
+                                                                    <td>{{ $item->barang->nama_barang ?? '-' }}</td>
+                                                                    <td>{{ $item->bagian->nama ?? '-' }}</td>
+                                                                    <td>{{ $item->stok }}</td>
+                                                                    <td>Rp {{ number_format($item->harga ?? 0, 0, ',', '.') }}</td>
+                                                                    <td>
+                                                                        <button type="button" class="btn btn-warning btn-sm"
+                                                                            data-bs-toggle="modal" data-bs-target="#modalDistribusi"
+                                                                            data-id="{{ $item->id }}"
+                                                                            data-kode="{{ $item->kode_barang }}"
+                                                                            data-nama="{{ $item->barang->nama_barang ?? '-' }}"
+                                                                            data-stok="{{ $item->stok }}"
+                                                                            data-harga="{{ $item->harga ?? 0 }}"
+                                                                            data-bagian-id="{{ $item->bagian_id ?? '' }}"
+                                                                            data-bagian-nama="{{ $item->bagian->nama ?? 'Tidak ada bagian' }}">
+                                                                            <i class="bi bi-send"></i> Distribusi
+                                                                        </button>
+                                                                    </td>
+                                                                </tr>
+                                                            @endforeach
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endif
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {{-- Data per Bagian (Stok Bagian) - View Only --}}
+                    <h6 class="mt-4"> <strong> Stok Per Bagian - View Only</strong></h6>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>BAGIAN</th>
+                                    <th style="width:180px" class="text-center">AKSI</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($bagian as $bg)
+                                    @php
+                                        $stokDiBagian = \App\Models\StokBagian::with(['barang.kategori', 'bagian'])
+                                            ->where('bagian_id', $bg->id)
+                                            ->get();
+                                    @endphp
+                                    @if($stokDiBagian->count() > 0)
+                                        <tr class="table-secondary">
+                                            <td>{{ $bg->nama }}</td>
+                                            <td class="text-center">
+                                                <button class="btn btn-sm btn-primary"
+                                                    onclick="toggleDetail('bagian', {{ $bg->id }})">
+                                                    <i class="bi bi-chevron-down"></i> Expand ({{ $stokDiBagian->count() }})
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr id="detail-bagian-{{ $bg->id }}" style="display:none;">
+                                            <td colspan="2">
+                                                {{-- Group by kategori --}}
+                                                @php
+                                                    $grouped = $stokDiBagian->groupBy(function ($item) {
+                                                        return $item->barang->kategori->nama ?? 'Tanpa Kategori';
+                                                    });
+                                                @endphp
+                                                @foreach($grouped as $katNama => $items)
+                                                    <div class="mb-3">
+                                                        <h6 class="text-primary mt-2">Kategori: {{ $katNama }}</h6>
+                                                        <div class="table-responsive">
+                                                            <table class="table table-striped table-sm">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>No</th>
+                                                                        <th>Kode</th>
+                                                                        <th>Nama Barang</th>
+                                                                        <th>Stok</th>
+                                                                        <th>Harga</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    @foreach($items as $idx => $sb)
+                                                                        <tr @if ($sb->stok < 10) class="row-low-stock" @endif>
+                                                                            <td>{{ $idx + 1 }}</td>
+                                                                            <td>{{ $sb->kode_barang }}</td>
+                                                                            <td>{{ $sb->barang->nama_barang ?? '-' }}</td>
+                                                                            <td>{{ $sb->stok }}</td>
+                                                                            <td>Rp {{ number_format($sb->harga ?? 0, 0, ',', '.') }}</td>
+                                                                        </tr>
+                                                                    @endforeach
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </td>
+                                        </tr>
+                                    @endif
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    @endif
+
                 </div>
 
                 <!-- TAB 2: KELOLA BARANG MASUK -->
@@ -403,6 +484,10 @@
                     </div>
 
                     {{-- Tampilan Nested per Kategori --}}
+                    {{-- Jika ada hasil search di TAB KELOLA BARANG MASUK --}}
+                    @if ($activeTab === 'distribusi' && $barangMasukData->count() > 0)
+                    <h6 class="mt-3">Hasil Pencarian Barang</h6>
+
                     <div class="table-responsive">
                         <table class="table table-bordered">
                             <thead class="table-dark">
@@ -412,74 +497,154 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($kategori as $k)
-                                    @php
-                                        // Ambil barang per kategori
-                                        $barangKategori = \App\Models\Barang::with(['pbStok.bagian', 'kategori'])
-                                            ->where('id_kategori', $k->id)
-                                            ->get();
-                                    @endphp
-                                    @if($barangKategori->count() > 0)
-                                        <tr>
-                                            <td>
+                                @php
+                                    // Group hasil pencarian per kategori
+                                    $groupedByKategori = $barangMasukData->groupBy('id_kategori');
+                                @endphp
 
-                                                {{ $k->nama }}
-                                            </td>
-                                            <td class="text-center">
-                                                <button class="btn btn-sm btn-primary"
-                                                    onclick="toggleKelolaBarangMasuk({{ $k->id }})">
-                                                    <i class="bi bi-chevron-down"></i> Lihat
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <tr id="kelola-masuk-{{ $k->id }}" style="display:none;">
-                                            <td colspan="2" class="p-0">
-                                                <div class="table-responsive">
-                                                    <table class="table table-striped table-sm mb-0">
-                                                        <thead class="table-secondary">
+                                @foreach ($groupedByKategori as $kategoriId => $items)
+                                    @php
+                                        $kategoriNama = optional($items->first()->kategori)->nama ?? 'Tanpa Kategori';
+                                    @endphp
+
+                                    {{-- Baris kategori --}}
+                                    <tr>
+                                        <td>{{ $kategoriNama }}</td>
+                                        <td class="text-center">
+                                            <button class="btn btn-sm btn-primary"
+                                                    onclick="toggleKelolaBarangMasuk({{ $kategoriId }})">
+                                                {{-- default: langsung terbuka, jadi pakai icon UP --}}
+                                                <i class="bi bi-chevron-up"></i> Lihat ({{ $items->count() }})
+                                            </button>
+                                        </td>
+                                    </tr>
+
+                                    {{-- Detail barang per kategori (langsung TERBUKA) --}}
+                                    <tr id="kelola-masuk-{{ $kategoriId }}" style="display: table-row;">
+                                        <td colspan="2" class="p-0">
+                                            <div class="table-responsive">
+                                                <table class="table table-striped table-sm mb-0">
+                                                    <thead class="table-secondary">
+                                                        <tr>
+                                                            <th style="width: 50px;">No</th>
+                                                            <th>Nama Barang</th>
+                                                            <th>Kode Barang</th>
+                                                            <th>Satuan</th>
+                                                            <th style="width: 200px;" class="text-center">Aksi</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach ($items as $idx => $item)
                                                             <tr>
-                                                                <th style="width: 50px;">No</th>
-                                                                <th>Nama Barang</th>
-                                                                <th>Kode Barang</th>
-                                                                <th>Satuan</th>
-                                                                <th style="width: 200px;" class="text-center">Aksi</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            @foreach ($barangKategori as $idx => $item)
-                                                                @php
-                                                                    $totalStok = $item->pbStok->sum('stok');
-                                                                    $hargaBarang = $item->pbStok->first()->harga ?? 0;
-                                                                @endphp
-                                                                <tr>
-                                                                    <td>{{ $idx + 1 }}</td>
-                                                                    <td>{{ $item->nama_barang }}</td>
-                                                                    <td>
-                                                                        {{ $item->kode_barang }}
-                                                                    </td>
-                                                                    <td>{{ $item->satuan }}</td>
-                                                                    <td class="text-center">
-                                                                        <button type="button" class="btn btn-success btn-sm"
+                                                                <td>{{ $idx + 1 }}</td>
+                                                                <td>{{ $item->nama_barang }}</td>
+                                                                <td>{{ $item->kode_barang }}</td>
+                                                                <td>{{ $item->satuan }}</td>
+                                                                <td class="text-center">
+                                                                    <button type="button"
+                                                                            class="btn btn-success btn-sm"
                                                                             data-bs-toggle="modal"
                                                                             data-bs-target="#modalBarangMasuk"
                                                                             data-kode="{{ $item->kode_barang }}"
                                                                             data-nama="{{ $item->nama_barang }}"
                                                                             data-satuan="{{ $item->satuan }}">
-                                                                            <i class="bi bi-box-arrow-in-down"></i> Barang Masuk
-                                                                        </button>
-                                                                    </td>
-                                                                </tr>
-                                                            @endforeach
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    @endif
+                                                                        <i class="bi bi-box-arrow-in-down"></i> Barang Masuk
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </td>
+                                    </tr>
                                 @endforeach
                             </tbody>
                         </table>
                     </div>
+
+                    @elseif($activeTab === 'distribusi' && request()->filled('search'))
+                    {{-- Sudah search tapi tidak ada hasil --}}
+                    <div class="alert alert-warning mt-3">
+                        Tidak ada data ditemukan untuk kata kunci "<strong>{{ request('search') }}</strong>".
+                    </div>
+
+                    @else
+                        {{-- Tampilan Nested per Kategori (DEFAULT, kalau tidak sedang search) --}}
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>KATEGORI</th>
+                                        <th style="width:180px" class="text-center">AKSI</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($kategori as $k)
+                                        @php
+                                            // Ambil barang per kategori
+                                            $barangKategori = \App\Models\Barang::with(['pbStok.bagian', 'kategori'])
+                                                ->where('id_kategori', $k->id)
+                                                ->get();
+                                        @endphp
+                                        @if($barangKategori->count() > 0)
+                                            <tr>
+                                                <td>{{ $k->nama }}</td>
+                                                <td class="text-center">
+                                                    <button class="btn btn-sm btn-primary"
+                                                            onclick="toggleKelolaBarangMasuk({{ $k->id }})">
+                                                        <i class="bi bi-chevron-down"></i> Lihat
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr id="kelola-masuk-{{ $k->id }}" style="display:none;">
+                                                <td colspan="2" class="p-0">
+                                                    <div class="table-responsive">
+                                                        <table class="table table-striped table-sm mb-0">
+                                                            <thead class="table-secondary">
+                                                                <tr>
+                                                                    <th style="width: 50px;">No</th>
+                                                                    <th>Nama Barang</th>
+                                                                    <th>Kode Barang</th>
+                                                                    <th>Satuan</th>
+                                                                    <th style="width: 200px;" class="text-center">Aksi</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                @foreach ($barangKategori as $idx => $item)
+                                                                    @php
+                                                                        $totalStok  = $item->pbStok->sum('stok');
+                                                                    @endphp
+                                                                    <tr>
+                                                                        <td>{{ $idx + 1 }}</td>
+                                                                        <td>{{ $item->nama_barang }}</td>
+                                                                        <td>{{ $item->kode_barang }}</td>
+                                                                        <td>{{ $item->satuan }}</td>
+                                                                        <td class="text-center">
+                                                                            <button type="button"
+                                                                                    class="btn btn-success btn-sm"
+                                                                                    data-bs-toggle="modal"
+                                                                                    data-bs-target="#modalBarangMasuk"
+                                                                                    data-kode="{{ $item->kode_barang }}"
+                                                                                    data-nama="{{ $item->nama_barang }}"
+                                                                                    data-satuan="{{ $item->satuan }}">
+                                                                                <i class="bi bi-box-arrow-in-down"></i> Barang Masuk
+                                                                            </button>
+                                                                        </td>
+                                                                    </tr>
+                                                                @endforeach
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endif
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @endif
+
                 </div>
             </div>
         </section>
@@ -1062,21 +1227,21 @@
                                 item.stock_status === 'low' ? 'Sedikit' : 'Tersedia';
 
                         html += `
-                                        <div class="search-suggestion-item" data-index="${index}">
-                                            <div class="suggestion-name">${item.nama}</div>
-                                            <div class="suggestion-code">
-                                                Kode: ${item.kode} |
-                                                ${tabName === 'data-keseluruhan'
+                                            <div class="search-suggestion-item" data-index="${index}">
+                                                <div class="suggestion-name">${item.nama}</div>
+                                                <div class="suggestion-code">
+                                                    Kode: ${item.kode} |
+                                                    ${tabName === 'data-keseluruhan'
                                 ? 'Kategori: ' + item.kategori
                                 : 'Bagian: ' + item.bagian}
-                                            </div>
-                                            <div class="suggestion-meta">
-                                                <small>
-                                                    Stok: ${item.stok} | ${item.harga} |
-                                                    <span class="stock-status ${stockStatusClass}">${stockText}</span>
-                                                </small>
-                                            </div>
-                                        </div>`;
+                                                </div>
+                                                <div class="suggestion-meta">
+                                                    <small>
+                                                        Stok: ${item.stok} | ${item.harga} |
+                                                        <span class="stock-status ${stockStatusClass}">${stockText}</span>
+                                                    </small>
+                                                </div>
+                                            </div>`;
                     });
 
                     suggestionsContainer.innerHTML = html;
