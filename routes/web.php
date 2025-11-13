@@ -78,7 +78,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:Admin'])->grou
     Route::get('/datakeseluruhan/{slug}', [AdminDataKeseluruhanController::class, 'byGudang'])
         ->name('datakeseluruhan.gudang');
 
-    // Di dalam Route::prefix('admin')->name('admin.')->middleware...
+    // Update Barang
     Route::put('/barang/{kode}', [AdminDataKeseluruhanController::class, 'updateBarang'])
         ->name('barang.update');
 
@@ -175,11 +175,11 @@ Route::prefix('pb')->name('pb.')->middleware(['auth', 'role:Pengurus Barang Peng
     // Stok User (resource)
     Route::resource('stokuser', PbStokUserController::class);
 
-    // Barang Masuk - PERBAIKAN: gunakan method store() bukan barangMasuk()
+    // Barang Masuk - gunakan method store()
     Route::post('/barang-masuk/{kodeBarang}', [PbBarangMasukController::class, 'store'])
         ->name('barang-masuk.store');
 
-    // Distribusi barang - PERBAIKAN: gunakan method store() bukan distribusi()
+    // Distribusi barang - gunakan method store()
     Route::post('/distribusi/{kodeBarang}', [PbDistribusiController::class, 'store'])
         ->name('barang.distribusi');
 
@@ -187,13 +187,13 @@ Route::prefix('pb')->name('pb.')->middleware(['auth', 'role:Pengurus Barang Peng
     Route::get('/riwayat', [PbRiwayatController::class, 'index'])->name('riwayat.index');
 
     // Laporan (Controller)
-        Route::get('/laporan', PbLaporanController::class)->name('laporan');
+    Route::get('/laporan', PbLaporanController::class)->name('laporan');
     
 });
 
 
 /* =========================================================================
- | PJ AREA (Penanggung Jawab) - CLEANED & FIXED
+ | PJ AREA (Penanggung Jawab) - CLEANED & FIXED WITH KEMBALIKAN BARANG
  * ========================================================================= */
 Route::prefix('pj')->name('pj.')
     ->middleware(['auth', 'role:Pengurus Barang Pembantu'])
@@ -220,11 +220,11 @@ Route::prefix('pj')->name('pj.')
             $menu = \App\Helpers\MenuHelper::pjMenu();
             $user = \Illuminate\Support\Facades\Auth::user();
 
-            if (!$user->gudang_id) {
+            if (!$user->gudang_id && !$user->bagian_id) {
                 return back()->with('toast', [
                     'type' => 'error',
                     'title' => 'Error!',
-                    'message' => 'Anda belum memiliki gudang yang ditugaskan.'
+                    'message' => 'Anda belum memiliki gudang/bagian yang ditugaskan.'
                 ]);
             }
 
@@ -232,16 +232,17 @@ Route::prefix('pj')->name('pj.')
             return redirect()->route('pj.datakeseluruhan.index');
         })->name('barang-keluar.index');
 
+        // Konfirmasi Barang Masuk ke Stok - POST
+        Route::post('/konfirmasi-barang-masuk/{id}', [PjDataKeseluruhanController::class, 'konfirmasiBarangMasuk'])
+            ->name('konfirmasi-barang-masuk');
+
+        // Kembalikan Barang ke PB Stok - POST (hanya untuk barang yang belum dikonfirmasi)
+        Route::post('/kembalikan-barang/{id}', [PjDataKeseluruhanController::class, 'kembalikanBarang'])
+            ->name('kembalikan-barang');
+
         // Riwayat
         Route::get('/riwayat', [PjRiwayatController::class, 'index'])
             ->name('riwayat.index');
-        
-        Route::post('/pj/kembalikan-barang/{id}', [DataKeseluruhan::class, 'kembalikanBarang'])
-    ->name('pj.kembalikan-barang');
-
-    // Di dalam Route::prefix('pj')->name('pj.')..
-Route::post('/kembalikan-barang/{id}', [PjDataKeseluruhanController::class, 'kembalikanBarang'])
-    ->name('kembalikan-barang');
 
         // Laporan (Controller)
         Route::get('/laporan', PjLaporanController::class)->name('laporan');

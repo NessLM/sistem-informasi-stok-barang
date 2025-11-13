@@ -314,7 +314,7 @@
         @endif
 
         {{-- =========================
-        SECTION BARANG MASUK (UPDATED WITH KEMBALIKAN BUTTON)
+        SECTION BARANG MASUK (UPDATED WITH KONFIRMASI & KEMBALIKAN BUTTON)
         ========================= --}}
         @if(($barangMasuk ?? collect())->count())
             <section id="sec-incoming" class="card incoming-card shadow-sm mt-4">
@@ -325,6 +325,16 @@
                             Barang Masuk
                             <span class="badge bg-success ms-2">{{ $barangMasuk->count() }}</span>
                         </h5>
+                        <div class="d-flex gap-2">
+                            <span class="badge bg-warning text-dark">
+                                <i class="bi bi-clock-history"></i> 
+                                Pending: {{ $barangMasuk->where('status_konfirmasi', 'pending')->count() }}
+                            </span>
+                            <span class="badge bg-success">
+                                <i class="bi bi-check-circle"></i> 
+                                Confirmed: {{ $barangMasuk->where('status_konfirmasi', 'confirmed')->count() }}
+                            </span>
+                        </div>
                     </div>
 
                     <div class="table-responsive">
@@ -332,18 +342,34 @@
                             <thead class="table-success">
                                 <tr>
                                     <th style="width:50px">No</th>
+                                    <th style="width:120px">Status</th>
                                     <th style="width:140px">Tanggal Waktu</th>
                                     <th>Nama Barang</th>
                                     <th style="width:100px">Jumlah</th>
                                     <th style="width:100px">Satuan</th>
                                     <th style="width:200px">Keterangan</th>
-                                    <th style="width:180px">Aksi</th>
+                                    <th style="width:200px">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($barangMasuk as $index => $item)
-                                    <tr>
+                                    @php
+                                        $status = $item->status_konfirmasi ?? 'pending';
+                                        $rowClass = $status === 'confirmed' ? 'table-success-light' : '';
+                                    @endphp
+                                    <tr class="{{ $rowClass }}">
                                         <td class="text-center">{{ $index + 1 }}</td>
+                                        <td>
+                                            @if($status === 'confirmed')
+                                                <span class="badge bg-success">
+                                                    <i class="bi bi-check-circle"></i> Dikonfirmasi
+                                                </span>
+                                            @else
+                                                <span class="badge bg-warning text-dark">
+                                                    <i class="bi bi-clock-history"></i> Pending
+                                                </span>
+                                            @endif
+                                        </td>
                                         <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y H:i') }} WIB</td>
                                         <td>
                                             <strong>{{ $item->nama_barang }}</strong>
@@ -365,14 +391,31 @@
                                                     </a>
                                                 @endif
                                                 
-                                                <form action="{{ route('pj.kembalikan-barang', $item->id) }}" 
-                                                      method="POST" 
-                                                      onsubmit="return confirm('Yakin ingin mengembalikan barang ini ke PB Stok?\n\nBarang: {{ $item->nama_barang }}\nJumlah: {{ $item->jumlah }} {{ $item->satuan }}')">
-                                                    @csrf
-                                                    <button type="submit" class="btn btn-sm btn-return w-100">
-                                                        <i class="bi bi-arrow-left-circle"></i> Kembalikan+
-                                                    </button>
-                                                </form>
+                                                @if($status === 'pending')
+                                                    {{-- Tombol Konfirmasi --}}
+                                                    <form action="{{ route('pj.konfirmasi-barang-masuk', $item->id) }}" 
+                                                          method="POST" 
+                                                          onsubmit="return confirm('Konfirmasi barang masuk?\n\nSetelah dikonfirmasi, barang akan masuk ke stok dan tidak bisa dikembalikan.\n\nBarang: {{ $item->nama_barang }}\nJumlah: {{ $item->jumlah }} {{ $item->satuan }}')">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-sm btn-success w-100">
+                                                            <i class="bi bi-check-circle"></i> Konfirmasi
+                                                        </button>
+                                                    </form>
+                                                    
+                                                    {{-- Tombol Kembalikan --}}
+                                                    <form action="{{ route('pj.kembalikan-barang', $item->id) }}" 
+                                                          method="POST" 
+                                                          onsubmit="return confirm('Yakin ingin mengembalikan barang ini ke PB Stok?\n\nBarang: {{ $item->nama_barang }}\nJumlah: {{ $item->jumlah }} {{ $item->satuan }}')">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-sm btn-return w-100">
+                                                            <i class="bi bi-arrow-left-circle"></i> Kembalikan
+                                                        </button>
+                                                    </form>
+                                                @else
+                                                    <span class="badge bg-success text-wrap">
+                                                        <i class="bi bi-check-all"></i> Sudah Masuk ke Stok
+                                                    </span>
+                                                @endif
                                             </div>
                                         </td>
                                     </tr>

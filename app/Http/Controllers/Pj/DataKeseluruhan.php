@@ -38,7 +38,7 @@ class DataKeseluruhan extends Controller
                 ->orderBy('nama')
                 ->get();
 
-            // Load barang untuk setiap kategori (stok > 0)s
+            // Load barang untuk setiap kategori (stok > 0)
             foreach ($kategori as $k) {
                 $k->barang = DB::table('pj_stok')
                     ->join('barang', 'pj_stok.kode_barang', '=', 'barang.kode_barang')
@@ -90,7 +90,7 @@ class DataKeseluruhan extends Controller
                 'kategori' => (object)['nama' => $i->kategori_nama],
             ])->values();
 
-            // Ambil data barang masuk dari transaksi_distribusi
+            // Ambil data barang masuk dari transaksi_distribusi dengan status
             $barangMasuk = DB::table('transaksi_distribusi')
                 ->join('barang', 'transaksi_distribusi.kode_barang', '=', 'barang.kode_barang')
                 ->where('transaksi_distribusi.bagian_id', $gudang->id)
@@ -103,7 +103,8 @@ class DataKeseluruhan extends Controller
                     'transaksi_distribusi.jumlah',
                     'barang.satuan',
                     'transaksi_distribusi.keterangan',
-                    'transaksi_distribusi.bukti'
+                    'transaksi_distribusi.bukti',
+                    DB::raw("COALESCE(transaksi_distribusi.status_konfirmasi, 'pending') as status_konfirmasi")
                 )
                 ->limit(50)
                 ->get();
@@ -121,7 +122,7 @@ class DataKeseluruhan extends Controller
             ));
         }
 
-        /* =================== MODE BAGIAN (DIPERBAIKI - TAMPILKAN SEMUA KATEGORI) =================== */
+        /* =================== MODE BAGIAN =================== */
         if ($bagianUser) {
             // Ambil SEMUA kategori yang ada di sistem (bukan hanya yang memiliki stok)
             $kategori = Kategori::orderBy('nama')
@@ -223,7 +224,7 @@ class DataKeseluruhan extends Controller
                 'kategori' => (object)['nama' => $i->kategori_nama],
             ])->values();
 
-            // Ambil data barang masuk dari transaksi_distribusi untuk bagian
+            // Ambil data barang masuk dari transaksi_distribusi untuk bagian dengan status
             $barangMasuk = DB::table('transaksi_distribusi')
                 ->join('barang', 'transaksi_distribusi.kode_barang', '=', 'barang.kode_barang')
                 ->where('transaksi_distribusi.bagian_id', $bagianUser->id)
@@ -236,7 +237,8 @@ class DataKeseluruhan extends Controller
                     'transaksi_distribusi.jumlah',
                     'barang.satuan',
                     'transaksi_distribusi.keterangan',
-                    'transaksi_distribusi.bukti'
+                    'transaksi_distribusi.bukti',
+                    DB::raw("COALESCE(transaksi_distribusi.status_konfirmasi, 'pending') as status_konfirmasi")
                 )
                 ->limit(50)
                 ->get();
@@ -467,6 +469,151 @@ class DataKeseluruhan extends Controller
     }
 
     /**
+     * Konfirmasi barang masuk ke stok_bagian
+     */
+    public function konfirmasiBarangMasuk($id)
+    {
+        Log::info('=== KONFIRMASI BARANG MASUK REQUEST ===', ['transaksi_id' => $id]);
+
+        $user = Auth::user();
+
+        DB::beginTransaction();
+        try {
+            // Ambil data transaksi distribusi
+            $transaksi = DB::table('transaksi_distribusi')
+                ->where('id', $id)
+                ->first();
+
+            if (!$transaksi) {
+                return back()->with('toast', [
+                    'type' => 'error',
+                    'title' => 'Data Tidak Ditemukan',
+                    'message' => 'Transaksi distribusi tidak ditemukan.'
+                ]);
+            }
+
+            // Validasi: Hanya bisa konfirmasi barang ke gudang/bagian yang sesuai
+            if ($user->gudang_id && $transaksi->bagian_id != $user->gudang_id) {
+                return back()->with('toast', [
+                    'type' => 'error',
+                    'title' => 'Akses Ditolak',
+                    'message' => 'Anda tidak memiliki akses untuk mengkonfirmasi barang ini.'
+                ]);
+            }
+
+            if ($user->bagian_id && $transaksi->bagian_id != $user->bagian_id) {
+                return back()->with('toast', [
+                    'type' => 'error',
+                    'title' => 'Akses Ditolak',
+                    'message' => 'Anda tidak memiliki akses untuk mengkonfirmasi barang ini.'
+                ]);
+            }
+
+            // Cek apakah sudah dikonfirmasi
+            $statusKonfirmasi = $transaksi->status_konfirmasi ?? 'pending';
+            if ($statusKonfirmasi === 'confirmed') {
+                return back()->with('toast', [
+                    'type' => 'warning',
+                    'title' => 'Sudah Dikonfirmasi',
+                    'message' => 'Barang ini sudah dikonfirmasi sebelumnya.'
+                ]);
+            }
+
+            $kodeBarang = $transaksi->kode_barang;
+            $jumlah = $transaksi->jumlah;
+
+            // MODE GUDANG - Tambahkan ke pj_stok
+            if ($user->gudang_id && Schema::hasTable('pj_stok')) {
+                // Ambil data barang untuk mendapatkan id_kategori
+                $barang = DB::table('barang')
+                    ->where('kode_barang', $kodeBarang)
+                    ->first();
+
+                if (!$barang) {
+                    throw new \Exception('Data barang tidak ditemukan.');
+                }
+
+                // Cek apakah sudah ada di pj_stok
+                $pjStok = PjStok::where('kode_barang', $kodeBarang)
+                    ->where('id_gudang', $user->gudang_id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($pjStok) {
+                    // Jika sudah ada, tambahkan stok
+                    $pjStok->increment('stok', $jumlah);
+                } else {
+                    // Jika belum ada, buat record baru
+                    PjStok::create([
+                        'kode_barang' => $kodeBarang,
+                        'id_gudang' => $user->gudang_id,
+                        'id_kategori' => $barang->id_kategori,
+                        'stok' => $jumlah,
+                    ]);
+                }
+
+                $namaLokasi = 'Gudang';
+            }
+            // MODE BAGIAN - Tambahkan ke stok_bagian
+            else if ($user->bagian_id) {
+                // Cek apakah sudah ada di stok_bagian
+                $stokBagian = StokBagian::where('kode_barang', $kodeBarang)
+                    ->where('bagian_id', $user->bagian_id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($stokBagian) {
+                    // Jika sudah ada, tambahkan stok
+                    $stokBagian->increment('stok', $jumlah);
+                } else {
+                    // Jika belum ada, buat record baru
+                    StokBagian::create([
+                        'kode_barang' => $kodeBarang,
+                        'bagian_id' => $user->bagian_id,
+                        'stok' => $jumlah,
+                    ]);
+                }
+
+                $bagianData = Bagian::find($user->bagian_id);
+                $namaLokasi = 'Bagian ' . ($bagianData->nama ?? '');
+            } else {
+                throw new \Exception('User tidak memiliki akses gudang atau bagian.');
+            }
+
+            // Update status konfirmasi di transaksi_distribusi
+            DB::table('transaksi_distribusi')
+                ->where('id', $id)
+                ->update([
+                    'status_konfirmasi' => 'confirmed',
+                    'confirmed_at' => now(),
+                    'confirmed_by' => $user->id,
+                    'updated_at' => now(),
+                ]);
+
+            DB::commit();
+
+            return back()->with('toast', [
+                'type' => 'success',
+                'title' => 'Berhasil',
+                'message' => "Barang berhasil dikonfirmasi masuk ke {$namaLokasi}. Jumlah: {$jumlah}"
+            ]);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('Konfirmasi barang masuk gagal', [
+                'err' => $e->getMessage(), 
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->with('toast', [
+                'type' => 'error',
+                'title' => 'Error',
+                'message' => 'Gagal mengkonfirmasi barang: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
      * Kembalikan barang ke PB Stok
      */
     public function kembalikanBarang($id)
@@ -507,6 +654,16 @@ class DataKeseluruhan extends Controller
                 ]);
             }
 
+            // Cek apakah sudah dikonfirmasi
+            $statusKonfirmasi = $transaksi->status_konfirmasi ?? 'pending';
+            if ($statusKonfirmasi === 'confirmed') {
+                return back()->with('toast', [
+                    'type' => 'error',
+                    'title' => 'Tidak Bisa Dikembalikan',
+                    'message' => 'Barang yang sudah dikonfirmasi tidak bisa dikembalikan. Silakan gunakan fitur Barang Keluar.'
+                ]);
+            }
+
             $kodeBarang = $transaksi->kode_barang;
             $jumlah = $transaksi->jumlah;
 
@@ -542,20 +699,8 @@ class DataKeseluruhan extends Controller
 
                 $namaLokasi = 'Gudang';
             }
-            // MODE BAGIAN - Kembalikan ke pb_stok
+            // MODE BAGIAN - Kembalikan ke pb_stok (TIDAK perlu kurangi stok_bagian karena belum dikonfirmasi)
             else if ($user->bagian_id) {
-                // Kurangi stok dari stok_bagian terlebih dahulu
-                $stokBagian = StokBagian::where('kode_barang', $kodeBarang)
-                    ->where('bagian_id', $user->bagian_id)
-                    ->lockForUpdate()
-                    ->first();
-
-                if ($stokBagian) {
-                    if ($stokBagian->stok >= $jumlah) {
-                        $stokBagian->decrement('stok', $jumlah);
-                    }
-                }
-
                 // Cek apakah sudah ada di pb_stok
                 $pbStok = DB::table('pb_stok')
                     ->where('kode_barang', $kodeBarang)
