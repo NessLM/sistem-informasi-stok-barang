@@ -712,7 +712,7 @@
                         <div class="col-md-6">
                             <label class="form-label">Bagian</label>
                             <select name="bagian_id" class="form-select">
-                                <option value="">-- Gudang Utama --</option>
+                                <option value="">-- Pilih Bagian --</option>
                                 @foreach ($bagian as $bg)
                                     <option value="{{ $bg->id }}" @selected(request('bagian_id') == $bg->id)>
                                         {{ $bg->nama }}
