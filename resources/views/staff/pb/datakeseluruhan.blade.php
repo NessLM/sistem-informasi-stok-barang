@@ -111,18 +111,18 @@
     @endpush
 
     <main class="page-wrap container py-4">
-        @if (session('toast'))
+@if (session('toast'))
             <div id="toast-notif"
                 style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-                                        <!-- Toast notification -->
-                                                                                                                                  z-index: 2000; display: flex; justify-content: center; pointer-events: none;">
+                       z-index: 9999; display: flex; justify-content: center; pointer-events: none;">
                 <div class="toast-message"
                     style="background: #fff; border-radius: 12px; padding: 14px 22px;
-                                                                                                                                    box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;
-                                                                                                                                    min-width: 280px; max-width: 360px; transition: opacity .5s ease;">
+                           box-shadow: 0 8px 24px rgba(0,0,0,0.25); text-align: center;
+                           min-width: 280px; max-width: 360px; transition: opacity .5s ease;
+                           pointer-events: auto;">
                     <div
                         style="font-weight: 600; font-size: 16px; margin-bottom: 4px;
-                                                                                                                                      color: {{ session('toast.type') === 'success' ? '#28a745' : '#dc3545' }};">
+                               color: {{ session('toast.type') === 'success' ? '#28a745' : '#dc3545' }};">
                         {{ session('toast.title') }}
                     </div>
                     <div style="color:#333; font-size: 14px; line-height: 1.4;">
