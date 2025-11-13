@@ -22,12 +22,12 @@ class DistribusiController extends Controller
 
         // STEP 0: Validasi
         $validated = $request->validate([
-            'bagian_id'  => 'required|exists:bagian,id',
-            'jumlah'     => 'required|integer|min:1',
-            'tanggal'    => 'nullable|date',
+            'bagian_id' => 'required|exists:bagian,id',
+            'jumlah' => 'required|integer|min:1',
+            'tanggal' => 'nullable|date',
             'keterangan' => 'nullable|string|max:500',
-            'bukti'      => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
-            'harga'      => 'nullable|numeric|min:0',
+            'bukti' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'harga' => 'nullable|numeric|min:0',
         ]);
 
         $buktiPath = null;
@@ -44,8 +44,9 @@ class DistribusiController extends Controller
             $totalPb = PbStok::where('kode_barang', $kodeBarang)
                 ->lockForUpdate()
                 ->sum('stok');
-            if ($totalPb <= 0) throw new \Exception("Barang belum ada di PB Stok.");
-            if ($totalPb < (int)$validated['jumlah'])
+            if ($totalPb <= 0)
+                throw new \Exception("Barang belum ada di PB Stok.");
+            if ($totalPb < (int) $validated['jumlah'])
                 throw new \Exception("Stok PB tidak mencukupi. Tersedia: {$totalPb}, Diminta: {$validated['jumlah']}");
 
             // STEP 3: Tujuan & harga
@@ -72,11 +73,12 @@ class DistribusiController extends Controller
                 ->get();
 
             foreach ($primary as $row) {
-                if ($sisa <= 0) break;
+                if ($sisa <= 0)
+                    break;
                 $ambil = min($row->stok, $sisa);
                 if ($ambil > 0) {
                     DB::table('pb_stok')->where('id', $row->id)->update([
-                        'stok'       => $row->stok - $ambil,
+                        'stok' => $row->stok - $ambil,
                         'updated_at' => now(),
                     ]);
                     Log::info("PB cut (match price) id={$row->id} -= {$ambil}");
@@ -95,11 +97,12 @@ class DistribusiController extends Controller
                     ->get();
 
                 foreach ($fallback as $row) {
-                    if ($sisa <= 0) break;
+                    if ($sisa <= 0)
+                        break;
                     $ambil = min($row->stok, $sisa);
                     if ($ambil > 0) {
                         DB::table('pb_stok')->where('id', $row->id)->update([
-                            'stok'       => $row->stok - $ambil,
+                            'stok' => $row->stok - $ambil,
                             'updated_at' => now(),
                         ]);
                         Log::info("PB cut (fallback) id={$row->id} -= {$ambil}");
@@ -112,62 +115,35 @@ class DistribusiController extends Controller
                 throw new \Exception("Stok PB tidak mencukupi (sisa kebutuhan: {$sisa}).");
             }
 
+            // STEP 6: DIHAPUS - Tidak lagi langsung menambah ke stok_bagian
+            // Stok akan ditambahkan ke stok_bagian hanya setelah dikonfirmasi
 
-            // STEP 6: Update/insert stok_bagian
-            $stokBagian = DB::table('stok_bagian')
-                ->where('kode_barang', $kodeBarang)
-                ->where('bagian_id', $bagianTujuan)
-                ->lockForUpdate()
-                ->first();
-
-            $stokBagianHasHarga = in_array('harga', Schema::getColumnListing('stok_bagian'));
-
-            if ($stokBagian) {
-                $update = [
-                    'stok'       => $stokBagian->stok + (int)$validated['jumlah'],
-                    'updated_at' => now(),
-                ];
-                if ($stokBagianHasHarga) $update['harga'] = $hargaSatuan;
-
-                DB::table('stok_bagian')->where('id', $stokBagian->id)->update($update);
-            } else {
-                $insert = [
-                    'kode_barang' => $kodeBarang,
-                    'bagian_id'   => $bagianTujuan,
-                    'stok'        => (int)$validated['jumlah'],
-                    'created_at'  => now(),
-                    'updated_at'  => now(),
-                ];
-                if ($stokBagianHasHarga) $insert['harga'] = $hargaSatuan;
-
-                DB::table('stok_bagian')->insertGetId($insert);
-            }
-
-            // STEP 7: Catat ke transaksi_distribusi SAJA
+            // STEP 7: Catat ke transaksi_distribusi dengan status pending
             $tanggal = $validated['tanggal'] ?? now()->toDateString();
             $tdPayload = [
                 'kode_barang' => $kodeBarang,
-                'bagian_id'   => $bagianTujuan,
-                'jumlah'      => (int)$validated['jumlah'],
-                'tanggal'     => $tanggal,
-                'user_id'     => auth()->id(),
-                'keterangan'  => $validated['keterangan'] ?? null,
-                'bukti'       => $buktiPath,
-                'created_at'  => now(),
-                'updated_at'  => now(),
+                'bagian_id' => $bagianTujuan,
+                'jumlah' => (int) $validated['jumlah'],
+                'tanggal' => $tanggal,
+                'user_id' => auth()->id(),
+                'keterangan' => $validated['keterangan'] ?? null,
+                'bukti' => $buktiPath,
+                'status_konfirmasi' => 'pending', // Status awal pending
+                'created_at' => now(),
+                'updated_at' => now(),
             ];
             if (in_array('harga', Schema::getColumnListing('transaksi_distribusi'))) {
                 $tdPayload['harga'] = $hargaSatuan;
             }
             $transaksiId = DB::table('transaksi_distribusi')->insertGetId($tdPayload);
-            Log::info("Transaksi Distribusi dibuat: id={$transaksiId}");
+            Log::info("Transaksi Distribusi dibuat: id={$transaksiId} dengan status PENDING");
 
             // STEP 8: Commit + toast
             DB::commit();
 
             $totalAfter = PbStok::where('kode_barang', $kodeBarang)->sum('stok');
             $namaBagian = optional(Bagian::find($bagianTujuan))->nama ?? "Bagian ID {$bagianTujuan}";
-            $message = "Barang '{$barang->nama_barang}' berhasil didistribusikan ke {$namaBagian}. Jumlah: {$validated['jumlah']}. Stok PB tersisa: {$totalAfter}";
+            $message = "Barang '{$barang->nama_barang}' berhasil didistribusikan ke {$namaBagian}. Jumlah: {$validated['jumlah']}. Status: MENUNGGU KONFIRMASI. Stok PB tersisa: {$totalAfter}";
 
             return back()->with('toast', [
                 'type' => 'success',
@@ -176,7 +152,8 @@ class DistribusiController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            if ($buktiPath) Storage::disk('public')->delete($buktiPath);
+            if ($buktiPath)
+                Storage::disk('public')->delete($buktiPath);
 
             Log::error("Distribusi gagal: {$e->getMessage()} @ line " . $e->getLine());
             return back()->with('toast', [
@@ -192,14 +169,17 @@ class DistribusiController extends Controller
         $p = trim($param);
 
         $barang = Barang::where('kode_barang', $p)->lockForUpdate()->first();
-        if ($barang) return [$barang->kode_barang, $barang];
+        if ($barang)
+            return [$barang->kode_barang, $barang];
 
         if (ctype_digit($p)) {
-            $pb = PbStok::with('barang')->lockForUpdate()->find((int)$p);
-            if ($pb && $pb->barang) return [$pb->barang->kode_barang, $pb->barang];
+            $pb = PbStok::with('barang')->lockForUpdate()->find((int) $p);
+            if ($pb && $pb->barang)
+                return [$pb->barang->kode_barang, $pb->barang];
 
-            $b = Barang::lockForUpdate()->find((int)$p);
-            if ($b) return [$b->kode_barang, $b];
+            $b = Barang::lockForUpdate()->find((int) $p);
+            if ($b)
+                return [$b->kode_barang, $b];
         }
 
         throw new \Exception("Barang dengan kode {$param} tidak ditemukan");
