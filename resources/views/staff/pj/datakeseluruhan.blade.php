@@ -26,21 +26,29 @@
                 background-color: #ffcccc !important;
                 border-left: 4px solid #fd7e14 !important;
             }
+
             .incoming-card {
                 border-left: 4px solid #28a745;
             }
+
             .incoming-card .card-body {
                 background-color: #f8f9fa;
             }
+
             .btn-return {
                 background-color: #ffc107;
                 border-color: #ffc107;
                 color: #000;
             }
+
             .btn-return:hover {
                 background-color: #e0a800;
                 border-color: #d39e00;
                 color: #000;
+            }
+
+            .badge-normal {
+                font-weight: normal !important;
             }
         </style>
 
@@ -52,15 +60,16 @@
         @if (session('toast'))
             <div id="toast-notif"
                 style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-                                              z-index: 2000; display: flex; justify-content: center; pointer-events: none;">
+                                                                                                      z-index: 2000; display: flex; justify-content: center; pointer-events: none;">
 
-                <div class="toast-message" style="background: #fff; border-radius: 12px; padding: 14px 22px;
-                                                box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;
-                                                min-width: 280px; max-width: 360px; transition: opacity .5s ease;">
+                <div class="toast-message"
+                    style="background: #fff; border-radius: 12px; padding: 14px 22px;
+                                                                                                        box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;
+                                                                                                        min-width: 280px; max-width: 360px; transition: opacity .5s ease;">
 
                     <div
                         style="font-weight: 600; font-size: 16px; margin-bottom: 4px;
-                                                  color: {{ session('toast.type') === 'success' ? '#28a745' : '#dc3545' }};">
+                                                                                                          color: {{ session('toast.type') === 'success' ? '#28a745' : '#dc3545' }};">
                         {{ session('toast.title') }}
                     </div>
 
@@ -300,7 +309,7 @@
                                         <td>{{ $item->kode }}</td>
                                         <td>
                                             {{ $item->nama }}
-                                            <span class="ms-2 badge text-bg-danger">Habis</span>
+
                                         </td>
                                         <td>{{ $item->kategori->nama ?? '-' }}</td>
                                         <td>{{ $item->satuan ?? '-' }}</td>
@@ -326,12 +335,12 @@
                             <span class="badge bg-success ms-2">{{ $barangMasuk->count() }}</span>
                         </h5>
                         <div class="d-flex gap-2">
-                            <span class="badge bg-warning text-dark">
-                                <i class="bi bi-clock-history"></i> 
+                            <span class="badge bg-warning text-dark badge-normal" style="font-size: 14px;">
+                                <i class="bi bi-clock-history"></i>
                                 Pending: {{ $barangMasuk->where('status_konfirmasi', 'pending')->count() }}
                             </span>
-                            <span class="badge bg-success">
-                                <i class="bi bi-check-circle"></i> 
+                            <span class="badge bg-success badge-normal" style="font-size: 14px;">
+                                <i class="bi bi-check-circle"></i>
                                 Confirmed: {{ $barangMasuk->where('status_konfirmasi', 'confirmed')->count() }}
                             </span>
                         </div>
@@ -361,58 +370,56 @@
                                         <td class="text-center">{{ $index + 1 }}</td>
                                         <td>
                                             @if($status === 'confirmed')
-                                                <span class="badge bg-success">
+                                                <span class="badge bg-success badge-normal" style="font-size: 14px;">
                                                     <i class="bi bi-check-circle"></i> Dikonfirmasi
                                                 </span>
                                             @else
-                                                <span class="badge bg-warning text-dark">
+                                                <span class="badge bg-warning text-dark badge-normal" style="font-size: 14px;">
                                                     <i class="bi bi-clock-history"></i> Pending
                                                 </span>
                                             @endif
                                         </td>
                                         <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y H:i') }} WIB</td>
                                         <td>
-                                            <strong>{{ $item->nama_barang }}</strong>
+                                            {{ $item->nama_barang }}
                                             <br>
                                             <small class="text-muted">{{ $item->kode_barang }}</small>
                                         </td>
                                         <td class="text-center">
-                                            <span class="badge bg-success">{{ $item->jumlah }}</span>
+                                            {{ $item->jumlah }}
                                         </td>
                                         <td>{{ $item->satuan }}</td>
                                         <td>{{ $item->keterangan ?? '-' }}</td>
                                         <td class="text-center">
                                             <div class="d-flex flex-column gap-2">
                                                 @if($item->bukti)
-                                                    <a href="{{ asset('storage/' . $item->bukti) }}" 
-                                                       target="_blank" 
-                                                       class="btn btn-sm btn-outline-primary">
+                                                    <a href="{{ asset('storage/' . $item->bukti) }}" target="_blank"
+                                                        class="btn btn-sm btn-outline-primary">
                                                         <i class="bi bi-file-earmark-text"></i> Lihat Bukti
                                                     </a>
                                                 @endif
-                                                
+
                                                 @if($status === 'pending')
                                                     {{-- Tombol Konfirmasi --}}
-                                                    <form action="{{ route('pj.konfirmasi-barang-masuk', $item->id) }}" 
-                                                          method="POST" 
-                                                          onsubmit="return confirm('Konfirmasi barang masuk?\n\nSetelah dikonfirmasi, barang akan masuk ke stok dan tidak bisa dikembalikan.\n\nBarang: {{ $item->nama_barang }}\nJumlah: {{ $item->jumlah }} {{ $item->satuan }}')">
+                                                    <form action="{{ route('pj.konfirmasi-barang-masuk', $item->id) }}"
+                                                        method="POST"
+                                                        onsubmit="return confirm('Konfirmasi barang masuk?\n\nSetelah dikonfirmasi, barang akan masuk ke stok dan tidak bisa dikembalikan.\n\nBarang: {{ $item->nama_barang }}\nJumlah: {{ $item->jumlah }} {{ $item->satuan }}')">
                                                         @csrf
                                                         <button type="submit" class="btn btn-sm btn-success w-100">
                                                             <i class="bi bi-check-circle"></i> Konfirmasi
                                                         </button>
                                                     </form>
-                                                    
+
                                                     {{-- Tombol Kembalikan --}}
-                                                    <form action="{{ route('pj.kembalikan-barang', $item->id) }}" 
-                                                          method="POST" 
-                                                          onsubmit="return confirm('Yakin ingin mengembalikan barang ini ke PB Stok?\n\nBarang: {{ $item->nama_barang }}\nJumlah: {{ $item->jumlah }} {{ $item->satuan }}')">
+                                                    <form action="{{ route('pj.kembalikan-barang', $item->id) }}" method="POST"
+                                                        onsubmit="return confirm('Yakin ingin mengembalikan barang ini ke PB Stok?\n\nBarang: {{ $item->nama_barang }}\nJumlah: {{ $item->jumlah }} {{ $item->satuan }}')">
                                                         @csrf
                                                         <button type="submit" class="btn btn-sm btn-return w-100">
                                                             <i class="bi bi-arrow-left-circle"></i> Kembalikan
                                                         </button>
                                                     </form>
                                                 @else
-                                                    <span class="badge bg-success text-wrap">
+                                                    <span class="badge bg-success text-wrap badge-normal" style="font-size: 12px;">
                                                         <i class="bi bi-check-all"></i> Sudah Masuk ke Stok
                                                     </span>
                                                 @endif
@@ -473,8 +480,7 @@
                                     placeholder="Masukkan keterangan"></textarea>
                             </div>
                             <div class="col-12">
-                                <label class="form-label">Bukti <small
-                                        class="text-muted">(Opsional)</small> </label>
+                                <label class="form-label">Bukti <small class="text-muted">(Opsional)</small> </label>
                                 <div class="border rounded p-4 text-center" style="background-color: #f8f9fa;">
                                     <input type="file" name="bukti" id="buktiBrgKeluar" class="d-none"
                                         accept="image/*,.pdf">
@@ -491,8 +497,8 @@
 
                         <div class="d-flex justify-content-end gap-2 mt-4">
                             <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Batal</button>
-                            <button type="submit" class="btn btn-danger px-4">
-                                <i class="bi bi-send"></i> Simpan
+                            <button type="submit" class="btn btn-danger px-4" style="font-size: 16px;">
+                                Simpan
                             </button>
                         </div>
                     </form>
@@ -553,7 +559,7 @@
             </form>
         </div>
     </div>
-    
+
     @push('scripts')
         {{-- JavaScript --}}
         <script>
@@ -609,15 +615,15 @@
                             item.stock_status === 'low' ? 'Sedikit' : 'Tersedia';
 
                         html += `
-                            <div class="search-suggestion-item" data-index="${index}">
-                                <div class="suggestion-name">${item.nama}</div>
-                                <div class="suggestion-code">Kode: ${item.kode}</div>
-                                <div class="suggestion-meta">
-                                    <small>Kategori: ${item.kategori} | Stok: ${item.stok} |
-                                    <span class="stock-status ${stockStatusClass}">${stockText}</span></small>
-                                </div>
-                            </div>
-                        `;
+                                                                                    <div class="search-suggestion-item" data-index="${index}">
+                                                                                        <div class="suggestion-name">${item.nama}</div>
+                                                                                        <div class="suggestion-code">Kode: ${item.kode}</div>
+                                                                                        <div class="suggestion-meta">
+                                                                                            <small>Kategori: ${item.kategori} | Stok: ${item.stok} |
+                                                                                            <span class="stock-status ${stockStatusClass}">${stockText}</span></small>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                `;
                     });
 
                     suggestionsContainer.innerHTML = html;
