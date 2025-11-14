@@ -397,10 +397,16 @@
                             <tbody>
                                 @foreach ($bagian as $bg)
                                     @php
-                                        $stokDiBagian = \App\Models\StokBagian::with(['barang.kategori', 'bagian'])
-                                            ->where('bagian_id', $bg->id)
-                                            ->get();
-                                    @endphp
+    $stokDiBagian = \App\Models\StokBagian::with(['barang.kategori', 'bagian'])
+        ->select('stok_bagian.*')
+        ->leftJoin('pb_stok', function($join) use ($bg) {
+            $join->on('stok_bagian.kode_barang', '=', 'pb_stok.kode_barang')
+                 ->where('pb_stok.bagian_id', '=', $bg->id);
+        })
+        ->selectRaw('COALESCE(pb_stok.harga, 0) as harga')
+        ->where('stok_bagian.bagian_id', $bg->id)
+        ->get();
+@endphp
                                     @if($stokDiBagian->count() > 0)
                                         <tr class="table-secondary">
                                             <td>{{ $bg->nama }}</td>
