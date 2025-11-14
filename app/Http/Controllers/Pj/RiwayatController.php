@@ -183,96 +183,110 @@ class RiwayatController extends Controller
     }
 
     // ===================== DOWNLOAD (dua-mode) =====================
-    public function downloadReport(Request $request)
-    {
-        $user   = $request->user();
-        $gudang = $user->gudang_id ? $user->gudang : null;
-        $bagian = $user->bagian_id ? Bagian::find($user->bagian_id) : null;
+public function downloadReport(Request $request)
+{
+    $user   = $request->user();
+    $gudang = $user->gudang_id ? $user->gudang : null;
+    $bagian = $user->bagian_id ? Bagian::find($user->bagian_id) : null;
 
-        if (!$gudang && !$bagian) {
-            return back()->with('toast', [
-                'type' => 'error',
-                'title' => 'Error!',
-                'message' => 'Anda belum memiliki bagian/gudang yang ditugaskan.'
-            ]);
-        }
-
-        if ($gudang) {
-            $distribusiQuery = TransaksiDistribusi::with(['barang.kategori', 'gudangTujuan', 'user'])
-                ->where('id_gudang_tujuan', $gudang->id);
-            $keluarQuery = TransaksiBarangKeluar::with(['barang.kategori', 'gudang', 'bagian', 'user'])
-                ->where('id_gudang', $gudang->id);
-
-            if ($request->filled('bagian') && $request->bagian != 'Semua') {
-                $keluarQuery->where('bagian_id', $request->bagian);
-            }
-            $this->applyPeriodeFilter($distribusiQuery, $request);
-            $this->applyPeriodeFilter($keluarQuery, $request);
-
-            $rowsMasuk  = $distribusiQuery->get()->map(fn($x) => $this->mapDistribusiToPjRow($x))->values()->toBase();
-            $rowsKeluar = $keluarQuery->get()->map(fn($x) => $this->mapBarangKeluarToPjRow($x))->values()->toBase();
-
-            $filter = [
-                'gudang' => $gudang->nama,
-                'alur_barang' => $request->alur_barang,
-                'bagian' => $request->bagian,
-                'periode' => $request->periode,
-                'dari_tanggal' => $request->dari_tanggal,
-                'sampai_tanggal' => $request->sampai_tanggal,
-            ];
-        } else {
-            // MODE BAGIAN — Bagian hanya "Keluar"
-            $keluarBagianQuery = TransaksiBarangKeluar::with(['barang.kategori', 'gudang', 'bagian', 'user'])
-                ->where('bagian_id', $bagian->id);
-            $this->applyPeriodeFilter($keluarBagianQuery, $request);
-
-            $rowsMasuk  = collect()->toBase(); // kosong
-            $rowsKeluar = $keluarBagianQuery->get()->map(fn($x) => $this->mapBarangKeluarToPjRow($x))
-                ->values()->toBase();
-
-            $filter = [
-                'gudang' => 'Bagian ' . $bagian->nama,
-                'alur_barang' => $request->alur_barang,
-                'bagian' => $bagian->id,
-                'periode' => $request->periode,
-                'dari_tanggal' => $request->dari_tanggal,
-                'sampai_tanggal' => $request->sampai_tanggal,
-            ];
-        }
-
-        // gabung sesuai filter
-        $riwayat = collect()->toBase();
-        if ($request->filled('alur_barang') && $request->alur_barang !== 'Semua') {
-            $riwayat = $request->alur_barang === 'Masuk' ? $rowsMasuk : $rowsKeluar;
-        } else {
-            $riwayat = $rowsMasuk->concat($rowsKeluar)->sortByDesc(function ($x) {
-                return ($x->tanggal ?? '1970-01-01') . ' ' . ($x->waktu ?? '00:00:00');
-            })->values();
-        }
-
-        $format = $request->download;
-
-        if ($format == 'pdf') {
-            $pdf = Pdf::loadView('staff.pj.riwayat-pdf', compact('riwayat', 'filter'))
-                ->setPaper('a4', 'landscape')
-                ->setOption('isHtml5ParserEnabled', true)
-                ->setOption('isRemoteEnabled', true);
-            return $pdf->download('Laporan_Riwayat_Barang_PJ_' . date('Y-m-d_His') . '.pdf');
-        }
-
-        if ($format == 'excel') {
-            return Excel::download(
-                new RiwayatExportPj($riwayat, $filter),
-                'Laporan_Riwayat_Barang_PJ_' . date('Y-m-d_His') . '.xlsx'
-            );
-        }
-
-        return redirect()->back()->with('toast', [
+    if (!$gudang && !$bagian) {
+        return back()->with('toast', [
             'type' => 'error',
             'title' => 'Error!',
-            'message' => 'Format tidak valid.'
+            'message' => 'Anda belum memiliki bagian/gudang yang ditugaskan.'
         ]);
     }
+
+    if ($gudang) {
+        // MODE GUDANG
+        $distribusiQuery = TransaksiDistribusi::with(['barang.kategori', 'gudangTujuan', 'user'])
+            ->where('id_gudang_tujuan', $gudang->id);
+        $keluarQuery = TransaksiBarangKeluar::with(['barang.kategori', 'gudang', 'bagian', 'user'])
+            ->where('id_gudang', $gudang->id);
+
+        if ($request->filled('bagian') && $request->bagian != 'Semua') {
+            $keluarQuery->where('bagian_id', $request->bagian);
+        }
+        $this->applyPeriodeFilter($distribusiQuery, $request);
+        $this->applyPeriodeFilter($keluarQuery, $request);
+
+        $rowsMasuk  = $distribusiQuery->get()->map(fn($x) => $this->mapDistribusiToPjRow($x))->values()->toBase();
+        $rowsKeluar = $keluarQuery->get()->map(fn($x) => $this->mapBarangKeluarToPjRow($x))->values()->toBase();
+
+        $filter = [
+            'gudang' => $gudang->nama,
+            'alur_barang' => $request->alur_barang,
+            'bagian' => $request->bagian,
+            'periode' => $request->periode,
+            'dari_tanggal' => $request->dari_tanggal,
+            'sampai_tanggal' => $request->sampai_tanggal,
+        ];
+    } else {
+        // MODE BAGIAN - PERBAIKAN DI SINI
+        // MASUK: ambil dari TransaksiDistribusi by bagian_id
+        // Pastikan menggunakan 'gudangTujuan' untuk relasi, bukan 'gudang'
+        $distribusiBagianQuery = TransaksiDistribusi::with(['barang.kategori', 'gudangTujuan', 'user'])
+            ->where('bagian_id', $bagian->id);
+        $this->applyPeriodeFilter($distribusiBagianQuery, $request);
+        
+        // KELUAR: ambil dari TransaksiBarangKeluar by bagian_id
+        $keluarBagianQuery = TransaksiBarangKeluar::with(['barang.kategori', 'gudang', 'bagian', 'user'])
+            ->where('bagian_id', $bagian->id);
+        $this->applyPeriodeFilter($keluarBagianQuery, $request);
+
+        $rowsMasuk  = $distribusiBagianQuery->get()
+            ->map(fn($x) => $this->mapDistribusiToPjRow($x))
+            ->values()
+            ->toBase();
+            
+        $rowsKeluar = $keluarBagianQuery->get()
+            ->map(fn($x) => $this->mapBarangKeluarToPjRow($x))
+            ->values()
+            ->toBase();
+
+        $filter = [
+            'gudang' => 'Bagian ' . $bagian->nama,
+            'alur_barang' => $request->alur_barang,
+            'bagian' => $bagian->id,
+            'periode' => $request->periode,
+            'dari_tanggal' => $request->dari_tanggal,
+            'sampai_tanggal' => $request->sampai_tanggal,
+        ];
+    }
+
+    // Gabung sesuai filter
+    $riwayat = collect()->toBase();
+    if ($request->filled('alur_barang') && $request->alur_barang !== 'Semua') {
+        $riwayat = $request->alur_barang === 'Masuk' ? $rowsMasuk : $rowsKeluar;
+    } else {
+        $riwayat = $rowsMasuk->concat($rowsKeluar)->sortByDesc(function ($x) {
+            return ($x->tanggal ?? '1970-01-01') . ' ' . ($x->waktu ?? '00:00:00');
+        })->values();
+    }
+
+    $format = $request->download;
+
+    if ($format == 'pdf') {
+        $pdf = Pdf::loadView('staff.pj.riwayat-pdf', compact('riwayat', 'filter'))
+            ->setPaper('a4', 'landscape')
+            ->setOption('isHtml5ParserEnabled', true)
+            ->setOption('isRemoteEnabled', true);
+        return $pdf->download('Laporan_Riwayat_Barang_PJ_' . date('Y-m-d_His') . '.pdf');
+    }
+
+    if ($format == 'excel') {
+        return Excel::download(
+            new RiwayatExportPj($riwayat, $filter),
+            'Laporan_Riwayat_Barang_PJ_' . date('Y-m-d_His') . '.xlsx'
+        );
+    }
+
+    return redirect()->back()->with('toast', [
+        'type' => 'error',
+        'title' => 'Error!',
+        'message' => 'Format tidak valid.'
+    ]);
+}
 
     // === helper filter periode (tetap) ===
     private function applyPeriodeFilter($query, Request $request)
