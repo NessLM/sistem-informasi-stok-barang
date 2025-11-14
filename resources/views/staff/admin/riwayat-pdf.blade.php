@@ -354,7 +354,7 @@
             <tr>
                 <td style="width:60px;">Dari</td>
                 <td style="width:20px;">:</td>
-                <td>Plt. Kepala Bagian Umum dan Rumah Tangga</td>
+                <td>Kepala Bagian Perencanaan dan Keuangan</td>
             </tr>
             <tr>
                 <td>Tanggal</td>
@@ -481,11 +481,10 @@
                     <tr>
                         <th class="col-no">No</th>
                         <th class="col-tanggal">Tanggal, Waktu</th>
-                        <th class="col-gudang">Gudang Asal</th>
+                        <th class="col-gudang">Bagian Asal</th>
                         <th class="col-nama">Nama Barang</th>
                         <th class="col-jumlah">Jumlah</th>
                         <th class="col-satuan">Satuan</th>
-                        <th class="col-bagian">Bagian</th>
                         <th class="col-penerima">Penerima</th>
                         <th class="col-keterangan">Keterangan</th>
                     </tr>
@@ -503,11 +502,10 @@
                                 {{ \Carbon\Carbon::parse($r->tanggal)->format('d/m/Y') }}<br>
                                 {{ \Carbon\Carbon::parse($r->waktu)->format('H:i') }} WIB
                             </td>
-                            <td>{{ $r->gudang }}</td>
+                            <td>{{ $r->bagian }}</td>
                             <td>{{ $r->nama_barang }}</td>
                             <td>{{ $r->jumlah }}</td>
                             <td>{{ $r->satuan }}</td>
-                            <td>{{ $r->bagian }}</td>
                             <td>{{ $r->penerima }}</td>
                             <td>{{ $r->keterangan ?? '-' }}</td>
                         </tr>
@@ -515,7 +513,7 @@
                     <tr>
                         <td colspan="4" style="text-align:center; font-weight:bold;">Total Barang Keluar</td>
                         <td style="font-weight:bold; text-align:center;">{{ $totalKeluar }}</td>
-                        <td colspan="4"></td>
+                        <td colspan="3"></td>
                     </tr>
                 </tbody>
             </table>
@@ -528,9 +526,9 @@
             <td style="width:50%;"></td>
             <td style="width:50%;">
                 Sungailiat, {{ now()->format('d F Y') }} <br>
-                Plt. Kepala Bagian Umum dan Rumah Tangga <br><br><br><br><br>
-                <span style="font-weight:bold; text-decoration:underline;">Nama Pejabat</span><br>
-                NIP. 1975xxxxxxxxx
+                Kepala Bagian Perencanaan dan Keuangan <br><br><br><br><br>
+                <span style="font-weight:bold; text-decoration:underline;">.................................</span><br>
+                NIP. .............................
             </td>
         </tr>
     </table>

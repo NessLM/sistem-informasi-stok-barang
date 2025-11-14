@@ -417,7 +417,7 @@
                                                     class="text-muted">{{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }}
                                                     WIB</small>
                                             </td>
-                                            <td class="fw-medium">{{ $item->gudang }}</td>
+                                            <td class="fw-medium">{{ $item->bagian }}</td>
                                             <td class="fw-medium">{{ $item->nama_barang }}</td>
                                             <td><span class="fw-medium">{{ $item->jumlah }}</span></td>
                                             <td>{{ $item->satuan }}</td>
