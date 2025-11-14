@@ -56,35 +56,95 @@
 
     <main class="page-wrap container py-4">
 
-        <!-- Toast notification -->
+<!-- Toast notification -->
         @if (session('toast'))
+            @php
+                $isSuccess = session('toast.type') === 'success';
+                $bgColor = $isSuccess ? '#28a745' : '#dc3545';
+                $iconClass = $isSuccess ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill';
+            @endphp
+            
             <div id="toast-notif"
-                style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-                                                                                                      z-index: 2000; display: flex; justify-content: center; pointer-events: none;">
+                style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-20px);
+                       z-index: 2000; display: flex; justify-content: center; pointer-events: none;
+                       animation: slideDown 0.4s ease-out forwards;">
 
                 <div class="toast-message"
-                    style="background: #fff; border-radius: 12px; padding: 14px 22px;
-                                                                                                        box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;
-                                                                                                        min-width: 280px; max-width: 360px; transition: opacity .5s ease;">
+                    style="background: #fff; border-radius: 16px; padding: 18px 24px;
+                           box-shadow: 0 8px 24px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.1);
+                           text-align: left; min-width: 320px; max-width: 420px;
+                           border-left: 5px solid {{ $bgColor }};
+                           transition: all 0.3s ease;
+                           display: flex; align-items: center; gap: 14px;">
 
-                    <div
-                        style="font-weight: 600; font-size: 16px; margin-bottom: 4px;
-                                                                                                          color: {{ session('toast.type') === 'success' ? '#28a745' : '#dc3545' }};">
-                        {{ session('toast.title') }}
+                    <div style="flex-shrink: 0; width: 42px; height: 42px; border-radius: 50%;
+                               background: {{ $bgColor }}; display: flex; align-items: center;
+                               justify-content: center; box-shadow: 0 2px 8px {{ $bgColor }}40;">
+                        <i class="bi {{ $iconClass }}" style="color: #fff; font-size: 22px;"></i>
                     </div>
 
-                    <div style="color:#333; font-size: 14px; line-height: 1.4;">
-                        {{ session('toast.message') }}
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; font-size: 16px; margin-bottom: 4px;
+                                   color: #1a1a1a; line-height: 1.3;">
+                            {{ session('toast.title') }}
+                        </div>
+                        <div style="color: #666; font-size: 14px; line-height: 1.5;">
+                            {{ session('toast.message') }}
+                        </div>
                     </div>
+
+                    <button onclick="closeToast()" 
+                            style="flex-shrink: 0; background: none; border: none; 
+                                   color: #999; cursor: pointer; padding: 4px; 
+                                   border-radius: 4px; transition: all 0.2s;
+                                   pointer-events: all; width: 24px; height: 24px;
+                                   display: flex; align-items: center; justify-content: center;">
+                        <i class="bi bi-x-lg" style="font-size: 14px;"></i>
+                    </button>
                 </div>
             </div>
 
+            <style>
+                @keyframes slideDown {
+                    from {
+                        transform: translateX(-50%) translateY(-20px);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(-50%) translateY(0);
+                        opacity: 1;
+                    }
+                }
+
+                @keyframes slideUp {
+                    from {
+                        transform: translateX(-50%) translateY(0);
+                        opacity: 1;
+                    }
+                    to {
+                        transform: translateX(-50%) translateY(-20px);
+                        opacity: 0;
+                    }
+                }
+
+                #toast-notif button:hover {
+                    background: #f0f0f0 !important;
+                    color: #333 !important;
+                }
+            </style>
+
             <script>
-                setTimeout(() => {
+                function closeToast() {
                     const toast = document.getElementById('toast-notif');
-                    if (toast) toast.style.opacity = '0';
-                    setTimeout(() => toast?.remove(), 500);
-                }, 3000);
+                    if (toast) {
+                        toast.style.animation = 'slideUp 0.3s ease-out forwards';
+                        setTimeout(() => toast?.remove(), 300);
+                    }
+                }
+
+                setTimeout(() => {
+                    closeToast();
+                }, 4000);
             </script>
         @endif
 
