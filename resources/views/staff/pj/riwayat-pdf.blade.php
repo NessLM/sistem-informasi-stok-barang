@@ -255,7 +255,7 @@
             <thead>
                 <tr>
                     <th class="col-no">No</th>
-                    <th class="col-tanggal">Tanggal, Waktu</th>
+                    <th class="col-tanggal">Tanggal, <br> Waktu</th>
                     <th class="col-nama">Nama Barang</th>
                     <th class="col-jumlah">Jumlah</th>
                     <th class="col-nama">Satuan</th>
@@ -305,7 +305,7 @@
             <thead>
                 <tr>
                     <th class="col-no">No</th>
-                    <th class="col-tanggal">Tanggal, Waktu</th>
+                    <th class="col-tanggal">Tanggal, <br> Waktu</th>
                     <th class="col-nama">Nama Barang</th>
                     <th class="col-jumlah">Jumlah</th>
                     <th class="col-nama">Satuan</th>

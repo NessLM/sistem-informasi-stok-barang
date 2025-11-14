@@ -178,20 +178,25 @@ class RiwayatController extends Controller
         // ---------------------------------------------------------------
         $barangMasukQuery = TransaksiBarangMasuk::with([
             'barang.kategori',
-            'user'
+            'user',
+            'bagian' // TAMBAHKAN INI
         ]);
 
         // Filter periode
         $this->applyPeriodeFilter($barangMasukQuery, $request);
 
         // ---------------------------------------------------------------
-        // KELUAR: Transaksi Distribusi
+        // KELUAR: Transaksi Distribusi - GUNAKAN QUERY YANG SAMA DENGAN WEB
         // ---------------------------------------------------------------
-        $distribusiQuery = TransaksiDistribusi::with([
-            'barang.kategori',
-            'gudangTujuan',
-            'user'
-        ]);
+        $distribusiQuery = TransaksiDistribusi::query()
+            ->leftJoin('bagian as bg', 'bg.id', '=', 'transaksi_distribusi.bagian_id')
+            ->leftJoin('barang as b', 'b.kode_barang', '=', 'transaksi_distribusi.kode_barang')
+            ->select([
+                'transaksi_distribusi.*',
+                DB::raw('bg.nama as __bagian_nama'),
+                DB::raw('b.satuan as __barang_satuan'),
+                DB::raw('b.nama_barang as __barang_nama'),
+            ]);
 
         // Filter gudang tujuan
         if ($request->filled('gudang') && $request->gudang !== 'Semua') {
@@ -203,8 +208,8 @@ class RiwayatController extends Controller
         // Filter periode
         $this->applyPeriodeFilter($distribusiQuery, $request);
 
-        // Map ke format PB
-        $rowsMasuk  = $barangMasukQuery->get()
+        // Map ke format PB - GUNAKAN METHOD YANG SAMA
+        $rowsMasuk = $barangMasukQuery->get()
             ->map(fn($item) => $this->mapBarangMasukToPbRow($item))
             ->values()
             ->toBase();
@@ -241,7 +246,7 @@ class RiwayatController extends Controller
         if ($format == 'pdf') {
             // Generate PDF
             $pdf = Pdf::loadView('staff.pb.riwayat-pdf', compact('riwayat', 'filter'))
-                ->setPaper('a4', 'landscape')
+                ->setPaper('a4', 'portrait') // UBAH KE PORTRAIT
                 ->setOption('isHtml5ParserEnabled', true)
                 ->setOption('isRemoteEnabled', true);
 

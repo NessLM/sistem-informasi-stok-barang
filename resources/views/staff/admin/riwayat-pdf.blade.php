@@ -382,8 +382,8 @@
                 <thead>
                     <tr>
                         <th class="col-no">No</th>
-                        <th class="col-tanggal">Tanggal, Waktu</th>
-                        <th class="col-gudang">Gudang, Bagian</th>
+                        <th class="col-tanggal">Tanggal, <br> Waktu</th>
+                        <th class="col-gudang">Gudang, <br> Bagian</th>
                         <th class="col-nama">Nama Barang</th>
                         <th class="col-jumlah">Jumlah</th>
                         <th class="col-satuan">Satuan</th>
@@ -434,7 +434,7 @@
                 <thead>
                     <tr>
                         <th class="col-no">No</th>
-                        <th class="col-tanggal">Tanggal, Waktu</th>
+                        <th class="col-tanggal">Tanggal, <br> Waktu</th>
                         <th class="col-gudang">Gudang Tujuan</th>
                         <th class="col-nama">Nama Barang</th>
                         <th class="col-jumlah">Jumlah</th>
@@ -480,7 +480,7 @@
                 <thead>
                     <tr>
                         <th class="col-no">No</th>
-                        <th class="col-tanggal">Tanggal, Waktu</th>
+                        <th class="col-tanggal">Tanggal, <br> Waktu</th>
                         <th class="col-gudang">Bagian Asal</th>
                         <th class="col-nama">Nama Barang</th>
                         <th class="col-jumlah">Jumlah</th>

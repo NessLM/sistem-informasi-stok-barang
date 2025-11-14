@@ -240,7 +240,7 @@
             <tr>
                 <td style="width: 80px;">Dari</td>
                 <td style="width: 10px;">:</td>
-                <td>Plt. Kepala Bagian Umum dan Rumah Tangga</td>
+                <td>Kepala Bagian Perencanaan dan Keuangan</td>
             </tr>
             <tr>
                 <td>Tanggal</td>
@@ -293,8 +293,8 @@
             <thead>
                 <tr>
                     <th class="col-no">No</th>
-                    <th class="col-tanggal">Tanggal, Waktu</th>
-                    <th class="col-gudang">Gudang</th>
+                    <th class="col-tanggal">Tanggal, <br> Waktu</th>
+                    <th class="col-gudang">Gudang, <br> Bagian</th>
                     <th class="col-nama">Nama Barang</th>
                     <th class="col-jumlah">Jumlah</th>
                     <th class="col-satuan">Satuan</th>
@@ -314,7 +314,13 @@
                             {{ \Carbon\Carbon::parse($r->tanggal)->format('d/m/Y') }}<br>
                             {{ $r->waktu }} WIB
                         </td>
-                        <td>{{ $r->gudang }}</td>
+                        <td>
+                            {{ $r->gudang }}
+                            @if (isset($r->bagian_nama) && $r->bagian_nama && $r->bagian_nama != '-')
+                                <br>
+                                <span class="bagian-nama">{{ $r->bagian_nama }}</span>
+                            @endif
+                        </td>
                         <td>{{ $r->nama_barang }}</td>
                         <td>{{ $r->jumlah }}</td>
                         <td>{{ $r->satuan }}</td>
@@ -344,7 +350,7 @@
             <thead>
                 <tr>
                     <th class="col-no">No</th>
-                    <th class="col-tanggal">Tanggal, Waktu</th>
+                    <th class="col-tanggal">Tanggal, <br> Waktu</th>
                     <th class="col-tujuan">Bagian Tujuan</th>
                     <th class="col-nama">Nama Barang</th>
                     <th class="col-jumlah">Jumlah</th>
@@ -366,9 +372,7 @@
                             {{ $r->waktu }} WIB
                         </td>
                         <td>
-                            {{ $r->gudang_tujuan }}
-                            @if (isset($r->kategori_tujuan) && $r->kategori_tujuan)
-                            @endif
+                            {{ $r->gudang_tujuan ?? ($r->__bagian_nama ?? '-') }}
                         </td>
                         <td>{{ $r->nama_barang }}</td>
                         <td>{{ $r->jumlah }}</td>
@@ -404,9 +408,10 @@
                 <td style="width:60%;"></td>
                 <td style="width:40%;">
                     Sungailiat, {{ now()->format('d F Y') }} <br>
-                    Plt. Kepala Bagian Umum dan Rumah Tangga <br><br><br><br><br>
-                    <span style="font-weight:bold; text-decoration:underline;">Nama Pejabat</span><br>
-                    NIP. 1975xxxxxxxxx
+                    Kepala Bagian Perencanaan dan Keuangan <br><br><br><br><br>
+                    <span
+                        style="font-weight:bold; text-decoration:underline;">.................................</span><br>
+                    NIP. .............................
                 </td>
             </tr>
         </table>
