@@ -80,22 +80,31 @@ class BarangMasukController extends Controller
             Log::info("Bagian Tujuan ID: {$validated['bagian_id']}");
 
             /**
-             * Ambil / buat PB Stok untuk kode_barang + bagian_id ini
+             * STRATEGI BARU: Cari pb_stok dengan harga yang SAMA
+             * Jika ada -> tambah stok
+             * Jika tidak -> buat entry baru
              */
             $pbStok = PbStok::where('kode_barang', $kodeCanonical)
                 ->where('bagian_id', $validated['bagian_id'])
+                ->where('harga', $validated['harga'])
                 ->lockForUpdate()
                 ->first();
 
             if (!$pbStok) {
-                Log::info("PB Stok belum ada untuk bagian ini, membuat baru...");
+                // Buat batch number untuk tracking
+                $batchNumber = 'BATCH-' . date('Ymd-His') . '-' . uniqid();
+                
+                Log::info("PB Stok dengan harga ini belum ada, membuat entry baru...");
                 $pbStok = PbStok::create([
-                    'kode_barang' => $kodeCanonical,
-                    'bagian_id'   => $validated['bagian_id'],
-                    'stok'        => 0,
-                    'harga'       => $validated['harga'],
+                    'kode_barang'  => $kodeCanonical,
+                    'bagian_id'    => $validated['bagian_id'],
+                    'stok'         => 0,
+                    'harga'        => $validated['harga'],
+                    'batch_number' => $batchNumber,
                 ]);
-                Log::info("PB Stok baru dibuat - ID: {$pbStok->id}, Bagian ID: {$pbStok->bagian_id}, Stok: 0");
+                Log::info("PB Stok baru dibuat - ID: {$pbStok->id}, Bagian ID: {$pbStok->bagian_id}, Harga: {$validated['harga']}, Stok: 0");
+            } else {
+                Log::info("PB Stok dengan harga ini sudah ada - ID: {$pbStok->id}, Stok sebelum: {$pbStok->stok}");
             }
 
             $stokSebelum = $pbStok->stok;
@@ -112,7 +121,7 @@ class BarangMasukController extends Controller
             }
 
             /**
-             * Update stok + harga
+             * Update stok
              */
             $stokBaru = $stokSebelum + (int)$validated['jumlah'];
             Log::info("Stok yang akan diset: {$stokBaru} (tambah {$validated['jumlah']})");
@@ -121,7 +130,6 @@ class BarangMasukController extends Controller
                 ->where('id', $pbStok->id)
                 ->update([
                     'stok'       => $stokBaru,
-                    'harga'      => $validated['harga'],
                     'updated_at' => now(),
                 ]);
 
@@ -166,7 +174,7 @@ class BarangMasukController extends Controller
             return back()->with('toast', [
                 'type'    => 'success',
                 'title'   => 'Berhasil!',
-                'message' => "Barang '{$barang->nama_barang}' berhasil masuk ke {$namaBagian}. Jumlah: {$validated['jumlah']} {$barang->satuan}. Stok bagian tersebut sekarang: {$after->stok}",
+                'message' => "Barang '{$barang->nama_barang}' berhasil masuk ke {$namaBagian}. Jumlah: {$validated['jumlah']} {$barang->satuan}. Harga: Rp " . number_format($validated['harga'], 0, ',', '.') . ". Stok batch ini sekarang: {$after->stok}",
             ]);
 
         } catch (\Exception $e) {
