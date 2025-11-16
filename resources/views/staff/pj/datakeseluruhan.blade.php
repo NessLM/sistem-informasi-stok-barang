@@ -9,15 +9,13 @@
 <x-layouts.app title="Data Gudang" :menu="$menu" :heading="$pageHeading">
 
     @php
-        $barang = $barang ?? collect();     // hasil filter/search (bisa kosong)
-        $kategori = $kategori ?? collect();   // kategori + barang (stok > 0)
-        // Tambahan dari controller:
-        $barangHabis = $barangHabis ?? collect();  // list barang stok = 0
-        $barangMasuk = $barangMasuk ?? collect();  // list barang masuk dari transaksi_distribusi
-        $lowThreshold = $lowThreshold ?? 10;         // ambang "menipis"
+        $barang = $barang ?? collect();
+        $kategori = $kategori ?? collect();
+        $barangHabis = $barangHabis ?? collect();
+        $barangMasuk = $barangMasuk ?? collect();
+        $lowThreshold = $lowThreshold ?? 10;
         $ringkasanCounts = $ringkasanCounts ?? ['ok' => 0, 'low' => 0, 'empty' => 0];
     @endphp
-
 
     @push('styles')
         <link rel="stylesheet" href="{{ asset('assets/css/staff/pj/data_keseluruhan_pj.css') }}">
@@ -50,13 +48,229 @@
             .badge-normal {
                 font-weight: normal !important;
             }
-        </style>
 
+            /* Modal Konfirmasi Barang Masuk - Modern Style */
+            .modal-confirm-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.6);
+                backdrop-filter: blur(4px);
+                z-index: 9999;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                animation: fadeIn 0.3s ease;
+            }
+
+            .modal-confirm-overlay.show {
+                display: flex;
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                }
+                to {
+                    opacity: 1;
+                }
+            }
+
+            @keyframes slideUp {
+                from {
+                    transform: translateY(30px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+
+            .modal-confirm-box {
+                background: #fff;
+                border-radius: 20px;
+                max-width: 480px;
+                width: 90%;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                overflow: hidden;
+                animation: slideUp 0.4s ease;
+            }
+
+            .modal-confirm-header {
+                background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+                padding: 32px 28px;
+                text-align: center;
+                position: relative;
+            }
+
+            .modal-confirm-icon {
+                width: 72px;
+                height: 72px;
+                background: rgba(255, 255, 255, 0.95);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 16px;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            }
+
+            .modal-confirm-icon i {
+                font-size: 36px;
+                color: #28a745;
+            }
+
+            .modal-confirm-header h5 {
+                color: #fff;
+                font-weight: 700;
+                font-size: 24px;
+                margin: 0;
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+
+            .modal-confirm-body {
+                padding: 32px 28px;
+            }
+
+            .modal-confirm-message {
+                color: #495057;
+                font-size: 16px;
+                line-height: 1.6;
+                margin-bottom: 24px;
+                text-align: center;
+            }
+
+            .modal-confirm-details {
+                background: #f8f9fa;
+                border-radius: 12px;
+                padding: 20px;
+                margin-bottom: 24px;
+                border: 1px solid #e9ecef;
+            }
+
+            .modal-confirm-details .detail-row {
+                display: flex;
+                justify-content: space-between;
+                padding: 10px 0;
+                border-bottom: 1px solid #dee2e6;
+            }
+
+            .modal-confirm-details .detail-row:last-child {
+                border-bottom: none;
+            }
+
+            .modal-confirm-details .detail-label {
+                font-weight: 600;
+                color: #6c757d;
+                font-size: 14px;
+            }
+
+            .modal-confirm-details .detail-value {
+                font-weight: 700;
+                color: #212529;
+                font-size: 14px;
+                text-align: right;
+            }
+
+            .modal-confirm-warning {
+                background: #fff3cd;
+                border: 1px solid #ffc107;
+                border-radius: 10px;
+                padding: 16px;
+                margin-bottom: 24px;
+                display: flex;
+                gap: 12px;
+                align-items: start;
+            }
+
+            .modal-confirm-warning i {
+                color: #ff6b35;
+                font-size: 20px;
+                margin-top: 2px;
+            }
+
+            .modal-confirm-warning-text {
+                color: #856404;
+                font-size: 14px;
+                line-height: 1.5;
+                flex: 1;
+            }
+
+            .modal-confirm-actions {
+                display: flex;
+                gap: 12px;
+            }
+
+            .modal-confirm-actions button {
+                flex: 1;
+                padding: 14px 24px;
+                font-size: 16px;
+                font-weight: 600;
+                border: none;
+                border-radius: 12px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            .btn-confirm-cancel {
+                background: #f8f9fa;
+                color: #6c757d;
+                border: 2px solid #dee2e6;
+            }
+
+            .btn-confirm-cancel:hover {
+                background: #e9ecef;
+                border-color: #adb5bd;
+                color: #495057;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            }
+
+            .btn-confirm-ok {
+                background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+                color: #fff;
+                box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+            }
+
+            .btn-confirm-ok:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+            }
+
+            .btn-confirm-ok:active {
+                transform: translateY(0);
+            }
+
+            /* Modal Kembalikan Barang - Warning Style */
+            .modal-return-header {
+                background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+            }
+
+            .modal-return-icon i {
+                color: #ffc107;
+            }
+
+            .btn-return-ok {
+                background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+                color: #000;
+                box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+            }
+
+            .btn-return-ok:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(255, 193, 7, 0.4);
+            }
+        </style>
     @endpush
 
     <main class="page-wrap container py-4">
 
-<!-- Toast notification -->
+        <!-- Toast notification -->
         @if (session('toast'))
             @php
                 $isSuccess = session('toast.type') === 'success';
@@ -288,7 +502,6 @@
                                 <tr id="detail-{{ $k->id }}" style="display:none;">
                                     <td colspan="2">
                                         @php
-                                            // barang sudah di-load (stok > 0) di controller
                                             $barangFiltered = $k->barang;
                                         @endphp
                                         @if ($barangFiltered->count())
@@ -339,9 +552,7 @@
             @endif
         </section>
 
-        {{-- =========================
-        SECTION BARANG HABIS
-        ========================= --}}
+        {{-- SECTION BARANG HABIS --}}
         @if(($barangHabis ?? collect())->count())
             <section id="sec-empty" class="card empty-card mt-4">
                 <div class="card-body">
@@ -367,10 +578,7 @@
                                 @foreach ($barangHabis as $item)
                                     <tr class="row-empty">
                                         <td>{{ $item->kode }}</td>
-                                        <td>
-                                            {{ $item->nama }}
-
-                                        </td>
+                                        <td>{{ $item->nama }}</td>
                                         <td>{{ $item->kategori->nama ?? '-' }}</td>
                                         <td>{{ $item->satuan ?? '-' }}</td>
                                     </tr>
@@ -382,9 +590,7 @@
             </section>
         @endif
 
-        {{-- =========================
-        SECTION BARANG MASUK (UPDATED WITH KONFIRMASI & KEMBALIKAN BUTTON)
-        ========================= --}}
+        {{-- SECTION BARANG MASUK --}}
         @if(($barangMasuk ?? collect())->count())
             <section id="sec-incoming" class="card incoming-card shadow-sm mt-4">
                 <div class="card-body">
@@ -445,9 +651,7 @@
                                             <br>
                                             <small class="text-muted">{{ $item->kode_barang }}</small>
                                         </td>
-                                        <td class="text-center">
-                                            {{ $item->jumlah }}
-                                        </td>
+                                        <td class="text-center">{{ $item->jumlah }}</td>
                                         <td>{{ $item->satuan }}</td>
                                         <td>{{ $item->keterangan ?? '-' }}</td>
                                         <td class="text-center">
@@ -460,24 +664,25 @@
                                                 @endif
 
                                                 @if($status === 'pending')
-                                                    {{-- Tombol Konfirmasi --}}
-                                                    <form action="{{ route('pj.konfirmasi-barang-masuk', $item->id) }}"
-                                                        method="POST"
-                                                        onsubmit="return confirm('Konfirmasi barang masuk?\n\nSetelah dikonfirmasi, barang akan masuk ke stok dan tidak bisa dikembalikan.\n\nBarang: {{ $item->nama_barang }}\nJumlah: {{ $item->jumlah }} {{ $item->satuan }}')">
-                                                        @csrf
-                                                        <button type="submit" class="btn btn-sm btn-success w-100">
-                                                            <i class="bi bi-check-circle"></i> Konfirmasi
-                                                        </button>
-                                                    </form>
+                                                    {{-- Tombol Konfirmasi dengan Modal - TAMBAHKAN data-harga --}}
+                                                    <button type="button" class="btn btn-sm btn-success w-100 btn-konfirmasi"
+                                                        data-id="{{ $item->id }}"
+                                                        data-nama="{{ $item->nama_barang }}"
+                                                        data-jumlah="{{ $item->jumlah }}"
+                                                        data-satuan="{{ $item->satuan }}"
+                                                        data-kode="{{ $item->kode_barang }}"
+                                                        data-harga="{{ $item->harga ?? 0 }}">
+                                                        <i class="bi bi-check-circle"></i> Konfirmasi
+                                                    </button>
 
-                                                    {{-- Tombol Kembalikan --}}
-                                                    <form action="{{ route('pj.kembalikan-barang', $item->id) }}" method="POST"
-                                                        onsubmit="return confirm('Yakin ingin mengembalikan barang ini ke PB Stok?\n\nBarang: {{ $item->nama_barang }}\nJumlah: {{ $item->jumlah }} {{ $item->satuan }}')">
-                                                        @csrf
-                                                        <button type="submit" class="btn btn-sm btn-return w-100">
-                                                            <i class="bi bi-arrow-left-circle"></i> Kembalikan
-                                                        </button>
-                                                    </form>
+                                                    {{-- Tombol Kembalikan dengan Modal --}}
+                                                    <button type="button" class="btn btn-sm btn-return w-100 btn-kembalikan"
+                                                        data-id="{{ $item->id }}"
+                                                        data-nama="{{ $item->nama_barang }}"
+                                                        data-jumlah="{{ $item->jumlah }}"
+                                                        data-satuan="{{ $item->satuan }}">
+                                                        <i class="bi bi-arrow-left-circle"></i> Kembalikan
+                                                    </button>
                                                 @else
                                                     <span class="badge bg-success text-wrap badge-normal" style="font-size: 12px;">
                                                         <i class="bi bi-check-all"></i> Sudah Masuk ke Stok
@@ -495,6 +700,102 @@
         @endif
 
     </main>
+
+    {{-- Modal Konfirmasi Barang Masuk --}}
+    <div class="modal-confirm-overlay" id="modalKonfirmasi">
+        <div class="modal-confirm-box">
+            <div class="modal-confirm-header">
+                <div class="modal-confirm-icon">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+                <h5>Konfirmasi Barang Masuk?</h5>
+            </div>
+            <div class="modal-confirm-body">
+                <p class="modal-confirm-message">
+                    Setelah dikonfirmasi, barang akan masuk ke stok dan tidak bisa dikembalikan.
+                </p>
+                <div class="modal-confirm-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Nama Barang:</span>
+                        <span class="detail-value" id="konfirmasiNama">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Kode Barang:</span>
+                        <span class="detail-value" id="konfirmasiKode">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Jumlah:</span>
+                        <span class="detail-value" id="konfirmasiJumlah">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Harga Satuan:</span>
+                        <span class="detail-value" id="konfirmasiHarga">-</span>
+                    </div>
+                    <div class="detail-row" style="border-top: 2px solid #dee2e6; padding-top: 12px; margin-top: 8px;">
+                        <span class="detail-label" style="font-size: 15px; color: #212529;">Total Harga:</span>
+                        <span class="detail-value" id="konfirmasiTotalHarga" style="font-size: 15px; color: #28a745; font-weight: 800;">-</span>
+                    </div>
+                </div>
+                <div class="modal-confirm-warning">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <div class="modal-confirm-warning-text">
+                        <strong>Perhatian!</strong><br>
+                        Pastikan barang sudah diterima dengan baik sebelum melakukan konfirmasi.
+                    </div>
+                </div>
+                <div class="modal-confirm-actions">
+                    <button type="button" class="btn-confirm-cancel" onclick="closeKonfirmasiModal()">
+                        Batal
+                    </button>
+                    <button type="button" class="btn-confirm-ok" id="btnKonfirmasiOk">
+                        Konfirmasi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Modal Kembalikan Barang --}}
+    <div class="modal-confirm-overlay" id="modalKembalikan">
+        <div class="modal-confirm-box">
+            <div class="modal-confirm-header modal-return-header">
+                <div class="modal-confirm-icon modal-return-icon">
+                    <i class="bi bi-arrow-left-circle-fill"></i>
+                </div>
+                <h5>Kembalikan Barang?</h5>
+            </div>
+            <div class="modal-confirm-body">
+                <p class="modal-confirm-message">
+                    Barang akan dikembalikan ke PB Stok dan akan dihapus dari daftar barang masuk.
+                </p>
+                <div class="modal-confirm-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Nama Barang:</span>
+                        <span class="detail-value" id="kembalikanNama">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Jumlah:</span>
+                        <span class="detail-value" id="kembalikanJumlah">-</span>
+                    </div>
+                </div>
+                <div class="modal-confirm-warning">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <div class="modal-confirm-warning-text">
+                        <strong>Perhatian!</strong><br>
+                        Barang yang dikembalikan akan kembali ke PB Stok untuk didistribusikan ulang.
+                    </div>
+                </div>
+                <div class="modal-confirm-actions">
+                    <button type="button" class="btn-confirm-cancel" onclick="closeKembalikanModal()">
+                        Batal
+                    </button>
+                    <button type="button" class="btn-confirm-ok btn-return-ok" id="btnKembalikanOk">
+                        Kembalikan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal Barang Keluar -->
     <div class="modal fade" id="modalBarangKeluar" tabindex="-1">
@@ -633,6 +934,117 @@
                 }
             }
 
+            // Modal Konfirmasi Functions
+            let currentKonfirmasiId = null;
+            let currentKembalikanId = null;
+
+            function closeKonfirmasiModal() {
+                document.getElementById('modalKonfirmasi').classList.remove('show');
+                currentKonfirmasiId = null;
+            }
+
+            function closeKembalikanModal() {
+                document.getElementById('modalKembalikan').classList.remove('show');
+                currentKembalikanId = null;
+            }
+
+            // Close modal when clicking overlay
+            document.getElementById('modalKonfirmasi')?.addEventListener('click', function(e) {
+                if (e.target === this) closeKonfirmasiModal();
+            });
+
+            document.getElementById('modalKembalikan')?.addEventListener('click', function(e) {
+                if (e.target === this) closeKembalikanModal();
+            });
+
+            // Handle Konfirmasi Button Click - UPDATED dengan harga
+            document.querySelectorAll('.btn-konfirmasi').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.dataset.id;
+                    const nama = this.dataset.nama;
+                    const kode = this.dataset.kode;
+                    const jumlah = parseFloat(this.dataset.jumlah);
+                    const satuan = this.dataset.satuan;
+                    const harga = parseFloat(this.dataset.harga || 0);
+
+                    currentKonfirmasiId = id;
+                    
+                    // Format harga dengan pemisah ribuan
+                    const formatRupiah = (angka) => {
+                        return new Intl.NumberFormat('id-ID', {
+                            style: 'currency',
+                            currency: 'IDR',
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 0
+                        }).format(angka);
+                    };
+
+                    // Hitung total harga
+                    const totalHarga = jumlah * harga;
+
+                    // Update modal content
+                    document.getElementById('konfirmasiNama').textContent = nama;
+                    document.getElementById('konfirmasiKode').textContent = kode;
+                    document.getElementById('konfirmasiJumlah').textContent = `${jumlah} ${satuan}`;
+                    document.getElementById('konfirmasiHarga').textContent = formatRupiah(harga);
+                    document.getElementById('konfirmasiTotalHarga').textContent = formatRupiah(totalHarga);
+                    
+                    document.getElementById('modalKonfirmasi').classList.add('show');
+                });
+            });
+
+            // Handle Kembalikan Button Click
+            document.querySelectorAll('.btn-kembalikan').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.dataset.id;
+                    const nama = this.dataset.nama;
+                    const jumlah = this.dataset.jumlah;
+                    const satuan = this.dataset.satuan;
+
+                    currentKembalikanId = id;
+                    document.getElementById('kembalikanNama').textContent = nama;
+                    document.getElementById('kembalikanJumlah').textContent = `${jumlah} ${satuan}`;
+                    
+                    document.getElementById('modalKembalikan').classList.add('show');
+                });
+            });
+
+            // Handle Konfirmasi OK Button
+            document.getElementById('btnKonfirmasiOk')?.addEventListener('click', function() {
+                if (currentKonfirmasiId) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/pj/konfirmasi-barang-masuk/${currentKonfirmasiId}`;
+                    
+                    const csrf = document.createElement('input');
+                    csrf.type = 'hidden';
+                    csrf.name = '_token';
+                    csrf.value = '{{ csrf_token() }}';
+                    form.appendChild(csrf);
+                    
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+
+            // Handle Kembalikan OK Button
+            document.getElementById('btnKembalikanOk')?.addEventListener('click', function() {
+                if (currentKembalikanId) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/pj/kembalikan-barang/${currentKembalikanId}`;
+                    
+                    const csrf = document.createElement('input');
+                    csrf.type = 'hidden';
+                    csrf.name = '_token';
+                    csrf.value = '{{ csrf_token() }}';
+                    form.appendChild(csrf);
+                    
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+
             // Autocomplete search functionality
             document.addEventListener('DOMContentLoaded', function () {
                 const searchInput = document.getElementById('searchInput');
@@ -675,15 +1087,15 @@
                             item.stock_status === 'low' ? 'Sedikit' : 'Tersedia';
 
                         html += `
-                                                                                    <div class="search-suggestion-item" data-index="${index}">
-                                                                                        <div class="suggestion-name">${item.nama}</div>
-                                                                                        <div class="suggestion-code">Kode: ${item.kode}</div>
-                                                                                        <div class="suggestion-meta">
-                                                                                            <small>Kategori: ${item.kategori} | Stok: ${item.stok} |
-                                                                                            <span class="stock-status ${stockStatusClass}">${stockText}</span></small>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                `;
+                            <div class="search-suggestion-item" data-index="${index}">
+                                <div class="suggestion-name">${item.nama}</div>
+                                <div class="suggestion-code">Kode: ${item.kode}</div>
+                                <div class="suggestion-meta">
+                                    <small>Kategori: ${item.kategori} | Stok: ${item.stok} |
+                                    <span class="stock-status ${stockStatusClass}">${stockText}</span></small>
+                                </div>
+                            </div>
+                        `;
                     });
 
                     suggestionsContainer.innerHTML = html;

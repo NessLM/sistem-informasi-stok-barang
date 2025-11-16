@@ -90,7 +90,10 @@ class DataKeseluruhan extends Controller
                 'kategori' => (object) ['nama' => $i->kategori_nama],
             ])->values();
 
-            // Ambil data barang masuk dari transaksi_distribusi dengan status
+            // Ambil data barang masuk dari transaksi_distribusi dengan status dan harga dari pb_stok
+            // Ambil data barang masuk dari transaksi_distribusi dengan status dan harga dari pb_stok
+            // Ambil data barang masuk dari transaksi_distribusi dengan status dan harga
+            // Ambil data barang masuk dari transaksi_distribusi dengan status dan harga
             $barangMasuk = DB::table('transaksi_distribusi')
                 ->join('barang', 'transaksi_distribusi.kode_barang', '=', 'barang.kode_barang')
                 ->where('transaksi_distribusi.bagian_id', $gudang->id)
@@ -104,6 +107,7 @@ class DataKeseluruhan extends Controller
                     'barang.satuan',
                     'transaksi_distribusi.keterangan',
                     'transaksi_distribusi.bukti',
+                    DB::raw("COALESCE(transaksi_distribusi.harga, 0) as harga"),
                     DB::raw("COALESCE(transaksi_distribusi.status_konfirmasi, 'pending') as status_konfirmasi")
                 )
                 ->limit(50)
