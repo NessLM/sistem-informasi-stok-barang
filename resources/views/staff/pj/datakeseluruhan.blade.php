@@ -19,253 +19,7 @@
 
     @push('styles')
         <link rel="stylesheet" href="{{ asset('assets/css/staff/pj/data_keseluruhan_pj.css') }}">
-        <style>
-            .row-low-stock {
-                background-color: #ffcccc !important;
-                border-left: 4px solid #fd7e14 !important;
-            }
 
-            .incoming-card {
-                border-left: 4px solid #28a745;
-            }
-
-            .incoming-card .card-body {
-                background-color: #f8f9fa;
-            }
-
-            .btn-return {
-                background-color: #ffc107;
-                border-color: #ffc107;
-                color: #000;
-            }
-
-            .btn-return:hover {
-                background-color: #e0a800;
-                border-color: #d39e00;
-                color: #000;
-            }
-
-            .badge-normal {
-                font-weight: normal !important;
-            }
-
-            /* Modal Konfirmasi Barang Masuk - Modern Style */
-            .modal-confirm-overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0, 0, 0, 0.6);
-                backdrop-filter: blur(4px);
-                z-index: 9999;
-                display: none;
-                align-items: center;
-                justify-content: center;
-                animation: fadeIn 0.3s ease;
-            }
-
-            .modal-confirm-overlay.show {
-                display: flex;
-            }
-
-            @keyframes fadeIn {
-                from {
-                    opacity: 0;
-                }
-                to {
-                    opacity: 1;
-                }
-            }
-
-            @keyframes slideUp {
-                from {
-                    transform: translateY(30px);
-                    opacity: 0;
-                }
-                to {
-                    transform: translateY(0);
-                    opacity: 1;
-                }
-            }
-
-            .modal-confirm-box {
-                background: #fff;
-                border-radius: 20px;
-                max-width: 480px;
-                width: 90%;
-                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-                overflow: hidden;
-                animation: slideUp 0.4s ease;
-            }
-
-            .modal-confirm-header {
-                background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-                padding: 32px 28px;
-                text-align: center;
-                position: relative;
-            }
-
-            .modal-confirm-icon {
-                width: 72px;
-                height: 72px;
-                background: rgba(255, 255, 255, 0.95);
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                margin: 0 auto 16px;
-                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-            }
-
-            .modal-confirm-icon i {
-                font-size: 36px;
-                color: #28a745;
-            }
-
-            .modal-confirm-header h5 {
-                color: #fff;
-                font-weight: 700;
-                font-size: 24px;
-                margin: 0;
-                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            }
-
-            .modal-confirm-body {
-                padding: 32px 28px;
-            }
-
-            .modal-confirm-message {
-                color: #495057;
-                font-size: 16px;
-                line-height: 1.6;
-                margin-bottom: 24px;
-                text-align: center;
-            }
-
-            .modal-confirm-details {
-                background: #f8f9fa;
-                border-radius: 12px;
-                padding: 20px;
-                margin-bottom: 24px;
-                border: 1px solid #e9ecef;
-            }
-
-            .modal-confirm-details .detail-row {
-                display: flex;
-                justify-content: space-between;
-                padding: 10px 0;
-                border-bottom: 1px solid #dee2e6;
-            }
-
-            .modal-confirm-details .detail-row:last-child {
-                border-bottom: none;
-            }
-
-            .modal-confirm-details .detail-label {
-                font-weight: 600;
-                color: #6c757d;
-                font-size: 14px;
-            }
-
-            .modal-confirm-details .detail-value {
-                font-weight: 700;
-                color: #212529;
-                font-size: 14px;
-                text-align: right;
-            }
-
-            .modal-confirm-warning {
-                background: #fff3cd;
-                border: 1px solid #ffc107;
-                border-radius: 10px;
-                padding: 16px;
-                margin-bottom: 24px;
-                display: flex;
-                gap: 12px;
-                align-items: start;
-            }
-
-            .modal-confirm-warning i {
-                color: #ff6b35;
-                font-size: 20px;
-                margin-top: 2px;
-            }
-
-            .modal-confirm-warning-text {
-                color: #856404;
-                font-size: 14px;
-                line-height: 1.5;
-                flex: 1;
-            }
-
-            .modal-confirm-actions {
-                display: flex;
-                gap: 12px;
-            }
-
-            .modal-confirm-actions button {
-                flex: 1;
-                padding: 14px 24px;
-                font-size: 16px;
-                font-weight: 600;
-                border: none;
-                border-radius: 12px;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-            }
-
-            .btn-confirm-cancel {
-                background: #f8f9fa;
-                color: #6c757d;
-                border: 2px solid #dee2e6;
-            }
-
-            .btn-confirm-cancel:hover {
-                background: #e9ecef;
-                border-color: #adb5bd;
-                color: #495057;
-                transform: translateY(-2px);
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            }
-
-            .btn-confirm-ok {
-                background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-                color: #fff;
-                box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
-            }
-
-            .btn-confirm-ok:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
-            }
-
-            .btn-confirm-ok:active {
-                transform: translateY(0);
-            }
-
-            /* Modal Kembalikan Barang - Warning Style */
-            .modal-return-header {
-                background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
-            }
-
-            .modal-return-icon i {
-                color: #ffc107;
-            }
-
-            .btn-return-ok {
-                background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
-                color: #000;
-                box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
-            }
-
-            .btn-return-ok:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 6px 20px rgba(255, 193, 7, 0.4);
-            }
-        </style>
     @endpush
 
     <main class="page-wrap container py-4">
@@ -277,29 +31,28 @@
                 $bgColor = $isSuccess ? '#28a745' : '#dc3545';
                 $iconClass = $isSuccess ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill';
             @endphp
-            
-            <div id="toast-notif"
-                style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-20px);
-                       z-index: 2000; display: flex; justify-content: center; pointer-events: none;
-                       animation: slideDown 0.4s ease-out forwards;">
 
-                <div class="toast-message"
-                    style="background: #fff; border-radius: 16px; padding: 18px 24px;
-                           box-shadow: 0 8px 24px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.1);
-                           text-align: left; min-width: 320px; max-width: 420px;
-                           border-left: 5px solid {{ $bgColor }};
-                           transition: all 0.3s ease;
-                           display: flex; align-items: center; gap: 14px;">
+            <div id="toast-notif" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-20px);
+                                                       z-index: 2000; display: flex; justify-content: center; pointer-events: none;
+                                                       animation: slideDown 0.4s ease-out forwards;">
 
-                    <div style="flex-shrink: 0; width: 42px; height: 42px; border-radius: 50%;
-                               background: {{ $bgColor }}; display: flex; align-items: center;
-                               justify-content: center; box-shadow: 0 2px 8px {{ $bgColor }}40;">
+                <div class="toast-message" style="background: #fff; border-radius: 16px; padding: 18px 24px;
+                                                           box-shadow: 0 8px 24px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.1);
+                                                           text-align: left; min-width: 320px; max-width: 420px;
+                                                           border-left: 5px solid {{ $bgColor }};
+                                                           transition: all 0.3s ease;
+                                                           display: flex; align-items: center; gap: 14px;">
+
+                    <div
+                        style="flex-shrink: 0; width: 42px; height: 42px; border-radius: 50%;
+                                                               background: {{ $bgColor }}; display: flex; align-items: center;
+                                                               justify-content: center; box-shadow: 0 2px 8px {{ $bgColor }}40;">
                         <i class="bi {{ $iconClass }}" style="color: #fff; font-size: 22px;"></i>
                     </div>
 
                     <div style="flex: 1;">
                         <div style="font-weight: 600; font-size: 16px; margin-bottom: 4px;
-                                   color: #1a1a1a; line-height: 1.3;">
+                                                                   color: #1a1a1a; line-height: 1.3;">
                             {{ session('toast.title') }}
                         </div>
                         <div style="color: #666; font-size: 14px; line-height: 1.5;">
@@ -307,12 +60,12 @@
                         </div>
                     </div>
 
-                    <button onclick="closeToast()" 
-                            style="flex-shrink: 0; background: none; border: none; 
-                                   color: #999; cursor: pointer; padding: 4px; 
-                                   border-radius: 4px; transition: all 0.2s;
-                                   pointer-events: all; width: 24px; height: 24px;
-                                   display: flex; align-items: center; justify-content: center;">
+                    <button onclick="closeToast()"
+                        style="flex-shrink: 0; background: none; border: none; 
+                                                                   color: #999; cursor: pointer; padding: 4px; 
+                                                                   border-radius: 4px; transition: all 0.2s;
+                                                                   pointer-events: all; width: 24px; height: 24px;
+                                                                   display: flex; align-items: center; justify-content: center;">
                         <i class="bi bi-x-lg" style="font-size: 14px;"></i>
                     </button>
                 </div>
@@ -324,6 +77,7 @@
                         transform: translateX(-50%) translateY(-20px);
                         opacity: 0;
                     }
+
                     to {
                         transform: translateX(-50%) translateY(0);
                         opacity: 1;
@@ -335,6 +89,7 @@
                         transform: translateX(-50%) translateY(0);
                         opacity: 1;
                     }
+
                     to {
                         transform: translateX(-50%) translateY(-20px);
                         opacity: 0;
@@ -666,21 +421,16 @@
                                                 @if($status === 'pending')
                                                     {{-- Tombol Konfirmasi dengan Modal - TAMBAHKAN data-harga --}}
                                                     <button type="button" class="btn btn-sm btn-success w-100 btn-konfirmasi"
-                                                        data-id="{{ $item->id }}"
-                                                        data-nama="{{ $item->nama_barang }}"
-                                                        data-jumlah="{{ $item->jumlah }}"
-                                                        data-satuan="{{ $item->satuan }}"
-                                                        data-kode="{{ $item->kode_barang }}"
-                                                        data-harga="{{ $item->harga ?? 0 }}">
+                                                        data-id="{{ $item->id }}" data-nama="{{ $item->nama_barang }}"
+                                                        data-jumlah="{{ $item->jumlah }}" data-satuan="{{ $item->satuan }}"
+                                                        data-kode="{{ $item->kode_barang }}" data-harga="{{ $item->harga ?? 0 }}">
                                                         <i class="bi bi-check-circle"></i> Konfirmasi
                                                     </button>
 
                                                     {{-- Tombol Kembalikan dengan Modal --}}
                                                     <button type="button" class="btn btn-sm btn-return w-100 btn-kembalikan"
-                                                        data-id="{{ $item->id }}"
-                                                        data-nama="{{ $item->nama_barang }}"
-                                                        data-jumlah="{{ $item->jumlah }}"
-                                                        data-satuan="{{ $item->satuan }}">
+                                                        data-id="{{ $item->id }}" data-nama="{{ $item->nama_barang }}"
+                                                        data-jumlah="{{ $item->jumlah }}" data-satuan="{{ $item->satuan }}">
                                                         <i class="bi bi-arrow-left-circle"></i> Kembalikan
                                                     </button>
                                                 @else
@@ -702,96 +452,125 @@
     </main>
 
     {{-- Modal Konfirmasi Barang Masuk --}}
-    <div class="modal-confirm-overlay" id="modalKonfirmasi">
-        <div class="modal-confirm-box">
-            <div class="modal-confirm-header">
-                <div class="modal-confirm-icon">
-                    <i class="bi bi-check-circle-fill"></i>
+    <div class="modal fade" id="modalKonfirmasi" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-md">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <h5>Konfirmasi Barang Masuk?</h5>
-            </div>
-            <div class="modal-confirm-body">
-                <p class="modal-confirm-message">
-                    Setelah dikonfirmasi, barang akan masuk ke stok dan tidak bisa dikembalikan.
-                </p>
-                <div class="modal-confirm-details">
-                    <div class="detail-row">
-                        <span class="detail-label">Nama Barang:</span>
-                        <span class="detail-value" id="konfirmasiNama">-</span>
+
+                <div class="modal-body text-center pt-0">
+                    {{-- Icon --}}
+                    <div class="mb-3">
+                        <div class="modal-confirm-icon mx-auto"
+                            style="width: 64px; height: 64px; background: #d4edda; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-check-circle-fill" style="font-size: 32px; color: #28a745;"></i>
+                        </div>
                     </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Kode Barang:</span>
-                        <span class="detail-value" id="konfirmasiKode">-</span>
+
+                    {{-- Title --}}
+                    <h5 class="mb-3" style="font-weight: 600;">Konfirmasi Barang Masuk?</h5>
+
+                    {{-- Message --}}
+                    <p class="text-muted mb-4">
+                        Setelah dikonfirmasi, barang akan masuk ke stok dan tidak bisa dikembalikan.
+                    </p>
+
+                    {{-- Details Box --}}
+                    <div class="border rounded p-3 mb-4 text-start" style="background: #f8f9fa;">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span style="color: #495057; font-weight: 500;">Nama Barang:</span>
+                            <span style="color: #212529; font-weight: 600;" id="konfirmasiNama">-</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span style="color: #495057; font-weight: 500;">Kode Barang:</span>
+                            <span style="color: #212529; font-weight: 600;" id="konfirmasiKode">-</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span style="color: #495057; font-weight: 500;">Jumlah:</span>
+                            <span style="color: #212529; font-weight: 600;" id="konfirmasiJumlah">-</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span style="color: #495057; font-weight: 500;">Harga Satuan:</span>
+                            <span style="color: #212529; font-weight: 600;" id="konfirmasiHarga">-</span>
+                        </div>
+                        <hr class="my-2">
                     </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Jumlah:</span>
-                        <span class="detail-value" id="konfirmasiJumlah">-</span>
+
+                    {{-- Warning Alert --}}
+                    <div class="alert alert-warning d-flex align-items-start text-start mb-4">
+                        <i class="bi bi-exclamation-triangle-fill me-2 flex-shrink-0" style="font-size: 20px;"></i>
+                        <div>
+                            <strong>Perhatian!</strong><br>
+                            Pastikan barang sudah diterima dengan baik sebelum melakukan konfirmasi.
+                        </div>
                     </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Harga Satuan:</span>
-                        <span class="detail-value" id="konfirmasiHarga">-</span>
+
+                    {{-- Action Buttons --}}
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Batal</button>
+                        <button type="button" class="btn btn-success px-4" id="btnKonfirmasiOk">
+                            <i class="bi bi-check-circle me-1"></i> Konfirmasi
+                        </button>
                     </div>
-                    <div class="detail-row" style="border-top: 2px solid #dee2e6; padding-top: 12px; margin-top: 8px;">
-                        <span class="detail-label" style="font-size: 15px; color: #212529;">Total Harga:</span>
-                        <span class="detail-value" id="konfirmasiTotalHarga" style="font-size: 15px; color: #28a745; font-weight: 800;">-</span>
-                    </div>
-                </div>
-                <div class="modal-confirm-warning">
-                    <i class="bi bi-exclamation-triangle-fill"></i>
-                    <div class="modal-confirm-warning-text">
-                        <strong>Perhatian!</strong><br>
-                        Pastikan barang sudah diterima dengan baik sebelum melakukan konfirmasi.
-                    </div>
-                </div>
-                <div class="modal-confirm-actions">
-                    <button type="button" class="btn-confirm-cancel" onclick="closeKonfirmasiModal()">
-                        Batal
-                    </button>
-                    <button type="button" class="btn-confirm-ok" id="btnKonfirmasiOk">
-                        Konfirmasi
-                    </button>
                 </div>
             </div>
         </div>
     </div>
 
     {{-- Modal Kembalikan Barang --}}
-    <div class="modal-confirm-overlay" id="modalKembalikan">
-        <div class="modal-confirm-box">
-            <div class="modal-confirm-header modal-return-header">
-                <div class="modal-confirm-icon modal-return-icon">
-                    <i class="bi bi-arrow-left-circle-fill"></i>
+    <div class="modal fade" id="modalKembalikan" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-md">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <h5>Kembalikan Barang?</h5>
-            </div>
-            <div class="modal-confirm-body">
-                <p class="modal-confirm-message">
-                    Barang akan dikembalikan ke PB Stok dan akan dihapus dari daftar barang masuk.
-                </p>
-                <div class="modal-confirm-details">
-                    <div class="detail-row">
-                        <span class="detail-label">Nama Barang:</span>
-                        <span class="detail-value" id="kembalikanNama">-</span>
+
+                <div class="modal-body text-center pt-0">
+                    {{-- Icon --}}
+                    <div class="mb-3">
+                        <div class="modal-confirm-icon mx-auto"
+                            style="width: 64px; height: 64px; background: #fff3cd; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-arrow-left-circle-fill" style="font-size: 32px; color: #ffc107;"></i>
+                        </div>
                     </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Jumlah:</span>
-                        <span class="detail-value" id="kembalikanJumlah">-</span>
+
+                    {{-- Title --}}
+                    <h5 class="mb-3" style="font-weight: 600;">Kembalikan Barang?</h5>
+
+                    {{-- Message --}}
+                    <p class="text-muted mb-4">
+                        Barang akan dikembalikan ke PB Stok dan akan dihapus dari daftar barang masuk.
+                    </p>
+
+                    {{-- Details Box --}}
+                    <div class="border rounded p-3 mb-4 text-start" style="background: #f8f9fa;">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span style="color: #495057; font-weight: 500;">Nama Barang:</span>
+                            <span style="color: #212529; font-weight: 600;" id="kembalikanNama">-</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span style="color: #495057; font-weight: 500;">Jumlah:</span>
+                            <span style="color: #212529; font-weight: 600;" id="kembalikanJumlah">-</span>
+                        </div>
                     </div>
-                </div>
-                <div class="modal-confirm-warning">
-                    <i class="bi bi-exclamation-triangle-fill"></i>
-                    <div class="modal-confirm-warning-text">
-                        <strong>Perhatian!</strong><br>
-                        Barang yang dikembalikan akan kembali ke PB Stok untuk didistribusikan ulang.
+
+                    {{-- Warning Alert --}}
+                    <div class="alert alert-warning d-flex align-items-start text-start mb-4">
+                        <i class="bi bi-exclamation-triangle-fill me-2 flex-shrink-0" style="font-size: 20px;"></i>
+                        <div>
+                            <strong>Perhatian!</strong><br>
+                            Barang yang dikembalikan akan kembali ke PB Stok untuk didistribusikan ulang.
+                        </div>
                     </div>
-                </div>
-                <div class="modal-confirm-actions">
-                    <button type="button" class="btn-confirm-cancel" onclick="closeKembalikanModal()">
-                        Batal
-                    </button>
-                    <button type="button" class="btn-confirm-ok btn-return-ok" id="btnKembalikanOk">
-                        Kembalikan
-                    </button>
+
+                    {{-- Action Buttons --}}
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Batal</button>
+                        <button type="button" class="btn btn-warning px-4" id="btnKembalikanOk">
+                            <i class="bi bi-arrow-left-circle me-1"></i> Kembalikan
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -934,112 +713,150 @@
                 }
             }
 
-            // Modal Konfirmasi Functions
+            // Variables untuk menyimpan ID
             let currentKonfirmasiId = null;
             let currentKembalikanId = null;
+            let modalKonfirmasiBS = null;
+            let modalKembalikanBS = null;
 
-            function closeKonfirmasiModal() {
-                document.getElementById('modalKonfirmasi').classList.remove('show');
-                currentKonfirmasiId = null;
-            }
+            // Initialize Bootstrap Modals setelah DOM ready
+            document.addEventListener('DOMContentLoaded', function () {
+                // Initialize Modal Konfirmasi
+                const modalKonfirmasiEl = document.getElementById('modalKonfirmasi');
+                if (modalKonfirmasiEl) {
+                    modalKonfirmasiBS = new bootstrap.Modal(modalKonfirmasiEl);
+                }
 
-            function closeKembalikanModal() {
-                document.getElementById('modalKembalikan').classList.remove('show');
-                currentKembalikanId = null;
-            }
+                // Initialize Modal Kembalikan
+                const modalKembalikanEl = document.getElementById('modalKembalikan');
+                if (modalKembalikanEl) {
+                    modalKembalikanBS = new bootstrap.Modal(modalKembalikanEl);
+                }
 
-            // Close modal when clicking overlay
-            document.getElementById('modalKonfirmasi')?.addEventListener('click', function(e) {
-                if (e.target === this) closeKonfirmasiModal();
-            });
+                // Handle Konfirmasi Button Click
+                document.querySelectorAll('.btn-konfirmasi').forEach(btn => {
+                    btn.addEventListener('click', function () {
+                        const id = this.dataset.id;
+                        const nama = this.dataset.nama;
+                        const kode = this.dataset.kode;
+                        const jumlah = parseFloat(this.dataset.jumlah);
+                        const satuan = this.dataset.satuan;
+                        const harga = parseFloat(this.dataset.harga || 0);
 
-            document.getElementById('modalKembalikan')?.addEventListener('click', function(e) {
-                if (e.target === this) closeKembalikanModal();
-            });
+                        currentKonfirmasiId = id;
 
-            // Handle Konfirmasi Button Click - UPDATED dengan harga
-            document.querySelectorAll('.btn-konfirmasi').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const id = this.dataset.id;
-                    const nama = this.dataset.nama;
-                    const kode = this.dataset.kode;
-                    const jumlah = parseFloat(this.dataset.jumlah);
-                    const satuan = this.dataset.satuan;
-                    const harga = parseFloat(this.dataset.harga || 0);
+                        // Format harga dengan pemisah ribuan
+                        const formatRupiah = (angka) => {
+                            return new Intl.NumberFormat('id-ID', {
+                                style: 'currency',
+                                currency: 'IDR',
+                                minimumFractionDigits: 0,
+                                maximumFractionDigits: 0
+                            }).format(angka);
+                        };
 
-                    currentKonfirmasiId = id;
-                    
-                    // Format harga dengan pemisah ribuan
-                    const formatRupiah = (angka) => {
-                        return new Intl.NumberFormat('id-ID', {
-                            style: 'currency',
-                            currency: 'IDR',
-                            minimumFractionDigits: 0,
-                            maximumFractionDigits: 0
-                        }).format(angka);
-                    };
+                        // Update modal content
+                        document.getElementById('konfirmasiNama').textContent = nama;
+                        document.getElementById('konfirmasiKode').textContent = kode;
+                        document.getElementById('konfirmasiJumlah').textContent = `${jumlah} ${satuan}`;
+                        document.getElementById('konfirmasiHarga').textContent = formatRupiah(harga);
 
-                    // Hitung total harga
-                    const totalHarga = jumlah * harga;
-
-                    // Update modal content
-                    document.getElementById('konfirmasiNama').textContent = nama;
-                    document.getElementById('konfirmasiKode').textContent = kode;
-                    document.getElementById('konfirmasiJumlah').textContent = `${jumlah} ${satuan}`;
-                    document.getElementById('konfirmasiHarga').textContent = formatRupiah(harga);
-                    document.getElementById('konfirmasiTotalHarga').textContent = formatRupiah(totalHarga);
-                    
-                    document.getElementById('modalKonfirmasi').classList.add('show');
+                        // Tampilkan modal dengan Bootstrap
+                        if (modalKonfirmasiBS) {
+                            modalKonfirmasiBS.show();
+                        }
+                    });
                 });
-            });
 
-            // Handle Kembalikan Button Click
-            document.querySelectorAll('.btn-kembalikan').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const id = this.dataset.id;
-                    const nama = this.dataset.nama;
-                    const jumlah = this.dataset.jumlah;
-                    const satuan = this.dataset.satuan;
+                // Handle Kembalikan Button Click
+                document.querySelectorAll('.btn-kembalikan').forEach(btn => {
+                    btn.addEventListener('click', function () {
+                        const id = this.dataset.id;
+                        const nama = this.dataset.nama;
+                        const jumlah = this.dataset.jumlah;
+                        const satuan = this.dataset.satuan;
 
-                    currentKembalikanId = id;
-                    document.getElementById('kembalikanNama').textContent = nama;
-                    document.getElementById('kembalikanJumlah').textContent = `${jumlah} ${satuan}`;
-                    
-                    document.getElementById('modalKembalikan').classList.add('show');
+                        currentKembalikanId = id;
+                        document.getElementById('kembalikanNama').textContent = nama;
+                        document.getElementById('kembalikanJumlah').textContent = `${jumlah} ${satuan}`;
+
+                        // Tampilkan modal dengan Bootstrap
+                        if (modalKembalikanBS) {
+                            modalKembalikanBS.show();
+                        }
+                    });
                 });
+
+                // Handle Konfirmasi OK Button
+                document.getElementById('btnKonfirmasiOk')?.addEventListener('click', function () {
+                    if (currentKonfirmasiId) {
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = `/pj/konfirmasi-barang-masuk/${currentKonfirmasiId}`;
+
+                        const csrf = document.createElement('input');
+                        csrf.type = 'hidden';
+                        csrf.name = '_token';
+                        csrf.value = '{{ csrf_token() }}';
+                        form.appendChild(csrf);
+
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                });
+
+                // Handle Kembalikan OK Button
+                document.getElementById('btnKembalikanOk')?.addEventListener('click', function () {
+                    if (currentKembalikanId) {
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = `/pj/kembalikan-barang/${currentKembalikanId}`;
+
+                        const csrf = document.createElement('input');
+                        csrf.type = 'hidden';
+                        csrf.name = '_token';
+                        csrf.value = '{{ csrf_token() }}';
+                        form.appendChild(csrf);
+
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                });
+
+                // ... sisanya autocomplete code tetap sama
             });
 
             // Handle Konfirmasi OK Button
-            document.getElementById('btnKonfirmasiOk')?.addEventListener('click', function() {
+            document.getElementById('btnKonfirmasiOk')?.addEventListener('click', function () {
                 if (currentKonfirmasiId) {
                     const form = document.createElement('form');
                     form.method = 'POST';
                     form.action = `/pj/konfirmasi-barang-masuk/${currentKonfirmasiId}`;
-                    
+
                     const csrf = document.createElement('input');
                     csrf.type = 'hidden';
                     csrf.name = '_token';
                     csrf.value = '{{ csrf_token() }}';
                     form.appendChild(csrf);
-                    
+
                     document.body.appendChild(form);
                     form.submit();
                 }
             });
 
             // Handle Kembalikan OK Button
-            document.getElementById('btnKembalikanOk')?.addEventListener('click', function() {
+            document.getElementById('btnKembalikanOk')?.addEventListener('click', function () {
                 if (currentKembalikanId) {
                     const form = document.createElement('form');
                     form.method = 'POST';
                     form.action = `/pj/kembalikan-barang/${currentKembalikanId}`;
-                    
+
                     const csrf = document.createElement('input');
                     csrf.type = 'hidden';
                     csrf.name = '_token';
                     csrf.value = '{{ csrf_token() }}';
                     form.appendChild(csrf);
-                    
+
                     document.body.appendChild(form);
                     form.submit();
                 }
@@ -1087,15 +904,15 @@
                             item.stock_status === 'low' ? 'Sedikit' : 'Tersedia';
 
                         html += `
-                            <div class="search-suggestion-item" data-index="${index}">
-                                <div class="suggestion-name">${item.nama}</div>
-                                <div class="suggestion-code">Kode: ${item.kode}</div>
-                                <div class="suggestion-meta">
-                                    <small>Kategori: ${item.kategori} | Stok: ${item.stok} |
-                                    <span class="stock-status ${stockStatusClass}">${stockText}</span></small>
-                                </div>
-                            </div>
-                        `;
+                                                            <div class="search-suggestion-item" data-index="${index}">
+                                                                <div class="suggestion-name">${item.nama}</div>
+                                                                <div class="suggestion-code">Kode: ${item.kode}</div>
+                                                                <div class="suggestion-meta">
+                                                                    <small>Kategori: ${item.kategori} | Stok: ${item.stok} |
+                                                                    <span class="stock-status ${stockStatusClass}">${stockText}</span></small>
+                                                                </div>
+                                                            </div>
+                                                        `;
                     });
 
                     suggestionsContainer.innerHTML = html;

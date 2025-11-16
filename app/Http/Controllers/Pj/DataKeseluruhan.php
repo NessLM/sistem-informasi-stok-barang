@@ -91,8 +91,6 @@ class DataKeseluruhan extends Controller
             ])->values();
 
             // Ambil data barang masuk dari transaksi_distribusi dengan status dan harga dari pb_stok
-            // Ambil data barang masuk dari transaksi_distribusi dengan status dan harga dari pb_stok
-            // Ambil data barang masuk dari transaksi_distribusi dengan status dan harga
             // Ambil data barang masuk dari transaksi_distribusi dengan status dan harga
             $barangMasuk = DB::table('transaksi_distribusi')
                 ->join('barang', 'transaksi_distribusi.kode_barang', '=', 'barang.kode_barang')
@@ -247,6 +245,7 @@ class DataKeseluruhan extends Controller
                     'barang.satuan',
                     'transaksi_distribusi.keterangan',
                     'transaksi_distribusi.bukti',
+                    DB::raw("COALESCE(transaksi_distribusi.harga, 0) as harga"),
                     DB::raw("COALESCE(transaksi_distribusi.status_konfirmasi, 'pending') as status_konfirmasi")
                 )
                 ->limit(50)
@@ -572,7 +571,7 @@ class DataKeseluruhan extends Controller
                 $stokBagian = StokBagian::where('kode_barang', $kodeBarang)
                     ->where('bagian_id', $user->bagian_id)
                     ->where('harga', $transaksi->harga)
-                    ->whereNull('batch_number') // 👈 Cek record tanpa batch (legacy)
+                    ->whereNull('batch_number')
                     ->lockForUpdate()
                     ->first();
 

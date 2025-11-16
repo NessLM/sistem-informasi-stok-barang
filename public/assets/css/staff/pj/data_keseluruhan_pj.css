@@ -1,3 +1,249 @@
+.row-low-stock {
+    background-color: #ffcccc !important;
+    border-left: 4px solid #fd7e14 !important;
+}
+
+.incoming-card {
+    border-left: 4px solid #28a745;
+}
+
+.incoming-card .card-body {
+    background-color: #f8f9fa;
+}
+
+.btn-return {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #000;
+}
+
+.btn-return:hover {
+    background-color: #e0a800;
+    border-color: #d39e00;
+    color: #000;
+}
+
+.badge-normal {
+    font-weight: normal !important;
+}
+
+/* Modal Konfirmasi Barang Masuk - Modern Style */
+.modal-confirm-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 600px;
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-confirm-overlay.show {
+    display: flex;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-confirm-box {
+    background: #fff;
+    border-radius: 20px;
+    max-width: 480px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    animation: slideUp 0.4s ease;
+}
+
+.modal-confirm-header {
+    background: linear-gradient(135deg, #3498db 0%, #2c3e50 80%, #0f2027 100%);
+    padding: 32px 28px;
+    text-align: center;
+    position: relative;
+}
+
+.modal-confirm-icon {
+    width: 72px;
+    height: 72px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.modal-confirm-icon i {
+    font-size: 36px;
+    color: #2c3e50;
+}
+
+.modal-confirm-header h5 {
+    color: #fff;
+    font-weight: 700;
+    font-size: 24px;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.modal-confirm-body {
+    padding: 32px 28px;
+}
+
+.modal-confirm-message {
+    color: #495057;
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.modal-confirm-details {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    border: 1px solid #e9ecef;
+}
+
+.modal-confirm-details .detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.modal-confirm-details .detail-row:last-child {
+    border-bottom: none;
+}
+
+.modal-confirm-details .detail-label {
+    font-weight: 600;
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.modal-confirm-details .detail-value {
+    font-weight: 700;
+    color: #212529;
+    font-size: 14px;
+    text-align: right;
+}
+
+.modal-confirm-warning {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 12px;
+    align-items: start;
+}
+
+.modal-confirm-warning i {
+    color: #ff6b35;
+    font-size: 20px;
+    margin-top: 2px;
+}
+
+.modal-confirm-warning-text {
+    color: #856404;
+    font-size: 14px;
+    line-height: 1.5;
+    flex: 1;
+}
+
+.modal-confirm-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.modal-confirm-actions button {
+    flex: 1;
+    padding: 14px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-confirm-cancel {
+    background: #f8f9fa;
+    color: #6c757d;
+    border: 2px solid #dee2e6;
+}
+
+.btn-confirm-cancel:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+    color: #495057;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn-confirm-ok {
+    background: linear-gradient(135deg, #3498db 0%, #2c3e50 80%, #0f2027 100%);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.btn-confirm-ok:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+}
+
+.btn-confirm-ok:active {
+    transform: translateY(0);
+}
+
+/* Modal Kembalikan Barang - Warning Style */
+.modal-return-header {
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+}
+
+.modal-return-icon i {
+    color: #ffc107;
+}
+
+.btn-return-ok {
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    color: #000;
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+}
+
+.btn-return-ok:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 193, 7, 0.4);
+}
 .search-suggestion-item {
     padding: 12px 16px;
     cursor: pointer;
@@ -87,7 +333,6 @@
 .row-empty {
     background-color: #ffe6e6 !important;
     border-left: 8px solid #dc3545 !important;
-
 }
 .empty-card {
     border-left: 6px solid #dc3545;
