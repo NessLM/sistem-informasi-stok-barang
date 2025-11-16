@@ -132,7 +132,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:Admin'])->grou
     Route::resource('roles', AdminRoleController::class);
 
     // Laporan (invokable)
-    Route::get('/laporan', AdminLaporanController::class)->name('laporan');
+    Route::get('/laporan', [AdminLaporanController::class, 'index'])->name('laporan');
+    Route::get('/laporan/preview/{quarter}/{year}', [AdminLaporanController::class, 'previewLaporan'])
+        ->name('laporan.preview');
 });
 
 // [NEW] Route alias staff.admin.gudang.* untuk backward compatibility
@@ -188,7 +190,6 @@ Route::prefix('pb')->name('pb.')->middleware(['auth', 'role:Pengurus Barang Peng
 
     // Laporan (Controller)
     Route::get('/laporan', PbLaporanController::class)->name('laporan');
-    
 });
 
 
