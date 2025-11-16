@@ -11,9 +11,11 @@ class StokBagian extends Model
 
     protected $table = 'stok_bagian'; // nama tabel sesuai database
     protected $fillable = [
-        'kode_barang',
         'bagian_id',
+        'kode_barang',
+        'batch_number', // 👈 TAMBAHKAN INI
         'stok',
+        'harga',
     ];
 
     public function bagian()

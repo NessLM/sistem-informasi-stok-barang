@@ -24,10 +24,10 @@ class DataKeseluruhan extends Controller
      */
     public function index(Request $request)
     {
-        $menu  = MenuHelper::pjMenu();
-        $user  = Auth::user();
+        $menu = MenuHelper::pjMenu();
+        $user = Auth::user();
 
-        $gudang     = $user->gudang_id ? Gudang::find($user->gudang_id) : null;
+        $gudang = $user->gudang_id ? Gudang::find($user->gudang_id) : null;
         $bagianUser = $user->bagian_id ? Bagian::find($user->bagian_id) : null;
 
         /* =================== MODE GUDANG (legacy) =================== */
@@ -54,7 +54,7 @@ class DataKeseluruhan extends Controller
                     )
                     ->orderBy('barang.nama_barang')
                     ->get()
-                    ->map(fn($i) => (object)[
+                    ->map(fn($i) => (object) [
                         'kode' => $i->kode,
                         'nama' => $i->nama,
                         'satuan' => $i->satuan,
@@ -76,18 +76,18 @@ class DataKeseluruhan extends Controller
                 ->where('pj_stok.id_gudang', $gudang->id)
                 ->select('pj_stok.stok', 'barang.kode_barang', 'barang.nama_barang', 'barang.satuan', 'kategori.nama as kategori_nama')
                 ->get();
-            
+
             $countEmpty = $allRows->where('stok', 0)->count();
-            $countLow   = $allRows->filter(fn($r) => $r->stok > 0 && $r->stok < $lowThreshold)->count();
-            $countOk    = max($allRows->count() - $countEmpty - $countLow, 0);
+            $countLow = $allRows->filter(fn($r) => $r->stok > 0 && $r->stok < $lowThreshold)->count();
+            $countOk = max($allRows->count() - $countEmpty - $countLow, 0);
             $ringkasanCounts = ['ok' => $countOk, 'low' => $countLow, 'empty' => $countEmpty];
 
-            $barangHabis = $allRows->where('stok', 0)->map(fn($i) => (object)[
+            $barangHabis = $allRows->where('stok', 0)->map(fn($i) => (object) [
                 'kode' => $i->kode_barang,
                 'nama' => $i->nama_barang,
                 'satuan' => $i->satuan,
                 'stok_tersedia' => 0,
-                'kategori' => (object)['nama' => $i->kategori_nama],
+                'kategori' => (object) ['nama' => $i->kategori_nama],
             ])->values();
 
             // Ambil data barang masuk dari transaksi_distribusi dengan status
@@ -142,25 +142,25 @@ class DataKeseluruhan extends Controller
                         )
                         ->orderBy('barang.nama_barang')
                         ->get()
-                        ->map(fn($i) => (object)[
+                        ->map(fn($i) => (object) [
                             'kode' => $i->kode,
                             'nama' => $i->nama,
                             'satuan' => $i->satuan,
                             'stok_tersedia' => $i->stok_tersedia,
                             'id_kategori' => $k->id,
                         ]);
-                    
-                    return (object)[
+
+                    return (object) [
                         'id' => $k->id,
                         'nama' => $k->nama,
                         'barang' => $items,
-                        'gudang' => (object)['nama' => 'Bagian ' . $bagianUser->nama],
+                        'gudang' => (object) ['nama' => 'Bagian ' . $bagianUser->nama],
                     ];
                 });
 
             // Spoof gudang untuk blade & kirim $bagian (koleksi) ke view
-            $selectedGudang = (object)['id' => null, 'nama' => 'Bagian ' . $bagianUser->nama];
-            $bagian         = collect([$bagianUser]);
+            $selectedGudang = (object) ['id' => null, 'nama' => 'Bagian ' . $bagianUser->nama];
+            $bagian = collect([$bagianUser]);
 
             // Handle pencarian/filter
             $barang = collect([]);
@@ -178,11 +178,16 @@ class DataKeseluruhan extends Controller
                             ->orWhere('barang.kode_barang', 'like', "%{$s}%");
                     });
                 }
-                if ($request->filled('kode'))        $q->where('barang.kode_barang', 'like', "%{$request->kode}%");
-                if ($request->filled('stok_min'))    $q->where('stok_bagian.stok', '>=', (int)$request->stok_min);
-                if ($request->filled('stok_max'))    $q->where('stok_bagian.stok', '<=', (int)$request->stok_max);
-                if ($request->filled('kategori_id')) $q->where('barang.id_kategori', $request->kategori_id);
-                if ($request->filled('satuan'))      $q->where('barang.satuan', $request->satuan);
+                if ($request->filled('kode'))
+                    $q->where('barang.kode_barang', 'like', "%{$request->kode}%");
+                if ($request->filled('stok_min'))
+                    $q->where('stok_bagian.stok', '>=', (int) $request->stok_min);
+                if ($request->filled('stok_max'))
+                    $q->where('stok_bagian.stok', '<=', (int) $request->stok_max);
+                if ($request->filled('kategori_id'))
+                    $q->where('barang.id_kategori', $request->kategori_id);
+                if ($request->filled('satuan'))
+                    $q->where('barang.satuan', $request->satuan);
 
                 $barang = $q->select(
                     'barang.kode_barang as kode',
@@ -192,13 +197,13 @@ class DataKeseluruhan extends Controller
                     'kategori.nama as kategori_nama',
                     'barang.id_kategori'
                 )->orderBy('barang.nama_barang')->get()
-                    ->map(fn($i) => (object)[
+                    ->map(fn($i) => (object) [
                         'id' => null,
                         'kode' => $i->kode,
                         'nama' => $i->nama,
                         'satuan' => $i->satuan,
                         'stok_tersedia' => $i->stok_tersedia,
-                        'kategori' => (object)['nama' => $i->kategori_nama]
+                        'kategori' => (object) ['nama' => $i->kategori_nama]
                     ]);
             }
 
@@ -210,18 +215,18 @@ class DataKeseluruhan extends Controller
                 ->where('stok_bagian.bagian_id', $bagianUser->id)
                 ->select('stok_bagian.stok', 'barang.kode_barang', 'barang.nama_barang', 'barang.satuan', 'kategori.nama as kategori_nama')
                 ->get();
-            
+
             $countEmpty = $allRows->where('stok', 0)->count();
-            $countLow   = $allRows->filter(fn($r) => $r->stok > 0 && $r->stok < $lowThreshold)->count();
-            $countOk    = max($allRows->count() - $countEmpty - $countLow, 0);
+            $countLow = $allRows->filter(fn($r) => $r->stok > 0 && $r->stok < $lowThreshold)->count();
+            $countOk = max($allRows->count() - $countEmpty - $countLow, 0);
             $ringkasanCounts = ['ok' => $countOk, 'low' => $countLow, 'empty' => $countEmpty];
 
-            $barangHabis = $allRows->where('stok', 0)->map(fn($i) => (object)[
+            $barangHabis = $allRows->where('stok', 0)->map(fn($i) => (object) [
                 'kode' => $i->kode_barang,
                 'nama' => $i->nama_barang,
                 'satuan' => $i->satuan,
                 'stok_tersedia' => 0,
-                'kategori' => (object)['nama' => $i->kategori_nama],
+                'kategori' => (object) ['nama' => $i->kategori_nama],
             ])->values();
 
             // Ambil data barang masuk dari transaksi_distribusi untuk bagian dengan status
@@ -348,17 +353,17 @@ class DataKeseluruhan extends Controller
         Log::info('=== BARANG KELUAR REQUEST ===', ['kode_barang' => $kode_barang, 'all' => $request->all()]);
 
         $validated = $request->validate([
-            'jumlah'        => 'required|integer|min:1',
+            'jumlah' => 'required|integer|min:1',
             'nama_penerima' => 'required|string|max:255',
-            'tanggal'       => 'nullable|date',
-            'bagian_id'     => 'nullable|exists:bagian,id',
-            'keterangan'    => 'nullable|string',
-            'bukti'         => 'nullable|file|mimes:jpeg,jpg,png,pdf|max:2048',
+            'tanggal' => 'nullable|date',
+            'bagian_id' => 'nullable|exists:bagian,id',
+            'keterangan' => 'nullable|string',
+            'bukti' => 'nullable|file|mimes:jpeg,jpg,png,pdf|max:2048',
         ]);
 
         $user = Auth::user();
         $bagianId = $validated['bagian_id'] ?? $user->bagian_id;
-        
+
         if (!$bagianId) {
             return back()->with('toast', [
                 'type' => 'error',
@@ -369,7 +374,7 @@ class DataKeseluruhan extends Controller
 
         $buktiPath = null;
         if ($request->hasFile('bukti')) {
-            $file     = $request->file('bukti');
+            $file = $request->file('bukti');
             $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
             $buktiPath = $file->storeAs('bukti-barang-keluar', $fileName, 'public');
             Log::info('Bukti uploaded', ['path' => $buktiPath]);
@@ -381,14 +386,14 @@ class DataKeseluruhan extends Controller
             $tanggal = $validated['tanggal'] ?? now()->toDateString();
 
             $dataToInsert = [
-                'kode_barang'   => $kode_barang,
-                'user_id'       => $user->id,
-                'bagian_id'     => $bagianId,
+                'kode_barang' => $kode_barang,
+                'user_id' => $user->id,
+                'bagian_id' => $bagianId,
                 'nama_penerima' => $validated['nama_penerima'],
-                'jumlah'        => $jumlah,
-                'tanggal'       => $tanggal,
-                'keterangan'    => $validated['keterangan'] ?? null,
-                'bukti'         => $buktiPath,
+                'jumlah' => $jumlah,
+                'tanggal' => $tanggal,
+                'keterangan' => $validated['keterangan'] ?? null,
+                'bukti' => $buktiPath,
             ];
 
             $sisaStok = null;
@@ -556,21 +561,28 @@ class DataKeseluruhan extends Controller
             }
             // MODE BAGIAN - Tambahkan ke stok_bagian
             else if ($user->bagian_id) {
-                // Cek apakah sudah ada di stok_bagian
+                // Generate batch number unik
+                $batchNumber = 'BATCH-' . now()->format('YmdHis') . '-' . $transaksi->id;
+
+                // Cek apakah sudah ada record dengan harga yang sama (belum ada batch)
                 $stokBagian = StokBagian::where('kode_barang', $kodeBarang)
                     ->where('bagian_id', $user->bagian_id)
+                    ->where('harga', $transaksi->harga)
+                    ->whereNull('batch_number') // 👈 Cek record tanpa batch (legacy)
                     ->lockForUpdate()
                     ->first();
 
                 if ($stokBagian) {
-                    // Jika sudah ada, tambahkan stok
+                    // Update stok yang sudah ada (untuk backward compatibility)
                     $stokBagian->increment('stok', $jumlah);
                 } else {
-                    // Jika belum ada, buat record baru
+                    // Buat record baru dengan batch number
                     StokBagian::create([
                         'kode_barang' => $kodeBarang,
                         'bagian_id' => $user->bagian_id,
+                        'batch_number' => $batchNumber,
                         'stok' => $jumlah,
+                        'harga' => $transaksi->harga,
                     ]);
                 }
 
@@ -601,10 +613,10 @@ class DataKeseluruhan extends Controller
         } catch (\Throwable $e) {
             DB::rollBack();
             Log::error('Konfirmasi barang masuk gagal', [
-                'err' => $e->getMessage(), 
+                'err' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return back()->with('toast', [
                 'type' => 'error',
                 'title' => 'Error',
@@ -747,10 +759,10 @@ class DataKeseluruhan extends Controller
         } catch (\Throwable $e) {
             DB::rollBack();
             Log::error('Kembalikan barang gagal', [
-                'err' => $e->getMessage(), 
+                'err' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return back()->with('toast', [
                 'type' => 'error',
                 'title' => 'Error',
