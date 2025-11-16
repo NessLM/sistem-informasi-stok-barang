@@ -1,21 +1,10 @@
 {{-- resources/views/staff/admin/laporan.blade.php --}}
 <x-layouts.app title="Laporan" :menu="$menu">
-  {{-- CSS khusus halaman ini --}}
   <link rel="stylesheet" href="{{ asset('assets/css/staff/admin/laporan.css') }}">
-
-  @php
-    // sementara: dummy data kalau controller belum isi $reports
-    $reports = $reports ?? [
-      ['title' => 'LAPORAN STOCK OPNAME BULAN JULI – SEPTEMBER', 'preview_url' => asset('assets/images/laporan/contoh-opname.jpg')],
-      ['title' => 'LAPORAN STOCK OPNAME BULAN APRIL – JUNI', 'preview_url' => asset('assets/images/laporan/contoh-opname.jpg')],
-      ['title' => 'LAPORAN STOCK OPNAME BULAN FEBRUARI – MARET', 'preview_url' => asset('assets/images/laporan/contoh-opname.jpg')],
-      ['title' => 'LAPORAN STOCK OPNAME BARANG GUDANG 2025', 'preview_url' => asset('assets/images/laporan/contoh-opname.jpg')],
-    ];
-  @endphp
 
   <div class="page-body">
     <div class="card">
-      <h3>Laporan</h3>
+      <h3>Laporan Stock Opname</h3>
 
       <div class="table-responsive">
         <table class="table table-bordered table-laporan">
@@ -26,21 +15,21 @@
             </tr>
           </thead>
           <tbody>
-            @foreach ($reports as $r)
-              @php
-                $title = is_array($r) ? ($r['title'] ?? '') : ($r->title ?? '');
-                $url = is_array($r) ? ($r['preview_url'] ?? '') : ($r->preview_url ?? ($r->file_url ?? ''));
-              @endphp
+            @foreach ($reports as $report)
               <tr>
-                <td class="text-start">{{ $title }}</td>
+                <td class="text-start">{{ $report['title'] }}</td>
                 <td class="text-center">
-                  @if ($url)
-                    {{-- 👁️ ikon & hover persis halaman Riwayat, tapi trigger modal custom lap-modal --}}
-                    <span class="riwayat-bukti-icon" data-url="{{ $url }}" data-title="{{ $title }}" title="Pratinjau">
+                  @if ($report['exists']) {{-- PERBAIKAN: Gunakan 'exists' bukan 'file_url' --}}
+                    <span class="riwayat-bukti-icon" 
+                          data-quarter="{{ $report['quarter'] }}" 
+                          data-year="{{ $report['year'] }}"
+                          data-title="{{ $report['title'] }}" 
+                          title="Pratinjau Laporan"
+                          style="cursor: pointer; color: #3498db; font-size: 18px;">
                       <i class="bi bi-eye-fill"></i>
                     </span>
                   @else
-                    <span class="text-muted">-</span>
+                    <span class="text-muted" title="Laporan belum tersedia">-</span>
                   @endif
                 </td>
               </tr>
@@ -51,11 +40,11 @@
     </div>
   </div>
 
-  {{-- ===== Modal custom ala konten-kanan (bukan Bootstrap modal) ===== --}}
+  {{-- ===== Modal untuk preview laporan HTML ===== --}}
   <div id="lapModal" class="lap-modal" aria-hidden="true" role="dialog" aria-labelledby="lapModalTitle">
     <div class="lap-modal__backdrop" data-close></div>
 
-    <div class="lap-modal__dialog">
+    <div class="lap-modal__dialog lap-modal__dialog--large">
       <div class="lap-modal__toolbar">
         <h3 id="lapModalTitle" class="lap-modal__title">Pratinjau Laporan</h3>
         <button class="lap-modal__close" type="button" data-close aria-label="Tutup">
@@ -64,36 +53,68 @@
       </div>
 
       <div class="lap-modal__body">
-        {{-- default: gambar --}}
-        <img id="lapModalImg" class="lap-modal__img" alt="Pratinjau Laporan" loading="lazy">
-        {{-- jika file PDF, akan switch ke iframe --}}
-        <iframe id="lapModalPdf" class="lap-modal__pdf" title="Pratinjau PDF" hidden></iframe>
+        {{-- Container untuk konten HTML laporan --}}
+        <div id="laporanContent" class="laporan-content">
+          {{-- Konten laporan akan dimuat di sini via AJAX --}}
+        </div>
+        
+        {{-- Loading indicator --}}
+        <div id="laporanLoading" class="laporan-loading">
+          <div class="loading-spinner"></div>
+          <p>Memuat laporan...</p>
+        </div>
       </div>
     </div>
   </div>
 
   @push('scripts')
     <script>
-      // ===== LapModal: open/close + auto detect PDF vs Image =====
+      // ===== LapModal functions =====
       const lapModal = document.getElementById('lapModal');
-      const lapImg = document.getElementById('lapModalImg');
-      const lapPdf = document.getElementById('lapModalPdf');
+      const laporanContent = document.getElementById('laporanContent');
+      const laporanLoading = document.getElementById('laporanLoading');
       const lapTtl = document.getElementById('lapModalTitle');
 
-      function openLapModal(url, title) {
-        lapTtl.textContent = title || 'Pratinjau';
-        const isPdf = /\.pdf(\?|$)/i.test(url);
-        if (isPdf) {
-          lapImg.hidden = true; lapImg.src = '';
-          lapPdf.hidden = false; lapPdf.src = url;
-        } else {
-          lapPdf.hidden = true; lapPdf.src = '';
-          lapImg.hidden = false; lapImg.src = url;
+      async function openLapModal(quarter, year, title) {
+        console.log('Opening modal for:', quarter, year, title); // Debug log
+        
+        lapTtl.textContent = title || 'Pratinjau Laporan';
+        
+        // Tampilkan loading
+        laporanLoading.style.display = 'block';
+        laporanContent.style.display = 'none';
+        laporanContent.innerHTML = '';
+        
+        try {
+          // Load konten laporan via AJAX
+          const response = await fetch(`/admin/laporan/preview/${quarter}/${year}`);
+          
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          
+          const html = await response.text();
+          
+          laporanContent.innerHTML = html;
+          laporanLoading.style.display = 'none';
+          laporanContent.style.display = 'block';
+          
+        } catch (error) {
+          console.error('Error loading report:', error);
+          laporanLoading.style.display = 'none';
+          laporanContent.innerHTML = `
+            <div class="alert alert-danger">
+              <i class="bi bi-exclamation-triangle"></i>
+              Gagal memuat laporan. Silakan coba lagi.<br>
+              Error: ${error.message}
+            </div>
+          `;
+          laporanContent.style.display = 'block';
         }
+        
         lapModal.classList.add('is-open');
         lapModal.setAttribute('aria-hidden', 'false');
 
-        // Tambahkan kelas untuk mobile
         if (window.innerWidth <= 768) {
           document.body.classList.add('modal-open-mobile');
         }
@@ -102,31 +123,35 @@
       function closeLapModal() {
         lapModal.classList.remove('is-open');
         lapModal.setAttribute('aria-hidden', 'true');
-        lapImg.src = ''; lapPdf.src = '';
-
-        // Hapus kelas untuk mobile
+        laporanContent.innerHTML = '';
         document.body.classList.remove('modal-open-mobile');
       }
 
-      // Trigger dari ikon 👁️ (class sama seperti Riwayat)
+      // ===== Event Listeners =====
       document.addEventListener('click', (e) => {
         const eye = e.target.closest('.riwayat-bukti-icon');
         if (eye) {
-          const url = eye.getAttribute('data-url');
-          const title = eye.getAttribute('data-title')
-            || eye.closest('tr')?.querySelector('td')?.textContent?.trim();
-          openLapModal(url, title);
+          const quarter = eye.getAttribute('data-quarter');
+          const year = eye.getAttribute('data-year');
+          const title = eye.getAttribute('data-title');
+          console.log('Icon clicked:', quarter, year, title); // Debug log
+          openLapModal(quarter, year, title);
         }
-        if (e.target.closest('[data-close]')) closeLapModal();
+        
+        if (e.target.closest('[data-close]')) {
+          closeLapModal();
+        }
       });
 
-      // ESC to close
+      // Keyboard navigation
       document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && lapModal.classList.contains('is-open')) closeLapModal();
+        if (!lapModal.classList.contains('is-open')) return;
+        
+        if (e.key === 'Escape') closeLapModal();
       });
 
-      // Responsif saat resize window
-      window.addEventListener('resize', function () {
+      // Responsive handling
+      window.addEventListener('resize', function() {
         if (lapModal.classList.contains('is-open')) {
           if (window.innerWidth <= 768) {
             document.body.classList.add('modal-open-mobile');

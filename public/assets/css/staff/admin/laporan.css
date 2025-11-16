@@ -2,11 +2,13 @@
 :root {
   --sb-w: 250px; /* Lebar sidebar default */
   --header-h: 64px; /* Tinggi header */
+  --primary-color: #3498db;
+  --primary-hover: #2980b9;
+  --disabled-color: #bdc3c7;
 }
 
-/* ======== TABEL LAPORAN (ringkas & mirip Riwayat) ======== */
-
-.card H3{
+/* ======== TABEL LAPORAN ======== */
+.card H3 {
   font-size: 20px;
   font-weight: 600;
   color: #1d2433;
@@ -16,6 +18,7 @@
 .table-laporan {
   font-size: 0.95rem;
   width: 100%;
+  border-collapse: collapse;
 }
 
 .table-laporan thead th {
@@ -30,6 +33,7 @@
 .table-laporan td {
   padding: 12px 14px;
   vertical-align: middle;
+  border-bottom: 1px solid #e9ecef;
 }
 
 .table-laporan .col-aksi {
@@ -50,292 +54,228 @@
 /* Container untuk tabel responsif */
 .table-responsive {
   overflow-x: auto;
-  -webkit-overflow-scrolling: touch; /* Smooth scroll di iOS */
+  -webkit-overflow-scrolling: touch;
 }
 
-/* =========================================================
-   LAP-MODAL: modal custom yang patuh sidebar & header
-   ========================================================= */
+/* ======== PDF VIEWER STYLES ======== */
+.pdf-viewer {
+  width: 100%;
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.pdf-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 10px;
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.pdf-control-btn {
+  padding: 8px 16px;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: background-color 0.2s;
+}
+
+.pdf-control-btn:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.pdf-control-btn:disabled {
+  background: var(--disabled-color);
+  cursor: not-allowed;
+}
+
+.page-info {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 0.95rem;
+}
+
+.pdf-container {
+  background: white;
+  border-radius: 6px;
+  padding: 20px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  overflow: auto;
+  max-height: 70vh;
+  text-align: center;
+}
+
+.pdf-canvas {
+  max-width: 100%;
+  height: auto;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  border: 1px solid #e0e0e0;
+}
+
+.pdf-zoom-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.zoom-btn {
+  padding: 8px 12px;
+  background: #ecf0f1;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.zoom-btn:hover {
+  background: #d5dbdb;
+}
+
+.zoom-level {
+  font-weight: 600;
+  color: #2c3e50;
+  min-width: 50px;
+  text-align: center;
+}
+
+/* Loading spinner */
+.pdf-loading {
+  text-align: center;
+  padding: 40px;
+  color: #7f8c8d;
+}
+
+.loading-spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid var(--primary-color);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 15px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Modal Styles */
 .lap-modal {
-  position: fixed;
-  top: 0;
-  left: var(--sb-w);
-  /* lebar sidebar dari layout */
-  width: calc(100% - var(--sb-w));
-  /* hanya area konten */
-  height: 100vh;
-  display: none;
-  z-index: 1200;
-  /* > header (1000) */
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1050;
 }
 
 .lap-modal.is-open {
-  display: block;
+    display: block;
 }
 
-/* backdrop hanya di area konten kanan */
 .lap-modal__backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, .5);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
 }
 
-/* kotak modal */
 .lap-modal__dialog {
-  position: relative;
-  margin: 88px auto 24px;
-  /* ruang dari header fixed */
-  max-width: 960px;
-  background: #fff;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, .35);
-  max-height: calc(100vh - 112px); /* Maksimal tinggi viewport dikurangi margin */
+    position: relative;
+    margin: 2rem auto;
+    max-width: 90%;
+    max-height: 90vh;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
 }
 
-/* toolbar */
+.lap-modal__dialog--large {
+    width: 95%;
+    height: 95vh;
+}
+
 .lap-modal__toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px;
-  background: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #dee2e6;
 }
 
 .lap-modal__title {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 70%;
+    margin: 0;
+    flex: 1;
 }
 
 .lap-modal__close {
-  border: 0;
-  background: transparent;
-  padding: 6px;
-  cursor: pointer;
-  font-size: 1.2rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
 }
 
-/* body & media */
 .lap-modal__body {
-  padding: 10px;
-  max-height: calc(75vh - 60px); /* Sesuaikan dengan tinggi toolbar */
-  overflow: auto;
-  background: #fff;
+    padding: 1rem;
+    height: calc(95vh - 80px);
+    overflow-y: auto;
 }
 
-.lap-modal__img {
-  width: 100%;
-  height: auto;
-  display: block;
-  border-radius: 6px;
-  max-height: 100%;
-  object-fit: contain;
+.laporan-loading {
+    text-align: center;
+    padding: 2rem;
 }
 
-.lap-modal__pdf {
-  width: 100%;
-  height: 72vh;
-  border: 0;
-  display: block;
-  border-radius: 6px;
-  min-height: 400px;
+.loading-spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 2s linear infinite;
+    margin: 0 auto 1rem;
 }
 
-/* ===== Animasi buka: drop-down kecil + fade ===== */
-@keyframes lapDropIn {
-  from {
-    transform: translateY(-12px);
-    opacity: 0;
-  }
-
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
-@keyframes lapFadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-.lap-modal.is-open .lap-modal__dialog {
-  animation: lapDropIn .22s cubic-bezier(.22, 1, .36, 1) both;
-  will-change: transform, opacity;
-}
-
-.lap-modal.is-open .lap-modal__backdrop {
-  animation: lapFadeIn .18s ease-out both;
-}
-
-/* =========================================================
-   RESPONSIVITAS UNTUK TABLET & MOBILE
-   ========================================================= */
-
-/* Tablet (768px ke bawah) */
+/* Responsive */
 @media (max-width: 768px) {
-  :root {
-    --sb-w: 0px; /* Sidebar disembunyikan atau di-collapse */
-  }
-  
-  .lap-modal {
-    left: 0;
-    width: 100%;
-  }
-  
-  .lap-modal__dialog {
-    margin: 72px 12px 16px;
-    max-height: calc(100vh - 88px);
-    border-radius: 8px;
-  }
-  
-  .lap-modal__body {
-    max-height: calc(100vh - 140px);
-    padding: 8px;
-  }
-  
-  .lap-modal__pdf {
-    height: calc(100vh - 160px);
-    min-height: 300px;
-  }
-  
-  .table-laporan {
-    font-size: 0.9rem;
-  }
-  
-  .table-laporan td,
-  .table-laporan th {
-    padding: 10px 8px;
-  }
-  
-  .table-laporan .col-aksi {
-    width: 70px;
-  }
-  
-  .card H3 {
-    font-size: 18px;
-    margin: 12px;
-  }
-}
-
-/* Mobile kecil (480px ke bawah) */
-@media (max-width: 480px) {
-  .lap-modal__dialog {
-    margin: 60px 8px 12px;
-    max-height: calc(100vh - 72px);
-  }
-  
-  .lap-modal__body {
-    max-height: calc(100vh - 124px);
-    padding: 6px;
-  }
-  
-  .lap-modal__toolbar {
-    padding: 8px 10px;
-  }
-  
-  .lap-modal__title {
-    font-size: 14px;
-    max-width: 60%;
-  }
-  
-  .lap-modal__close {
-    padding: 4px;
-    font-size: 1.1rem;
-  }
-  
-  .table-laporan {
-    font-size: 0.85rem;
-  }
-  
-  .table-laporan td,
-  .table-laporan th {
-    padding: 8px 6px;
-  }
-  
-  .card H3 {
-    font-size: 16px;
-    margin: 10px;
-  }
-  
-  /* Untuk judul laporan yang panjang, tambahkan line break */
-  .table-laporan td.text-start {
-    word-break: break-word;
-    max-width: 200px;
-  }
-}
-
-/* Mode landscape pada mobile */
-@media (max-height: 500px) and (max-width: 900px) {
-  .lap-modal__dialog {
-    margin: 60px auto 12px;
-    max-height: calc(100vh - 72px);
-  }
-  
-  .lap-modal__body {
-    max-height: calc(100vh - 120px);
-  }
-  
-  .lap-modal__pdf {
-    height: calc(100vh - 140px);
-    min-height: 200px;
-  }
-}
-
-/* Untuk perangkat dengan layar sangat kecil */
-@media (max-width: 320px) {
-  .table-laporan {
-    font-size: 0.8rem;
-  }
-  
-  .table-laporan td,
-  .table-laporan th {
-    padding: 6px 4px;
-  }
-  
-  .table-laporan .col-aksi {
-    width: 60px;
-  }
-}
-
-/* Mode mobile saat modal terbuka - mencegah scroll body */
-body.modal-open-mobile {
-  overflow: hidden;
-  position: fixed;
-  width: 100%;
-}
-
-/* Hormati preferensi reduce motion */
-@media (prefers-reduced-motion: reduce) {
-  .lap-modal.is-open .lap-modal__dialog,
-  .lap-modal.is-open .lap-modal__backdrop {
-    animation: none !important;
-  }
-}
-
-/* Dukungan untuk perangkat touch */
-@media (hover: none) and (pointer: coarse) {
-  .riwayat-bukti-icon {
-    padding: 8px; /* Area tap lebih besar untuk touch devices */
-    display: inline-block;
-  }
-  
-  .lap-modal__close {
-    min-width: 44px; /* Minimum touch target size */
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+    .lap-modal__dialog {
+        margin: 0;
+        max-width: 100%;
+        max-height: 100vh;
+        height: 100vh;
+    }
+    
+    .lap-modal__body {
+        height: calc(100vh - 80px);
+    }
+    
+    .modal-open-mobile {
+        overflow: hidden;
+    }
 }
