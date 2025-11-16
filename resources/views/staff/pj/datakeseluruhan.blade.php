@@ -33,26 +33,26 @@
             @endphp
 
             <div id="toast-notif" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-20px);
-                                                       z-index: 2000; display: flex; justify-content: center; pointer-events: none;
-                                                       animation: slideDown 0.4s ease-out forwards;">
+                                                                   z-index: 2000; display: flex; justify-content: center; pointer-events: none;
+                                                                   animation: slideDown 0.4s ease-out forwards;">
 
                 <div class="toast-message" style="background: #fff; border-radius: 16px; padding: 18px 24px;
-                                                           box-shadow: 0 8px 24px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.1);
-                                                           text-align: left; min-width: 320px; max-width: 420px;
-                                                           border-left: 5px solid {{ $bgColor }};
-                                                           transition: all 0.3s ease;
-                                                           display: flex; align-items: center; gap: 14px;">
+                                                                       box-shadow: 0 8px 24px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.1);
+                                                                       text-align: left; min-width: 320px; max-width: 420px;
+                                                                       border-left: 5px solid {{ $bgColor }};
+                                                                       transition: all 0.3s ease;
+                                                                       display: flex; align-items: center; gap: 14px;">
 
                     <div
                         style="flex-shrink: 0; width: 42px; height: 42px; border-radius: 50%;
-                                                               background: {{ $bgColor }}; display: flex; align-items: center;
-                                                               justify-content: center; box-shadow: 0 2px 8px {{ $bgColor }}40;">
+                                                                           background: {{ $bgColor }}; display: flex; align-items: center;
+                                                                           justify-content: center; box-shadow: 0 2px 8px {{ $bgColor }}40;">
                         <i class="bi {{ $iconClass }}" style="color: #fff; font-size: 22px;"></i>
                     </div>
 
                     <div style="flex: 1;">
                         <div style="font-weight: 600; font-size: 16px; margin-bottom: 4px;
-                                                                   color: #1a1a1a; line-height: 1.3;">
+                                                                               color: #1a1a1a; line-height: 1.3;">
                             {{ session('toast.title') }}
                         </div>
                         <div style="color: #666; font-size: 14px; line-height: 1.5;">
@@ -62,10 +62,10 @@
 
                     <button onclick="closeToast()"
                         style="flex-shrink: 0; background: none; border: none; 
-                                                                   color: #999; cursor: pointer; padding: 4px; 
-                                                                   border-radius: 4px; transition: all 0.2s;
-                                                                   pointer-events: all; width: 24px; height: 24px;
-                                                                   display: flex; align-items: center; justify-content: center;">
+                                                                               color: #999; cursor: pointer; padding: 4px; 
+                                                                               border-radius: 4px; transition: all 0.2s;
+                                                                               pointer-events: all; width: 24px; height: 24px;
+                                                                               display: flex; align-items: center; justify-content: center;">
                         <i class="bi bi-x-lg" style="font-size: 14px;"></i>
                     </button>
                 </div>
@@ -267,6 +267,7 @@
                                                             <th>Kode</th>
                                                             <th>Nama Barang</th>
                                                             <th>Stok</th>
+                                                            <th>Harga</th>
                                                             <th>Satuan</th>
                                                             <th>Aksi</th>
                                                         </tr>
@@ -280,6 +281,7 @@
                                                                 <td>{{ $item->kode }}</td>
                                                                 <td>{{ $item->nama }}</td>
                                                                 <td>{{ $stokTersedia }}</td>
+                                                                <td>Rp {{ number_format($item->harga ?? 0, 0, ',', '.') }}</td>
                                                                 <td>{{ $item->satuan }}</td>
                                                                 <td>
                                                                     <button type="button" class="btn btn-danger btn-sm"
@@ -904,15 +906,15 @@
                             item.stock_status === 'low' ? 'Sedikit' : 'Tersedia';
 
                         html += `
-                                                            <div class="search-suggestion-item" data-index="${index}">
-                                                                <div class="suggestion-name">${item.nama}</div>
-                                                                <div class="suggestion-code">Kode: ${item.kode}</div>
-                                                                <div class="suggestion-meta">
-                                                                    <small>Kategori: ${item.kategori} | Stok: ${item.stok} |
-                                                                    <span class="stock-status ${stockStatusClass}">${stockText}</span></small>
-                                                                </div>
-                                                            </div>
-                                                        `;
+                                                                        <div class="search-suggestion-item" data-index="${index}">
+                                                                            <div class="suggestion-name">${item.nama}</div>
+                                                                            <div class="suggestion-code">Kode: ${item.kode}</div>
+                                                                            <div class="suggestion-meta">
+                                                                                <small>Kategori: ${item.kategori} | Stok: ${item.stok} |
+                                                                                <span class="stock-status ${stockStatusClass}">${stockText}</span></small>
+                                                                            </div>
+                                                                        </div>
+                                                                    `;
                     });
 
                     suggestionsContainer.innerHTML = html;

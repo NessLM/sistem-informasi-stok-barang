@@ -140,7 +140,8 @@ class DataKeseluruhan extends Controller
                             'barang.kode_barang as kode',
                             'barang.nama_barang as nama',
                             'barang.satuan',
-                            'stok_bagian.stok as stok_tersedia'
+                            'stok_bagian.stok as stok_tersedia',
+                            'stok_bagian.harga'
                         )
                         ->orderBy('barang.nama_barang')
                         ->get()
@@ -150,6 +151,7 @@ class DataKeseluruhan extends Controller
                             'satuan' => $i->satuan,
                             'stok_tersedia' => $i->stok_tersedia,
                             'id_kategori' => $k->id,
+                            'harga' => $i->harga ?? 0,
                         ]);
 
                     return (object) [
