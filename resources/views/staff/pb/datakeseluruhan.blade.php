@@ -397,16 +397,13 @@
                             <tbody>
                                 @foreach ($bagian as $bg)
                                     @php
-    $stokDiBagian = \App\Models\StokBagian::with(['barang.kategori', 'bagian'])
-        ->select('stok_bagian.*')
-        ->leftJoin('pb_stok', function($join) use ($bg) {
-            $join->on('stok_bagian.kode_barang', '=', 'pb_stok.kode_barang')
-                 ->where('pb_stok.bagian_id', '=', $bg->id);
-        })
-        ->selectRaw('COALESCE(pb_stok.harga, 0) as harga')
-        ->where('stok_bagian.bagian_id', $bg->id)
-        ->get();
-@endphp
+                // ✅ QUERY YANG BENAR - TANPA JOIN
+                $stokDiBagian = \App\Models\StokBagian::with(['barang.kategori', 'bagian'])
+                    ->where('stok_bagian.bagian_id', $bg->id)
+                    ->orderBy('kode_barang')
+                    ->orderBy('batch_number')
+                    ->get();
+                @endphp
                                     @if($stokDiBagian->count() > 0)
                                         <tr class="table-secondary">
                                             <td>{{ $bg->nama }}</td>
@@ -435,6 +432,7 @@
                                                                         <th>No</th>
                                                                         <th>Kode</th>
                                                                         <th>Nama Barang</th>
+                                                                        <th style="width:200px">Batch Number</th>
                                                                         <th>Stok</th>
                                                                         <th>Harga</th>
                                                                     </tr>
@@ -445,6 +443,16 @@
                                                                             <td>{{ $idx + 1 }}</td>
                                                                             <td>{{ $sb->kode_barang }}</td>
                                                                             <td>{{ $sb->barang->nama_barang ?? '-' }}</td>
+                                                                            <td>
+                        {{-- TAMPILKAN BATCH NUMBER --}}
+                        @if($sb->batch_number)
+                            <code class="text-primary" style="font-size: 11px;">
+                                {{ $sb->batch_number }}
+                            </code>
+                        @else
+                           Legacy Data
+                        @endif
+                    </td>
                                                                             <td>{{ $sb->stok }}</td>
                                                                             <td>Rp {{ number_format($sb->harga ?? 0, 0, ',', '.') }}</td>
                                                                         </tr>

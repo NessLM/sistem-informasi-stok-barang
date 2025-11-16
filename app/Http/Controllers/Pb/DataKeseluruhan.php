@@ -18,20 +18,20 @@ class DataKeseluruhan extends Controller
 {
     public function index(Request $request)
     {
-        $menu      = MenuHelper::pbMenu();
+        $menu = MenuHelper::pbMenu();
         $activeTab = $request->get('tab', 'data-keseluruhan');
-        $kategori  = Kategori::all();
-        $bagian    = Bagian::all();
+        $kategori = Kategori::all();
+        $bagian = Bagian::all();
 
         // Hasil search / filter
-        $barangData      = collect(); // Data Barang Gudang Utama (PbStok)
-        $stokBagianData  = collect(); // Stok Per Bagian (StokBagian)
+        $barangData = collect(); // Data Barang Gudang Utama (PbStok)
+        $stokBagianData = collect(); // Stok Per Bagian (StokBagian)
         $barangMasukData = collect(); // Kelola Barang Masuk (Barang)
 
         if ($activeTab === 'data-keseluruhan') {
             // TAB 1 → search + filter untuk Distribusi & Stok Per Bagian
             if ($this->hasFilter($request)) {
-                $barangData     = $this->getFilteredPbStok($request);
+                $barangData = $this->getFilteredPbStok($request);
                 $stokBagianData = $this->getFilteredStokBagian($request);
             }
         } elseif ($activeTab === 'distribusi') {
@@ -58,12 +58,12 @@ class DataKeseluruhan extends Controller
     public function storeBarangMasuk(Request $request, $kodeBarang)
     {
         $request->validate([
-            'bagian_id'   => 'required|exists:bagian,id',
-            'jumlah'      => 'required|integer|min:1',
-            'harga'       => 'required|numeric|min:0',
-            'tanggal'     => 'nullable|date',
-            'keterangan'  => 'nullable|string|max:500',
-            'bukti'       => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'bagian_id' => 'required|exists:bagian,id',
+            'jumlah' => 'required|integer|min:1',
+            'harga' => 'required|numeric|min:0',
+            'tanggal' => 'nullable|date',
+            'keterangan' => 'nullable|string|max:500',
+            'bukti' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
 
         // Pastikan barang ada
@@ -80,22 +80,22 @@ class DataKeseluruhan extends Controller
             // Simpan transaksi barang masuk
             TransaksiBarangMasuk::create([
                 'kode_barang' => $kodeBarang,
-                'jumlah'      => $request->jumlah,
-                'harga'       => $request->harga,
-                'tanggal'     => $request->tanggal ?? now()->toDateString(),
-                'user_id'     => auth()->id(),
-                'keterangan'  => $request->keterangan,
-                'bukti'       => $buktiPath,
+                'jumlah' => $request->jumlah,
+                'harga' => $request->harga,
+                'tanggal' => $request->tanggal ?? now()->toDateString(),
+                'user_id' => auth()->id(),
+                'keterangan' => $request->keterangan,
+                'bukti' => $buktiPath,
             ]);
 
             // Update / buat pb_stok
             $pbStok = PbStok::firstOrCreate(
                 [
                     'kode_barang' => $kodeBarang,
-                    'bagian_id'   => $request->bagian_id,
+                    'bagian_id' => $request->bagian_id,
                 ],
                 [
-                    'stok'  => 0,
+                    'stok' => 0,
                     'harga' => $request->harga,
                 ]
             );
@@ -109,8 +109,8 @@ class DataKeseluruhan extends Controller
             return redirect()
                 ->route('pb.datakeseluruhan.index', ['tab' => 'distribusi'])
                 ->with('toast', [
-                    'type'    => 'success',
-                    'title'   => 'Berhasil!',
+                    'type' => 'success',
+                    'title' => 'Berhasil!',
                     'message' => "Barang {$barang->nama_barang} berhasil dimasukkan sebanyak {$request->jumlah} {$barang->satuan}",
                 ]);
         } catch (\Exception $e) {
@@ -123,8 +123,8 @@ class DataKeseluruhan extends Controller
             return redirect()
                 ->back()
                 ->with('toast', [
-                    'type'    => 'error',
-                    'title'   => 'Gagal!',
+                    'type' => 'error',
+                    'title' => 'Gagal!',
                     'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
                 ])
                 ->withInput();
@@ -138,7 +138,7 @@ class DataKeseluruhan extends Controller
     public function searchSuggestions(Request $request)
     {
         $query = $request->get('q', '');
-        $tab   = $request->get('tab', 'data-keseluruhan');
+        $tab = $request->get('tab', 'data-keseluruhan');
 
         if (strlen($query) < 2) {
             return response()->json([]);
@@ -164,19 +164,19 @@ class DataKeseluruhan extends Controller
                 ->get();
 
             $results = $pbStok->map(function ($item) {
-                $stok        = $item->stok ?? 0;
+                $stok = $item->stok ?? 0;
                 $stockStatus = $stok == 0 ? 'empty'
                     : ($stok <= 10 ? 'low' : 'available');
 
                 return [
-                    'id'           => $item->id,
-                    'nama'         => $item->barang->nama_barang ?? '-',
-                    'kode'         => $item->kode_barang,
-                    'stok'         => $stok,
-                    'satuan'       => $item->barang->satuan ?? '',
-                    'harga'        => 'Rp ' . number_format($item->harga ?? 0, 0, ',', '.'),
-                    'kategori'     => $item->barang->kategori->nama ?? '-',
-                    'bagian'       => $item->bagian->nama ?? '-',
+                    'id' => $item->id,
+                    'nama' => $item->barang->nama_barang ?? '-',
+                    'kode' => $item->kode_barang,
+                    'stok' => $stok,
+                    'satuan' => $item->barang->satuan ?? '',
+                    'harga' => 'Rp ' . number_format($item->harga ?? 0, 0, ',', '.'),
+                    'kategori' => $item->barang->kategori->nama ?? '-',
+                    'bagian' => $item->bagian->nama ?? '-',
                     'stock_status' => $stockStatus,
                 ];
             })->values();
@@ -195,7 +195,7 @@ class DataKeseluruhan extends Controller
                 ->get();
 
             $results = $barang->map(function ($item) {
-                $totalStok   = $item->pbStok->sum('stok');
+                $totalStok = $item->pbStok->sum('stok');
                 $stockStatus = $totalStok == 0 ? 'empty'
                     : ($totalStok <= 10 ? 'low' : 'available');
 
@@ -204,14 +204,14 @@ class DataKeseluruhan extends Controller
                     ?? 0;
 
                 return [
-                    'id'           => $item->kode_barang,
-                    'nama'         => $item->nama_barang,
-                    'kode'         => $item->kode_barang,
-                    'stok'         => $totalStok,
-                    'satuan'       => $item->satuan,
-                    'harga'        => 'Rp ' . number_format($harga, 0, ',', '.'),
-                    'kategori'     => $item->kategori->nama ?? '-',
-                    'bagian'       => 'Gudang Utama',
+                    'id' => $item->kode_barang,
+                    'nama' => $item->nama_barang,
+                    'kode' => $item->kode_barang,
+                    'stok' => $totalStok,
+                    'satuan' => $item->satuan,
+                    'harga' => 'Rp ' . number_format($harga, 0, ',', '.'),
+                    'kategori' => $item->kategori->nama ?? '-',
+                    'bagian' => 'Gudang Utama',
                     'stock_status' => $stockStatus,
                 ];
             })->values();
@@ -245,8 +245,8 @@ class DataKeseluruhan extends Controller
         $request->validate([
             'harga_min' => 'nullable|numeric|min:0',
             'harga_max' => 'nullable|numeric|min:0',
-            'stok_min'  => 'nullable|integer|min:0',
-            'stok_max'  => 'nullable|integer|min:0',
+            'stok_min' => 'nullable|integer|min:0',
+            'stok_max' => 'nullable|integer|min:0',
         ]);
 
         // Guard: range harga kebalik
@@ -320,8 +320,8 @@ class DataKeseluruhan extends Controller
         $request->validate([
             'harga_min' => 'nullable|numeric|min:0',
             'harga_max' => 'nullable|numeric|min:0',
-            'stok_min'  => 'nullable|integer|min:0',
-            'stok_max'  => 'nullable|integer|min:0',
+            'stok_min' => 'nullable|integer|min:0',
+            'stok_max' => 'nullable|integer|min:0',
         ]);
 
         if (
@@ -332,9 +332,11 @@ class DataKeseluruhan extends Controller
             return collect();
         }
 
-        $query = StokBagian::with(['barang.kategori', 'bagian']);
+        $query = StokBagian::with(['barang.kategori', 'bagian'])
+            ->select('stok_bagian.*') // Pastikan hanya ambil dari stok_bagian
+            ->distinct(); // Tambahkan distinct untuk hindari duplikat
 
-        // Search (nama, kode, kategori, bagian)
+        // Filter search
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -350,7 +352,6 @@ class DataKeseluruhan extends Controller
                     });
             });
         }
-
         // Filter kategori
         if ($request->filled('kategori_id')) {
             $query->whereHas('barang', function ($q) use ($request) {
@@ -380,7 +381,13 @@ class DataKeseluruhan extends Controller
             $query->where('harga', '<=', (float) $request->harga_max);
         }
 
-        return $query->orderBy('kode_barang')->get();
+        return $query->orderBy('kode_barang')
+            ->orderBy('batch_number') // Urutkan batch juga
+            ->get()
+            ->unique(function ($item) {
+                // Pastikan kombinasi unik: kode + bagian + batch
+                return $item->kode_barang . '-' . $item->bagian_id . '-' . $item->batch_number;
+            });
     }
 
     /**
