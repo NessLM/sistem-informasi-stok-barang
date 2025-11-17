@@ -32,27 +32,30 @@
                 $iconClass = $isSuccess ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill';
             @endphp
 
-            <div id="toast-notif" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-20px);
-                                                                   z-index: 2000; display: flex; justify-content: center; pointer-events: none;
-                                                                   animation: slideDown 0.4s ease-out forwards;">
+            <div id="toast-notif"
+                style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-20px);
+                                                                               z-index: 2000; display: flex; justify-content: center; pointer-events: none;
+                                                                               animation: slideDown 0.4s ease-out forwards;">
 
-                <div class="toast-message" style="background: #fff; border-radius: 16px; padding: 18px 24px;
-                                                                       box-shadow: 0 8px 24px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.1);
-                                                                       text-align: left; min-width: 320px; max-width: 420px;
-                                                                       border-left: 5px solid {{ $bgColor }};
-                                                                       transition: all 0.3s ease;
-                                                                       display: flex; align-items: center; gap: 14px;">
+                <div class="toast-message"
+                    style="background: #fff; border-radius: 16px; padding: 18px 24px;
+                                                                                   box-shadow: 0 8px 24px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.1);
+                                                                                   text-align: left; min-width: 320px; max-width: 420px;
+                                                                                   border-left: 5px solid {{ $bgColor }};
+                                                                                   transition: all 0.3s ease;
+                                                                                   display: flex; align-items: center; gap: 14px;">
 
                     <div
                         style="flex-shrink: 0; width: 42px; height: 42px; border-radius: 50%;
-                                                                           background: {{ $bgColor }}; display: flex; align-items: center;
-                                                                           justify-content: center; box-shadow: 0 2px 8px {{ $bgColor }}40;">
+                                                                                       background: {{ $bgColor }}; display: flex; align-items: center;
+                                                                                       justify-content: center; box-shadow: 0 2px 8px {{ $bgColor }}40;">
                         <i class="bi {{ $iconClass }}" style="color: #fff; font-size: 22px;"></i>
                     </div>
 
                     <div style="flex: 1;">
-                        <div style="font-weight: 600; font-size: 16px; margin-bottom: 4px;
-                                                                               color: #1a1a1a; line-height: 1.3;">
+                        <div
+                            style="font-weight: 600; font-size: 16px; margin-bottom: 4px;
+                                                                                           color: #1a1a1a; line-height: 1.3;">
                             {{ session('toast.title') }}
                         </div>
                         <div style="color: #666; font-size: 14px; line-height: 1.5;">
@@ -62,10 +65,10 @@
 
                     <button onclick="closeToast()"
                         style="flex-shrink: 0; background: none; border: none; 
-                                                                               color: #999; cursor: pointer; padding: 4px; 
-                                                                               border-radius: 4px; transition: all 0.2s;
-                                                                               pointer-events: all; width: 24px; height: 24px;
-                                                                               display: flex; align-items: center; justify-content: center;">
+                                                                                           color: #999; cursor: pointer; padding: 4px; 
+                                                                                           border-radius: 4px; transition: all 0.2s;
+                                                                                           pointer-events: all; width: 24px; height: 24px;
+                                                                                           display: flex; align-items: center; justify-content: center;">
                         <i class="bi bi-x-lg" style="font-size: 14px;"></i>
                     </button>
                 </div>
@@ -204,10 +207,12 @@
                                             <td>{{ $b->satuan }}</td>
                                             <td>{{ $b->kategori->nama ?? '-' }}</td>
                                             <td>
+                                                {{-- Di bagian tombol Barang Keluar --}}
                                                 <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal"
-                                                    data-bs-target="#modalBarangKeluar" data-id="{{ $b->kode }}"
-                                                    data-nama="{{ $b->nama }}" data-kode="{{ $b->kode }}"
-                                                    data-stok="{{ $stokTersedia }}">
+                                                    data-bs-target="#modalBarangKeluar" data-id="{{ $item->kode }}"
+                                                    data-nama="{{ $item->nama }}" data-kode="{{ $item->kode }}"
+                                                    data-stok="{{ $stokTersedia }}" data-harga="{{ $item->harga }}"> {{-- ✅ TAMBAHKAN
+                                                    INI --}}
                                                     <i class="bi bi-box-arrow-right"></i> Barang Keluar
                                                 </button>
                                             </td>
@@ -284,10 +289,12 @@
                                                                 <td>Rp {{ number_format($item->harga ?? 0, 0, ',', '.') }}</td>
                                                                 <td>{{ $item->satuan }}</td>
                                                                 <td>
+                                                                    {{-- Di bagian tombol Barang Keluar --}}
                                                                     <button type="button" class="btn btn-danger btn-sm"
                                                                         data-bs-toggle="modal" data-bs-target="#modalBarangKeluar"
                                                                         data-id="{{ $item->kode }}" data-nama="{{ $item->nama }}"
-                                                                        data-kode="{{ $item->kode }}" data-stok="{{ $stokTersedia }}">
+                                                                        data-kode="{{ $item->kode }}" data-stok="{{ $stokTersedia }}"
+                                                                        data-harga="{{ $item->harga }}"> {{-- ✅ TAMBAHKAN INI --}}
                                                                         <i class="bi bi-box-arrow-right"></i> Barang Keluar
                                                                     </button>
                                                                 </td>
@@ -590,6 +597,7 @@
                     <form method="POST" id="formBarangKeluar" enctype="multipart/form-data">
                         @csrf
                         <input type="hidden" name="barang_id" id="barangKeluarId">
+                        <input type="hidden" name="harga_dipilih" id="hargaDipilih"> {{-- ✅ TAMBAHKAN INI --}}
 
                         <div class="row g-3">
                             <div class="col-md-6">
@@ -906,15 +914,15 @@
                             item.stock_status === 'low' ? 'Sedikit' : 'Tersedia';
 
                         html += `
-                                                                        <div class="search-suggestion-item" data-index="${index}">
-                                                                            <div class="suggestion-name">${item.nama}</div>
-                                                                            <div class="suggestion-code">Kode: ${item.kode}</div>
-                                                                            <div class="suggestion-meta">
-                                                                                <small>Kategori: ${item.kategori} | Stok: ${item.stok} |
-                                                                                <span class="stock-status ${stockStatusClass}">${stockText}</span></small>
-                                                                            </div>
-                                                                        </div>
-                                                                    `;
+                                                                                    <div class="search-suggestion-item" data-index="${index}">
+                                                                                        <div class="suggestion-name">${item.nama}</div>
+                                                                                        <div class="suggestion-code">Kode: ${item.kode}</div>
+                                                                                        <div class="suggestion-meta">
+                                                                                            <small>Kategori: ${item.kategori} | Stok: ${item.stok} |
+                                                                                            <span class="stock-status ${stockStatusClass}">${stockText}</span></small>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                `;
                     });
 
                     suggestionsContainer.innerHTML = html;
@@ -985,13 +993,15 @@
                         const button = event.relatedTarget;
                         const barangId = button.getAttribute("data-id");
                         const barangNama = button.getAttribute("data-nama");
-                        const barangKode = button.getAttribute("data-kode") || '';
-                        const stokTersedia = button.getAttribute("data-stok") || '0';
+                        const barangKode = button.getAttribute("data-kode");
+                        const stokTersedia = button.getAttribute("data-stok");
+                        const hargaDipilih = button.getAttribute("data-harga"); // ✅ AMBIL HARGA
 
                         document.getElementById("barangKeluarId").value = barangId;
                         document.getElementById("barangKeluarNama").value = barangNama;
                         document.getElementById("barangKeluarKode").value = barangKode;
                         document.getElementById("stokTersedia").textContent = stokTersedia;
+                        document.getElementById("hargaDipilih").value = hargaDipilih; // ✅ SET HARGA
 
                         const jumlahInput = document.getElementById("jumlahKeluar");
                         jumlahInput.max = stokTersedia;

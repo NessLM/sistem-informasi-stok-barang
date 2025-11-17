@@ -370,7 +370,13 @@ class DataKeseluruhan extends Controller
             'bagian_id' => 'nullable|exists:bagian,id',
             'keterangan' => 'nullable|string',
             'bukti' => 'nullable|file|mimes:jpeg,jpg,png,pdf|max:2048',
-            'harga_dipilih' => 'nullable|numeric|min:0', // PARAMETER BARU untuk memilih batch
+            'harga_dipilih' => 'nullable|numeric|min:0',
+        ]);
+
+        // ✅ DEBUG: Cek apakah harga_dipilih diterima
+        Log::info('Request validation passed', [
+            'harga_dipilih' => $validated['harga_dipilih'] ?? 'TIDAK ADA',
+            'all_request' => $request->all()
         ]);
 
         $user = Auth::user();
@@ -389,7 +395,6 @@ class DataKeseluruhan extends Controller
             $file = $request->file('bukti');
             $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
             $buktiPath = $file->storeAs('bukti-barang-keluar', $fileName, 'public');
-            Log::info('Bukti uploaded', ['path' => $buktiPath]);
         }
 
         DB::beginTransaction();
@@ -411,9 +416,8 @@ class DataKeseluruhan extends Controller
 
             $sisaStok = null;
 
-            // MODE GUDANG
+            // MODE GUDANG (pj_stok)
             if ($user->gudang_id && Schema::hasTable('pj_stok')) {
-                // Cek total stok tersedia
                 $totalStok = PjStok::where('kode_barang', $kode_barang)
                     ->where('id_gudang', $user->gudang_id)
                     ->sum('stok');
@@ -426,7 +430,6 @@ class DataKeseluruhan extends Controller
                     ]);
                 }
 
-                // Ambil semua batch stok (FIFO - oldest first by created_at)
                 $stokBatches = PjStok::where('kode_barang', $kode_barang)
                     ->where('id_gudang', $user->gudang_id)
                     ->where('stok', '>', 0)
@@ -442,7 +445,6 @@ class DataKeseluruhan extends Controller
                     ]);
                 }
 
-                // Proses FIFO - kurangi dari batch tertua
                 $sisaJumlah = $jumlahDiminta;
                 foreach ($stokBatches as $batch) {
                     if ($sisaJumlah <= 0) break;
@@ -466,50 +468,66 @@ class DataKeseluruhan extends Controller
                     $dataToInsert['id_gudang'] = $user->gudang_id;
                 }
             }
-            // MODE BAGIAN - dengan PILIHAN HARGA SPESIFIK
+            // MODE BAGIAN (stok_bagian) - ✅ FIX: HANYA ambil batch yang dipilih
             else {
-                Log::info('MODE BAGIAN - Harga dipilih', ['harga' => $hargaDipilih]);
+                Log::info('MODE BAGIAN - Barang Keluar', [
+                    'bagian_id' => $bagianId,
+                    'harga_dipilih' => $hargaDipilih
+                ]);
 
-                // Query builder untuk batch stok
+                // ✅ FIX: Jika user pilih harga tertentu, HANYA proses batch dengan harga tersebut
                 $queryBatch = StokBagian::where('kode_barang', $kode_barang)
                     ->where('bagian_id', $bagianId)
                     ->where('stok', '>', 0);
 
-                // JIKA user memilih harga tertentu, HANYA ambil batch dengan harga tersebut
                 if ($hargaDipilih !== null) {
+                    // ✅ KUNCI: Filter HANYA batch dengan harga yang dipilih
                     $queryBatch->where('harga', $hargaDipilih);
-                    Log::info('Filter batch dengan harga', ['harga' => $hargaDipilih]);
                 }
 
-                // Urutkan FIFO (oldest first)
+                // Ambil batch (jika ada multiple dengan harga sama, pakai FIFO)
                 $stokBatches = $queryBatch
                     ->orderBy('created_at', 'asc')
                     ->lockForUpdate()
                     ->get();
 
+                Log::info('Batch ditemukan', [
+                    'jumlah' => $stokBatches->count(),
+                    'batch_details' => $stokBatches->map(fn($b) => [
+                        'id' => $b->id,
+                        'harga' => $b->harga,
+                        'stok' => $b->stok,
+                        'batch_number' => $b->batch_number
+                    ])->toArray()
+                ]);
+
                 if ($stokBatches->isEmpty()) {
+                    $pesan = $hargaDipilih !== null
+                        ? "Barang dengan harga Rp " . number_format($hargaDipilih, 0, ',', '.') . " tidak ditemukan atau stok habis."
+                        : "Stok barang tidak ditemukan.";
+
                     return back()->with('toast', [
                         'type' => 'error',
                         'title' => 'Stok Tidak Ditemukan',
-                        'message' => $hargaDipilih !== null
-                            ? "Barang dengan harga Rp " . number_format($hargaDipilih, 0, ',', '.') . " tidak tersedia atau stok habis."
-                            : 'Barang tidak ada di stok bagian terpilih.'
+                        'message' => $pesan
                     ]);
                 }
 
-                // Cek total stok dari batch yang dipilih
+                // Cek total stok tersedia dari batch yang dipilih
                 $totalStokTersedia = $stokBatches->sum('stok');
                 if ($totalStokTersedia < $jumlahDiminta) {
+                    $pesan = $hargaDipilih !== null
+                        ? "Stok dengan harga Rp " . number_format($hargaDipilih, 0, ',', '.') . " hanya: {$totalStokTersedia}, diminta: {$jumlahDiminta}"
+                        : "Stok tersedia: {$totalStokTersedia}, diminta: {$jumlahDiminta}";
+
                     return back()->with('toast', [
                         'type' => 'error',
                         'title' => 'Stok Tidak Cukup',
-                        'message' => $hargaDipilih !== null
-                            ? "Stok dengan harga Rp " . number_format($hargaDipilih, 0, ',', '.') . " hanya tersedia: {$totalStokTersedia}, diminta: {$jumlahDiminta}"
-                            : "Stok tersedia: {$totalStokTersedia}, diminta: {$jumlahDiminta}"
+                        'message' => $pesan
                     ]);
                 }
 
-                // Proses pengurangan stok dengan FIFO dari batch yang dipilih
+                // ✅ PROSES: Kurangi stok dari batch yang dipilih (FIFO jika multiple)
                 $sisaJumlah = $jumlahDiminta;
                 $totalHarga = 0;
                 $detailBatch = [];
@@ -517,49 +535,44 @@ class DataKeseluruhan extends Controller
                 foreach ($stokBatches as $batch) {
                     if ($sisaJumlah <= 0) break;
 
-                    if ($batch->stok >= $sisaJumlah) {
-                        // Batch ini cukup untuk memenuhi sisa kebutuhan
-                        $totalHarga += ($sisaJumlah * $batch->harga);
-                        $detailBatch[] = [
-                            'batch_id' => $batch->id,
-                            'harga' => $batch->harga,
-                            'jumlah' => $sisaJumlah
-                        ];
+                    $jumlahDiambil = min($sisaJumlah, $batch->stok);
 
-                        $batch->decrement('stok', $sisaJumlah);
-                        Log::info("Mengurangi batch ID {$batch->id} (Harga: {$batch->harga}): {$sisaJumlah} unit");
-                        $sisaJumlah = 0;
-                    } else {
-                        // Batch ini habis, lanjut ke batch berikutnya (dalam harga yang sama jika dipilih)
-                        $totalHarga += ($batch->stok * $batch->harga);
-                        $detailBatch[] = [
-                            'batch_id' => $batch->id,
-                            'harga' => $batch->harga,
-                            'jumlah' => $batch->stok
-                        ];
+                    $totalHarga += ($jumlahDiambil * $batch->harga);
+                    $detailBatch[] = [
+                        'batch_id' => $batch->id,
+                        'batch_number' => $batch->batch_number,
+                        'harga' => $batch->harga,
+                        'jumlah' => $jumlahDiambil
+                    ];
 
-                        $sisaJumlah -= $batch->stok;
-                        Log::info("Menghabiskan batch ID {$batch->id} (Harga: {$batch->harga}): {$batch->stok} unit");
-                        $batch->update(['stok' => 0]);
-                    }
+                    $batch->decrement('stok', $jumlahDiambil);
+
+                    Log::info("✅ Mengurangi batch", [
+                        'batch_id' => $batch->id,
+                        'harga' => $batch->harga,
+                        'jumlah_diambil' => $jumlahDiambil,
+                        'sisa_stok_batch' => $batch->fresh()->stok
+                    ]);
+
+                    $sisaJumlah -= $jumlahDiambil;
                 }
 
-                // Hitung rata-rata harga untuk pencatatan
+                // Simpan detail untuk tracking
                 $hargaRataRata = $jumlahDiminta > 0 ? $totalHarga / $jumlahDiminta : 0;
                 $dataToInsert['harga_satuan'] = $hargaRataRata;
                 $dataToInsert['total_harga'] = $totalHarga;
                 $dataToInsert['detail_batch'] = json_encode($detailBatch);
 
-                // Hitung total sisa stok (SEMUA harga)
+                // Total sisa stok (semua batch)
                 $sisaStok = StokBagian::where('kode_barang', $kode_barang)
                     ->where('bagian_id', $bagianId)
                     ->sum('stok');
 
-                Log::info("Barang Keluar Summary", [
+                Log::info("Summary Barang Keluar", [
                     'total_harga' => $totalHarga,
                     'harga_rata_rata' => $hargaRataRata,
-                    'harga_dipilih' => $hargaDipilih,
-                    'detail_batch' => $detailBatch
+                    'detail_batch' => $detailBatch,
+                    'sisa_stok_total' => $sisaStok
                 ]);
             }
 
@@ -567,7 +580,7 @@ class DataKeseluruhan extends Controller
 
             DB::commit();
 
-            $pesanSukses = "Barang keluar dicatat. Sisa stok: {$sisaStok}";
+            $pesanSukses = "Barang keluar berhasil. Sisa stok: {$sisaStok}";
             if ($hargaDipilih !== null) {
                 $pesanSukses .= " (Harga: Rp " . number_format($hargaDipilih, 0, ',', '.') . ")";
             }
@@ -579,14 +592,19 @@ class DataKeseluruhan extends Controller
             ]);
         } catch (\Throwable $e) {
             DB::rollBack();
-            Log::error('Barang keluar gagal', ['err' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            Log::error('Barang keluar gagal', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
             return back()->with('toast', [
                 'type' => 'error',
                 'title' => 'Error',
-                'message' => $e->getMessage()
+                'message' => 'Gagal memproses barang keluar: ' . $e->getMessage()
             ]);
         }
     }
+
 
     /**
      * Konfirmasi barang masuk ke stok_bagian
@@ -776,7 +794,7 @@ class DataKeseluruhan extends Controller
      */
     public function kembalikanBarang($id)
     {
-        Log::info('=== KEMBALIKAN BARANG REQUEST ===', ['transaksi_id' => $id]);
+        Log::info('=== KEMBALIKAN BARANG ===', ['transaksi_id' => $id]);
 
         $user = Auth::user();
 
@@ -795,7 +813,7 @@ class DataKeseluruhan extends Controller
                 ]);
             }
 
-            // Validasi: Hanya bisa mengembalikan barang ke gudang/bagian yang sesuai
+            // Validasi akses
             if ($user->gudang_id && $transaksi->bagian_id != $user->gudang_id) {
                 return back()->with('toast', [
                     'type' => 'error',
@@ -812,20 +830,29 @@ class DataKeseluruhan extends Controller
                 ]);
             }
 
-            // Cek apakah sudah dikonfirmasi
+            // Cek status konfirmasi
             $statusKonfirmasi = $transaksi->status_konfirmasi ?? 'pending';
             if ($statusKonfirmasi === 'confirmed') {
                 return back()->with('toast', [
                     'type' => 'error',
                     'title' => 'Tidak Bisa Dikembalikan',
-                    'message' => 'Barang yang sudah dikonfirmasi tidak bisa dikembalikan. Silakan gunakan fitur Barang Keluar.'
+                    'message' => 'Barang yang sudah dikonfirmasi tidak bisa dikembalikan.'
                 ]);
             }
 
             $kodeBarang = $transaksi->kode_barang;
             $jumlah = $transaksi->jumlah;
+            $hargaBarang = $transaksi->harga ?? 0;
+            $bagianIdTransaksi = $transaksi->bagian_id; // ✅ KUNCI: Bagian tujuan distribusi
 
-            // Ambil data barang untuk mendapatkan id_kategori
+            Log::info('Data transaksi', [
+                'kode_barang' => $kodeBarang,
+                'jumlah' => $jumlah,
+                'harga' => $hargaBarang,
+                'bagian_id' => $bagianIdTransaksi
+            ]);
+
+            // Ambil data barang
             $barang = DB::table('barang')
                 ->where('kode_barang', $kodeBarang)
                 ->first();
@@ -834,62 +861,50 @@ class DataKeseluruhan extends Controller
                 throw new \Exception('Data barang tidak ditemukan.');
             }
 
-            // MODE GUDANG - Kembalikan ke pj_stok
-            if ($user->gudang_id && Schema::hasTable('pj_stok')) {
-                // Cek apakah sudah ada di pj_stok
-                $pjStok = PjStok::where('kode_barang', $kodeBarang)
-                    ->where('id_gudang', $user->gudang_id)
-                    ->lockForUpdate()
-                    ->first();
+            // ✅ FIX: Kembalikan ke pb_stok dengan bagian_id yang SAMA seperti saat distribusi
 
-                if ($pjStok) {
-                    // Jika sudah ada, tambahkan stok
-                    $pjStok->increment('stok', $jumlah);
-                } else {
-                    // Jika belum ada, buat record baru
-                    PjStok::create([
-                        'kode_barang' => $kodeBarang,
-                        'id_gudang' => $user->gudang_id,
-                        'id_kategori' => $barang->id_kategori,
-                        'stok' => $jumlah,
-                    ]);
-                }
+            // Cek apakah sudah ada di pb_stok dengan bagian_id dan harga yang sama
+            $pbStok = DB::table('pb_stok')
+                ->where('kode_barang', $kodeBarang)
+                ->where('bagian_id', $bagianIdTransaksi) // ✅ KUNCI: Bagian yang sama
+                ->where('harga', $hargaBarang) // ✅ KUNCI: Harga yang sama
+                ->lockForUpdate()
+                ->first();
 
-                $namaLokasi = 'Gudang';
-            }
-            // MODE BAGIAN - Kembalikan ke pb_stok (TIDAK perlu kurangi stok_bagian karena belum dikonfirmasi)
-            else if ($user->bagian_id) {
-                // Cek apakah sudah ada di pb_stok
-                $pbStok = DB::table('pb_stok')
-                    ->where('kode_barang', $kodeBarang)
-                    ->where('bagian_id', $user->bagian_id)
-                    ->lockForUpdate()
-                    ->first();
+            if ($pbStok) {
+                // ✅ Jika ada, tambahkan stok ke record yang sama
+                DB::table('pb_stok')
+                    ->where('id', $pbStok->id)
+                    ->increment('stok', $jumlah);
 
-                if ($pbStok) {
-                    // Jika sudah ada, tambahkan stok
-                    DB::table('pb_stok')
-                        ->where('kode_barang', $kodeBarang)
-                        ->where('bagian_id', $user->bagian_id)
-                        ->increment('stok', $jumlah);
-                } else {
-                    // Jika belum ada, buat record baru
-                    DB::table('pb_stok')->insert([
-                        'kode_barang' => $kodeBarang,
-                        'bagian_id' => $user->bagian_id,
-                        'stok' => $jumlah,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-                }
-
-                $bagianData = Bagian::find($user->bagian_id);
-                $namaLokasi = 'PB ' . ($bagianData->nama ?? '');
+                Log::info('✅ Stok ditambahkan ke pb_stok existing', [
+                    'pb_stok_id' => $pbStok->id,
+                    'stok_baru' => $pbStok->stok + $jumlah
+                ]);
             } else {
-                throw new \Exception('User tidak memiliki akses gudang atau bagian.');
+                // ✅ Jika tidak ada, buat record baru di pb_stok
+                DB::table('pb_stok')->insert([
+                    'kode_barang' => $kodeBarang,
+                    'bagian_id' => $bagianIdTransaksi, // ✅ KUNCI: Kembalikan ke bagian asal
+                    'stok' => $jumlah,
+                    'harga' => $hargaBarang,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                Log::info('✅ Record baru dibuat di pb_stok', [
+                    'kode_barang' => $kodeBarang,
+                    'bagian_id' => $bagianIdTransaksi,
+                    'stok' => $jumlah,
+                    'harga' => $hargaBarang
+                ]);
             }
 
-            // Hapus transaksi distribusi setelah berhasil dikembalikan
+            // Ambil nama bagian untuk pesan
+            $bagianData = Bagian::find($bagianIdTransaksi);
+            $namaLokasi = 'PB ' . ($bagianData->nama ?? 'Unknown');
+
+            // Hapus transaksi distribusi
             DB::table('transaksi_distribusi')
                 ->where('id', $id)
                 ->delete();
@@ -899,12 +914,12 @@ class DataKeseluruhan extends Controller
             return back()->with('toast', [
                 'type' => 'success',
                 'title' => 'Berhasil',
-                'message' => "Barang berhasil dikembalikan ke {$namaLokasi}. Jumlah: {$jumlah}"
+                'message' => "Barang dikembalikan ke {$namaLokasi}. Jumlah: {$jumlah}, Harga: Rp " . number_format($hargaBarang, 0, ',', '.')
             ]);
         } catch (\Throwable $e) {
             DB::rollBack();
             Log::error('Kembalikan barang gagal', [
-                'err' => $e->getMessage(),
+                'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
 
