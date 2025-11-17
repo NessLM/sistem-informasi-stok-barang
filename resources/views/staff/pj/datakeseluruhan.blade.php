@@ -34,28 +34,28 @@
 
             <div id="toast-notif"
                 style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-20px);
-                                                                               z-index: 2000; display: flex; justify-content: center; pointer-events: none;
-                                                                               animation: slideDown 0.4s ease-out forwards;">
+                                                                                               z-index: 2000; display: flex; justify-content: center; pointer-events: none;
+                                                                                               animation: slideDown 0.4s ease-out forwards;">
 
                 <div class="toast-message"
                     style="background: #fff; border-radius: 16px; padding: 18px 24px;
-                                                                                   box-shadow: 0 8px 24px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.1);
-                                                                                   text-align: left; min-width: 320px; max-width: 420px;
-                                                                                   border-left: 5px solid {{ $bgColor }};
-                                                                                   transition: all 0.3s ease;
-                                                                                   display: flex; align-items: center; gap: 14px;">
+                                                                                                   box-shadow: 0 8px 24px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.1);
+                                                                                                   text-align: left; min-width: 320px; max-width: 420px;
+                                                                                                   border-left: 5px solid {{ $bgColor }};
+                                                                                                   transition: all 0.3s ease;
+                                                                                                   display: flex; align-items: center; gap: 14px;">
 
                     <div
                         style="flex-shrink: 0; width: 42px; height: 42px; border-radius: 50%;
-                                                                                       background: {{ $bgColor }}; display: flex; align-items: center;
-                                                                                       justify-content: center; box-shadow: 0 2px 8px {{ $bgColor }}40;">
+                                                                                                       background: {{ $bgColor }}; display: flex; align-items: center;
+                                                                                                       justify-content: center; box-shadow: 0 2px 8px {{ $bgColor }}40;">
                         <i class="bi {{ $iconClass }}" style="color: #fff; font-size: 22px;"></i>
                     </div>
 
                     <div style="flex: 1;">
                         <div
                             style="font-weight: 600; font-size: 16px; margin-bottom: 4px;
-                                                                                           color: #1a1a1a; line-height: 1.3;">
+                                                                                                           color: #1a1a1a; line-height: 1.3;">
                             {{ session('toast.title') }}
                         </div>
                         <div style="color: #666; font-size: 14px; line-height: 1.5;">
@@ -65,10 +65,10 @@
 
                     <button onclick="closeToast()"
                         style="flex-shrink: 0; background: none; border: none; 
-                                                                                           color: #999; cursor: pointer; padding: 4px; 
-                                                                                           border-radius: 4px; transition: all 0.2s;
-                                                                                           pointer-events: all; width: 24px; height: 24px;
-                                                                                           display: flex; align-items: center; justify-content: center;">
+                                                                                                           color: #999; cursor: pointer; padding: 4px; 
+                                                                                                           border-radius: 4px; transition: all 0.2s;
+                                                                                                           pointer-events: all; width: 24px; height: 24px;
+                                                                                                           display: flex; align-items: center; justify-content: center;">
                         <i class="bi bi-x-lg" style="font-size: 14px;"></i>
                     </button>
                 </div>
@@ -516,10 +516,18 @@
                     </div>
 
                     {{-- Action Buttons --}}
+                    {{-- Action Buttons --}}
                     <div class="d-flex justify-content-end gap-2">
                         <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Batal</button>
                         <button type="button" class="btn btn-success px-4" id="btnKonfirmasiOk">
-                            <i class="bi bi-check-circle me-1"></i> Konfirmasi
+                            <span id="btnTextKonfirmasi">
+                                <i class="bi bi-check-circle me-1"></i> Konfirmasi
+                            </span>
+                            <span id="btnLoaderKonfirmasi" class="d-none">
+                                <span class="spinner-border spinner-border-sm me-1" role="status"
+                                    aria-hidden="true"></span>
+                                Memproses...
+                            </span>
                         </button>
                     </div>
                 </div>
@@ -577,7 +585,14 @@
                     <div class="d-flex justify-content-end gap-2">
                         <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Batal</button>
                         <button type="button" class="btn btn-warning px-4" id="btnKembalikanOk">
-                            <i class="bi bi-arrow-left-circle me-1"></i> Kembalikan
+                            <span id="btnTextKembalikan">
+                                <i class="bi bi-arrow-left-circle me-1"></i> Kembalikan
+                            </span>
+                            <span id="btnLoaderKembalikan" class="d-none">
+                                <span class="spinner-border spinner-border-sm me-1" role="status"
+                                    aria-hidden="true"></span>
+                                Memproses...
+                            </span>
                         </button>
                     </div>
                 </div>
@@ -647,8 +662,14 @@
 
                         <div class="d-flex justify-content-end gap-2 mt-4">
                             <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Batal</button>
-                            <button type="submit" class="btn btn-danger px-4" style="font-size: 16px;">
-                                Simpan
+                            <button type="submit" class="btn btn-danger px-4" id="btnSimpanBarangKeluar"
+                                style="font-size: 16px;">
+                                <span id="btnTextKeluar">Simpan</span>
+                                <span id="btnLoaderKeluar" class="d-none">
+                                    <span class="spinner-border spinner-border-sm me-1" role="status"
+                                        aria-hidden="true"></span>
+                                    Memproses...
+                                </span>
                             </button>
                         </div>
                     </form>
@@ -711,7 +732,6 @@
     </div>
 
     @push('scripts')
-        {{-- JavaScript --}}
         <script>
             // Toggle detail function
             function toggleDetail(id) {
@@ -729,6 +749,24 @@
             let modalKonfirmasiBS = null;
             let modalKembalikanBS = null;
 
+            // ✅ HELPER: Disable/Enable Button
+            function setButtonLoading(btnId, textId, loaderId, isLoading) {
+                const btn = document.getElementById(btnId);
+                const text = document.getElementById(textId);
+                const loader = document.getElementById(loaderId);
+
+                if (btn && text && loader) {
+                    btn.disabled = isLoading;
+                    if (isLoading) {
+                        text.classList.add('d-none');
+                        loader.classList.remove('d-none');
+                    } else {
+                        text.classList.remove('d-none');
+                        loader.classList.add('d-none');
+                    }
+                }
+            }
+
             // Initialize Bootstrap Modals setelah DOM ready
             document.addEventListener('DOMContentLoaded', function () {
                 // Initialize Modal Konfirmasi
@@ -743,7 +781,7 @@
                     modalKembalikanBS = new bootstrap.Modal(modalKembalikanEl);
                 }
 
-                // Handle Konfirmasi Button Click
+                // ✅ Handle Konfirmasi Button Click
                 document.querySelectorAll('.btn-konfirmasi').forEach(btn => {
                     btn.addEventListener('click', function () {
                         const id = this.dataset.id;
@@ -755,7 +793,6 @@
 
                         currentKonfirmasiId = id;
 
-                        // Format harga dengan pemisah ribuan
                         const formatRupiah = (angka) => {
                             return new Intl.NumberFormat('id-ID', {
                                 style: 'currency',
@@ -765,20 +802,21 @@
                             }).format(angka);
                         };
 
-                        // Update modal content
                         document.getElementById('konfirmasiNama').textContent = nama;
                         document.getElementById('konfirmasiKode').textContent = kode;
                         document.getElementById('konfirmasiJumlah').textContent = `${jumlah} ${satuan}`;
                         document.getElementById('konfirmasiHarga').textContent = formatRupiah(harga);
 
-                        // Tampilkan modal dengan Bootstrap
+                        // ✅ Reset button state
+                        setButtonLoading('btnKonfirmasiOk', 'btnTextKonfirmasi', 'btnLoaderKonfirmasi', false);
+
                         if (modalKonfirmasiBS) {
                             modalKonfirmasiBS.show();
                         }
                     });
                 });
 
-                // Handle Kembalikan Button Click
+                // ✅ Handle Kembalikan Button Click
                 document.querySelectorAll('.btn-kembalikan').forEach(btn => {
                     btn.addEventListener('click', function () {
                         const id = this.dataset.id;
@@ -790,16 +828,21 @@
                         document.getElementById('kembalikanNama').textContent = nama;
                         document.getElementById('kembalikanJumlah').textContent = `${jumlah} ${satuan}`;
 
-                        // Tampilkan modal dengan Bootstrap
+                        // ✅ Reset button state
+                        setButtonLoading('btnKembalikanOk', 'btnTextKembalikan', 'btnLoaderKembalikan', false);
+
                         if (modalKembalikanBS) {
                             modalKembalikanBS.show();
                         }
                     });
                 });
 
-                // Handle Konfirmasi OK Button
+                // ✅ Handle Konfirmasi OK Button
                 document.getElementById('btnKonfirmasiOk')?.addEventListener('click', function () {
                     if (currentKonfirmasiId) {
+                        // Enable loading
+                        setButtonLoading('btnKonfirmasiOk', 'btnTextKonfirmasi', 'btnLoaderKonfirmasi', true);
+
                         const form = document.createElement('form');
                         form.method = 'POST';
                         form.action = `/pj/konfirmasi-barang-masuk/${currentKonfirmasiId}`;
@@ -815,9 +858,12 @@
                     }
                 });
 
-                // Handle Kembalikan OK Button
+                // ✅ Handle Kembalikan OK Button
                 document.getElementById('btnKembalikanOk')?.addEventListener('click', function () {
                     if (currentKembalikanId) {
+                        // Enable loading
+                        setButtonLoading('btnKembalikanOk', 'btnTextKembalikan', 'btnLoaderKembalikan', true);
+
                         const form = document.createElement('form');
                         form.method = 'POST';
                         form.action = `/pj/kembalikan-barang/${currentKembalikanId}`;
@@ -833,160 +879,97 @@
                     }
                 });
 
-                // ... sisanya autocomplete code tetap sama
-            });
-
-            // Handle Konfirmasi OK Button
-            document.getElementById('btnKonfirmasiOk')?.addEventListener('click', function () {
-                if (currentKonfirmasiId) {
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = `/pj/konfirmasi-barang-masuk/${currentKonfirmasiId}`;
-
-                    const csrf = document.createElement('input');
-                    csrf.type = 'hidden';
-                    csrf.name = '_token';
-                    csrf.value = '{{ csrf_token() }}';
-                    form.appendChild(csrf);
-
-                    document.body.appendChild(form);
-                    form.submit();
-                }
-            });
-
-            // Handle Kembalikan OK Button
-            document.getElementById('btnKembalikanOk')?.addEventListener('click', function () {
-                if (currentKembalikanId) {
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = `/pj/kembalikan-barang/${currentKembalikanId}`;
-
-                    const csrf = document.createElement('input');
-                    csrf.type = 'hidden';
-                    csrf.name = '_token';
-                    csrf.value = '{{ csrf_token() }}';
-                    form.appendChild(csrf);
-
-                    document.body.appendChild(form);
-                    form.submit();
-                }
-            });
-
-            // Autocomplete search functionality
-            document.addEventListener('DOMContentLoaded', function () {
+                // ✅ Autocomplete functionality
                 const searchInput = document.getElementById('searchInput');
                 const suggestionsContainer = document.getElementById('searchSuggestions');
                 let currentSuggestions = [];
                 let activeSuggestionIndex = -1;
                 let searchTimeout;
 
-                if (!searchInput || !suggestionsContainer) { return; }
+                if (searchInput && suggestionsContainer) {
+                    function fetchSuggestions(query) {
+                        if (query.length < 2) { hideSuggestions(); return; }
+                        showLoading();
+                        clearTimeout(searchTimeout);
 
-                function fetchSuggestions(query) {
-                    if (query.length < 2) { hideSuggestions(); return; }
-                    showLoading();
-                    clearTimeout(searchTimeout);
-
-                    searchTimeout = setTimeout(() => {
-                        let searchUrl = `/pj/api/search-barang?q=${encodeURIComponent(query)}`;
-                        fetch(searchUrl)
-                            .then(response => response.json())
-                            .then(data => { currentSuggestions = data; displaySuggestions(data); })
-                            .catch(error => { console.error('Search error:', error); hideSuggestions(); });
-                    }, 300);
-                }
-
-                function showLoading() {
-                    suggestionsContainer.innerHTML = '<div class="loading-suggestion">Mencari...</div>';
-                    suggestionsContainer.style.display = 'block';
-                }
-
-                function displaySuggestions(suggestions) {
-                    if (suggestions.length === 0) {
-                        suggestionsContainer.innerHTML = '<div class="loading-suggestion">Tidak ada barang ditemukan</div>';
-                        return;
+                        searchTimeout = setTimeout(() => {
+                            fetch(`/pj/api/search-barang?q=${encodeURIComponent(query)}`)
+                                .then(response => response.json())
+                                .then(data => { currentSuggestions = data; displaySuggestions(data); })
+                                .catch(error => { console.error('Search error:', error); hideSuggestions(); });
+                        }, 300);
                     }
 
-                    let html = '';
-                    suggestions.forEach((item, index) => {
-                        const stockStatusClass = `stock-${item.stock_status}`;
-                        const stockText = item.stock_status === 'empty' ? 'Habis' :
-                            item.stock_status === 'low' ? 'Sedikit' : 'Tersedia';
-
-                        html += `
-                                                                                    <div class="search-suggestion-item" data-index="${index}">
-                                                                                        <div class="suggestion-name">${item.nama}</div>
-                                                                                        <div class="suggestion-code">Kode: ${item.kode}</div>
-                                                                                        <div class="suggestion-meta">
-                                                                                            <small>Kategori: ${item.kategori} | Stok: ${item.stok} |
-                                                                                            <span class="stock-status ${stockStatusClass}">${stockText}</span></small>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                `;
-                    });
-
-                    suggestionsContainer.innerHTML = html;
-                    suggestionsContainer.style.display = 'block';
-
-                    suggestionsContainer.querySelectorAll('.search-suggestion-item').forEach(item => {
-                        item.addEventListener('click', function () {
-                            const index = parseInt(this.dataset.index);
-                            selectSuggestion(index);
-                        });
-                    });
-                }
-
-                function hideSuggestions() { suggestionsContainer.style.display = 'none'; activeSuggestionIndex = -1; }
-
-                function selectSuggestion(index) {
-                    if (currentSuggestions[index]) {
-                        const suggestion = currentSuggestions[index];
-                        searchInput.value = suggestion.nama;
-                        hideSuggestions();
-                        document.getElementById('searchForm').submit();
+                    function showLoading() {
+                        suggestionsContainer.innerHTML = '<div class="loading-suggestion">Mencari...</div>';
+                        suggestionsContainer.style.display = 'block';
                     }
-                }
 
-                function updateActiveSuggestion(suggestions) {
-                    suggestions.forEach((item, index) => {
-                        if (index === activeSuggestionIndex) item.classList.add('active');
-                        else item.classList.remove('active');
-                    });
-                }
-
-                // Event listeners
-                searchInput.addEventListener('input', function () { fetchSuggestions(this.value.trim()); });
-
-                searchInput.addEventListener('keydown', function (e) {
-                    const suggestions = suggestionsContainer.querySelectorAll('.search-suggestion-item');
-
-                    if (e.key === 'ArrowDown') {
-                        e.preventDefault();
-                        activeSuggestionIndex = Math.min(activeSuggestionIndex + 1, suggestions.length - 1);
-                        updateActiveSuggestion(suggestions);
-                    } else if (e.key === 'ArrowUp') {
-                        e.preventDefault();
-                        activeSuggestionIndex = Math.max(activeSuggestionIndex - 1, -1);
-                        updateActiveSuggestion(suggestions);
-                    } else if (e.key === 'Enter') {
-                        if (activeSuggestionIndex >= 0) {
-                            e.preventDefault();
-                            selectSuggestion(activeSuggestionIndex);
+                    function displaySuggestions(suggestions) {
+                        if (suggestions.length === 0) {
+                            suggestionsContainer.innerHTML = '<div class="loading-suggestion">Tidak ada barang ditemukan</div>';
+                            return;
                         }
-                    } else if (e.key === 'Escape') {
-                        hideSuggestions();
+
+                        let html = '';
+                        suggestions.forEach((item, index) => {
+                            const stockStatusClass = `stock-${item.stock_status}`;
+                            const stockText = item.stock_status === 'empty' ? 'Habis' :
+                                item.stock_status === 'low' ? 'Sedikit' : 'Tersedia';
+
+                            html += `
+                        <div class="search-suggestion-item" data-index="${index}">
+                            <div class="suggestion-name">${item.nama}</div>
+                            <div class="suggestion-code">Kode: ${item.kode}</div>
+                            <div class="suggestion-meta">
+                                <small>Kategori: ${item.kategori} | Stok: ${item.stok} |
+                                <span class="stock-status ${stockStatusClass}">${stockText}</span></small>
+                            </div>
+                        </div>
+                    `;
+                        });
+
+                        suggestionsContainer.innerHTML = html;
+                        suggestionsContainer.style.display = 'block';
+
+                        suggestionsContainer.querySelectorAll('.search-suggestion-item').forEach(item => {
+                            item.addEventListener('click', function () {
+                                selectSuggestion(parseInt(this.dataset.index));
+                            });
+                        });
                     }
-                });
 
-                searchInput.addEventListener('focus', function () {
-                    if (this.value.trim().length >= 2) { fetchSuggestions(this.value.trim()); }
-                });
+                    function hideSuggestions() {
+                        suggestionsContainer.style.display = 'none';
+                        activeSuggestionIndex = -1;
+                    }
 
-                document.addEventListener('click', function (e) {
-                    if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) { hideSuggestions(); }
-                });
+                    function selectSuggestion(index) {
+                        if (currentSuggestions[index]) {
+                            searchInput.value = currentSuggestions[index].nama;
+                            hideSuggestions();
+                            document.getElementById('searchForm').submit();
+                        }
+                    }
 
-                // Handle Modal Barang Keluar
+                    searchInput.addEventListener('input', function () {
+                        fetchSuggestions(this.value.trim());
+                    });
+
+                    searchInput.addEventListener('focus', function () {
+                        if (this.value.trim().length >= 2) {
+                            fetchSuggestions(this.value.trim());
+                        }
+                    });
+
+                    document.addEventListener('click', function (e) {
+                        if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+                            hideSuggestions();
+                        }
+                    });
+                }
+
+                // ✅ Handle Modal Barang Keluar
                 const modalBarangKeluar = document.getElementById("modalBarangKeluar");
                 if (modalBarangKeluar) {
                     modalBarangKeluar.addEventListener("show.bs.modal", function (event) {
@@ -995,27 +978,29 @@
                         const barangNama = button.getAttribute("data-nama");
                         const barangKode = button.getAttribute("data-kode");
                         const stokTersedia = button.getAttribute("data-stok");
-                        const hargaDipilih = button.getAttribute("data-harga"); // ✅ AMBIL HARGA
+                        const hargaDipilih = button.getAttribute("data-harga");
 
                         document.getElementById("barangKeluarId").value = barangId;
                         document.getElementById("barangKeluarNama").value = barangNama;
                         document.getElementById("barangKeluarKode").value = barangKode;
                         document.getElementById("stokTersedia").textContent = stokTersedia;
-                        document.getElementById("hargaDipilih").value = hargaDipilih; // ✅ SET HARGA
+                        document.getElementById("hargaDipilih").value = hargaDipilih;
+                        document.getElementById("jumlahKeluar").max = stokTersedia;
 
-                        const jumlahInput = document.getElementById("jumlahKeluar");
-                        jumlahInput.max = stokTersedia;
+                        // ✅ Reset button state
+                        setButtonLoading('btnSimpanBarangKeluar', 'btnTextKeluar', 'btnLoaderKeluar', false);
 
+                        // Reset form fields (kecuali yang baru di-set)
                         document.getElementById('formBarangKeluar').reset();
                         document.getElementById("barangKeluarId").value = barangId;
                         document.getElementById("barangKeluarNama").value = barangNama;
                         document.getElementById("barangKeluarKode").value = barangKode;
-
+                        document.getElementById("hargaDipilih").value = hargaDipilih;
                         document.getElementById('fileNameKeluar').textContent = '';
                     });
                 }
 
-                // File preview handler
+                // ✅ File preview handler
                 const buktiBrgKeluar = document.getElementById('buktiBrgKeluar');
                 if (buktiBrgKeluar) {
                     buktiBrgKeluar.addEventListener('change', function () {
@@ -1024,11 +1009,12 @@
                     });
                 }
 
-                // Form submit handler
+                // ✅ Form submit handler dengan loading
                 const formBarangKeluar = document.getElementById('formBarangKeluar');
                 if (formBarangKeluar) {
                     formBarangKeluar.addEventListener('submit', function (e) {
                         e.preventDefault();
+
                         const barangId = document.getElementById('barangKeluarId').value;
                         const jumlah = parseInt(document.getElementById('jumlahKeluar').value);
                         const stokMax = parseInt(document.getElementById('stokTersedia').textContent);
@@ -1037,6 +1023,9 @@
                             alert(`Jumlah tidak boleh melebihi stok tersedia (${stokMax})`);
                             return;
                         }
+
+                        // ✅ Enable loading state
+                        setButtonLoading('btnSimpanBarangKeluar', 'btnTextKeluar', 'btnLoaderKeluar', true);
 
                         this.action = `/pj/barang-keluar/${barangId}`;
                         this.submit();
