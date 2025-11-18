@@ -298,7 +298,7 @@
     @endphp
 
     <div class="judul-surat">
-        <h3><strong>SURAT PENGANTAR</h3>
+        <h3>SURAT PENGANTAR</h3>
         <p class="nomor-surat">Nomor : 045.2/ <span style="text-decoration: underline;">&nbsp;&nbsp;O8L&nbsp;&nbsp;</span> /{{ $bulanSekarang }}/{{ $tahunSekarang }}</p>
     </div>
 
