@@ -54,8 +54,7 @@
 
     <div class="judul-surat">
         <h3>SURAT PENGANTAR</h3>
-        <p class="nomor-surat">Nomor : 045.2/ <span
-                > &nbsp; &nbsp;</span>
+        <p class="nomor-surat">Nomor : 045.2/ <span> &nbsp; &nbsp;</span>
             /{{ $bulanSekarang }}/{{ $tahunSekarang }}</p>
     </div>
 
@@ -89,13 +88,12 @@
         </table>
     </div>
 
-    {{-- SECTION TTD --}}
     <div class="section-ttd">
         <div class="ttd-jabatan">
             Kepala Bagian Perencanaan dan Keuangan<br>
             Setda Kabupaten Bangka,
         </div>
-        <div class="ttd-nama">Tati Djumiyati, SE, M. Si</div>
+        <div class="ttd-nama">Tati Djumijati, SE, M. Si</div>
         <div class="ttd-nip">NIP 19720512 198803 2 008</div>
     </div>
 
