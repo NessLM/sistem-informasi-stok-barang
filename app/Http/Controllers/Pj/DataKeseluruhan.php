@@ -74,7 +74,14 @@ class DataKeseluruhan extends Controller
                 ->join('barang', 'pj_stok.kode_barang', '=', 'barang.kode_barang')
                 ->join('kategori', 'pj_stok.id_kategori', '=', 'kategori.id')
                 ->where('pj_stok.id_gudang', $gudang->id)
-                ->select('pj_stok.stok', 'barang.kode_barang', 'barang.nama_barang', 'barang.satuan', 'kategori.nama as kategori_nama')
+                ->select(
+                    'pj_stok.stok',
+                    DB::raw('NULL as harga'), // kalau nanti pj_stok punya kolom harga, ganti jadi 'pj_stok.harga'
+                    'barang.kode_barang',
+                    'barang.nama_barang',
+                    'barang.satuan',
+                    'kategori.nama as kategori_nama'
+                )
                 ->get();
 
             $countEmpty = $allRows->where('stok', 0)->count();
@@ -83,11 +90,12 @@ class DataKeseluruhan extends Controller
             $ringkasanCounts = ['ok' => $countOk, 'low' => $countLow, 'empty' => $countEmpty];
 
             $barangHabis = $allRows->where('stok', 0)->map(fn($i) => (object) [
-                'kode' => $i->kode_barang,
-                'nama' => $i->nama_barang,
-                'satuan' => $i->satuan,
+                'kode'          => $i->kode_barang,
+                'nama'          => $i->nama_barang,
+                'satuan'        => $i->satuan,
                 'stok_tersedia' => 0,
-                'kategori' => (object) ['nama' => $i->kategori_nama],
+                'kategori'      => (object) ['nama' => $i->kategori_nama],
+                'harga'         => $i->harga, // di mode gudang bakal null, gapapa, nanti di Blade ditampilkan "-"
             ])->values();
 
             // Ambil data barang masuk dari transaksi_distribusi dengan status dan harga dari pb_stok
@@ -212,25 +220,34 @@ class DataKeseluruhan extends Controller
             }
 
             // Hitung ringkasan
+            // Hitung ringkasan
             $lowThreshold = 10;
             $allRows = DB::table('stok_bagian')
                 ->join('barang', 'stok_bagian.kode_barang', '=', 'barang.kode_barang')
                 ->join('kategori', 'barang.id_kategori', '=', 'kategori.id')
                 ->where('stok_bagian.bagian_id', $bagianUser->id)
-                ->select('stok_bagian.stok', 'barang.kode_barang', 'barang.nama_barang', 'barang.satuan', 'kategori.nama as kategori_nama')
+                ->select(
+                    'stok_bagian.stok',
+                    'stok_bagian.harga',
+                    'barang.kode_barang',
+                    'barang.nama_barang',
+                    'barang.satuan',
+                    'kategori.nama as kategori_nama'
+                )
                 ->get();
 
             $countEmpty = $allRows->where('stok', 0)->count();
-            $countLow = $allRows->filter(fn($r) => $r->stok > 0 && $r->stok < $lowThreshold)->count();
-            $countOk = max($allRows->count() - $countEmpty - $countLow, 0);
+            $countLow   = $allRows->filter(fn($r) => $r->stok > 0 && $r->stok < $lowThreshold)->count();
+            $countOk    = max($allRows->count() - $countEmpty - $countLow, 0);
             $ringkasanCounts = ['ok' => $countOk, 'low' => $countLow, 'empty' => $countEmpty];
 
             $barangHabis = $allRows->where('stok', 0)->map(fn($i) => (object) [
-                'kode' => $i->kode_barang,
-                'nama' => $i->nama_barang,
-                'satuan' => $i->satuan,
+                'kode'          => $i->kode_barang,
+                'nama'          => $i->nama_barang,
+                'satuan'        => $i->satuan,
                 'stok_tersedia' => 0,
-                'kategori' => (object) ['nama' => $i->kategori_nama],
+                'kategori'      => (object) ['nama' => $i->kategori_nama],
+                'harga'         => $i->harga, // ini yang bakal beda per-batch
             ])->values();
 
             // Ambil data barang masuk dari transaksi_distribusi untuk bagian dengan status

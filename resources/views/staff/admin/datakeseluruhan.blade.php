@@ -392,21 +392,31 @@
                                                                                         </tr>
                                                                                     </thead>
                                                                                     <tbody>
-                                                                                        @foreach ($barangBagian as $i => $b)
-                                                                                            @php
-                                                                                                $sb = $b->stokBagian->where('bagian_id', $bg->id)->first();
-                                                                                                $stokDisplay = $sb ? $sb->stok : 0;
-                                                                                                $harga = $sb ? $sb->harga : 0;
-                                                                                            @endphp
-                                                                                            <tr @if ($stokDisplay < 10) class="row-low-stock" @endif>
-                                                                                                <td>{{ $i + 1 }}</td>
-                                                                                                <td>{{ $b->nama_barang }}</td>
-                                                                                                <td>{{ $b->kode_barang }}</td>
-                                                                                                <td>Rp {{ number_format($harga, 0, ',', '.') }}</td>
-                                                                                                <td>{{ $stokDisplay }}</td>
-                                                                                                <td>{{ $b->satuan }}</td>
-                                                                                            </tr>
-                                                                                        @endforeach
+                                                                                        @php $rowNumber = 1; @endphp
+                                                                                            @foreach ($barangBagian as $b)
+                                                                                                @foreach ($b->stokBagian->where('bagian_id', $bg->id) as $sb)
+                                                                                                    @php
+                                                                                                        $stokDisplay = (int) ($sb->stok ?? 0);
+                                                                                                        $harga = (float) ($sb->harga ?? 0);
+                                                                                                    @endphp
+
+                                                                                                    <tr @if ($stokDisplay < 10) class="row-low-stock" @endif>
+                                                                                                        <td>{{ $rowNumber++ }}</td>
+                                                                                                        <td>{{ $b->nama_barang }}</td>
+                                                                                                        <td>{{ $b->kode_barang }}</td>
+                                                                                                        <td>Rp {{ number_format($harga, 0, ',', '.') }}</td>
+                                                                                                        <td>{{ $stokDisplay }}</td>
+                                                                                                        <td>{{ $b->satuan }}</td>
+                                                                                                    </tr>
+                                                                                                @endforeach
+                                                                                            @endforeach
+                                                                                            @if ($rowNumber === 1)
+                                                                                                <tr>
+                                                                                                    <td colspan="6" class="text-center text-muted py-3">
+                                                                                                        Belum ada stok barang di bagian ini untuk kategori ini.
+                                                                                                    </td>
+                                                                                                </tr>
+                                                                                            @endif
                                                                                     </tbody>
                                                                                 </table>
                                                                             </div>
