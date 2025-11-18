@@ -138,6 +138,9 @@
         .judul-laporan {
             margin: 20px 0;
         }
+         table.data td, table.data th {
+        padding: 6px 4px; /* atur sesuai kebutuhan */
+    }
 
         .judul-laporan h2 {
             margin: 0;
@@ -349,6 +352,130 @@
     </div>
     @endif
 
+    <!-- TABEL STOK TERUPDATE - TAMBAHAN BARU -->
+    @if(isset($stokBagian) && $stokBagian->count() > 0)
+    <div style="page-break-before: always;"></div>
+    
+    <h3 style="margin-top:30px; text-align:center; font-size:14px;">LAPORAN STOK TERUPDATE</h3>
+    <div class="table-container">
+        <table class="data">
+            <thead>
+                <tr  style="height: 25px;">
+                    <th class="col-no">No</th>
+                    <th class="col-nama">Kode Barang</th>
+                    <th class="col-nama">Nama Barang</th>
+                    <th class="col-nama">Kategori</th>
+                    <th class="col-jumlah">Stok</th>
+                    <th class="col-nama">Satuan</th>
+                    <th class="col-keterangan">Harga Satuan</th>
+                    <th class="col-keterangan">Total Nilai</th>
+                </tr>
+            </thead>
+            <tbody>
+                @php
+                    $no = 1;
+                    $totalStok = 0;
+                    $totalNilai = 0;
+                @endphp
+                @foreach($stokBagian as $stok)
+                    @php 
+                        $totalStok += $stok->stok;
+                        $nilaiBarang = $stok->stok * ($stok->harga ?? 0);
+                        $totalNilai += $nilaiBarang;
+                    @endphp
+                    <tr>
+                        <td>{{ $no++ }}</td>
+                        <td>{{ $stok->kode_barang }}</td>
+                        <td style="text-align: center;">{{ $stok->nama_barang }}</td>
+                        <td>{{ $stok->kategori }}</td>
+                        <td>{{ number_format($stok->stok, 0, ',', '.') }}</td>
+                        <td>{{ $stok->satuan }}</td>
+                        <td style="text-align: center; ">Rp {{ number_format($stok->harga ?? 0, 0, ',', '.') }}</td>
+                        <td style="text-align: center;">Rp {{ number_format($nilaiBarang, 0, ',', '.') }}</td>
+                    </tr>
+                @endforeach
+                <tr style="font-weight: bold; background-color: #e9ecef;">
+                    <td colspan="4" style="text-align:center;">TOTAL</td>
+                    <td>{{ number_format($totalStok, 0, ',', '.') }}</td>
+                    <td colspan="2"></td>
+                    <td style="text-align: right;">Rp {{ number_format($totalNilai, 0, ',', '.') }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div style="margin-top: 20px; padding: 10px; background-color: #f8f9fa; border-left: 4px solid #0d6efd;">
+        <p style="margin: 5px 0; font-size: 12px;">
+            <strong>Keterangan:</strong><br>
+            - Data stok per tanggal: {{ now()->format('d F Y, H:i') }} WIB<br>
+            - Total item barang: {{ $stokBagian->count() }} jenis<br>
+            - Total keseluruhan stok: {{ number_format($totalStok, 0, ',', '.') }} unit<br>
+            - Total nilai inventaris: Rp {{ number_format($totalNilai, 0, ',', '.') }}
+        </p>
+    </div>
+    @endif
+
+    <!-- TABEL BARANG HABIS (STOK 0) - TAMBAHAN BARU -->
+    @if(isset($stokBagian))
+        @php
+            // Ambil barang dengan stok 0 dari database
+            $barangHabis = \App\Models\StokBagian::with(['barang.kategori', 'bagian'])
+                ->where('bagian_id', request()->user()->bagian_id)
+                ->where('stok', '=', 0)
+                ->orderBy('kode_barang')
+                ->get()
+                ->map(function($stok) {
+                    return (object)[
+                        'kode_barang' => $stok->kode_barang,
+                        'nama_barang' => $stok->barang->nama_barang ?? '-',
+                        'kategori' => $stok->barang->kategori->nama ?? '-',
+                        'satuan' => $stok->barang->satuan ?? '-',
+                        'harga' => $stok->harga ?? 0,
+                    ];
+                });
+        @endphp
+        
+        @if($barangHabis->count() > 0)
+        <div style="page-break-inside: avoid; margin-top: 10px;">
+            <h3 style="margin-top:30px; text-align:center; font-size:14px; color: #000000;">LAPORAN BARANG HABIS (STOK 0)</h3>
+            <div class="table-container">
+                <table class="data">
+                    <thead>
+                        <tr>
+                            <th class="col-no">No</th>
+                            <th class="col-nama">Kode Barang</th>
+                            <th class="col-nama">Nama Barang</th>
+                            <th class="col-nama">Kategori</th>
+                            <th class="col-nama">Satuan</th>
+                            <th class="col-keterangan">Harga Satuan</th>
+                            <th class="col-keterangan">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php 
+                            $no = 1;
+                            $totalNilaiHabis = 0;
+                        @endphp
+                        @foreach($barangHabis as $barang)
+                            @php $totalNilaiHabis += $barang->harga; @endphp
+                            <tr>
+                                <td>{{ $no++ }}</td>
+                                <td>{{ $barang->kode_barang }}</td>
+                                <td style="text-align: center;">{{ $barang->nama_barang }}</td>
+                                <td>{{ $barang->kategori }}</td>
+                                <td>{{ $barang->satuan }}</td>
+                                <td style="text-align: center;">Rp {{ number_format($barang->harga, 0, ',', '.') }}</td>
+                                <td style="color: #dc3545; font-weight: bold;">HABIS</td>
+                            </tr>
+                        @endforeach
+                        
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        @endif
+    @endif
+
     <!-- TANDA TANGAN -->
     <table class="ttd">
         <tr>
@@ -356,7 +483,7 @@
             <td style="width:50%;">
                 Sungailiat, {{ now()->format('d F Y') }} <br>
                 Kepala {{ $filter['gudang'] }} <br><br><br><br><br>
-                <span style="font-weight:bold; text-decoration:underline;">.................................</span><br>
+                <span style="font-weight:bold;">.................................</span><br>
                 NIP. .............................
             </td>
         </tr>

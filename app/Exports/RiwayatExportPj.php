@@ -17,7 +17,7 @@ class RiwayatExportPj implements WithMultipleSheets
 {
     protected $riwayat;
     protected $filter;
-
+    protected $stokBagian;
     public function __construct($riwayat, $filter = [])
     {
         $this->riwayat = $riwayat;
@@ -46,7 +46,7 @@ class RiwayatExportPj implements WithMultipleSheets
             Log::info('First item fields:', [
                 'alur_barang' => $firstItem->alur_barang ?? 'NOT EXISTS',
                 'jenis_transaksi' => $firstItem->jenis_transaksi ?? 'NOT EXISTS',
-                'all_fields' => array_keys((array)$firstItem)
+                'all_fields' => array_keys((array) $firstItem)
             ]);
         }
 
