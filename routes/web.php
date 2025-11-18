@@ -245,6 +245,12 @@ Route::prefix('pj')->name('pj.')
         Route::get('/riwayat', [PjRiwayatController::class, 'index'])
             ->name('riwayat.index');
 
+
+        Route::post('/kembalikan-ke-pb/{kode_barang}', [
+        \App\Http\Controllers\Pj\DataKeseluruhan::class, 
+        'kembalikanKePbStok'
+    ])->name('kembalikan-ke-pb');
+
         // Laporan (Controller)
         Route::get('/laporan', PjLaporanController::class)->name('laporan');
     });
