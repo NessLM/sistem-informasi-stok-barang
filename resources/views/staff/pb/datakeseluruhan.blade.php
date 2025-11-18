@@ -16,9 +16,6 @@
         $activeTab = $activeTab ?? 'data-keseluruhan';
     @endphp
 
-
-
-
     @push('styles')
         <link rel="stylesheet" href="{{ asset('assets/css/staff/pb/data_keseluruhan_pb.css') }}">
         <style>
@@ -111,7 +108,7 @@
     @endpush
 
     <main class="page-wrap container py-4">
-@if (session('toast'))
+        @if (session('toast'))
             <div id="toast-notif"
                 style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
                        z-index: 9999; display: flex; justify-content: center; pointer-events: none;">
@@ -210,7 +207,6 @@
                                 <tbody>
                                     @foreach ($barangData as $i => $item)
                                         @php
-                                            // $item = PbStok
                                             $namaBarang = $item->barang->nama_barang ?? '-';
                                             $kategoriNm = $item->barang->kategori->nama ?? '-';
                                             $satuan     = $item->barang->satuan ?? '-';
@@ -228,7 +224,18 @@
                                             <td>{{ $stok }}</td>
                                             <td>Rp {{ number_format($harga, 0, ',', '.') }}</td>
                                             <td>
-                                                {{-- Aksi DISTRIBUSI (bukan Barang Masuk) --}}
+                                                {{-- Tombol Edit --}}
+                                                <button type="button" class="btn btn-info btn-sm"
+                                                        data-bs-toggle="modal" data-bs-target="#modalEditPbStok"
+                                                        data-id="{{ $item->id }}"
+                                                        data-kode="{{ $item->kode_barang }}"
+                                                        data-nama="{{ $namaBarang }}"
+                                                        data-harga="{{ $harga }}"
+                                                        data-bagian-id="{{ $item->bagian_id ?? '' }}"
+                                                        data-bagian-nama="{{ $bagianNm }}">
+                                                    <i class="bi bi-pencil-square"></i> Edit
+                                                </button>
+                                                {{-- Tombol Distribusi --}}
                                                 <button type="button" class="btn btn-warning btn-sm"
                                                         data-bs-toggle="modal" data-bs-target="#modalDistribusi"
                                                         data-id="{{ $item->id }}"
@@ -317,7 +324,6 @@
                             <tbody>
                                 @foreach ($kategori as $k)
                                     @php
-                                        // Ambil semua pb_stok yang barangnya dalam kategori ini
                                         $stokInKategori = \App\Models\PbStok::with(['barang', 'bagian'])
                                             ->whereHas('barang', function ($q) use ($k) {
                                                 $q->where('id_kategori', $k->id);
@@ -359,6 +365,18 @@
                                                                     <td>{{ $item->stok }}</td>
                                                                     <td>Rp {{ number_format($item->harga ?? 0, 0, ',', '.') }}</td>
                                                                     <td>
+                                                                        {{-- Tombol Edit --}}
+                                                                        <button type="button" class="btn btn-info btn-sm"
+                                                                            data-bs-toggle="modal" data-bs-target="#modalEditPbStok"
+                                                                            data-id="{{ $item->id }}"
+                                                                            data-kode="{{ $item->kode_barang }}"
+                                                                            data-nama="{{ $item->barang->nama_barang ?? '-' }}"
+                                                                            data-harga="{{ $item->harga ?? 0 }}"
+                                                                            data-bagian-id="{{ $item->bagian_id ?? '' }}"
+                                                                            data-bagian-nama="{{ $item->bagian->nama ?? 'Tidak ada bagian' }}">
+                                                                            <i class="bi bi-pencil-square"></i> Edit
+                                                                        </button>
+                                                                        {{-- Tombol Distribusi --}}
                                                                         <button type="button" class="btn btn-warning btn-sm"
                                                                             data-bs-toggle="modal" data-bs-target="#modalDistribusi"
                                                                             data-id="{{ $item->id }}"
@@ -397,13 +415,12 @@
                             <tbody>
                                 @foreach ($bagian as $bg)
                                     @php
-                // ✅ QUERY YANG BENAR - TANPA JOIN
-                $stokDiBagian = \App\Models\StokBagian::with(['barang.kategori', 'bagian'])
-                    ->where('stok_bagian.bagian_id', $bg->id)
-                    ->orderBy('kode_barang')
-                    ->orderBy('batch_number')
-                    ->get();
-                @endphp
+                                        $stokDiBagian = \App\Models\StokBagian::with(['barang.kategori', 'bagian'])
+                                            ->where('stok_bagian.bagian_id', $bg->id)
+                                            ->orderBy('kode_barang')
+                                            ->orderBy('batch_number')
+                                            ->get();
+                                    @endphp
                                     @if($stokDiBagian->count() > 0)
                                         <tr class="table-secondary">
                                             <td>{{ $bg->nama }}</td>
@@ -416,7 +433,6 @@
                                         </tr>
                                         <tr id="detail-bagian-{{ $bg->id }}" style="display:none;">
                                             <td colspan="2">
-                                                {{-- Group by kategori --}}
                                                 @php
                                                     $grouped = $stokDiBagian->groupBy(function ($item) {
                                                         return $item->barang->kategori->nama ?? 'Tanpa Kategori';
@@ -444,15 +460,14 @@
                                                                             <td>{{ $sb->kode_barang }}</td>
                                                                             <td>{{ $sb->barang->nama_barang ?? '-' }}</td>
                                                                             <td>
-                        {{-- TAMPILKAN BATCH NUMBER --}}
-                        @if($sb->batch_number)
-                            <code class="text-primary" style="font-size: 11px;">
-                                {{ $sb->batch_number }}
-                            </code>
-                        @else
-                           Legacy Data
-                        @endif
-                    </td>
+                                                                                @if($sb->batch_number)
+                                                                                    <code class="text-primary" style="font-size: 11px;">
+                                                                                        {{ $sb->batch_number }}
+                                                                                    </code>
+                                                                                @else
+                                                                                    Legacy Data
+                                                                                @endif
+                                                                            </td>
                                                                             <td>{{ $sb->stok }}</td>
                                                                             <td>Rp {{ number_format($sb->harga ?? 0, 0, ',', '.') }}</td>
                                                                         </tr>
@@ -497,8 +512,6 @@
                         </div>
                     </div>
 
-                    {{-- Tampilan Nested per Kategori --}}
-                    {{-- Jika ada hasil search di TAB KELOLA BARANG MASUK --}}
                     @if ($activeTab === 'distribusi' && $barangMasukData->count() > 0)
                     <h6 class="mt-3">Hasil Pencarian Barang</h6>
 
@@ -512,7 +525,6 @@
                             </thead>
                             <tbody>
                                 @php
-                                    // Group hasil pencarian per kategori
                                     $groupedByKategori = $barangMasukData->groupBy('id_kategori');
                                 @endphp
 
@@ -521,19 +533,16 @@
                                         $kategoriNama = optional($items->first()->kategori)->nama ?? 'Tanpa Kategori';
                                     @endphp
 
-                                    {{-- Baris kategori --}}
                                     <tr>
                                         <td>{{ $kategoriNama }}</td>
                                         <td class="text-center">
                                             <button class="btn btn-sm btn-primary"
                                                     onclick="toggleKelolaBarangMasuk({{ $kategoriId }})">
-                                                {{-- default: langsung terbuka, jadi pakai icon UP --}}
                                                 <i class="bi bi-chevron-up"></i> Lihat ({{ $items->count() }})
                                             </button>
                                         </td>
                                     </tr>
 
-                                    {{-- Detail barang per kategori (langsung TERBUKA) --}}
                                     <tr id="kelola-masuk-{{ $kategoriId }}" style="display: table-row;">
                                         <td colspan="2" class="p-0">
                                             <div class="table-responsive">
@@ -578,13 +587,11 @@
                     </div>
 
                     @elseif($activeTab === 'distribusi' && request()->filled('search'))
-                    {{-- Sudah search tapi tidak ada hasil --}}
                     <div class="alert alert-warning mt-3">
                         Tidak ada data ditemukan untuk kata kunci "<strong>{{ request('search') }}</strong>".
                     </div>
 
                     @else
-                        {{-- Tampilan Nested per Kategori (DEFAULT, kalau tidak sedang search) --}}
                         <div class="table-responsive">
                             <table class="table table-bordered">
                                 <thead class="table-dark">
@@ -596,7 +603,6 @@
                                 <tbody>
                                     @foreach ($kategori as $k)
                                         @php
-                                            // Ambil barang per kategori
                                             $barangKategori = \App\Models\Barang::with(['pbStok.bagian', 'kategori'])
                                                 ->where('id_kategori', $k->id)
                                                 ->get();
@@ -626,9 +632,6 @@
                                                             </thead>
                                                             <tbody>
                                                                 @foreach ($barangKategori as $idx => $item)
-                                                                    @php
-                                                                        $totalStok  = $item->pbStok->sum('stok');
-                                                                    @endphp
                                                                     <tr>
                                                                         <td>{{ $idx + 1 }}</td>
                                                                         <td>{{ $item->nama_barang }}</td>
@@ -664,13 +667,88 @@
         </section>
     </main>
 
+    <!-- Modal Edit PB Stok -->
+    <div class="modal fade" id="modalEditPbStok" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-pencil-square"></i> Edit Data Barang
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST" id="formEditPbStok">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="pb_stok_id" id="editPbStokId">
+                    
+                    <div class="modal-body">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i>
+                            Edit harga dan bagian untuk barang di gudang utama.
+                        </div>
+
+                        <div class="row g-3">
+                            <!-- Nama Barang (Read-only) -->
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Nama Barang</label>
+                                <input type="text" id="editNamaBarang" class="form-control bg-light" readonly>
+                            </div>
+
+                            <!-- Kode Barang (Read-only) -->
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Kode Barang</label>
+                                <input type="text" id="editKodeBarang" class="form-control bg-light" readonly>
+                            </div>
+
+                            <!-- Harga Barang (Editable) -->
+                            <div class="col-12">
+                                <label class="form-label fw-bold">
+                                    Harga Satuan <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">Rp</span>
+                                    <input type="number" name="harga" id="editHarga" class="form-control"
+                                        placeholder="0" required min="0" step="0.01">
+                                </div>
+                                <small class="text-muted">Masukkan harga baru per satuan barang</small>
+                            </div>
+
+                            <!-- Bagian (Editable) -->
+                            <div class="col-12">
+                                <label class="form-label fw-bold">
+                                    Bagian <span class="text-danger">*</span>
+                                </label>
+                                <select name="bagian_id" id="editBagian" class="form-select" required>
+                                    <option value="">-- Pilih Bagian --</option>
+                                    @foreach($bagian as $bg)
+                                        <option value="{{ $bg->id }}">{{ $bg->nama }}</option>
+                                    @endforeach
+                                </select>
+                                <small class="text-muted">Pilih bagian baru untuk barang ini</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            Batal
+                        </button>
+                        <button type="submit" class="btn btn-info text-white">
+                            <i class="bi bi-save"></i> Simpan Perubahan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Barang Masuk -->
     <div class="modal fade" id="modalBarangMasuk" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
-                <div class="modal-header bg-success text">
-                    <h5 class="modal-title text-white
-">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
                         Form Barang Masuk
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
@@ -687,7 +765,7 @@
                         <div class="row g-3">
                             <!-- Nama Barang (Read-only) -->
                             <div class="col-md-6">
-                                <label class="form-label ">
+                                <label class="form-label fw-bold">
                                     Nama Barang
                                 </label>
                                 <input type="text" id="barangMasukNama" class="form-control" readonly>
@@ -695,7 +773,7 @@
 
                             <div class="col-md-6">
                                 <!-- Kode Barang (Read-only) -->
-                                <label class="form-label ">
+                                <label class="form-label fw-bold">
                                     Kode Barang
                                 </label>
                                 <input type="text" id="barangMasukKodeDisplay" class="form-control" readonly>
@@ -703,7 +781,7 @@
 
                             <div class="col-md-6">
                                 <!-- Harga Barang -->
-                                <label class="form-label ">
+                                <label class="form-label fw-bold">
                                     Harga Satuan <span class="text-danger">*</span>
                                 </label>
                                 <div class="input-group">
@@ -716,7 +794,7 @@
 
                             <!-- Bagian Tujuan -->
                             <div class="col-md-6">
-                                <label class="form-label ">
+                                <label class="form-label fw-bold">
                                     Bagian <span class="text-danger">*</span>
                                 </label>
                                 <select name="bagian_id" id="bagianTujuanMasuk" class="form-select" required>
@@ -730,7 +808,7 @@
 
                             <!-- Jumlah Masuk -->
                             <div class="col-md-6">
-                                <label class="form-label ">
+                                <label class="form-label fw-bold">
                                     Stok Masuk <span class="text-danger">*</span>
                                 </label>
                                 <div class="input-group">
@@ -743,7 +821,7 @@
 
                             <!-- Tanggal Masuk -->
                             <div class="col-md-6">
-                                <label class="form-label ">
+                                <label class="form-label fw-bold">
                                     Tanggal Masuk
                                 </label>
                                 <input type="date" name="tanggal" class="form-control" value="{{ date('Y-m-d') }}">
@@ -752,7 +830,7 @@
 
                             <!-- Keterangan -->
                             <div class="col-12">
-                                <label class="form-label ">
+                                <label class="form-label fw-bold">
                                     Keterangan
                                 </label>
                                 <textarea name="keterangan" class="form-control" rows="2"
@@ -761,7 +839,7 @@
 
                             <!-- Bukti -->
                             <div class="col-12">
-                                <label class="form-label ">
+                                <label class="form-label fw-bold">
                                     Bukti Barang Masuk
                                 </label>
                                 <input type="file" name="bukti" class="form-control" accept="image/*,.pdf">
@@ -810,7 +888,7 @@
                         <!-- Nama Barang (Read-only) -->
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label ">
+                                <label class="form-label fw-bold">
                                     Nama Barang
                                 </label>
                                 <input type="text" id="distribusiNama" class="form-control bg-light" readonly>
@@ -818,7 +896,7 @@
 
                             <!-- Kode Barang (Read-only) -->
                             <div class="col-md-6">
-                                <label class="form-label ">
+                                <label class="form-label fw-bold">
                                     Kode Barang
                                 </label>
                                 <input type="text" id="distribusiKodeDisplay" class="form-control bg-light" readonly>
@@ -826,7 +904,7 @@
 
                             <!-- Bagian Tujuan (Auto Fill - Read-only) -->
                             <div class="col-md-6">
-                                <label class="form-label ">
+                                <label class="form-label fw-bold">
                                     Bagian Tujuan
                                 </label>
                                 <input type="text" id="distribusiBagianNama" class="form-control bg-light" readonly>
@@ -835,7 +913,7 @@
 
                             <!-- Harga (Auto Fill - Read-only) -->
                             <div class="col-md-6">
-                                <label class="form-label ">
+                                <label class="form-label fw-bold">
                                     Harga Satuan
                                 </label>
                                 <div class="input-group">
@@ -848,7 +926,7 @@
 
                             <!-- Stok Tersedia (Read-only) -->
                             <div class="col-md-6">
-                                <label class="form-label ">
+                                <label class="form-label fw-bold">
                                     Stok Tersedia di Gudang Utama
                                 </label>
                                 <input type="text" id="stokTersedia" class="form-control bg-light" readonly>
@@ -857,7 +935,7 @@
 
                             <!-- Jumlah Distribusi -->
                             <div class="col-md-6">
-                                <label class="form-label ">
+                                <label class="form-label fw-bold">
                                     Jumlah Distribusi <span class="text-danger">*</span>
                                 </label>
                                 <input type="number" name="jumlah" id="jumlahDistribusi" class="form-control"
@@ -867,7 +945,7 @@
 
                             <!-- Tanggal Distribusi -->
                             <div class="col-md-12">
-                                <label class="form-label ">
+                                <label class="form-label fw-bold">
                                     Tanggal Distribusi
                                 </label>
                                 <input type="date" name="tanggal" class="form-control" value="{{ date('Y-m-d') }}">
@@ -876,7 +954,7 @@
 
                             <!-- Keterangan -->
                             <div class="col-12">
-                                <label class="form-label ">
+                                <label class="form-label fw-bold">
                                     Keterangan
                                 </label>
                                 <textarea name="keterangan" class="form-control" rows="3"
@@ -885,7 +963,7 @@
 
                             <!-- Bukti Distribusi -->
                             <div class="col-12">
-                                <label class="form-label ">
+                                <label class="form-label fw-bold">
                                     Bukti Distribusi
                                 </label>
                                 <input type="file" name="bukti" class="form-control" accept="image/*,.pdf">
@@ -909,7 +987,7 @@
     </div>
 
     {{-- Modal Filter --}}
-    <div class=" modal fade" id="modalFilterBarang" tabindex="-1">
+    <div class="modal fade" id="modalFilterBarang" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <form action="{{ route('pb.datakeseluruhan.index') }}" method="GET" class="modal-content">
                 <input type="hidden" name="tab" value="data-keseluruhan">
@@ -1010,7 +1088,6 @@
                 const submitBtn = form.querySelector('button[type="submit"]');
                 if (submitBtn) {
                     submitBtn.disabled = true;
-                    // Use spinner and change text to indicate processing
                     submitBtn.innerHTML =
                         `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Memproses...`;
                 }
@@ -1022,6 +1099,62 @@
                 // Autocomplete
                 setupAutocomplete('searchInput', 'searchSuggestions', 'searchForm', 'data-keseluruhan');
                 setupAutocomplete('searchInputDistribusi', 'searchSuggestionsDistribusi', 'searchFormDistribusi', 'distribusi');
+
+                /**
+                 * =======================
+                 * MODAL EDIT PB STOK
+                 * =======================
+                 */
+                const modalEditPbStok = document.getElementById('modalEditPbStok');
+                const formEditPbStok = document.getElementById('formEditPbStok');
+
+                if (modalEditPbStok && formEditPbStok) {
+                    modalEditPbStok.addEventListener('show.bs.modal', function (event) {
+                        const button = event.relatedTarget;
+                        
+                        const pbStokId = button.getAttribute('data-id');
+                        const barangKode = button.getAttribute('data-kode');
+                        const barangNama = button.getAttribute('data-nama');
+                        const harga = button.getAttribute('data-harga');
+                        const bagianId = button.getAttribute('data-bagian-id');
+
+                        // Reset tombol submit
+                        const submitBtn = formEditPbStok.querySelector('button[type="submit"]');
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = `<i class="bi bi-save"></i> Simpan Perubahan`;
+                        }
+
+                        // Set nilai ke form
+                        document.getElementById('editPbStokId').value = pbStokId;
+                        document.getElementById('editNamaBarang').value = barangNama;
+                        document.getElementById('editKodeBarang').value = barangKode;
+                        document.getElementById('editHarga').value = harga;
+                        document.getElementById('editBagian').value = bagianId;
+                    });
+
+                    formEditPbStok.addEventListener('submit', function (e) {
+                        e.preventDefault();
+
+                        const harga = document.getElementById('editHarga').value;
+                        if (!harga || parseFloat(harga) <= 0) {
+                            alert('Silakan masukkan harga yang valid!');
+                            return;
+                        }
+
+                        const bagianId = document.getElementById('editBagian').value;
+                        if (!bagianId) {
+                            alert('Silakan pilih bagian!');
+                            return;
+                        }
+
+                        disableSubmitButton(this);
+
+                        const pbStokId = document.getElementById('editPbStokId').value;
+                        this.action = `/pb/edit-stok/${pbStokId}`;
+                        this.submit();
+                    });
+                }
 
                 /**
                  * =======================
@@ -1038,24 +1171,19 @@
                         const barangNama = button.getAttribute('data-nama');
                         const barangSatuan = button.getAttribute('data-satuan') || 'Unit';
 
-                        // --- Tambahkan logika untuk mereset tombol submit saat modal dibuka ulang ---
                         const submitBtn = formBarangMasuk.querySelector('button[type="submit"]');
                         if (submitBtn) {
                             submitBtn.disabled = false;
-                            submitBtn.innerHTML = `Simpan Barang Masuk`; // Restore original text
+                            submitBtn.innerHTML = `Simpan Barang Masuk`;
                         }
-                        // --- Akhir logika reset tombol submit ---
 
-                        // Reset hanya field input form
                         formBarangMasuk.reset();
 
-                        // Set nilai hidden + readonly
                         document.getElementById('barangMasukNama').value = barangNama;
                         document.getElementById('barangMasukKode').value = barangKode;
                         document.getElementById('barangMasukKodeDisplay').value = barangKode;
                         document.getElementById('satuanDisplay').textContent = barangSatuan;
 
-                        // Tanggal default hari ini
                         const tgl = formBarangMasuk.querySelector('input[name="tanggal"]');
                         if (tgl) tgl.value = today;
                     });
@@ -1081,7 +1209,6 @@
                             return;
                         }
 
-                        // FIX: Disable button to prevent spamming
                         disableSubmitButton(this);
 
                         const kodeBarang = document.getElementById('barangMasukKode').value;
@@ -1094,16 +1221,6 @@
                  * =======================
                  * MODAL DISTRIBUSI BARANG
                  * =======================
-                 * Auto-fill:
-                 * - Nama Barang
-                 * - Kode Barang
-                 * - Bagian Tujuan
-                 * - Harga Satuan
-                 * - Stok Tersedia (PB)
-                 * User isi sendiri:
-                 * - jumlahDistribusi
-                 * - keterangan
-                 * - bukti
                  */
                 const modalDistribusi = document.getElementById('modalDistribusi');
                 const formDistribusi = document.getElementById('formDistribusi');
@@ -1112,18 +1229,14 @@
                     modalDistribusi.addEventListener('show.bs.modal', function (event) {
                         const button = event.relatedTarget;
 
-                        // --- Tambahkan logika untuk mereset tombol submit saat modal dibuka ulang ---
                         const submitBtn = formDistribusi.querySelector('button[type="submit"]');
                         if (submitBtn) {
                             submitBtn.disabled = false;
-                            submitBtn.innerHTML = ` Proses Distribusi`; // Restore original text
+                            submitBtn.innerHTML = `Proses Distribusi`;
                         }
-                        // --- Akhir logika reset tombol submit ---
 
-                        // Reset form terlebih dahulu supaya field editable bersih
                         formDistribusi.reset();
 
-                        // Ambil data dari tombol
                         const pbStokId = button.getAttribute('data-id') || '';
                         const barangKode = button.getAttribute('data-kode') || '';
                         const barangNama = button.getAttribute('data-nama') || '';
@@ -1132,13 +1245,11 @@
                         const bagianId = button.getAttribute('data-bagian-id') || '';
                         const bagianNama = button.getAttribute('data-bagian-nama') || '';
 
-                        // Hidden (untuk proses backend)
                         document.getElementById('distribusiPbStokId').value = pbStokId;
                         document.getElementById('distribusiKode').value = barangKode;
                         document.getElementById('distribusiHarga').value = harga;
                         document.getElementById('distribusiBagianId').value = bagianId;
 
-                        // Readonly display
                         document.getElementById('distribusiNama').value = barangNama;
                         document.getElementById('distribusiKodeDisplay').value = barangKode;
                         document.getElementById('distribusiBagianNama').value = bagianNama;
@@ -1147,18 +1258,14 @@
                         document.getElementById('stokTersedia').value =
                             (isFinite(stok) ? stok : 0) + ' Unit';
 
-                        // Jumlah distribusi → user isi sendiri
                         const inputJumlah = document.getElementById('jumlahDistribusi');
                         if (inputJumlah) {
                             inputJumlah.max = isFinite(stok) ? stok : 0;
                             inputJumlah.value = '';
                         }
 
-                        // Tanggal default hari ini
                         const tgl = formDistribusi.querySelector('input[name="tanggal"]');
                         if (tgl) tgl.value = today;
-
-                        // Keterangan & bukti sengaja dikosongkan (user isi manual)
                     });
 
                     formDistribusi.addEventListener('submit', function (e) {
@@ -1178,7 +1285,6 @@
                             return;
                         }
 
-                        // FIX: Disable button to prevent spamming
                         disableSubmitButton(this);
 
                         const pbStokId = document.getElementById('distribusiPbStokId').value;
@@ -1241,21 +1347,21 @@
                                 item.stock_status === 'low' ? 'Sedikit' : 'Tersedia';
 
                         html += `
-                                            <div class="search-suggestion-item" data-index="${index}">
-                                                <div class="suggestion-name">${item.nama}</div>
-                                                <div class="suggestion-code">
-                                                    Kode: ${item.kode} |
-                                                    ${tabName === 'data-keseluruhan'
+                            <div class="search-suggestion-item" data-index="${index}">
+                                <div class="suggestion-name">${item.nama}</div>
+                                <div class="suggestion-code">
+                                    Kode: ${item.kode} |
+                                    ${tabName === 'data-keseluruhan'
                                 ? 'Kategori: ' + item.kategori
                                 : 'Bagian: ' + item.bagian}
-                                                </div>
-                                                <div class="suggestion-meta">
-                                                    <small>
-                                                        Stok: ${item.stok} | ${item.harga} |
-                                                        <span class="stock-status ${stockStatusClass}">${stockText}</span>
-                                                    </small>
-                                                </div>
-                                            </div>`;
+                                </div>
+                                <div class="suggestion-meta">
+                                    <small>
+                                        Stok: ${item.stok} | ${item.harga} |
+                                        <span class="stock-status ${stockStatusClass}">${stockText}</span>
+                                    </small>
+                                </div>
+                            </div>`;
                     });
 
                     suggestionsContainer.innerHTML = html;
@@ -1327,6 +1433,5 @@
             }
         </script>
     @endpush
-
 
 </x-layouts.app>

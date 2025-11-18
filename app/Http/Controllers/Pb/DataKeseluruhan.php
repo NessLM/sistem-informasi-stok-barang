@@ -53,6 +53,56 @@ class DataKeseluruhan extends Controller
     }
 
     /**
+     * ✅ UPDATE/EDIT PB STOK (Harga & Bagian)
+     */
+    public function updatePbStok(Request $request, $id)
+    {
+        $request->validate([
+            'harga' => 'required|numeric|min:0',
+            'bagian_id' => 'required|exists:bagian,id',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $pbStok = PbStok::findOrFail($id);
+            
+            // Simpan data lama untuk log
+            $oldHarga = $pbStok->harga;
+            $oldBagianId = $pbStok->bagian_id;
+
+            // Update harga dan bagian
+            $pbStok->update([
+                'harga' => $request->harga,
+                'bagian_id' => $request->bagian_id,
+            ]);
+
+            DB::commit();
+
+            $barang = $pbStok->barang;
+            $bagian = $pbStok->bagian;
+
+            return redirect()
+                ->route('pb.datakeseluruhan.index', ['tab' => 'data-keseluruhan'])
+                ->with('toast', [
+                    'type' => 'success',
+                    'title' => 'Berhasil!',
+                    'message' => "Data barang {$barang->nama_barang} berhasil diupdate. Harga: Rp " . number_format($request->harga, 0, ',', '.') . ", Bagian: {$bagian->nama}",
+                ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()
+                ->back()
+                ->with('toast', [
+                    'type' => 'error',
+                    'title' => 'Gagal!',
+                    'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+                ])
+                ->withInput();
+        }
+    }
+
+    /**
      * ✅ PROSES BARANG MASUK
      */
     public function storeBarangMasuk(Request $request, $kodeBarang)
@@ -133,7 +183,6 @@ class DataKeseluruhan extends Controller
 
     /**
      * API: Search suggestions untuk autocomplete
-     * (tidak diubah, masih sama seperti punyamu barusan)
      */
     public function searchSuggestions(Request $request)
     {
@@ -146,7 +195,6 @@ class DataKeseluruhan extends Controller
 
         if ($tab === 'data-keseluruhan') {
             // TAB 1 → Data Keseluruhan & Distribusi Barang
-            // Dropdown BOLEH banyak: 1 row per PbStok (per Bagian)
             $pbStok = PbStok::with(['barang.kategori', 'bagian'])
                 ->where(function ($q) use ($query) {
                     $q->whereHas('barang', function ($sub) use ($query) {
@@ -182,7 +230,6 @@ class DataKeseluruhan extends Controller
             })->values();
         } else {
             // TAB 2 → Kelola Barang Masuk
-            // Dropdown HARUS ringkas: 1 row per BARANG (bukan per bagian)
             $barang = Barang::with(['kategori', 'pbStok'])
                 ->where(function ($q) use ($query) {
                     $q->where('nama_barang', 'like', "%{$query}%")
@@ -220,7 +267,6 @@ class DataKeseluruhan extends Controller
         return response()->json($results);
     }
 
-
     /**
      * Cek apakah ada filter apapun di TAB 1
      */
@@ -237,11 +283,9 @@ class DataKeseluruhan extends Controller
 
     /**
      * ✅ Filter untuk Data Barang Gudang Utama (Distribusi)
-     *    → based on PbStok + relasi Barang, Kategori, Bagian
      */
     private function getFilteredPbStok(Request $request)
     {
-        // Validasi angka
         $request->validate([
             'harga_min' => 'nullable|numeric|min:0',
             'harga_max' => 'nullable|numeric|min:0',
@@ -249,7 +293,6 @@ class DataKeseluruhan extends Controller
             'stok_max' => 'nullable|integer|min:0',
         ]);
 
-        // Guard: range harga kebalik
         if (
             $request->filled('harga_min') &&
             $request->filled('harga_max') &&
@@ -260,7 +303,6 @@ class DataKeseluruhan extends Controller
 
         $query = PbStok::with(['barang.kategori', 'bagian']);
 
-        // Search (nama, kode, kategori, bagian)
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -277,21 +319,18 @@ class DataKeseluruhan extends Controller
             });
         }
 
-        // Filter kategori
         if ($request->filled('kategori_id')) {
             $query->whereHas('barang', function ($q) use ($request) {
                 $q->where('id_kategori', $request->kategori_id);
             });
         }
 
-        // Filter satuan
         if ($request->filled('satuan')) {
             $query->whereHas('barang', function ($q) use ($request) {
                 $q->where('satuan', $request->satuan);
             });
         }
 
-        // Filter stok (langsung dari pb_stok.stok)
         if ($request->filled('stok_min')) {
             $query->where('stok', '>=', (int) $request->stok_min);
         }
@@ -299,7 +338,6 @@ class DataKeseluruhan extends Controller
             $query->where('stok', '<=', (int) $request->stok_max);
         }
 
-        // Filter harga (pb_stok.harga)
         if ($request->filled('harga_min')) {
             $query->where('harga', '>=', (float) $request->harga_min);
         }
@@ -312,11 +350,9 @@ class DataKeseluruhan extends Controller
 
     /**
      * ✅ Filter untuk "Stok Per Bagian - View Only"
-     *    → based on StokBagian + relasi Barang, Kategori, Bagian
      */
     private function getFilteredStokBagian(Request $request)
     {
-        // Validasi sama seperti PbStok
         $request->validate([
             'harga_min' => 'nullable|numeric|min:0',
             'harga_max' => 'nullable|numeric|min:0',
@@ -333,10 +369,9 @@ class DataKeseluruhan extends Controller
         }
 
         $query = StokBagian::with(['barang.kategori', 'bagian'])
-            ->select('stok_bagian.*') // Pastikan hanya ambil dari stok_bagian
-            ->distinct(); // Tambahkan distinct untuk hindari duplikat
+            ->select('stok_bagian.*')
+            ->distinct();
 
-        // Filter search
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -352,21 +387,19 @@ class DataKeseluruhan extends Controller
                     });
             });
         }
-        // Filter kategori
+
         if ($request->filled('kategori_id')) {
             $query->whereHas('barang', function ($q) use ($request) {
                 $q->where('id_kategori', $request->kategori_id);
             });
         }
 
-        // Filter satuan
         if ($request->filled('satuan')) {
             $query->whereHas('barang', function ($q) use ($request) {
                 $q->where('satuan', $request->satuan);
             });
         }
 
-        // Filter stok & harga dari stok_bagian
         if ($request->filled('stok_min')) {
             $query->where('stok', '>=', (int) $request->stok_min);
         }
@@ -382,17 +415,15 @@ class DataKeseluruhan extends Controller
         }
 
         return $query->orderBy('kode_barang')
-            ->orderBy('batch_number') // Urutkan batch juga
+            ->orderBy('batch_number')
             ->get()
             ->unique(function ($item) {
-                // Pastikan kombinasi unik: kode + bagian + batch
                 return $item->kode_barang . '-' . $item->bagian_id . '-' . $item->batch_number;
             });
     }
 
     /**
      * ✅ Search sederhana untuk TAB "Kelola Barang Masuk"
-     *    → based on Barang (nama, kode, kategori)
      */
     private function getSearchBarangMasuk(Request $request)
     {
