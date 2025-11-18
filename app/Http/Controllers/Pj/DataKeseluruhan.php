@@ -622,6 +622,193 @@ class DataKeseluruhan extends Controller
         }
     }
 
+    /**
+ * ✅ TAMBAHKAN METHOD INI DI DataKeseluruhan.php
+ * Kembalikan barang dari stok_bagian ke pb_stok
+ */
+public function kembalikanKePbStok(Request $request, $kode_barang)
+{
+    Log::info('=== KEMBALIKAN KE PB STOK ===', [
+        'kode_barang' => $kode_barang,
+        'request' => $request->all()
+    ]);
+
+    $validated = $request->validate([
+        'jumlah' => 'required|integer|min:1',
+        'harga' => 'nullable|numeric|min:0',
+        'keterangan' => 'nullable|string|max:500',
+        'bukti' => 'nullable|file|mimes:jpeg,jpg,png,pdf|max:2048',
+    ]);
+
+    $user = Auth::user();
+
+    // ✅ Hanya bisa dilakukan oleh user dengan bagian_id (PJ Bagian)
+    if (!$user->bagian_id) {
+        return back()->with('toast', [
+            'type' => 'error',
+            'title' => 'Akses Ditolak',
+            'message' => 'Hanya PJ Bagian yang dapat mengembalikan barang ke PB Stok.'
+        ]);
+    }
+
+    $bagianId = $user->bagian_id;
+    $jumlahKembalikan = (int) $validated['jumlah'];
+    $hargaBarang = $validated['harga'] ?? null;
+
+    // Upload bukti jika ada
+    $buktiPath = null;
+    if ($request->hasFile('bukti')) {
+        $file = $request->file('bukti');
+        $fileName = time() . '_kembalikan_' . uniqid() . '.' . $file->getClientOriginalExtension();
+        $buktiPath = $file->storeAs('bukti-kembalikan', $fileName, 'public');
+    }
+
+    DB::beginTransaction();
+    try {
+        // ✅ 1. Ambil stok dari stok_bagian (batch dengan harga yang sesuai)
+        $queryStok = StokBagian::where('kode_barang', $kode_barang)
+            ->where('bagian_id', $bagianId)
+            ->where('stok', '>', 0);
+
+        // Jika harga spesifik, filter berdasarkan harga
+        if ($hargaBarang !== null) {
+            $queryStok->where('harga', $hargaBarang);
+        }
+
+        $stokBatches = $queryStok
+            ->orderBy('created_at', 'asc') // FIFO
+            ->lockForUpdate()
+            ->get();
+
+        if ($stokBatches->isEmpty()) {
+            return back()->with('toast', [
+                'type' => 'error',
+                'title' => 'Stok Tidak Ditemukan',
+                'message' => 'Barang tidak tersedia di stok bagian Anda.'
+            ]);
+        }
+
+        // Cek total stok tersedia
+        $totalStokTersedia = $stokBatches->sum('stok');
+        if ($totalStokTersedia < $jumlahKembalikan) {
+            return back()->with('toast', [
+                'type' => 'error',
+                'title' => 'Stok Tidak Cukup',
+                'message' => "Stok tersedia: {$totalStokTersedia}, diminta: {$jumlahKembalikan}"
+            ]);
+        }
+
+        // ✅ 2. Kurangi stok dari stok_bagian (FIFO)
+        $sisaKembalikan = $jumlahKembalikan;
+        $detailBatch = [];
+
+        foreach ($stokBatches as $batch) {
+            if ($sisaKembalikan <= 0) break;
+
+            $jumlahDiambil = min($sisaKembalikan, $batch->stok);
+
+            $detailBatch[] = [
+                'batch_id' => $batch->id,
+                'batch_number' => $batch->batch_number,
+                'harga' => $batch->harga,
+                'jumlah' => $jumlahDiambil
+            ];
+
+            // Kurangi stok
+            $batch->decrement('stok', $jumlahDiambil);
+
+            Log::info('✅ Mengurangi stok_bagian', [
+                'batch_id' => $batch->id,
+                'jumlah_diambil' => $jumlahDiambil,
+                'sisa_stok' => $batch->fresh()->stok
+            ]);
+
+            $sisaKembalikan -= $jumlahDiambil;
+        }
+
+        // ✅ 3. Kembalikan ke pb_stok dengan batch yang sesuai
+        // Proses per batch yang dikembalikan
+        foreach ($detailBatch as $detail) {
+            $hargaBatch = $detail['harga'];
+            $jumlahBatch = $detail['jumlah'];
+
+            // Cek apakah sudah ada di pb_stok dengan harga yang sama
+            $pbStok = DB::table('pb_stok')
+                ->where('kode_barang', $kode_barang)
+                ->where('bagian_id', $bagianId)
+                ->where('harga', $hargaBatch)
+                ->lockForUpdate()
+                ->first();
+
+            if ($pbStok) {
+                // Tambahkan ke batch yang sudah ada
+                DB::table('pb_stok')
+                    ->where('id', $pbStok->id)
+                    ->increment('stok', $jumlahBatch);
+
+                Log::info('✅ Stok ditambahkan ke pb_stok existing', [
+                    'pb_stok_id' => $pbStok->id,
+                    'jumlah_tambah' => $jumlahBatch,
+                    'harga' => $hargaBatch
+                ]);
+            } else {
+                // Buat batch baru di pb_stok
+                $batchNumber = 'RETURN-' . now()->format('YmdHis') . '-' . uniqid();
+
+                DB::table('pb_stok')->insert([
+                    'kode_barang' => $kode_barang,
+                    'bagian_id' => $bagianId,
+                    'batch_number' => $batchNumber,
+                    'stok' => $jumlahBatch,
+                    'harga' => $hargaBatch,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                Log::info('✅ Batch baru dibuat di pb_stok', [
+                    'batch_number' => $batchNumber,
+                    'jumlah' => $jumlahBatch,
+                    'harga' => $hargaBatch
+                ]);
+            }
+        }
+
+        // ✅ 4. Catat ke log/transaksi jika diperlukan (opsional)
+        // Anda bisa menambahkan tabel transaksi_kembalikan_pb untuk audit trail
+
+        DB::commit();
+
+        // Get bagian name
+        $bagianData = Bagian::find($bagianId);
+        $namaBagian = $bagianData->nama ?? 'Unknown';
+
+        Log::info('✅ Pengembalian ke PB Stok berhasil', [
+            'kode_barang' => $kode_barang,
+            'jumlah' => $jumlahKembalikan,
+            'bagian' => $namaBagian
+        ]);
+
+        return back()->with('toast', [
+            'type' => 'success',
+            'title' => 'Berhasil',
+            'message' => "Barang berhasil dikembalikan ke PB Stok {$namaBagian}. Jumlah: {$jumlahKembalikan}"
+        ]);
+
+    } catch (\Throwable $e) {
+        DB::rollBack();
+        Log::error('❌ Kembalikan ke PB Stok gagal', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        return back()->with('toast', [
+            'type' => 'error',
+            'title' => 'Error',
+            'message' => 'Gagal mengembalikan barang: ' . $e->getMessage()
+        ]);
+    }
+}
+
 
     /**
      * Konfirmasi barang masuk ke stok_bagian
