@@ -239,7 +239,7 @@
 }
 
 /* Style untuk kop surat */
-.laporan-page .kop-surat {
+/* .laporan-page .kop-surat {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -284,10 +284,10 @@
   margin: 2px 0;
   font-size: 14px;
   font-family: 'Times New Roman', Times, serif;
-}
+} */
 
 /* Judul laporan */
-.laporan-page .judul-laporan {
+/* .laporan-page .judul-laporan {
   margin: 20px 0;
   text-align: center;
 }
@@ -298,10 +298,10 @@
   text-decoration: underline;
   font-size: 16px;
   font-family: 'Times New Roman', Times, serif;
-}
+} */
 
 /* Info surat */
-.laporan-page .info-surat {
+/* .laporan-page .info-surat {
   margin: 20px 0;
   font-size: 13px;
   font-family: 'Times New Roman', Times, serif;
@@ -316,19 +316,19 @@
   padding: 2px 5px;
   vertical-align: top;
   border: none;
-}
+} */
 
 /* H3 titles */
-.laporan-page h3 {
+/* .laporan-page h3 {
   margin-top: 30px;
   text-align: center;
   font-size: 14px;
   font-family: 'Times New Roman', Times, serif;
   font-weight: bold;
-}
+} */
 
 /* Tables */
-.laporan-page .table-container {
+/* .laporan-page .table-container {
   width: 100%;
   overflow: visible;
   margin: 10px 0;
@@ -358,10 +358,10 @@
 
 .laporan-page table.data tbody tr:nth-child(even) {
   background: #f9f9f9;
-}
+} */
 
 /* TTD */
-.laporan-page .ttd {
+/* .laporan-page .ttd {
   margin-top: 60px;
   width: 100%;
   font-size: 14px;
@@ -373,7 +373,7 @@
   vertical-align: top;
   padding: 10px;
   border: none;
-}
+} */
 
 /* ======== LOADING SPINNER ======== */
 .laporan-loading {
@@ -529,3 +529,5 @@
     min-height: 297mm;
   }
 }
+
+
