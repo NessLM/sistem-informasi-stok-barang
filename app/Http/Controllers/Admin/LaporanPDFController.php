@@ -130,15 +130,5 @@ class LaporanPDFController extends Controller
         ]);
     }
 
-    /**
-     * Method tambahan untuk ekspor PDF (jika diperlukan di masa depan)
-     */
-    public function exportPDF($quarter, $year)
-    {
-        $riwayat = $this->getRiwayatData($quarter, $year);
-        $quarterData = $this->getQuarterData($quarter, $year);
-        
-        // Logic untuk generate PDF akan ditambahkan di sini
-        // return PDF::loadView('staff.admin.laporan-pdf', compact('quarter', 'year', 'riwayat', 'quarterData'));
-    }
+
 }

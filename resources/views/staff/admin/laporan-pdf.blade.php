@@ -1,18 +1,3 @@
-{{-- resources/views/staff/admin/laporan-pdf.blade.php --}}
-{{-- 
-  STRUKTUR HALAMAN LAPORAN:
-  
-  HALAMAN 1: Header + Info Surat + Barang Masuk
-  - Kop Surat dengan Logo
-  
-  HALAMAN 2: Distribusi Barang
-  - Header (diulang untuk konsistensi)
-  
-  HALAMAN 3: Barang Keluar
-  - Header (diulang untuk konsistensi)
- 
---}}
-
 <!DOCTYPE html>
 <html lang="id">
 
@@ -21,11 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laporan Riwayat Barang</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Times New Roman', Times, serif;
             font-size: 12px;
             margin: 0;
-            padding: 0 10px;
+            padding: 20px;
+            line-height: 1.4;
         }
 
         .kop-surat {
@@ -33,249 +25,212 @@
             align-items: center;
             justify-content: center;
             border-bottom: 3px double #000;
-            padding: 10px 0;
-            margin-top: -30px;
-            margin-bottom: 20px;
+            padding: 15px 0;
+            margin-bottom: 10px;
             position: relative;
         }
 
         .kop-logo {
             position: absolute;
-            left: 20px;
-            top: 10px;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
         }
 
         .kop-logo img {
-            width: 80px;
-            height: 100px;
+            width: 75px;
+            height: 90px;
+            object-fit: contain;
         }
 
         .kop-text {
             width: 100%;
             text-align: center;
+            padding: 0 100px;
         }
 
         .kop-text h1 {
             margin: 0;
-            font-size: 20px;
+            font-size: 16px;
             font-weight: bold;
+            letter-spacing: 0.5px;
         }
 
         .kop-text h2 {
             margin: 2px 0;
-            font-size: 20px;
+            font-size: 16px;
             font-weight: bold;
+            letter-spacing: 0.5px;
         }
 
         .kop-text p {
-            margin: 2px 0;
-            font-size: 14px;
+            margin: 3px 0 0 0;
+            font-size: 11px;
         }
 
-        .table-container {
-            width: 100%;
-            overflow: hidden;
-            margin: 10px 0;
-        }
-
-        table.data {
-            border-collapse: collapse;
+        /* SECTION TANGGAL DAN TUJUAN */
+        .tanggal-surat {
+            text-align: right;
+            margin: 30px 0 30px 0;
             font-size: 12px;
-            width: 100%;
-            table-layout: fixed;
         }
 
-        table.data th,
-        table.data td {
-            border: 0.5px solid #000;
-            padding: 4px 3px;
+        .tujuan-surat {
+            margin: 30px 0;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .tujuan-surat p {
+            margin: 2px 0;
+        }
+
+        /* JUDUL SURAT PENGANTAR */
+        .judul-surat {
             text-align: center;
-            vertical-align: middle;
-            word-wrap: break-word;
-            overflow: hidden;
+            margin: 30px 0 20px 0;
         }
 
-        table.data thead {
-            display: table-row-group;
-        }
-
-        table.data tfoot {
-            display: table-row-group;
-        }
-
-        table.data tr {
-            page-break-inside: avoid;
-        }
-
-        /* CLASS UNTUK PENANDA HALAMAN BARU */
-        /* Distribusi dan Keluar akan menjadi halaman terpisah */
-        h3.distribusi,
-        h3.barang-keluar {
-            page-break-before: always;
-        }
-
-        h3 {
-            page-break-after: avoid;
-        }
-
-        .table-container {
-            page-break-before: avoid;
-        }
-
-        table.data th {
-            background: #f2f2f2;
-        }
-
-        table.data tbody tr:nth-child(even) {
-            background: #f9f9f9;
-        }
-
-        /* TABEL BARANG MASUK */
-        table.data.masuk .col-no {
-            width: 4%;
-        }
-
-        table.data.masuk .col-tanggal {
-            width: 13%;
-        }
-
-        table.data.masuk .col-gudang {
-            width: 13%;
-        }
-
-        table.data.masuk .col-nama {
-            width: 22%;
-        }
-
-        table.data.masuk .col-jumlah {
-            width: 8%;
-        }
-
-        table.data.masuk .col-satuan {
-            width: 8%;
-        }
-
-        table.data.masuk .col-keterangan {
-            width: 32%;
-        }
-
-        /* TABEL DISTRIBUSI */
-        table.data.distribusi .col-no {
-            width: 4%;
-        }
-
-        table.data.distribusi .col-tanggal {
-            width: 13%;
-        }
-
-        table.data.distribusi .col-gudang {
-            width: 13%;
-        }
-
-        table.data.distribusi .col-nama {
-            width: 22%;
-        }
-
-        table.data.distribusi .col-jumlah {
-            width: 8%;
-        }
-
-        table.data.distribusi .col-satuan {
-            width: 8%;
-        }
-
-        table.data.distribusi .col-keterangan {
-            width: 32%;
-        }
-
-        /* TABEL BARANG KELUAR */
-        table.data.keluar .col-no {
-            width: 4%;
-        }
-
-        table.data.keluar .col-tanggal {
-            width: 11%;
-        }
-
-        table.data.keluar .col-gudang {
-            width: 11%;
-        }
-
-        table.data.keluar .col-nama {
-            width: 15%;
-        }
-
-        table.data.keluar .col-jumlah {
-            width: 7%;
-        }
-
-        table.data.keluar .col-satuan {
-            width: 7%;
-        }
-
-        table.data.keluar .col-bagian {
-            width: 14%;
-        }
-
-        table.data.keluar .col-penerima {
-            width: 13%;
-        }
-
-        table.data.keluar .col-keterangan {
-            width: 18%;
-        }
-
-        .col-bukti {
-            width: 10%;
-        }
-
-        .col-bukti img {
-            max-width: 80px;
-            max-height: 60px;
-            height: auto;
-            border: 0.5px solid #ccc;
-            border-radius: 2px;
-        }
-
-        .ttd {
-            margin-top: 60px;
-            width: 100%;
-            font-size: 14px;
-        }
-
-        .ttd td {
-            text-align: center;
-            vertical-align: top;
-            padding: 10px;
-            border: none;
-        }
-
-        .judul-laporan {
-            margin: 20px 0;
-        }
-
-        .judul-laporan h2 {
-            margin: 0;
+        .judul-surat h3 {
+            margin: 0 0 5px 0;
+            font-size: 13px;
             font-weight: bold;
             text-decoration: underline;
-            text-align: center;
-            font-size: 16px;
+            letter-spacing: 1px;
         }
 
-        .info-surat {
+        .judul-surat .nomor-surat {
+            font-size: 12px;
+            margin: 8px 0 0 0;
+        }
+
+        /* TABEL URAIAN */
+        .table-uraian {
             margin: 20px 0;
-            font-size: 13px;
+            width: 100%;
+        }
+
+        .table-uraian table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+
+        .table-uraian th,
+        .table-uraian td {
+            border: 1px solid #000;
+            padding: 8px 6px;
+            vertical-align: top;
+        }
+
+        .table-uraian th {
+            text-align: center;
+            font-weight: bold;
+            background-color: transparent;
+            font-size: 11px;
+        }
+
+        .table-uraian .col-no {
+            width: 6%;
+            text-align: center;
+        }
+
+        .table-uraian .col-uraian {
+            width: 54%;
             text-align: left;
         }
 
-        .info-surat table {
-            border-collapse: collapse;
-            font-size: 13px;
+        .table-uraian .col-jumlah {
+            width: 15%;
+            text-align: center;
         }
 
-        .info-surat td {
-            padding: 2px 5px;
+        .table-uraian .col-keterangan {
+            width: 25%;
+            text-align: left;
+        }
+
+        .table-uraian td {
+            line-height: 1.6;
+        }
+
+        .table-uraian .uraian-text {
+            text-align: left;
+            line-height: 1.7;
+        }
+
+        .table-uraian .uraian-text p {
+            margin: 0 0 8px 0;
+            text-indent: -10px;
+            padding-left: 10px;
+        }
+
+        .table-uraian .uraian-text p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* SECTION TTD */
+        .section-ttd {
+            margin-top: 60px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .ttd-jabatan {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 60px;
+            line-height: 1.5;
+        }
+
+        .ttd-nama {
+            font-size: 12px;
+            font-weight: bold;
+            text-decoration: underline;
+            margin: 5px 0;
+        }
+
+        .ttd-nip {
+            font-size: 11px;
+            margin: 3px 0;
+        }
+
+        /* SECTION PENERIMA */
+        .section-penerima {
+            margin-top: 60px;
+            padding-top: 0;
+        }
+
+        .penerima-info {
+            font-size: 11px;
+            line-height: 2;
+        }
+
+        .penerima-info table {
+            border: none;
+            border-collapse: collapse;
+        }
+
+        .penerima-info td {
+            border: none;
+            padding: 2px 0;
+        }
+
+        .penerima-info .label {
+            width: 110px;
             vertical-align: top;
+        }
+
+        .penerima-info .titik-dua {
+            width: 15px;
+            text-align: center;
+        }
+
+        .penerima-info .garis-bawah {
+            border-bottom: 1px solid #000;
+            display: inline-block;
+            min-width: 200px;
+            text-align: center;
         }
 
         @media print {
@@ -283,91 +238,129 @@
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
                 margin: 0;
-                padding: 0 15px;
+                padding: 15px;
             }
 
             .kop-surat {
                 page-break-inside: avoid;
             }
-
-            table.data th {
-                -webkit-print-color-adjust: exact;
-                background-color: #f2f2f2 !important;
-            }
-
-            table.data tbody tr:nth-child(even) {
-                background-color: #f9f9f9 !important;
-            }
-
-            .table-container {
-                width: 100%;
-            }
-
-            table.data {
-                width: 100%;
-            }
         }
 
         @page {
-            size: portrait;
-            margin: 15mm;
+            size: A4 portrait;
+            margin: 20mm;
         }
+
+
+        
     </style>
 </head>
 
 <body>
-    {{-- ========================================
-         HALAMAN 1: KOP + INFO + BARANG MASUK
-         ======================================== --}}
-
     {{-- KOP SURAT --}}
     <div class="kop-surat">
         <div class="kop-logo">
             <img src="{{ asset('assets/banner/logo_bupati.png') }}" alt="Logo Bupati">
-
         </div>
         <div class="kop-text">
             <h1>PEMERINTAH KABUPATEN BANGKA</h1>
             <h2>SEKRETARIAT DAERAH</h2>
             <h2>BAGIAN PERENCANAAN DAN KEUANGAN</h2>
-            <p>Jalan Ahmad Yani (Jalur Dua) Sungailiat - Bangka 33211, Telp. (0717) 92536</p>
+            <p>Jalan Ahmad Yani ( Jalur Dua) Sungailiat - Bangka 33211, Telp. ( 0717 ) 92536</p>
         </div>
     </div>
 
-    {{-- JUDUL LAPORAN --}}
+    {{-- TANGGAL SURAT --}}
     @php
-        $bulan = [
-            1 => 'I',
-            2 => 'II',
-            3 => 'III',
-            4 => 'IV',
-            5 => 'V',
-            6 => 'VI',
-            7 => 'VII',
-            8 => 'VIII',
-            9 => 'IX',
-            10 => 'X',
-            11 => 'XI',
-            12 => 'XII',
-        ];
-        $bulanRomawi = $bulan[now()->month];
-        $tahun = now()->year;
-        
+        use Carbon\Carbon;
+        $tanggalSekarang = Carbon::now();
+        $tanggalFormatted = $tanggalSekarang->locale('id')->isoFormat('D MMMM YYYY');
+    @endphp
+    
+    <div class="tanggal-surat">
+        Sungailiat, {{ $tanggalFormatted }}
+    </div>
+
+    {{-- TUJUAN SURAT --}}
+    <div class="tujuan-surat">
+        <p>Kepada Yth.</p>
+        <p>>BPPKAD Kab. Bangka</p>
+        <p>c.q. Bagian Aset</p>
+        <p>di -</p>
+        <p><strong>SUNGAILIAT</strong></p>
+    </div>
+
+    {{-- JUDUL SURAT --}}
+    @php
+        $bulanRomawi = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+        $bulanSekarang = $bulanRomawi[$tanggalSekarang->month];
+        $tahunSekarang = $tanggalSekarang->year;
     @endphp
 
-    {{-- TABEL BARANG MASUK (HALAMAN 1) --}}
+    <div class="judul-surat">
+        <h3><strong>SURAT PENGANTAR</h3>
+        <p class="nomor-surat">Nomor : 045.2/ <span style="text-decoration: underline;">&nbsp;&nbsp;O8L&nbsp;&nbsp;</span> /{{ $bulanSekarang }}/{{ $tahunSekarang }}</p>
+    </div>
 
+    {{-- TABEL URAIAN --}}
+    <div class="table-uraian">
+        <table>
+            <thead>
+                <tr>
+                    <th class="col-no">No</th>
+                    <th class="col-uraian">Uraian</th>
+                    <th class="col-jumlah">Jumlah</th>
+                    <th class="col-keterangan">Keterangan</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="col-no"></td>
+                    <td class="col-uraian">
+                        <div class="uraian-text">
+                            <p>- Penyampaian Laporan Berita Acara Rekonsiliasi Internal Data BMD berupa Aset pada Sekretariat Daerah</p>
+                            <p>- Penyampaian Laporan Berita Acara Pemeriksaan Persediaan Barang Pakai Habis Stock Opname per 30 Juni {{ $year ?? $tahunSekarang }} pada Sekretariat Daerah</p>
+                        </div>
+                    </td>
+                    <td class="col-jumlah">1 ( satu )<br>Berkas</td>
+                    <td class="col-keterangan">Disampaikan dengan hormat untuk dipergunakan sebagaimana mestinya, terimakasih.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 
-    {{-- ========================================
-         HALAMAN 2
-         ======================================== --}}
+    {{-- SECTION TTD --}}
+    <div class="section-ttd">
+        <div class="ttd-jabatan">
+            Kepala Bagian Perencanaan dan Keuangan<br>
+            Setda Kabupaten Bangka,
+        </div>
+        <div class="ttd-nama">Tati Djumiyati, SE, M. Si</div>
+        <div class="ttd-nip">NIP 19720512 198803 2 008</div>
+    </div>
 
-
-    {{-- ========================================
-         HALAMAN 3
-         ======================================== --}}
-
-
+    {{-- SECTION PENERIMA --}}
+    <div class="section-penerima">
+        <div class="penerima-info">
+            <table>
+                <tr>
+                    <td class="label">Diterima Tgl</td>
+                    <td class="titik-dua">:</td>
+                    <td><span class="garis-bawah"></span></td>
+                </tr>
+                <tr>
+                    <td class="label">Nama</td>
+                    <td class="titik-dua">:</td>
+                    <td><span class="garis-bawah"></span></td>
+                </tr>
+                <tr>
+                    <td class="label">Tanda Tangan</td>
+                    <td class="titik-dua">:</td>
+                    <td><span class="garis-bawah"></span></td>
+                </tr>
+            </table>
+        </div>
+    </div>
 
 </body>
 
