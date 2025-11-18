@@ -177,13 +177,11 @@ body {
 
 .ttd-nama {
     font-size: 12px;
-    font-weight: bold;
     margin: 5px 0;
 }
 
 .ttd-nip {
     font-size: 11px;
-    font-weight: bold;
     margin: 3px 0;
 }
 
@@ -241,4 +239,429 @@ body {
 @page {
     size: A4 portrait;
     margin: 20mm;
+}
+
+
+/* HALAMAN 2 STYLING */
+.page-break {
+    page-break-before: always;
+}
+
+.kop-logo-copy {
+    position: absolute;
+    left: 0;
+}
+
+.kop-logo-copy img {
+    width: 80px;
+    height: 90px;
+    object-fit: contain;
+}
+
+.judul-dokumen {
+    text-align: center;
+    margin: 30px 0;
+    line-height: 1.4;
+}
+
+.judul-dokumen h3 {
+    margin: 8px 0;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.pembukaan-berita-acara {
+    margin: 25px 0 20px 0;
+    text-align: justify;
+    line-height: 1.5;
+}
+
+.identitas-petugas {
+    margin: 20px 0 25px 0;
+}
+
+.identitas-petugas table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.identitas-petugas td {
+    padding: 3px 0;
+    vertical-align: top;
+}
+
+.identitas-petugas .label {
+    width: 80px;
+    padding-left: 20px;
+    font-weight: normal;
+}
+
+.identitas-petugas .titik-dua {
+    width: 10px;
+    text-align: center;
+}
+
+.isi-berita-acara {
+    text-align: justify;
+    line-height: 1.5;
+    margin: 25px 0;
+}
+
+.isi-berita-acara p {
+    margin-bottom: 15px;
+}
+
+.ttd-berita-acara {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0 30px 0;
+}
+
+.ttd-kiri,
+.ttd-kanan {
+    text-align: center;
+    width: 45%;
+}
+
+.ttd-jabatan {
+    font-weight: normal;
+    margin-bottom: 5px;
+}
+
+.ttd-spacer {
+    height: 60px;
+}
+
+.ttd-nama {
+    margin: 5px 0;
+}
+
+.ttd-nip {
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.mengesahkan-berita-acara {
+    text-align: center;
+    margin: 30px 0 20px 0;
+}
+
+.ttd-mengesahkan {
+    display: inline-block;
+    text-align: center;
+}
+
+.lokasi-tanggal {
+    margin-left: 470px;
+    margin-top: 50px;
+    font-weight: normal;
+}
+
+
+
+/* HALAMAN 3 STYLING */
+
+.page-break {
+    page-break-before: always;
+}
+
+/* KOP SURAT HALAMAN 3 */
+.kop-surat-halaman3 {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+}
+
+.kop-logo-halaman3 {
+    flex: 0 0 auto;
+    margin-right: 15px;
+}
+
+.kop-logo-halaman3 img {
+    width: 65px;
+    height: auto;
+}
+
+.kop-text-halaman3 {
+    flex: 1;
+    text-align: center;
+}
+
+.kop-text-halaman3 h1 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+    line-height: 1.2;
+}
+
+.kop-text-halaman3 h2 {
+    margin: 1px 0;
+    font-size: 12px;
+    font-weight: bold;
+    line-height: 1.2;
+}
+
+.kop-text-halaman3 p {
+    margin: 1px 0;
+    font-size: 10px;
+    line-height: 1.2;
+}
+
+.garis-pemisah {
+    border: none;
+    border-top: 2px solid #000;
+    margin: 5px 0 10px 0;
+}
+
+/* JUDUL DOKUMEN HALAMAN 3 */
+.judul-dokumen-halaman3 {
+    text-align: center;
+    margin: 15px 0;
+    line-height: 1.2;
+}
+
+.judul-dokumen-halaman3 h3 {
+    margin: 3px 0;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    line-height: 1.2;
+}
+
+.nomor-surat-halaman3 {
+    font-size: 10px;
+    font-weight: bold;
+    margin: 5px 0 0 0;
+}
+
+/* PEMBUKAAN BERITA ACARA HALAMAN 3 */
+.pembukaan-berita-acara-halaman3 {
+    margin: 15px 0 10px 0;
+    text-align: justify;
+    line-height: 1.3;
+    font-size: 10px;
+}
+
+/* IDENTITAS PIHAK HALAMAN 3 */
+.identitas-pihak-halaman3 {
+    margin: 15px 0;
+}
+
+.pihak-section {
+    margin-bottom: 12px;
+}
+
+.pihak-title {
+    font-size: 10px;
+    margin: 0 0 3px 0;
+}
+
+.identitas-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9px;
+}
+
+.identitas-table td {
+    padding: 1px 0;
+    vertical-align: top;
+}
+
+.identitas-table .label {
+    width: 25px;
+    font-weight: normal;
+}
+
+.identitas-table .label-wide {
+    padding-left: 10px;
+}
+
+.identitas-table .titik-dua {
+    width: 5px;
+    text-align: center;
+}
+
+.keterangan-pihak {
+    padding-top: 2px;
+    line-height: 1.2;
+}
+
+/* TABEL ASET HALAMAN 3 */
+.tabel-aset-halaman3 {
+    margin: 15px 0;
+}
+
+.tabel-aset-halaman3 h4 {
+    font-size: 10px;
+    font-weight: bold;
+    text-align: center;
+    margin: 0 0 8px 0;
+}
+
+.tabel-utama {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 7px;
+    line-height: 1.1;
+}
+
+.tabel-utama th {
+    border: 1px solid #000;
+    padding: 2px 1px;
+    text-align: center;
+    font-weight: bold;
+    background-color: #f0f0f0;
+}
+
+.tabel-utama td {
+    border: 1px solid #000;
+    padding: 1px;
+    vertical-align: top;
+}
+
+.col-no {
+    width: 3%;
+}
+
+.col-uraian {
+    width: 45%;
+}
+
+.col-angka {
+    width: 13%;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+    padding-right: 2px;
+}
+
+.kategori-header {
+    background-color: #e8e8e8;
+    font-weight: bold;
+}
+
+.kategori-header td {
+    border: 1px solid #000;
+    padding: 2px 1px;
+}
+
+.sub-item {
+    background-color: #f8f8f8;
+}
+
+.sub-item-text {
+    padding-left: 15px !important;
+    font-style: italic;
+}
+
+.total-row {
+    background-color: #d0d0d0;
+    font-weight: bold;
+}
+
+.total-row td {
+    border: 1px solid #000;
+    padding: 2px 1px;
+}
+
+/* KETERANGAN LAMPIRAN HALAMAN 3 */
+.keterangan-lampiran-halaman3 {
+    margin: 12px 0;
+    text-align: justify;
+    font-size: 9px;
+    line-height: 1.3;
+}
+
+.keterangan-lampiran-halaman3 p {
+    margin: 2px 0;
+}
+
+.keterangan-m{
+    font-size: 10px;
+}
+
+/* PENUTUP BERITA ACARA HALAMAN 3 */
+.penutup-berita-acara-halaman3 {
+    margin: 12px 0;
+    text-align: justify;
+    font-size: 9px;
+    line-height: 1.3;
+}
+
+/* TANDA TANGAN HALAMAN 3 */
+.ttd-berita-acara-halaman3 {
+    display: flex;
+    justify-content: space-between;
+    margin: 20px 0 10px 0;
+}
+
+.ttd-kiri-halaman3,
+.ttd-tengah-halaman3,
+.ttd-kanan-halaman3 {
+    text-align: center;
+    width: 30%;
+}
+
+.ttd-jabatan-halaman3 {
+    font-weight: normal;
+    margin-bottom: 2px;
+    font-size: 9px;
+    line-height: 1.1;
+}
+
+.ttd-spacer-halaman3 {
+    height: 50px;
+}
+
+.ttd-nama-halaman3 {
+    margin: 2px 0;
+    font-size: 9px;
+    line-height: 1.1;
+}
+
+.ttd-nip-halaman3 {
+    font-size: 8px;
+    margin-top: 1px;
+    line-height: 1.1;
+}
+
+/* PEJABAT PENATAUSAHAAN HALAMAN 3 */
+.pejabat-penatausahaan-halaman3 {
+    text-align: center;
+    margin: 5px 0;
+}
+
+.ttd-pejabat-halaman3 {
+    display: inline-block;
+    text-align: center;
+}
+
+/* Untuk tampilan web dalam modal */
+@media screen {
+    .page-break {
+        display: block;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 2px dashed #ccc;
+    }
+
+    .tabel-utama {
+        font-size: 8px;
+    }
+
+    .identitas-table {
+        font-size: 10px;
+    }
 }

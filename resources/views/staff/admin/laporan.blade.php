@@ -277,30 +277,44 @@
 
                 console.log('Body parsed successfully, children:', body.children.length);
 
-                // Debug: Log semua elemen yang ada
-                const allElements = Array.from(body.children);
-                console.log('All elements in body:');
-                allElements.forEach((el, idx) => {
-                    console.log(`${idx}: ${el.tagName} - ${el.className} - ${el.textContent.substring(0, 50)}...`);
-                });
-
                 // Reset pages
                 pages = [];
                 laporanContent.innerHTML = '';
 
-                // PAGE 1: Create first page dengan semua konten
-                const page1 = createPage(1);
+                // Find all page breaks and split content
+                const allElements = Array.from(body.children);
+                let currentPage = 1;
+                let currentPageEl = createPage(currentPage);
 
-                // Clone semua elemen ke page pertama untuk testing
-                allElements.forEach(el => {
-                    page1.appendChild(el.cloneNode(true));
+                pages.push(currentPageEl);
+                laporanContent.appendChild(currentPageEl);
+
+                allElements.forEach((el, index) => {
+                    // Check if this element has page-break class
+                    if (el.classList.contains('page-break')) {
+                        // Start new page
+                        currentPage++;
+                        currentPageEl = createPage(currentPage);
+                        pages.push(currentPageEl);
+                        laporanContent.appendChild(currentPageEl);
+                        console.log(`Page break detected, creating page ${currentPage}`);
+                    } else {
+                        // Add element to current page
+                        currentPageEl.appendChild(el.cloneNode(true));
+                    }
                 });
 
-                laporanContent.appendChild(page1);
-                pages.push(page1);
-                totalPages = 1;
+                totalPages = pages.length;
+                console.log(`Total pages created: ${totalPages}`);
 
-                console.log('Page 1 created with all content');
+                // Show first page
+                if (pages.length > 0) {
+                    laporanLoading.style.display = 'none';
+                    laporanContent.style.display = 'block';
+                    showPage(1);
+                } else {
+                    throw new Error('No pages were created');
+                }
             }
 
             // Atau alternatif yang lebih robust:

@@ -91,14 +91,7 @@ class MenuHelper
                 'icon' => 'bi-clock-history',
                 'route' => 'pj.riwayat.index',
                 'active' => request()->routeIs('pj.riwayat.*'),
-            ],
-
-            [
-                'label' => 'Laporan',
-                'icon' => 'bi-file-earmark-bar-graph-fill',
-                'route' => 'pj.laporan',
-                'active' => request()->routeIs('pj.laporan.*'),
-            ],
+            ]
         ];
     }
 
