@@ -1,12 +1,30 @@
 {{-- resources/views/staff/admin/laporan-pdf.blade.php --}}
-{{-- ini adalah isi dari laporan --}}
-
+{{-- 
+  STRUKTUR HALAMAN LAPORAN:
+  
+  HALAMAN 1: Header + Info Surat + Barang Masuk
+  - Kop Surat dengan Logo
+  - Judul Laporan
+  - Info Surat (Dari, Tanggal, Sifat, Hal)
+  - Tabel Barang Masuk (jika ada data)
+  
+  HALAMAN 2: Distribusi Barang
+  - Header (diulang untuk konsistensi)
+  - Judul "Distribusi Barang"
+  - Tabel Distribusi (jika ada data)
+  
+  HALAMAN 3: Barang Keluar
+  - Header (diulang untuk konsistensi)
+  - Judul "Barang Keluar"
+  - Tabel Barang Keluar (jika ada data)
+  - Tanda Tangan
+--}}
 
 <!DOCTYPE html>
-<html>
-
+<html lang="id">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laporan Riwayat Barang</title>
     <style>
         body {
@@ -60,14 +78,12 @@
             font-size: 14px;
         }
 
-        /* Container untuk tabel */
         .table-container {
             width: 100%;
             overflow: hidden;
             margin: 10px 0;
         }
 
-        /* styling tabel data barang */
         table.data {
             border-collapse: collapse;
             font-size: 12px;
@@ -85,7 +101,6 @@
             overflow: hidden;
         }
 
-        /* biar header tidak diulang */
         table.data thead {
             display: table-row-group;
         }
@@ -98,13 +113,13 @@
             page-break-inside: avoid;
         }
 
-        /* distribusi dan keluar harus di halaman baru - hanya untuk h3 */
+        /* CLASS UNTUK PENANDA HALAMAN BARU */
+        /* Distribusi dan Keluar akan menjadi halaman terpisah */
         h3.distribusi,
         h3.barang-keluar {
             page-break-before: always;
         }
 
-        /* Pastikan judul dan tabel tidak terpisah */
         h3 {
             page-break-after: avoid;
         }
@@ -121,7 +136,7 @@
             background: #f9f9f9;
         }
 
-        /* Perbaikan lebar kolom - TABEL BARANG MASUK */
+        /* TABEL BARANG MASUK */
         table.data.masuk .col-no {
             width: 4%;
         }
@@ -150,7 +165,7 @@
             width: 32%;
         }
 
-        /* Perbaikan lebar kolom - TABEL DISTRIBUSI */
+        /* TABEL DISTRIBUSI */
         table.data.distribusi .col-no {
             width: 4%;
         }
@@ -179,7 +194,7 @@
             width: 32%;
         }
 
-        /* Perbaikan lebar kolom - TABEL BARANG KELUAR */
+        /* TABEL BARANG KELUAR */
         table.data.keluar .col-no {
             width: 4%;
         }
@@ -228,7 +243,6 @@
             border-radius: 2px;
         }
 
-        /* tanda tangan */
         .ttd {
             margin-top: 60px;
             width: 100%;
@@ -242,7 +256,6 @@
             border: none;
         }
 
-        /* styling untuk judul dan info */
         .judul-laporan {
             margin: 20px 0;
         }
@@ -271,7 +284,6 @@
             vertical-align: top;
         }
 
-        /* biar konsisten pas di-print */
         @media print {
             body {
                 -webkit-print-color-adjust: exact;
@@ -302,7 +314,6 @@
             }
         }
 
-        /* Untuk landscape jika perlu */
         @page {
             size: portrait;
             margin: 15mm;
@@ -311,9 +322,15 @@
 </head>
 
 <body>
+    {{-- ========================================
+         HALAMAN 1: KOP + INFO + BARANG MASUK
+         ======================================== --}}
+    
+    {{-- KOP SURAT --}}
     <div class="kop-surat">
         <div class="kop-logo">
-            <img src="assets/banner/logo_bupati.png" alt="Logo Bupati">
+            <img src="{{ asset('assets/banner/logo_bupati.png') }}" alt="Logo Bupati">
+
         </div>
         <div class="kop-text">
             <h1>PEMERINTAH KABUPATEN BANGKA</h1>
@@ -323,21 +340,12 @@
         </div>
     </div>
 
-    <!-- JUDUL LAPORAN -->
+    {{-- JUDUL LAPORAN --}}
     @php
         $bulan = [
-            1 => 'I',
-            2 => 'II',
-            3 => 'III',
-            4 => 'IV',
-            5 => 'V',
-            6 => 'VI',
-            7 => 'VII',
-            8 => 'VIII',
-            9 => 'IX',
-            10 => 'X',
-            11 => 'XI',
-            12 => 'XII',
+            1 => 'I', 2 => 'II', 3 => 'III', 4 => 'IV',
+            5 => 'V', 6 => 'VI', 7 => 'VII', 8 => 'VIII',
+            9 => 'IX', 10 => 'X', 11 => 'XI', 12 => 'XII',
         ];
         $bulanRomawi = $bulan[now()->month];
         $tahun = now()->year;
@@ -352,7 +360,7 @@
         <h2>BERITA ACARA LAPORAN RIWAYAT PENGELOLAAN BARANG</h2>
     </div>
 
-    <!-- Info Surat -->
+    {{-- INFO SURAT --}}
     <div class="info-surat">
         <table>
             <tr>
@@ -378,7 +386,7 @@
         </table>
     </div>
 
-    <!-- TABEL BARANG MASUK -->
+    {{-- TABEL BARANG MASUK (HALAMAN 1) --}}
     @if ($jumlahMasuk > 0)
         <h3 style="margin-top:30px; text-align:center; font-size:14px;">Barang Masuk</h3>
         <div class="table-container">
@@ -430,7 +438,11 @@
         </div>
     @endif
 
-    <!-- TABEL DISTRIBUSI BARANG -->
+    {{-- ========================================
+         HALAMAN 2: DISTRIBUSI BARANG
+         Class "distribusi" akan memicu page break
+         ======================================== --}}
+    
     @if ($jumlahDistribusi > 0)
         <h3 style="margin-top:40px; text-align:center; font-size:14px;" class="distribusi">Distribusi Barang</h3>
         <div class="table-container">
@@ -476,7 +488,11 @@
         </div>
     @endif
 
-    <!-- TABEL BARANG KELUAR -->
+    {{-- ========================================
+         HALAMAN 3: BARANG KELUAR + TANDA TANGAN
+         Class "barang-keluar" akan memicu page break
+         ======================================== --}}
+    
     @if ($jumlahKeluar > 0)
         <h3 style="margin-top:40px; text-align:center; font-size:14px;" class="barang-keluar">Barang Keluar</h3>
         <div class="table-container">
@@ -524,7 +540,7 @@
         </div>
     @endif
 
-    <!-- TANDA TANGAN -->
+    {{-- TANDA TANGAN (HALAMAN 3) --}}
     <table class="ttd">
         <tr>
             <td style="width:50%;"></td>
