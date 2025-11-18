@@ -1,6 +1,8 @@
 {{-- resources/views/staff/admin/laporan.blade.php --}}
 <x-layouts.app title="Laporan" :menu="$menu">
     <link rel="stylesheet" href="{{ asset('assets/css/staff/admin/laporan.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/staff/admin/laporan_pdf.css') }}">
+
 
     <div class="page-body">
         <div class="card">

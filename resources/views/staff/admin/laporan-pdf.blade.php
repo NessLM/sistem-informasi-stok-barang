@@ -1,3 +1,4 @@
+{{-- resources/views/staff/admin/laporan-pdf.blade.php --}}
 <!DOCTYPE html>
 <html lang="id">
 
@@ -5,7 +6,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laporan Riwayat Barang</title>
-    <link rel="stylesheet" href="{{ asset('assets/css/staff/admin/laporan_pdf.css') }}">
+    <link rel="stylesheet" href="{{ public_path('assets/css/staff/admin/laporan_pdf.css') }}">
+
+
 </head>
 
 <body>
@@ -28,7 +31,7 @@
         $tanggalSekarang = Carbon::now();
         $tanggalFormatted = $tanggalSekarang->locale('id')->isoFormat('D MMMM YYYY');
     @endphp
-    
+
     <div class="tanggal-surat">
         Sungailiat, {{ $tanggalFormatted }}
     </div>
@@ -36,7 +39,7 @@
     {{-- TUJUAN SURAT --}}
     <div class="tujuan-surat">
         <p>Kepada Yth.</p>
-        <p>>BPPKAD Kab. Bangka</p>
+        <p> BPPKAD Kab. Bangka</p>
         <p>c.q. Bagian Aset</p>
         <p>di -</p>
         <p><strong>SUNGAILIAT</strong></p>
@@ -51,7 +54,9 @@
 
     <div class="judul-surat">
         <h3>SURAT PENGANTAR</h3>
-        <p class="nomor-surat">Nomor : 045.2/ <span style="text-decoration: underline;">&nbsp;&nbsp;O8L&nbsp;&nbsp;</span> /{{ $bulanSekarang }}/{{ $tahunSekarang }}</p>
+        <p class="nomor-surat">Nomor : 045.2/ <span
+                > &nbsp; &nbsp;</span>
+            /{{ $bulanSekarang }}/{{ $tahunSekarang }}</p>
     </div>
 
     {{-- TABEL URAIAN --}}
@@ -70,12 +75,15 @@
                     <td class="col-no"></td>
                     <td class="col-uraian">
                         <div class="uraian-text">
-                            <p>- Penyampaian Laporan Berita Acara Rekonsiliasi Internal Data BMD berupa Aset pada Sekretariat Daerah</p>
-                            <p>- Penyampaian Laporan Berita Acara Pemeriksaan Persediaan Barang Pakai Habis Stock Opname per 30 Juni {{ $year ?? $tahunSekarang }} pada Sekretariat Daerah</p>
+                            <p>- Penyampaian Laporan Berita Acara Rekonsiliasi Internal Data BMD berupa Aset pada
+                                Sekretariat Daerah</p>
+                            <p>- Penyampaian Laporan Berita Acara Pemeriksaan Persediaan Barang Pakai Habis Stock Opname
+                                per 30 Juni {{ $year ?? $tahunSekarang }} pada Sekretariat Daerah</p>
                         </div>
                     </td>
                     <td class="col-jumlah">1 ( satu )<br>Berkas</td>
-                    <td class="col-keterangan">Disampaikan dengan hormat untuk dipergunakan sebagaimana mestinya, terimakasih.</td>
+                    <td class="col-keterangan">Disampaikan dengan hormat untuk dipergunakan sebagaimana mestinya,
+                        terimakasih.</td>
                 </tr>
             </tbody>
         </table>
@@ -98,17 +106,17 @@
                 <tr>
                     <td class="label">Diterima Tgl</td>
                     <td class="titik-dua">:</td>
-                    <td><span class="garis-bawah"></span></td>
+                    <td><span>..................................................</span></td>
                 </tr>
                 <tr>
                     <td class="label">Nama</td>
                     <td class="titik-dua">:</td>
-                    <td><span class="garis-bawah"></span></td>
+                    <td><span>..................................................</span></td>
                 </tr>
                 <tr>
                     <td class="label">Tanda Tangan</td>
                     <td class="titik-dua">:</td>
-                    <td><span class="garis-bawah"></span></td>
+                    <td><span>..................................................</span></td>
                 </tr>
             </table>
         </div>
