@@ -266,6 +266,11 @@
     padding: 8px 10px;
 }
 
+.bg-info{
+    background: linear-gradient(135deg, #3498db 25%, #2c3e50 100%);
+
+}
+
 /* ==== Password Toggle Styles ==== */
 #modalEditUser .field-pass {
     position: relative;
@@ -549,4 +554,15 @@
     .table {
         border: 1px solid #000;
     }
+}
+
+
+.btn-info{
+    background-color: #3498db;
+    width: 70%;
+}
+
+.btn-warning{
+    margin-top: 5px;
+    width: 70%;
 }

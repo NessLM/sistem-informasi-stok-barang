@@ -673,7 +673,7 @@
             <div class="modal-content">
                 <div class="modal-header bg-info text-white">
                     <h5 class="modal-title">
-                        <i class="bi bi-pencil-square"></i> Edit Data Barang
+                        <i class="bi "></i> Edit Data Barang
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
