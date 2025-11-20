@@ -203,7 +203,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="riwayat-empty-state text-center py-4">
+                                        <td colspan="8" class="riwayat-empty-state text-center py-4">
                                             <i class="bi bi-inbox"></i>
                                             <p>Tidak ada data barang masuk ditemukan</p>
                                         </td>
