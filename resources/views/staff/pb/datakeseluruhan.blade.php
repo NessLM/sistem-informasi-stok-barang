@@ -21,7 +21,7 @@
         <style>
             .row-low-stock {
                 background-color: #ffcccc !important;
-                border-left: 4px solid #dc3545 !important;
+                border-left: 4px solid #fd7e14 !important;
             }
 
             /* Tab Navigation Styles - CENTERED */
@@ -336,7 +336,7 @@
                                             <td class="text-center">
                                                 <button class="btn btn-sm btn-success"
                                                     onclick="toggleDetail('barang', {{ $k->id }})">
-                                                    <i class="bi bi-eye"></i> Lihat ({{ $stokInKategori->count() }})
+                                                    <i class="bi bi-eye"></i> Lihat
                                                 </button>
                                             </td>
                                         </tr>
@@ -427,7 +427,7 @@
                                             <td class="text-center">
                                                 <button class="btn btn-sm btn-primary"
                                                     onclick="toggleDetail('bagian', {{ $bg->id }})">
-                                                    <i class="bi bi-chevron-down"></i> Expand ({{ $stokDiBagian->count() }})
+                                                    <i class="bi bi-chevron-down"></i> Expand 
                                                 </button>
                                             </td>
                                         </tr>
