@@ -43,10 +43,10 @@
                     + Tambah Pengguna
                 </button>
 
-                <button type="button" class="btn btn-add-user" data-bs-toggle="modal"
+                {{-- <button type="button" class="btn btn-add-user" data-bs-toggle="modal"
                     data-bs-target="#modalCreateRole">
                     + Tambah Role
-                </button>
+                </button> --}}
             </div>
         </div>
 
