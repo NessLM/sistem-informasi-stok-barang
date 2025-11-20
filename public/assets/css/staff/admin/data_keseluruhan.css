@@ -1,3 +1,4 @@
+/* === TAMPILAN DESKOP (TETAP) === */
 .title {
     font-weight: 700;
     margin-bottom: 20px;
@@ -24,13 +25,13 @@
 #searchSuggestions .dropdown-item:last-child {
     border-bottom: none;
 }
+
 /* Chip filter gudang – gaya modern */
 .filter-chip {
-    --chip-from: #eef2ff; /* default gradien */
+    --chip-from: #eef2ff;
     --chip-to: #e0e7ff;
     --chip-text: #1e293b;
     --chip-border: rgba(30, 41, 59, 0.15);
-
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
@@ -58,40 +59,40 @@
     font-weight: 700;
 }
 
-/* Tema per gudang (berdasar slug di data-gudang) */
+/* Tema per gudang */
 .filter-chip[data-gudang*="atk"] {
     --chip-from: #ecfeff;
     --chip-to: #cffafe;
-    --chip-text: #134e4a; /* teal */
+    --chip-text: #134e4a;
 }
 .filter-chip[data-gudang*="kebersihan"] {
     --chip-from: #f0fdf4;
     --chip-to: #dcfce7;
-    --chip-text: #14532d; /* green */
+    --chip-text: #14532d;
 }
 .filter-chip[data-gudang*="listrik"] {
     --chip-from: #fefce8;
     --chip-to: #fef9c3;
-    --chip-text: #713f12; /* amber */
+    --chip-text: #713f12;
 }
 .filter-chip[data-gudang*="komputer"] {
     --chip-from: #eef2ff;
     --chip-to: #e0e7ff;
-    --chip-text: #1e293b; /* indigo */
+    --chip-text: #1e293b;
 }
 .filter-chip[data-gudang*="utama"] {
     --chip-from: #eff6ff;
     --chip-to: #dbeafe;
-    --chip-text: #1e3a8a; /* blue */
+    --chip-text: #1e3a8a;
 }
 
 .badge-modern {
-    background-color: #e0e7ff; /* biru lembut */
-    color: #1e3a8a; /* biru tua */
+    background-color: #e0e7ff;
+    color: #1e3a8a;
     font-weight: 600;
     font-size: 0.85rem;
     padding: 4px 10px;
-    border-radius: 999px; /* bentuk pill */
+    border-radius: 999px;
     display: inline-block;
     vertical-align: middle;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -99,30 +100,10 @@
 }
 
 .badge-modern:hover {
-    background-color: #c7d2fe; /* sedikit lebih terang saat hover */
+    background-color: #c7d2fe;
     transform: translateY(-1px);
 }
-.row-low-stock {
-    background-color: #ffcccc !important;
-    border-left: 4px solid #dc3545 !important;
-}
 
-/* Custom styling untuk dropdown suggestions */
-#searchSuggestions .dropdown-item {
-    padding: 12px 16px;
-    border-bottom: 1px solid #f0f0f0;
-    transition: background-color 0.2s ease;
-}
-
-#searchSuggestions .dropdown-item:hover,
-#searchSuggestions .dropdown-item.active {
-    background-color: #bbbbbb !important;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-}
-
-#searchSuggestions .dropdown-item:last-child {
-    border-bottom: none;
-}
 .toast-container {
     position: fixed;
     top: 20px;
@@ -191,20 +172,6 @@
     color: #666;
 }
 
-@media (max-width: 576px) {
-    h1.title {
-        font-size: 1.5rem;
-    }
-
-    .btn {
-        width: 100%;
-    }
-
-    .input-group .form-control {
-        min-width: 0;
-    }
-}
-
 .btn-add {
     background: linear-gradient(135deg, #3d6c8c 25%, #4d83b9 100%);
     border: none;
@@ -228,6 +195,7 @@
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
+
 /* === Form Field di Modal === */
 .modal .form-label {
     margin-bottom: 6px;
@@ -260,12 +228,10 @@
     border-bottom-left-radius: 0;
 }
 
-/* Invalid feedback (biar lebih rapih) */
 .modal .invalid-feedback {
     font-size: 0.8rem;
 }
 
-/* Button dalam modal */
 .modal .btn {
     border-radius: 6px;
     padding: 8px 16px;
@@ -281,6 +247,7 @@
     background-color: #dc3545;
     border-color: #dc3545;
 }
+
 /* ==== CONTENT AREA ==== */
 .content {
     margin-left: 20px;
@@ -288,7 +255,6 @@
     min-height: 100vh;
 }
 
-/* ==== HEADER TITLE ==== */
 .content h2 {
     font-size: 24px;
     font-weight: 600;
@@ -296,7 +262,6 @@
     color: #1d2433;
 }
 
-/* ==== CARD STYLE ==== */
 .card {
     background: #fff;
     border-radius: 12px;
@@ -306,7 +271,6 @@
     margin-top: 20px;
 }
 
-/* ==== Page body khusus Data Pengguna ==== */
 .page-body {
     padding: 5px 15px 15px 15px;
     width: 100%;
@@ -321,7 +285,6 @@
     color: #1d2433;
 }
 
-/* ==== TABLE STYLE ==== */
 .table {
     width: 100%;
     border-radius: 8px;
@@ -354,7 +317,6 @@
     transform: translateX(4px);
 }
 
-/* ==== BUTTON STYLE ==== */
 .btn-primary {
     background: #2072b7;
     border: none;
@@ -385,7 +347,6 @@
     padding: 6px 12px;
 }
 
-/* ==== HEADER DENGAN TOMBOL DI SEBELAH KANAN ==== */
 .card-header-container {
     display: flex;
     justify-content: space-between;
@@ -396,7 +357,7 @@
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     border: 1px solid #e5e9f2;
-    flex-wrap: wrap; /* Untuk responsif */
+    flex-wrap: wrap;
     gap: 15px;
 }
 
@@ -410,7 +371,7 @@
 .button-group {
     display: flex;
     gap: 10px;
-    flex-wrap: wrap; /* Untuk tombol yang banyak */
+    flex-wrap: wrap;
 }
 
 .btn-add-user {
@@ -424,7 +385,7 @@
     text-decoration: none;
     display: inline-block;
     font-size: 14px;
-    white-space: nowrap; /* Mencegah teks tombol terpotong */
+    white-space: nowrap;
 }
 
 .btn-add-user:hover {
@@ -457,12 +418,11 @@
     color: #fff;
 }
 
-/* ==== TOMBOL AKSI - PERBAIKAN UTAMA ==== */
 .table .action-buttons {
     display: flex;
     gap: 8px;
     justify-content: center;
-    flex-wrap: nowrap; /* ← Ubah dari wrap ke nowrap untuk desktop/tablet */
+    flex-wrap: nowrap;
 }
 
 .modal .modal-content {
@@ -475,7 +435,6 @@
     padding: 8px 10px;
 }
 
-/* ==== Password Toggle Styles ==== */
 #modalEditUser .field-pass {
     position: relative;
 }
@@ -515,64 +474,26 @@
     box-shadow: none;
 }
 
-/* ==== RESPONSIVE DESIGN ==== */
+/* ============================================= */
+/* === PERBAIKAN KHUSUS UNTUK MOBILE SAJA === */
+/* ============================================= */
 
 /* Tablet (768px - 1024px) */
 @media (max-width: 1024px) {
     .content {
         margin-left: 0;
-        padding: 10px;
+        padding: 15px;
     }
 
     .page-body {
-        padding: 5px 10px 15px 10px;
+        padding: 10px;
     }
 
     .card-header-container {
-        padding: 12px 15px;
-    }
-
-    .card-title {
-        font-size: 18px;
-    }
-
-    .table thead th,
-    .table tbody td {
-        padding: 8px 10px;
-        font-size: 13px;
-    }
-
-    .btn-add-user {
-        padding: 6px 12px;
-        font-size: 13px;
-    }
-
-    /* TAMBAHKAN: Scroll horizontal hanya untuk tablet/mobile */
-    .card {
-        overflow-x: auto;
-    }
-
-    .table {
-        min-width: 800px; /* Lebar minimum untuk tablet */
-    }
-
-    .table .action-buttons {
-        flex-wrap: nowrap;
-        gap: 6px;
-    }
-
-    .table .btn-action {
-        padding: 5px 10px;
-        font-size: 12px;
-    }
-}
-
-/* Mobile (576px - 768px) */
-@media (max-width: 768px) {
-    .card-header-container {
+        padding: 15px;
         flex-direction: column;
         align-items: flex-start;
-        gap: 15px;
+        gap: 12px;
     }
 
     .button-group {
@@ -583,9 +504,73 @@
     .card {
         padding: 15px;
         margin-top: 15px;
+        overflow-x: auto;
     }
 
     .table {
+        min-width: 800px;
+    }
+
+    .table thead th,
+    .table tbody td {
+        padding: 8px 10px;
+        font-size: 13px;
+    }
+
+    .action-buttons {
+        gap: 6px;
+    }
+
+    .btn-action {
+        padding: 5px 10px;
+        font-size: 12px;
+    }
+}
+
+/* Mobile Medium (576px - 768px) */
+@media (max-width: 768px) {
+    .content {
+        padding: 10px;
+    }
+
+    .page-body {
+        padding: 8px;
+    }
+
+    .content h2 {
+        font-size: 20px;
+        margin-bottom: 15px;
+    }
+
+    .card-header-container {
+        padding: 12px;
+        margin-bottom: 15px;
+    }
+
+    .card-title {
+        font-size: 18px;
+    }
+
+    .button-group {
+        flex-direction: column;
+        width: 100%;
+        gap: 8px;
+    }
+
+    .btn-add-user {
+        width: 100%;
+        text-align: center;
+        padding: 10px 15px;
+    }
+
+    .card {
+        padding: 12px;
+        border-radius: 10px;
+        margin-top: 12px;
+    }
+
+    .table {
+        min-width: 700px;
         font-size: 12px;
     }
 
@@ -595,20 +580,21 @@
         font-size: 12px;
     }
 
-    /* Hanya di mobile tombol aksi menjadi vertikal */
     .action-buttons {
         flex-direction: column;
-        gap: 5px;
+        gap: 4px;
     }
 
     .btn-action {
         width: 100%;
         justify-content: center;
+        padding: 6px 10px;
     }
 
-    /* Modal adjustments for mobile */
+    /* Modal Mobile */
     .modal-dialog {
         margin: 10px;
+        max-width: calc(100% - 20px);
     }
 
     .modal-content {
@@ -620,54 +606,57 @@
     .modal-footer {
         padding: 15px;
     }
+
+    .modal-header h5 {
+        font-size: 18px;
+    }
 }
 
-/* Small Mobile (max-width: 576px) */
+/* Mobile Small (max-width: 576px) */
 @media (max-width: 576px) {
+    .content {
+        padding: 8px;
+    }
+
     .page-body {
         padding: 5px;
     }
 
-    .card {
-        padding: 10px;
-        border-radius: 8px;
-        margin-top: 10px;
+    .content h2 {
+        font-size: 18px;
+        margin-bottom: 12px;
     }
 
     .card-header-container {
         padding: 10px;
         border-radius: 8px;
+        margin-bottom: 12px;
     }
 
     .card-title {
         font-size: 16px;
     }
 
-    .button-group {
-        flex-direction: column;
-        width: 100%;
-    }
-
-    .btn-add-user {
-        width: 100%;
-        text-align: center;
-        padding: 8px 12px;
+    .card {
+        padding: 10px;
+        border-radius: 8px;
+        margin-top: 10px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
     }
 
     .table {
-        min-width: 500px;
+        min-width: 600px;
+        font-size: 11px;
     }
 
     .table thead th,
     .table tbody td {
-        padding: 4px 6px;
+        padding: 5px 6px;
         font-size: 11px;
     }
 
-    /* Tombol aksi tetap vertikal di small mobile */
     .action-buttons {
-        flex-direction: column;
-        gap: 4px;
+        gap: 3px;
     }
 
     .btn-action {
@@ -675,26 +664,68 @@
         font-size: 11px;
     }
 
-    /* Toast notification mobile adjustment */
-    #toast-notif {
+    /* Filter Chip Mobile */
+    .filter-chip {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    /* Toast Mobile */
+    .toast-container {
         top: 10px;
-        left: 10px;
         right: 10px;
-        transform: none;
-        max-width: none;
+        left: 10px;
     }
 
     .toast-message {
-        min-width: auto;
-        max-width: none;
         width: 100%;
+        max-width: none;
     }
 }
 
-/* Very Small Mobile (max-width: 400px) */
+/* Mobile Extra Small (max-width: 400px) */
 @media (max-width: 400px) {
+    .content {
+        padding: 5px;
+    }
+
+    .page-body {
+        padding: 3px;
+    }
+
+    .card-header-container {
+        padding: 8px 10px;
+    }
+
+    .card {
+        padding: 8px;
+    }
+
+    .table {
+        min-width: 550px;
+    }
+
+    .table thead th,
+    .table tbody td {
+        padding: 4px 5px;
+        font-size: 10px;
+    }
+
+    .btn-action {
+        padding: 3px 6px;
+        font-size: 10px;
+    }
+
+    /* Modal Extra Small */
     .modal-dialog {
         margin: 5px;
+        max-width: calc(100% - 10px);
+    }
+
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 12px;
     }
 
     .modal-header h5 {
@@ -702,47 +733,46 @@
     }
 
     .modal-body .form-label {
-        font-size: 13px;
+        font-size: 14px;
     }
 
     .modal-body .form-control,
     .modal-body .form-select {
-        font-size: 13px;
-        padding: 6px 8px;
-    }
-
-    .modal-footer .btn {
-        padding: 6px 12px;
-        font-size: 13px;
-    }
-
-    .action-buttons .btn {
-        font-size: 12px;
-        padding: 4px 8px;
+        font-size: 16px;
+        padding: 8px 10px;
     }
 }
 
-/* Landscape mode for mobile */
+/* Landscape Mobile */
 @media (max-height: 500px) and (orientation: landscape) {
     .modal-dialog {
         max-height: 90vh;
-        overflow-y: auto;
+        margin: 5px;
     }
 
     .modal-body {
         max-height: 60vh;
         overflow-y: auto;
     }
-}
 
-/* High resolution screens */
-@media (min-width: 1400px) {
-    .container {
-        max-width: 1320px;
+    .card-header-container {
+        padding: 8px 12px;
     }
 }
 
-/* Print styles */
+/* Input Mobile Fix (Prevent Zoom) */
+@media (max-width: 768px) {
+    input, select, textarea {
+        font-size: 16px !important;
+    }
+}
+
+/* Smooth Scroll untuk iOS */
+.card {
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Print Styles */
 @media print {
     .button-group,
     .action-buttons,
