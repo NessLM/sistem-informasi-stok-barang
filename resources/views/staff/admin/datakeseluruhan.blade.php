@@ -269,7 +269,7 @@
                                                                 <td style="width:120px" class="text-center">
                                                                     <button class="btn btn-sm btn-success"
                                                                         onclick="toggleKategori({{ $k->id }})">
-                                                                        <i class="bi bi-eye" id="icon-kategori-{{ $k->id }}"></i>
+                                                                        <i class="bi bi-eye" id="icon-kategori-{{ $k->id }}"> Lihat</i>
                                                                     </button>
                                                                 </td>
                                                             </tr>
@@ -371,7 +371,7 @@
                                                                     <td style="width:120px" class="text-center">
                                                                         <button class="btn btn-sm btn-success"
                                                                             onclick="toggleKategoriBagian({{ $k->id }}, {{ $bg->id }})">
-                                                                            <i class="bi bi-eye" id="icon-kategori-{{ $k->id }}-{{ $bg->id }}"></i>
+                                                                            <i class="bi bi-eye" id="icon-kategori-{{ $k->id }}-{{ $bg->id }}"> Lihat</i>
                                                                         </button>
                                                                     </td>
                                                                 </tr>
