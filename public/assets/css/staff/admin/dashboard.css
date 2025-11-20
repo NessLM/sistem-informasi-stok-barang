@@ -7,9 +7,9 @@
 
 /* --- Wadah utama halaman dashboard --- */
 .dashboard-container {
-    padding: 10px; /* jarak global isi dari tepi */
-    background-color: #f8fafc; /* abu sangat muda */
-    min-height: 100vh; /* biar selalu penuh layar */
+    padding: 10px;
+    background-color: #f8fafc;
+    min-height: 100vh;
     font-family: "Poppins", sans-serif;
     box-sizing: border-box;
 }
@@ -23,12 +23,10 @@
     display: flex;
     gap: 26px;
     margin-bottom: 30px;
-    align-items: stretch; /* [FIX_HEIGHT] kedua kolom sama tinggi lagi */
-    flex-wrap: wrap; /* NEW: Membuat elemen bisa wrap di layar kecil */
+    align-items: stretch;
+    flex-wrap: wrap;
 }
 
-/* [TWEAK] penting untuk flex child yang berisi chart/canvas:
-   mencegah overflow horizontal saat label sumbu panjang. */
 .dashboard-row > * {
     min-width: 0;
     box-sizing: border-box;
@@ -40,8 +38,8 @@
 
 /* ==================== Summary Section (kolom kiri) ==================== */
 .summary-section {
-    flex: 1; /* CHANGED: dari 0 0 360px ke flex:1 untuk responsif */
-    min-width: 300px; /* NEW: Lebar minimum */
+    flex: 1;
+    min-width: 300px;
     background: #fff;
     border-radius: 14px;
     padding: 18px;
@@ -50,7 +48,6 @@
     flex-direction: column;
 }
 
-/* [NEW] Header summary dengan judul dan filter */
 .summary-header {
     display: flex;
     justify-content: space-between;
@@ -67,7 +64,6 @@
     margin: 0;
 }
 
-/* [NEW] Filter gudang pada ringkasan */
 .summary-filter {
     position: relative;
     display: inline-block;
@@ -101,21 +97,19 @@
     margin-right: 6px;
 }
 
-/* [NEW] Arrow icon untuk dropdown - Styling konsisten untuk semua dropdown */
 .summary-filter-btn .arrow-icon,
 .filter-btn .arrow-icon,
 .dropdown-toggle .arrow-icon {
     font-size: 0.8rem;
     margin-left: 6px;
     transition: transform 0.2s ease;
-    transform: rotate(0deg); /* Default: mengarah ke kanan */
+    transform: rotate(0deg);
 }
 
-/* [NEW] Rotasi arrow ketika dropdown dibuka */
 .summary-filter-btn[aria-expanded="true"] .arrow-icon,
 .filter-btn[aria-expanded="true"] .arrow-icon,
 .dropdown-toggle[aria-expanded="true"] .arrow-icon {
-    transform: rotate(90deg); /* Berputar 90 derajat ke bawah */
+    transform: rotate(90deg);
 }
 
 .summary-dropdown-menu {
@@ -199,7 +193,7 @@
 .summary-card__body {
     display: flex;
     flex-direction: column;
-    flex: 1; /* NEW: Agar teks memenuhi ruang yang tersedia */
+    flex: 1;
 }
 
 .summary-card__number {
@@ -219,28 +213,27 @@
 /* ==================== Chart Sections (kanan & full) ==================== */
 .chart-section,
 .wide-chart-section {
-    flex: 2; /* CHANGED: dari flex:1 ke flex:2 untuk rasio yang lebih baik */
-    min-width: 300px; /* NEW: Lebar minimum */
+    flex: 2;
+    min-width: 300px;
     background: #fff;
     border-radius: 14px;
     padding: 18px;
     box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
 }
+
 .chart-header-horizontal-item:last-child {
     margin-left: auto;
 }
 
-/* Header di atas chart (judul + filter/controls) */
 .chart-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 16px;
-    flex-wrap: wrap; /* NEW: Membuat header wrap di layar kecil */
+    flex-wrap: wrap;
     gap: 10px;
 }
 
-/* [NEW] Layout sejajar horizontal untuk semua komponen */
 .chart-header--horizontal {
     display: flex;
     justify-content: flex-start;
@@ -258,11 +251,10 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    min-width: 200px; /* CHANGED: dari 320px ke 200px untuk mobile */
+    min-width: 200px;
     flex-wrap: wrap;
 }
 
-/* [NEW] Untuk layout horizontal sejajar */
 .chart-header-horizontal-item {
     display: flex;
     align-items: center;
@@ -275,7 +267,7 @@
     font-size: 1.1rem;
     font-weight: 700;
     margin: 0;
-    white-space: nowrap; /* NEW: Mencegah judul terpotong */
+    white-space: nowrap;
     flex-shrink: 0;
 }
 
@@ -284,10 +276,9 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    flex-wrap: wrap; /* NEW: Membuat filter wrap di layar kecil */
+    flex-wrap: wrap;
 }
 
-/* Tombol corong (filter) */
 .filter-btn,
 .dropdown-toggle {
     background: #f3f4f6;
@@ -298,7 +289,7 @@
     cursor: pointer;
     transition: all 0.2s ease;
     font-size: 0.9rem;
-    white-space: nowrap; /* NEW: Mencegah teks terpotong */
+    white-space: nowrap;
     display: flex;
     align-items: center;
 }
@@ -315,7 +306,6 @@
     margin-right: 6px;
 }
 
-/* Dropdown styles */
 .dropdown {
     position: relative;
     display: inline-block;
@@ -349,7 +339,7 @@
     padding: 0.5rem 1rem;
     color: #374151;
     cursor: pointer;
-    white-space: nowrap; /* NEW: Mencegah teks terpotong */
+    white-space: nowrap;
     border: none;
     background: none;
     text-decoration: none;
@@ -360,31 +350,30 @@
     color: #374151;
 }
 
-/* --- Wadah kanvas Chart.js --- */
 .chart-container {
     height: 260px;
     margin-bottom: 12px;
     position: relative;
-    overflow: hidden; /* NEW: Mencegah overflow */
+    overflow: hidden;
 }
 
 .chart-container canvas {
-    width: max-content !important;
+    width: 100% !important;
     height: 100% !important;
+    max-width: 100%;
 }
 
 .wide-chart-section .chart-container {
     height: 300px;
 }
 
-/* Legend (keterangan warna) */
 .chart-legend {
     display: flex;
     justify-content: center;
     gap: 18px;
     padding-top: 8px;
     border-top: 1px solid #f3f4f6;
-    flex-wrap: wrap; /* NEW: Membuat legend wrap di layar kecil */
+    flex-wrap: wrap;
 }
 
 .chart-legend.yearly {
@@ -397,30 +386,30 @@
     gap: 8px;
     font-size: 0.92rem;
     color: #6b7280;
-    white-space: nowrap; /* NEW: Mencegah teks terpotong */
+    white-space: nowrap;
 }
 
 .legend-color {
     width: 12px;
     height: 12px;
     border-radius: 2px;
-    flex-shrink: 0; /* NEW: Mencegah ikon warna mengecil */
+    flex-shrink: 0;
 }
 
 .legend-color.keluar {
     background-color: #ef4444;
 }
+
 .legend-color.masuk {
     background-color: #31b428;
 }
 
-/* ===== Pager for "Grafik Per Bagian" ===== */
 .pager {
     display: flex;
     align-items: center;
     gap: 6px;
     margin-right: 6px;
-    flex-shrink: 0; /* NEW: Mencegah pager mengecil */
+    flex-shrink: 0;
 }
 
 .pager-btn {
@@ -429,7 +418,7 @@
     border-radius: 10px;
     padding: 6px 10px;
     cursor: pointer;
-    flex-shrink: 0; /* NEW: Mencegah tombol mengecil */
+    flex-shrink: 0;
 }
 
 .pager-btn:disabled {
@@ -447,10 +436,9 @@
     min-width: 36px;
     text-align: center;
     font-size: 0.9rem;
-    flex-shrink: 0; /* NEW: Mencegah info mengecil */
+    flex-shrink: 0;
 }
 
-/* ===== [NEW] Badge keterangan rentang (abu-abu kecil) ===== */
 .range-hint {
     background: #f3f4f6;
     color: #6b7280;
@@ -462,11 +450,10 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 200px; /* CHANGED: dari 320px ke 200px untuk mobile */
-    flex-shrink: 0; /* NEW: Mencegah badge mengecil */
+    max-width: 200px;
+    flex-shrink: 0;
 }
 
-/* ===== [NEW] Visual saat drag / swipe pada chart per bagian ===== */
 #bagianChartBox {
     cursor: grab;
 }
@@ -476,7 +463,6 @@
 }
 
 /* ==================== ANIMASI TRANSISI ==================== */
-/* Animasi untuk komponen dashboard setelah login */
 .summary-section,
 .chart-section,
 .wide-chart-section {
@@ -485,7 +471,6 @@
     animation: slideInFromLeft 0.8s ease-out forwards;
 }
 
-/* Delay bertahap untuk efek berurutan */
 .summary-section {
     animation-delay: 0.2s;
 }
@@ -498,7 +483,6 @@
     animation-delay: 0.6s;
 }
 
-/* Keyframes untuk animasi slide dari kiri */
 @keyframes slideInFromLeft {
     0% {
         opacity: 0;
@@ -510,14 +494,12 @@
     }
 }
 
-/* Efek halus untuk loading state */
 .chart-loading {
     opacity: 0.6;
     pointer-events: none;
     transition: opacity 0.3s ease;
 }
 
-/* Transisi untuk elemen interaktif */
 .summary-card--classic,
 .filter-btn,
 .pager-btn,
@@ -530,7 +512,6 @@
     box-shadow: 0 8px 20px rgba(15, 23, 42, 0.1);
 }
 
-/* Smooth transition untuk angka yang berubah */
 .number-counting {
     transition: all 0.5s ease-out;
 }
@@ -540,7 +521,7 @@
 /* Tablet Landscape dan Desktop Kecil */
 @media (max-width: 1200px) {
     .dashboard-row {
-        gap: 20px; /* Sedikit mengurangi gap */
+        gap: 20px;
     }
 
     .summary-card__number {
@@ -552,7 +533,7 @@
     }
 
     .chart-header h2 {
-        font-size: 1rem; /* Sedikit mengurangi ukuran judul */
+        font-size: 1rem;
     }
 
     .filter-btn,
@@ -568,7 +549,7 @@
     }
 
     .chart-legend {
-        gap: 12px; /* Kurangi gap legend di mobile */
+        gap: 12px;
     }
 
     .chart-legend.yearly {
@@ -580,67 +561,6 @@
     }
 }
 
-/* Mobile Sangat Kecil */
-@media (max-width: 400px) {
-    .dashboard-container {
-        padding: 8px;
-    }
-
-    .summary-section,
-    .chart-section,
-    .wide-chart-section {
-        padding: 10px;
-    }
-
-    .chart-container {
-        height: 180px;
-    }
-
-    .wide-chart-section .chart-container {
-        height: 200px;
-    }
-
-    .summary-card--classic {
-        flex-direction: column; /* NEW: Stack kartu summary vertikal di layar sangat kecil */
-        text-align: center;
-        gap: 8px;
-        min-height: auto;
-    }
-
-    .summary-card__body {
-        align-items: center;
-    }
-
-    .chart-header-left {
-        flex-direction: column; /* NEW: Stack judul dan badge vertikal */
-        gap: 8px;
-        align-items: center;
-    }
-
-    .chart-header--horizontal {
-        flex-direction: column;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .range-hint {
-        max-width: 100%; /* Full width di layar sangat kecil */
-        text-align: center;
-    }
-}
--section,
-.chart-section {
-    min-width: 280px; /* Sedikit mengurangi lebar minimum */
-}
-
-.chart-header-left {
-    min-width: 180px;
-}
-
-.chart-header--horizontal {
-    gap: 12px; /* Sedikit mengurangi gap */
-}
-
 /* Tablet Portrait */
 @media (max-width: 992px) {
     .dashboard-container {
@@ -648,26 +568,25 @@
     }
 
     .dashboard-row {
-        flex-direction: column; /* NEW: Stack vertikal di tablet */
+        flex-direction: column;
         gap: 20px;
     }
 
     .summary-section,
     .chart-section {
-        flex: none; /* NEW: Non-aktifkan flex di layout vertikal */
+        flex: none;
         width: 100%;
         min-width: auto;
     }
 
     .chart-container {
-        height: 240px; /* Sedikit mengurangi tinggi chart */
+        height: 240px;
     }
 
     .wide-chart-section .chart-container {
         height: 280px;
     }
 
-    /* Layout horizontal masih berlaku di tablet */
     .chart-header--horizontal {
         gap: 10px;
         justify-content: flex-start;
@@ -683,33 +602,44 @@
     .summary-section,
     .chart-section,
     .wide-chart-section {
-        padding: 14px; /* Sedikit mengurangi padding */
-        border-radius: 12px; /* Sedikit mengurangi border radius */
+        padding: 14px;
+        border-radius: 12px;
     }
 
     .chart-header {
-        flex-direction: column; /* NEW: Stack header vertikal untuk chart pengeluaran */
+        flex-direction: column;
         align-items: stretch;
         gap: 12px;
     }
 
-    /* [NEW] Layout horizontal khusus untuk grafik per bagian tetap dipertahankan */
     .chart-header--horizontal {
-        flex-direction: row; /* Tetap horizontal */
-        flex-wrap: wrap;
-        justify-content: flex-start;
-        align-items: center;
-        gap: 8px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .chart-header-horizontal-item {
+        width: 100%;
     }
 
     .chart-header-left {
         min-width: auto;
-        justify-content: space-between;
+        width: 100%;
     }
 
     .chart-filter,
     .chart-controls {
-        justify-content: center; /* NEW: Tengahkan filter di mobile */
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .pager {
+        margin-left: auto;
+    }
+
+    .filter-btn,
+    .dropdown-toggle {
+        flex: 1;
     }
 
     .chart-container {
@@ -717,26 +647,33 @@
     }
 
     .wide-chart-section .chart-container {
-        height: 250px;
+        height: 280px;
+    }
+
+    /* Fix untuk grafik pengeluaran per tahun */
+    .wide-chart-section .chart-container canvas {
+        max-width: 100% !important;
+        width: 100% !important;
     }
 
     .summary-card--classic {
         min-height: 76px;
-        padding: 12px 14px; /* Sedikit mengurangi padding */
+        padding: 12px 14px;
     }
 
     .summary-card__icon-circle {
-        width: 48px; /* Sedikit mengurangi ukuran ikon */
+        width: 48px;
         height: 48px;
         font-size: 20px;
     }
 
     .summary-card__number {
-        font-size: 1.6rem; /* Sedikit mengurangi ukuran font */
+        font-size: 1.6rem;
     }
 
     .range-hint {
-        max-width: 150px; /* Lebih sempit di mobile */
+        width: 100%;
+        max-width: 100%;
         font-size: 0.8rem;
     }
 }
@@ -761,7 +698,16 @@
     }
 
     .summary-filter {
-        align-self: center;
+        width: 100%;
+    }
+
+    .summary-filter-btn {
+        width: 100%;
+    }
+
+    .chart-header {
+        flex-direction: column;
+        align-items: stretch;
     }
 
     .chart-header--horizontal {
@@ -771,7 +717,30 @@
     }
 
     .chart-header-horizontal-item {
+        width: 100%;
         justify-content: space-between;
+    }
+
+    .chart-header-left {
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    .chart-filter,
+    .chart-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .filter-btn,
+    .dropdown-toggle {
+        flex: 1;
+        justify-content: space-between;
+    }
+
+    .pager {
+        margin-left: auto;
     }
 
     .chart-container {
@@ -779,7 +748,13 @@
     }
 
     .wide-chart-section .chart-container {
-        height: 220px;
+        height: 240px;
+    }
+
+    /* Fix untuk grafik pengeluaran per tahun di mobile portrait */
+    .wide-chart-section .chart-container canvas {
+        max-width: 100% !important;
+        width: 100% !important;
     }
 
     .summary-cards--classic {
@@ -812,40 +787,45 @@
 
     .filter-btn,
     .dropdown-toggle {
-        padding: 5px 8px;
-        font-size: 0.8rem;
+        padding: 8px 12px;
+        font-size: 0.85rem;
     }
 
     .pager {
-        gap: 4px;
+        gap: 6px;
     }
 
     .pager-btn {
-        padding: 4px 8px;
+        padding: 6px 10px;
     }
 
     .pager-info {
-        font-size: 0.8rem;
-        min-width: 30px;
+        font-size: 0.85rem;
+        min-width: 32px;
     }
 
     .range-hint {
-        max-width: 120px;
-        font-size: 0.75rem;
-        padding: 2px 6px;
+        width: 100%;
+        max-width: 100%;
+        font-size: 0.8rem;
+        padding: 6px 10px;
     }
 
     .chart-legend {
-        gap: 8px;
+        gap: 12px;
     }
 
     .legend-item {
-        font-size: 0.8rem;
+        font-size: 0.85rem;
     }
 
     .dropdown-menu {
-        min-width: 8rem;
-        font-size: 0.8rem;
+        min-width: 100%;
+        font-size: 0.85rem;
+    }
+
+    .dropdown-item {
+        padding: 10px 12px;
     }
 }
 
@@ -866,35 +846,70 @@
     }
 
     .wide-chart-section .chart-container {
-        height: 200px;
+        height: 220px;
+    }
+
+    /* Fix untuk grafik pengeluaran per tahun di layar sangat kecil */
+    .wide-chart-section .chart-container canvas {
+        max-width: 100% !important;
+        width: 100% !important;
     }
 
     .summary-card--classic {
-        flex-direction: column;
-        text-align: center;
-        gap: 8px;
-        min-height: auto;
+        flex-direction: row;
+        text-align: left;
+        gap: 10px;
+        min-height: 70px;
+        padding: 10px;
     }
 
     .summary-card__body {
-        align-items: center;
+        align-items: flex-start;
     }
 
-    .chart-header-left {
-        flex-direction: column;
-        gap: 8px;
-        align-items: center;
+    .summary-card__icon-circle {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
     }
 
-    .chart-header--horizontal {
-        flex-direction: column;
-        align-items: center;
-        gap: 8px;
+    .summary-card__number {
+        font-size: 1.3rem;
+    }
+
+    .summary-card__label {
+        font-size: 0.8rem;
+    }
+
+    .chart-header h2 {
+        font-size: 0.95rem;
+    }
+
+    .filter-btn,
+    .dropdown-toggle {
+        padding: 7px 10px;
+        font-size: 0.8rem;
+    }
+
+    .pager-btn {
+        padding: 5px 8px;
+    }
+
+    .pager-info {
+        font-size: 0.8rem;
     }
 
     .range-hint {
-        max-width: 100%;
-        text-align: center;
+        font-size: 0.75rem;
+        padding: 5px 8px;
+    }
+
+    .chart-legend {
+        gap: 10px;
+    }
+
+    .legend-item {
+        font-size: 0.8rem;
     }
 }
 
