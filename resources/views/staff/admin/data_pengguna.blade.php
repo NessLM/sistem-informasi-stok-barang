@@ -232,7 +232,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Konfirmasi Hapus</h5>
+                    <h5 class="modal-title fw-semibold">Konfirmasi Hapus</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body text-center">
@@ -266,26 +266,26 @@
             <form id="formCreateUser" method="POST" action="{{ route('admin.users.store') }}" class="modal-content">
                 @csrf
                 <div class="modal-header">
-                    <h5 class="modal-title">Tambah Pengguna</h5>
+                    <h5 class="modal-title fw-semibold">Tambah Pengguna</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
 
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Nama</label>
+                        <label class="form-label fw-semibold">Nama</label><span class="text-danger">*</span>
                         <input type="text" class="form-control" name="nama" required
                             placeholder="Masukkan nama">
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Username</label>
+                        <label class="form-label fw-semibold">Username</label><span class="text-danger">*</span>
                         <input type="text" class="form-control" name="username" required
                             placeholder="Masukkan username">
                         <div id="username-feedback" class="invalid-feedback"></div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Password</label>
+                        <label class="form-label fw-semibold">Password</label><span class="text-danger">*</span>
                         <div class="position-relative">
                             <input type="password" class="form-control pe-5" name="password" required
                                 autocomplete="new-password" placeholder="Masukkan password"
@@ -314,7 +314,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Role</label>
+                        <label class="form-label fw-semibold">Role</label><span class="text-danger">*</span>
                         <select class="form-select" name="role_id" required>
                             @foreach ($roles as $role)
                                 <option value="{{ $role->id }}" {{ $role->nama === 'Admin' ? 'selected' : '' }}>
@@ -325,7 +325,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Bagian</label>
+                        <label class="form-label fw-semibold">Bagian</label><span class="text-danger">*</span>
                         <select class="form-select" name="bagian_id" required>
                             <option value="">-- Pilih Bagian --</option>
                             @foreach ($bagians as $bagian)
@@ -350,7 +350,7 @@
                 @csrf
                 @method('PUT')
                 <div class="modal-header">
-                    <h5 class="modal-title">Edit Pengguna</h5>
+                    <h5 class="modal-title fw-semibold">Edit Pengguna</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
 
@@ -359,23 +359,23 @@
                     <input type="hidden" name="role_id" id="user_role_hidden">
 
                     <div class="mb-3">
-                        <label class="form-label">Nama</label>
+                        <label class="form-label fw-semibold">Nama</label>
                         <input type="text" class="form-control" name="nama" id="user_nama" required>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Username</label>
+                        <label class="form-label fw-semibold">Username</label>
                         <input type="text" class="form-control" name="username" id="user_username" required>
                         <div id="edit-username-feedback" class="invalid-feedback"></div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Password Lama</label>
+                        <label class="form-label fw-semibold">Password Lama</label>
                         <input type="text" class="form-control" id="user_old_password" readonly>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">
+                        <label class="form-label fw-semibold">
                             Password Baru <small class="text-muted">(kosongkan jika tidak diubah)</small>
                         </label>
                         <div class="position-relative">
@@ -396,7 +396,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Role</label>
+                        <label class="form-label fw-semibold">Role</label>
                         <select class="form-select" name="role_id_select" id="user_role" required>
                             @foreach ($roles as $role)
                                 <option value="{{ $role->id }}">{{ $role->nama }}</option>
@@ -405,7 +405,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Bagian</label>
+                        <label class="form-label fw-semibold">Bagian</label>
                         <select class="form-select" name="bagian_id" id="user_bagian" required>
                             <option value="">-- Pilih Bagian --</option>
                             @foreach ($bagians as $bagian)

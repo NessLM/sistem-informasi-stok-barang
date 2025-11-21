@@ -673,7 +673,7 @@
             <div class="modal-content">
                 <div class="modal-header bg-info text-white">
                     <h5 class="modal-title">
-                        <i class="bi "></i> Edit Data Barang
+                        <i class="fw-semibold"></i> Edit Data Barang
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
@@ -691,19 +691,19 @@
                         <div class="row g-3">
                             <!-- Nama Barang (Read-only) -->
                             <div class="col-12">
-                                <label class="form-label fw-bold">Nama Barang</label>
+                                <label class="form-label fw-semibold">Nama Barang</label>
                                 <input type="text" id="editNamaBarang" class="form-control bg-light" readonly>
                             </div>
 
                             <!-- Kode Barang (Read-only) -->
                             <div class="col-12">
-                                <label class="form-label fw-bold">Kode Barang</label>
+                                <label class="form-label fw-semibold">Kode Barang</label>
                                 <input type="text" id="editKodeBarang" class="form-control bg-light" readonly>
                             </div>
 
                             <!-- Harga Barang (Editable) -->
                             <div class="col-12">
-                                <label class="form-label fw-bold">
+                                <label class="form-label fw-semibold">
                                     Harga Satuan <span class="text-danger">*</span>
                                 </label>
                                 <div class="input-group">
@@ -716,7 +716,7 @@
 
                             <!-- Bagian (Editable) -->
                             <div class="col-12">
-                                <label class="form-label fw-bold">
+                                <label class="form-label fw-semibold">
                                     Bagian <span class="text-danger">*</span>
                                 </label>
                                 <select name="bagian_id" id="editBagian" class="form-select" required>
@@ -748,7 +748,7 @@
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title">
+                    <h5 class="modal-title fw-semibold">
                         Form Barang Masuk
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
@@ -765,7 +765,7 @@
                         <div class="row g-3">
                             <!-- Nama Barang (Read-only) -->
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">
+                                <label class="form-label fw-semibold">
                                     Nama Barang
                                 </label>
                                 <input type="text" id="barangMasukNama" class="form-control" readonly>
@@ -773,7 +773,7 @@
 
                             <div class="col-md-6">
                                 <!-- Kode Barang (Read-only) -->
-                                <label class="form-label fw-bold">
+                                <label class="form-label fw-semibold">
                                     Kode Barang
                                 </label>
                                 <input type="text" id="barangMasukKodeDisplay" class="form-control" readonly>
@@ -781,7 +781,7 @@
 
                             <div class="col-md-6">
                                 <!-- Harga Barang -->
-                                <label class="form-label fw-bold">
+                                <label class="form-label fw-semibold">
                                     Harga Satuan <span class="text-danger">*</span>
                                 </label>
                                 <div class="input-group">
@@ -794,7 +794,7 @@
 
                             <!-- Bagian Tujuan -->
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">
+                                <label class="form-label fw-semibold">
                                     Bagian <span class="text-danger">*</span>
                                 </label>
                                 <select name="bagian_id" id="bagianTujuanMasuk" class="form-select" required>
@@ -808,7 +808,7 @@
 
                             <!-- Jumlah Masuk -->
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">
+                                <label class="form-label fw-semibold">
                                     Stok Masuk <span class="text-danger">*</span>
                                 </label>
                                 <div class="input-group">
@@ -821,27 +821,27 @@
 
                             <!-- Tanggal Masuk -->
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">
+                                <label class="form-label fw-semibold">
                                     Tanggal Masuk
-                                </label>
+                                </label><small class="text-muted"> (Opsional)</small>
                                 <input type="date" name="tanggal" class="form-control" value="{{ date('Y-m-d') }}">
                                 <small class="text-muted">Kosongkan untuk menggunakan tanggal hari ini</small>
                             </div>
 
                             <!-- Keterangan -->
                             <div class="col-12">
-                                <label class="form-label fw-bold">
+                                <label class="form-label fw-semibold">
                                     Keterangan
-                                </label>
+                                </label><small class="text-muted"> (Opsional)</small>
                                 <textarea name="keterangan" class="form-control" rows="2"
                                     placeholder="Contoh: Pembelian dari supplier PT. XYZ"></textarea>
                             </div>
 
                             <!-- Bukti -->
                             <div class="col-12">
-                                <label class="form-label fw-bold">
+                                <label class="form-label fw-semibold">
                                     Bukti Barang Masuk
-                                </label>
+                                </label><small class="text-muted"> (Opsional)</small>
                                 <input type="file" name="bukti" class="form-control" accept="image/*,.pdf">
                                 <small class="text-muted">
                                     Format: JPG, PNG, PDF (Maks. 2MB) - Nota pembelian, bukti penerimaan, dll
@@ -867,8 +867,8 @@
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-warning text-dark">
-                    <h5 class="modal-title">
-                        <i class="bi bi-send"></i> Form Distribusi Barang
+                    <h5 class="modal-title fw-semibold">
+                        Form Distribusi Barang
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
@@ -888,7 +888,7 @@
                         <!-- Nama Barang (Read-only) -->
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">
+                                <label class="form-label fw-semibold">
                                     Nama Barang
                                 </label>
                                 <input type="text" id="distribusiNama" class="form-control bg-light" readonly>
@@ -896,7 +896,7 @@
 
                             <!-- Kode Barang (Read-only) -->
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">
+                                <label class="form-label fw-semibold">
                                     Kode Barang
                                 </label>
                                 <input type="text" id="distribusiKodeDisplay" class="form-control bg-light" readonly>
@@ -904,7 +904,7 @@
 
                             <!-- Bagian Tujuan (Auto Fill - Read-only) -->
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">
+                                <label class="form-label fw-semibold">
                                     Bagian Tujuan
                                 </label>
                                 <input type="text" id="distribusiBagianNama" class="form-control bg-light" readonly>
@@ -913,7 +913,7 @@
 
                             <!-- Harga (Auto Fill - Read-only) -->
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">
+                                <label class="form-label fw-semibold">
                                     Harga Satuan
                                 </label>
                                 <div class="input-group">
@@ -926,7 +926,7 @@
 
                             <!-- Stok Tersedia (Read-only) -->
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">
+                                <label class="form-label fw-semibold">
                                     Stok Tersedia di Gudang Utama
                                 </label>
                                 <input type="text" id="stokTersedia" class="form-control bg-light" readonly>
@@ -935,7 +935,7 @@
 
                             <!-- Jumlah Distribusi -->
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">
+                                <label class="form-label fw-semibold">
                                     Jumlah Distribusi <span class="text-danger">*</span>
                                 </label>
                                 <input type="number" name="jumlah" id="jumlahDistribusi" class="form-control"
@@ -945,27 +945,27 @@
 
                             <!-- Tanggal Distribusi -->
                             <div class="col-md-12">
-                                <label class="form-label fw-bold">
+                                <label class="form-label fw-semibold">
                                     Tanggal Distribusi
-                                </label>
+                                </label><small class="text-muted">(Opsional)</small>
                                 <input type="date" name="tanggal" class="form-control" value="{{ date('Y-m-d') }}">
                                 <small class="text-muted">Kosongkan untuk menggunakan tanggal hari ini</small>
                             </div>
 
                             <!-- Keterangan -->
                             <div class="col-12">
-                                <label class="form-label fw-bold">
+                                <label class="form-label fw-semibold">
                                     Keterangan
-                                </label>
+                                </label><small class="text-muted">(Opsional)</small>
                                 <textarea name="keterangan" class="form-control" rows="3"
                                     placeholder="Contoh: Distribusi untuk kebutuhan operasional bagian"></textarea>
                             </div>
 
                             <!-- Bukti Distribusi -->
                             <div class="col-12">
-                                <label class="form-label fw-bold">
+                                <label class="form-label fw-semibold">
                                     Bukti Distribusi
-                                </label>
+                                </label><small class="text-muted">(Opsional)</small>
                                 <input type="file" name="bukti" class="form-control" accept="image/*,.pdf">
                                 <small class="text-muted">
                                     Format: JPG, PNG, PDF (Maks. 2MB) - Form permintaan, surat jalan, dll
@@ -1122,7 +1122,7 @@
                         const submitBtn = formEditPbStok.querySelector('button[type="submit"]');
                         if (submitBtn) {
                             submitBtn.disabled = false;
-                            submitBtn.innerHTML = `<i class="bi bi-save"></i> Simpan Perubahan`;
+                            submitBtn.innerHTML = ` Simpan Perubahan`;
                         }
 
                         // Set nilai ke form

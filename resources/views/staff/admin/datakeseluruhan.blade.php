@@ -276,7 +276,7 @@
                                                                         onclick="toggleKategori({{ $k->id }})">
                                                                         <i class="bi bi-eye"
                                                                             id="icon-kategori-{{ $k->id }}">
-                                                                            Lihat</i>
+                                                                            </i> Lihat
                                                                     </button>
                                                                 </td>
                                                             </tr>
@@ -638,15 +638,15 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Tambah Kategori</h5>
+                    <h5 class="modal-title fw-semibold">Tambah Kategori</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <form action="{{ route('admin.kategori.store') }}" method="POST">
                     @csrf
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="nama" class="form-label">Nama Kategori</label>
-                            <input type="text" class="form-control" name="nama" id="nama" required>
+                            <label for="nama" class="form-label fw-semibold ">Nama Kategori</label> <span class="text-danger">*</span>
+                            <input type="text" class="form-control" name="nama" id="nama" required placeholder="Masukkan Nama Kategori">
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -664,23 +664,23 @@
             <form action="{{ route('admin.barang.store') }}" method="POST" class="modal-content">
                 @csrf
                 <div class="modal-header">
-                    <h5 class="modal-title">Tambah Barang</h5>
+                    <h5 class="modal-title fw-semibold">Tambah Barang</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label>Nama Barang</label>
-                            <input type="text" name="nama_barang" class="form-control" required>
+                            <label class="fw-semibold">Nama Barang</label><span class="text-danger">*</span>
+                            <input type="text" name="nama_barang" class="form-control" required placeholder="Masukkan Nama Barang">
                         </div>
                         <div class="col-md-6">
-                            <label>Kode Barang</label>
+                            <label class="fw-semibold">Kode Barang</label><span class="text-danger">*</span>
                             <input type="text" name="kode_barang" id="kodeBarangTambah" class="form-control"
-                                required>
+                                required placeholder="Masukkan Kode Barang">
                             <div id="kodeValidationTambah" class="form-text"></div>
                         </div>
                         <div class="col-md-6">
-                            <label>Kategori</label>
+                            <label class="fw-semibold">Kategori</label><span class="text-danger">*</span>
                             <select name="id_kategori" class="form-select" required>
                                 <option value="">-- Pilih Kategori --</option>
                                 @foreach ($kategori as $k)
@@ -689,7 +689,7 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label>Satuan</label>
+                            <label class="fw-semibold">Satuan</label><span class="text-danger">*</span>
                             <select name="satuan" class="form-select" required>
                                 <option value="">-- Pilih Satuan --</option>
                                 <option value="Pcs">Pcs</option>
@@ -719,18 +719,18 @@
                         @csrf
                         @method('PUT')
                         <div class="modal-header">
-                            <h5 class="modal-title">Edit Barang: {{ $b->nama_barang }}</h5>
+                            <h5 class="modal-title fw-semibold">Edit Barang : {{ $b->nama_barang }}</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
                             <div class="row g-3">
                                 <div class="col-md-6">
-                                    <label>Nama Barang</label>
+                                    <label class="fw-semibold">Nama Barang</label>
                                     <input type="text" name="nama_barang" class="form-control"
                                         value="{{ $b->nama_barang }}" required>
                                 </div>
                                 <div class="col-md-6">
-                                    <label>
+                                    <label class="fw-semibold">
                                         Kode Barang
                                         <i class="bi bi-info-circle text-primary" data-bs-toggle="tooltip"
                                             title="Hati-hati mengubah kode barang, akan mempengaruhi riwayat transaksi"></i>
@@ -742,7 +742,7 @@
                                     <div id="kodeValidationEdit-{{ $b->kode_barang }}" class="form-text"></div>
                                 </div>
                                 <div class="col-md-6">
-                                    <label>Kategori</label>
+                                    <label class="fw-semibold">Kategori</label>
                                     <select name="id_kategori" class="form-select" required>
                                         <option value="">-- Pilih Kategori --</option>
                                         @foreach ($kategori as $kat)
@@ -753,7 +753,7 @@
                                     </select>
                                 </div>
                                 <div class="col-md-6">
-                                    <label>Satuan</label>
+                                    <label class="fw-semibold">Satuan</label>
                                     <select name="satuan" class="form-select" required>
                                         <option value="Pcs" @selected($b->satuan == 'Pcs')>Pcs</option>
                                         <option value="Box" @selected($b->satuan == 'Box')>Box</option>
@@ -856,7 +856,7 @@
                 @csrf
                 @method('DELETE')
                 <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title">
+                    <h5 class="modal-title fw-semibold">
                         <i class="bi bi-exclamation-triangle"></i> Konfirmasi Hapus
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
