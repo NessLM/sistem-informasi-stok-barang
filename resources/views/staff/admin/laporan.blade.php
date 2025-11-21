@@ -3,7 +3,6 @@
     <link rel="stylesheet" href="{{ asset('assets/css/staff/admin/laporan.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/staff/admin/laporan_pdf.css') }}">
 
-
     <div class="page-body">
         <div class="card">
             <h3>Laporan Stock Opname</h3>
