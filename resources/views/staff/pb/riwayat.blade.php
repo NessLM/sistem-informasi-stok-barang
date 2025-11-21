@@ -26,6 +26,25 @@
                         <input type="hidden" name="alur_barang" value="{{ request('alur_barang', 'Semua') }}">
                     </div>
 
+                    <!-- Filter Bagian -->
+                    <div class="riwayat-filter-group riwayat-filter-dropdown">
+                        <button class="btn riwayat-btn-filter dropdown-toggle" type="button" id="bagianDropdown"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <span>{{ request('bagian', 'Semua') == 'Semua' ? 'Pilih Bagian' : request('bagian') }}</span>
+                            <i class="bi bi-chevron-right dropdown-arrow"></i>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="bagianDropdown">
+                            <li><a class="dropdown-item {{ request('bagian', 'Semua') == 'Semua' ? 'active' : '' }}"
+                                    href="#" data-value="Semua">Semua</a></li>
+                            @foreach ($bagianList as $bagian)
+                                <li><a class="dropdown-item {{ request('bagian') == $bagian->bagian ? 'active' : '' }}"
+                                        href="#" data-value="{{ $bagian->bagian }}">{{ $bagian->bagian }}</a>
+                                </li>
+                            @endforeach
+                        </ul>
+                        <input type="hidden" name="bagian" value="{{ request('bagian', 'Semua') }}">
+                    </div>
+
                     <!-- Filter Periode -->
                     <div class="riwayat-filter-group riwayat-filter-dropdown">
                         <button class="btn riwayat-btn-filter dropdown-toggle" type="button" id="periodeDropdown"
@@ -163,12 +182,12 @@
                                                 WIB</small>
                                         </td>
                                         <td>
-                                                <span class="fw-medium">{{ $item->gudang }}</span>
-                                                @if ($item->bagian_nama && $item->bagian_nama != '-')
-                                                    <br>
-                                                    <small class="text-muted">{{ $item->bagian_nama }}</small>
-                                                @endif
-                                            </td>
+                                            <span class="fw-medium">{{ $item->gudang }}</span>
+                                            @if ($item->bagian_nama && $item->bagian_nama != '-')
+                                                <br>
+                                                <small class="text-muted">{{ $item->bagian_nama }}</small>
+                                            @endif
+                                        </td>
                                         <td class="fw-medium" data-label="Nama Barang">{{ $item->nama_barang }}</td>
                                         <td data-label="Jumlah"><span class="fw-medium">{{ $item->jumlah }}</span>
                                         </td>
@@ -277,7 +296,7 @@
                                         <td class="fw-medium" data-label="Bagian Tujuan">
                                             {{ $item->gudang_tujuan }}
                                         </td>
-                                        
+
                                         <td class="fw-medium" data-label="Nama Barang">{{ $item->nama_barang }}</td>
                                         <td data-label="Jumlah"><span class="fw-medium">{{ $item->jumlah }}</span>
                                         </td>

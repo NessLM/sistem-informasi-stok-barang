@@ -734,8 +734,8 @@
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                             Batal
                         </button>
-                        <button type="submit" class="btn btn-info text-white">
-                            <i class="bi bi-save"></i> Simpan Perubahan
+                        <button type="submit" class="btn btn-primary text-white">
+                             Simpan Perubahan
                         </button>
                     </div>
                 </form>
@@ -977,7 +977,7 @@
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                             Batal
                         </button>
-                        <button type="submit" class="btn btn-warning text-white" style="font-size: 14px;">
+                        <button type="submit" class="btn btn-primary text-white" style="font-size: 14px;">
                             Proses Distribusi
                         </button>
                     </div>
