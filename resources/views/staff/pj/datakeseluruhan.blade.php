@@ -19,7 +19,6 @@
 
     @push('styles')
         <link rel="stylesheet" href="{{ asset('assets/css/staff/pj/data_keseluruhan_pj.css') }}">
-
     @endpush
 
     <main class="page-wrap container py-4">
@@ -117,8 +116,6 @@
                 setTimeout(() => {
                     closeToast();
                 }, 4000);
-
-                
             </script>
         @endif
 
@@ -158,7 +155,8 @@
 
             {{-- Search Form dengan Autocomplete --}}
             <div class="position-relative mb-3">
-                <form action="{{ route('pj.datakeseluruhan.index') }}" method="GET" class="input-group" id="searchForm">
+                <form action="{{ route('pj.datakeseluruhan.index') }}" method="GET" class="input-group"
+                    id="searchForm">
                     <span class="input-group-text"><i class="bi bi-search"></i></span>
                     <input type="text" name="search" id="searchInput" class="form-control"
                         placeholder="Telusuri barang (nama atau kode)" value="{{ request('search') }}"
@@ -172,14 +170,12 @@
             </div>
 
             {{-- Jika ada filter/search --}}
-            @if (
-                    request()->filled('search') ||
+            @if (request()->filled('search') ||
                     request()->filled('kode') ||
                     request()->filled('stok_min') ||
                     request()->filled('stok_max') ||
                     request()->filled('kategori_id') ||
-                    request()->filled('satuan')
-                )
+                    request()->filled('satuan'))
                 <h5 class="mt-3">Hasil Pencarian</h5>
                 @if ($barang->count() > 0)
                     <div class="table-responsive">
@@ -209,30 +205,32 @@
                                             <td>{{ $b->satuan }}</td>
                                             <td>{{ $b->kategori->nama ?? '-' }}</td>
                                             <td>
-    <div class="d-flex flex-wrap gap-2">
-        {{-- Tombol Barang Keluar --}}
-        <button type="button" class="btn btn-danger btn-sm"
-            data-bs-toggle="modal" data-bs-target="#modalBarangKeluar"
-            data-id="{{ $item->kode }}" 
-            data-nama="{{ $item->nama }}"
-            data-kode="{{ $item->kode }}" 
-            data-stok="{{ $stokTersedia }}"
-            data-harga="{{ $item->harga }}">
-            <i class="bi bi-box-arrow-right"></i> Barang Keluar
-        </button>
+                                                <div class="d-flex flex-wrap gap-2 ">
+                                                    {{-- Tombol Barang Keluar --}}
+                                                    <button type="button" class="btn btn-danger btn-sm"
+                                                        data-bs-toggle="modal" data-bs-target="#modalBarangKeluar"
+                                                        data-id="{{ $item->kode }}" data-nama="{{ $item->nama }}"
+                                                        data-kode="{{ $item->kode }}"
+                                                        data-stok="{{ $stokTersedia }}"
+                                                        data-harga="{{ $item->harga }}">
+                                                        <i class="bi bi-box-arrow-right"></i> Barang Keluar
+                                                    </button>
 
-        {{-- ✅ TOMBOL KEMBALIKAN BARU --}}
-        <button type="button" class="btn btn-warning btn-sm btn-kembalikan-stok"
-            data-bs-toggle="modal" data-bs-target="#modalKembalikanStok"
-            data-kode="{{ $item->kode }}"
-            data-nama="{{ $item->nama }}"
-            data-stok="{{ $stokTersedia }}"
-            data-harga="{{ $item->harga ?? 0 }}"
-            data-satuan="{{ $item->satuan }}">
-            <i class="bi bi-arrow-counterclockwise"></i> Kembalikan
-        </button>
-    </div>
-</td>
+                                                    {{-- ✅ TOMBOL KEMBALIKAN BARU --}}
+                                                    <button type="button"
+                                                        class="btn btn-warning btn-sm btn-kembalikan-stok"
+                                                        data-bs-toggle="modal" data-bs-target="#modalKembalikanStok"
+                                                        data-kode="{{ $item->kode }}"
+                                                        data-nama="{{ $item->nama }}"
+                                                        data-stok="{{ $stokTersedia }}"
+                                                        data-harga="{{ $item->harga ?? 0 }}"
+                                                        data-satuan="{{ $item->satuan }}">
+                                                        <i class="bi bi-arrow-counterclockwise"></i> Kembalikan
+                                                    </button>
+                                                    
+                                                </div>
+                                                
+                                            </td>
                                         </tr>
                                     @endif
                                 @endforeach
@@ -246,13 +244,12 @@
 
             {{-- Jika tidak ada filter/search --}}
             @if (
-                    !request()->filled('search') &&
+                !request()->filled('search') &&
                     !request()->filled('kode') &&
                     !request()->filled('stok_min') &&
                     !request()->filled('stok_max') &&
                     !request()->filled('kategori_id') &&
-                    !request()->filled('satuan')
-                )
+                    !request()->filled('satuan'))
                 {{-- Anchor untuk badge "Menipis" --}}
                 <div id="sec-low"></div>
 
@@ -270,8 +267,9 @@
                                     <td>{{ $k->nama }}</td>
                                     <td class="text-center">
                                         <div class="d-flex flex-wrap justify-content-center gap-2">
-                                            <button class="btn btn-sm btn-success" onclick="toggleDetail({{ $k->id }})"><i
-                                                    class="bi bi-eye"></i></button>
+                                            <button class="btn btn-sm btn-success"
+                                                onclick="toggleDetail({{ $k->id }})"><i class="bi bi-eye"></i>
+                                                Lihat</button>
                                         </div>
                                     </td>
                                 </tr>
@@ -299,44 +297,55 @@
                                                             @php
                                                                 $stokTersedia = $item->stok_tersedia ?? 0;
                                                             @endphp
-                                                            <tr @if ($stokTersedia < 10) class="row-low-stock" @endif>
+                                                            <tr
+                                                                @if ($stokTersedia < 10) class="row-low-stock" @endif>
                                                                 <td>{{ $item->kode }}</td>
                                                                 <td>{{ $item->nama }}</td>
                                                                 <td>{{ $stokTersedia }}</td>
-                                                                <td>Rp {{ number_format($item->harga ?? 0, 0, ',', '.') }}</td>
+                                                                <td>Rp
+                                                                    {{ number_format($item->harga ?? 0, 0, ',', '.') }}
+                                                                </td>
                                                                 <td>{{ $item->satuan }}</td>
                                                                 <td>
-    <div class="d-flex flex-wrap gap-2">
-        {{-- Tombol Barang Keluar --}}
-        <button type="button" class="btn btn-danger btn-sm"
-            data-bs-toggle="modal" data-bs-target="#modalBarangKeluar"
-            data-id="{{ $item->kode }}" 
-            data-nama="{{ $item->nama }}"
-            data-kode="{{ $item->kode }}" 
-            data-stok="{{ $stokTersedia }}"
-            data-harga="{{ $item->harga }}">
-            <i class="bi bi-box-arrow-right"></i> Barang Keluar
-        </button>
+                                                                    <div class="d-flex flex-wrap gap-2">
+                                                                        {{-- Tombol Barang Keluar --}}
+                                                                        <button type="button"
+                                                                            class="btn btn-danger btn-sm"
+                                                                            data-bs-toggle="modal"
+                                                                            data-bs-target="#modalBarangKeluar"
+                                                                            data-id="{{ $item->kode }}"
+                                                                            data-nama="{{ $item->nama }}"
+                                                                            data-kode="{{ $item->kode }}"
+                                                                            data-stok="{{ $stokTersedia }}"
+                                                                            data-harga="{{ $item->harga }}">
+                                                                            <i class="bi bi-box-arrow-right"></i>
+                                                                            Barang Keluar
+                                                                        </button>
 
-        {{-- ✅ TOMBOL KEMBALIKAN BARU --}}
-        <button type="button" class="btn btn-warning btn-sm btn-kembalikan-stok"
-            data-bs-toggle="modal" data-bs-target="#modalKembalikanStok"
-            data-kode="{{ $item->kode }}"
-            data-nama="{{ $item->nama }}"
-            data-stok="{{ $stokTersedia }}"
-            data-harga="{{ $item->harga ?? 0 }}"
-            data-satuan="{{ $item->satuan }}">
-            <i class="bi bi-arrow-counterclockwise"></i> Kembalikan
-        </button>
-    </div>
-</td>
+                                                                        {{-- ✅ TOMBOL KEMBALIKAN BARU --}}
+                                                                        <button type="button"
+                                                                            class="btn btn-warning btn-sm btn-kembalikan-stok"
+                                                                            data-bs-toggle="modal"
+                                                                            data-bs-target="#modalKembalikanStok"
+                                                                            data-kode="{{ $item->kode }}"
+                                                                            data-nama="{{ $item->nama }}"
+                                                                            data-stok="{{ $stokTersedia }}"
+                                                                            data-harga="{{ $item->harga ?? 0 }}"
+                                                                            data-satuan="{{ $item->satuan }}">
+                                                                            <i
+                                                                                class="bi bi-arrow-counterclockwise"></i>
+                                                                            Kembalikan
+                                                                        </button>
+                                                                    </div>
+                                                                </td>
                                                             </tr>
                                                         @endforeach
                                                     </tbody>
                                                 </table>
                                             </div>
                                         @else
-                                            <p class="text-muted">Tidak ada barang pada kategori ini (atau semua barang telah
+                                            <p class="text-muted">Tidak ada barang pada kategori ini (atau semua barang
+                                                telah
                                                 habis).</p>
                                         @endif
                                     </td>
@@ -349,7 +358,7 @@
         </section>
 
         {{-- SECTION BARANG HABIS --}}
-        @if(($barangHabis ?? collect())->count())
+        @if (($barangHabis ?? collect())->count())
             <section id="sec-empty" class="card empty-card mt-4">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-2">
@@ -381,7 +390,7 @@
                                         <td>{{ $item->kode }}</td>
                                         <td>{{ $item->nama }}</td>
                                         <td>
-                                            @if(!is_null($harga) && $harga !== '')
+                                            @if (!is_null($harga) && $harga !== '')
                                                 Rp {{ number_format($harga, 0, ',', '.') }}
                                             @else
                                                 -
@@ -400,7 +409,7 @@
 
 
         {{-- SECTION BARANG MASUK --}}
-        @if(($barangMasuk ?? collect())->count())
+        @if (($barangMasuk ?? collect())->count())
             <section id="sec-incoming" class="card incoming-card shadow-sm mt-4">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -444,12 +453,13 @@
                                     <tr class="{{ $rowClass }}">
                                         <td class="text-center">{{ $index + 1 }}</td>
                                         <td>
-                                            @if($status === 'confirmed')
+                                            @if ($status === 'confirmed')
                                                 <span class="badge bg-success badge-normal" style="font-size: 14px;">
                                                     <i class="bi bi-check-circle"></i> Dikonfirmasi
                                                 </span>
                                             @else
-                                                <span class="badge bg-warning text-dark badge-normal" style="font-size: 14px;">
+                                                <span class="badge bg-warning text-dark badge-normal"
+                                                    style="font-size: 14px;">
                                                     <i class="bi bi-clock-history"></i> Pending
                                                 </span>
                                             @endif
@@ -465,30 +475,38 @@
                                         <td>{{ $item->keterangan ?? '-' }}</td>
                                         <td class="text-center">
                                             <div class="d-flex flex-column gap-2">
-                                                @if($item->bukti)
+                                                @if ($item->bukti)
                                                     <a href="{{ asset('storage/' . $item->bukti) }}" target="_blank"
                                                         class="btn btn-sm btn-outline-primary">
                                                         <i class="bi bi-file-earmark-text"></i> Lihat Bukti
                                                     </a>
                                                 @endif
 
-                                                @if($status === 'pending')
+                                                @if ($status === 'pending')
                                                     {{-- Tombol Konfirmasi dengan Modal - TAMBAHKAN data-harga --}}
-                                                    <button type="button" class="btn btn-sm btn-success w-100 btn-konfirmasi"
-                                                        data-id="{{ $item->id }}" data-nama="{{ $item->nama_barang }}"
-                                                        data-jumlah="{{ $item->jumlah }}" data-satuan="{{ $item->satuan }}"
-                                                        data-kode="{{ $item->kode_barang }}" data-harga="{{ $item->harga ?? 0 }}">
+                                                    <button type="button"
+                                                        class="btn btn-sm btn-success w-100 btn-konfirmasi"
+                                                        data-id="{{ $item->id }}"
+                                                        data-nama="{{ $item->nama_barang }}"
+                                                        data-jumlah="{{ $item->jumlah }}"
+                                                        data-satuan="{{ $item->satuan }}"
+                                                        data-kode="{{ $item->kode_barang }}"
+                                                        data-harga="{{ $item->harga ?? 0 }}">
                                                         <i class="bi bi-check-circle"></i> Konfirmasi
                                                     </button>
 
                                                     {{-- Tombol Kembalikan dengan Modal --}}
-                                                    <button type="button" class="btn btn-sm btn-return w-100 btn-kembalikan"
-                                                        data-id="{{ $item->id }}" data-nama="{{ $item->nama_barang }}"
-                                                        data-jumlah="{{ $item->jumlah }}" data-satuan="{{ $item->satuan }}">
+                                                    <button type="button"
+                                                        class="btn btn-sm btn-return w-100 btn-kembalikan"
+                                                        data-id="{{ $item->id }}"
+                                                        data-nama="{{ $item->nama_barang }}"
+                                                        data-jumlah="{{ $item->jumlah }}"
+                                                        data-satuan="{{ $item->satuan }}">
                                                         <i class="bi bi-arrow-left-circle"></i> Kembalikan
                                                     </button>
                                                 @else
-                                                    <span class="badge bg-success text-wrap badge-normal" style="font-size: 12px;">
+                                                    <span class="badge bg-success text-wrap badge-normal"
+                                                        style="font-size: 12px;">
                                                         <i class="bi bi-check-all"></i> Sudah Masuk ke Stok
                                                     </span>
                                                 @endif
@@ -506,119 +524,117 @@
     </main>
 
     {{-- ============================================= --}}
-{{-- MODAL KEMBALIKAN STOK (TAMBAHKAN SETELAH MODAL BARANG KELUAR) --}}
-{{-- ============================================= --}}
+    {{-- MODAL KEMBALIKAN STOK (TAMBAHKAN SETELAH MODAL BARANG KELUAR) --}}
+    {{-- ============================================= --}}
 
-<!-- Modal Kembalikan Stok ke PB -->
-<div class="modal fade" id="modalKembalikanStok" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title fw-semibold">
-                    <i class="bi bi-arrow-counterclockwise text-warning"></i>
-                    Kembalikan Barang ke PB Stok
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            
-            <div class="modal-body pt-2">
-                {{-- Info Warning --}}
-                <div class="alert alert-warning d-flex align-items-start mb-3">
-                    <i class="bi bi-exclamation-triangle-fill me-2 flex-shrink-0" style="font-size: 20px;"></i>
-                    <div>
-                        <strong>Perhatian!</strong><br>
-                        Barang akan dikembalikan ke PB Stok dengan batch yang sama (kode barang, bagian, dan harga).
-                    </div>
+    <!-- Modal Kembalikan Stok ke PB -->
+    <div class="modal fade" id="modalKembalikanStok" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-semibold">
+                        <i class="bi bi-arrow-counterclockwise text-warning"></i>
+                        Kembalikan Barang ke PB Stok
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
 
-                <form method="POST" id="formKembalikanStok" enctype="multipart/form-data">
-                    @csrf
-                    <input type="hidden" name="kode_barang" id="kembalikanKodeBarang">
+                <div class="modal-body pt-2">
+                    {{-- Info Warning --}}
+                    <div class="alert alert-warning d-flex align-items-start mb-3">
+                        <i class="bi bi-exclamation-triangle-fill me-2 flex-shrink-0" style="font-size: 20px;"></i>
+                        <div>
+                            <strong>Perhatian!</strong><br>
+                            Barang akan dikembalikan ke PB Stok dengan batch yang sama (kode barang, bagian, dan harga).
+                        </div>
+                    </div>
 
-                    <div class="row g-3">
-                        {{-- Info Barang --}}
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Nama Barang</label>
-                            <input type="text" id="kembalikanNamaBarang" class="form-control" readonly>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Kode Barang</label>
-                            <input type="text" id="kembalikanKode" class="form-control" readonly>
-                        </div>
+                    <form method="POST" id="formKembalikanStok" enctype="multipart/form-data">
+                        @csrf
+                        <input type="hidden" name="kode_barang" id="kembalikanKodeBarang">
 
-                        {{-- Stok Info --}}
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Stok Tersedia</label>
-                            <input type="text" id="kembalikanStokTersedia" class="form-control" readonly>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Harga Satuan</label>
-                            <input type="text" id="kembalikanHargaDisplay" class="form-control" readonly>
-                            <input type="hidden" id="kembalikanHarga" name="harga">
-                        </div>
+                        <div class="row g-3">
+                            {{-- Info Barang --}}
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Nama Barang</label>
+                                <input type="text" id="kembalikanNamaBarang" class="form-control" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Kode Barang</label>
+                                <input type="text" id="kembalikanKode" class="form-control" readonly>
+                            </div>
 
-                        {{-- Input Jumlah --}}
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">
-                                Jumlah Dikembalikan <span class="text-danger">*</span>
-                            </label>
-                            <input type="number" name="jumlah" id="jumlahKembalikan" 
-                                class="form-control" placeholder="Masukkan Jumlah" 
-                                required min="1">
-                            <small class="text-muted">
-                                Maksimal: <span id="maxKembalikan">0</span>
-                            </small>
-                        </div>
+                            {{-- Stok Info --}}
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Stok Tersedia</label>
+                                <input type="text" id="kembalikanStokTersedia" class="form-control" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Harga Satuan</label>
+                                <input type="text" id="kembalikanHargaDisplay" class="form-control" readonly>
+                                <input type="hidden" id="kembalikanHarga" name="harga">
+                            </div>
 
-                        {{-- Keterangan --}}
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">
-                                Keterangan <small class="text-muted">(Opsional)</small>
-                            </label>
-                            <textarea name="keterangan" class="form-control" rows="2" 
-                                placeholder="Alasan pengembalian..."></textarea>
-                        </div>
-
-                        {{-- Upload Bukti --}}
-                        <div class="col-12">
-                            <label class="form-label fw-semibold">
-                                Bukti Pengembalian <small class="text-muted">(Opsional)</small>
-                            </label>
-                            <div class="border rounded p-4 text-center" style="background-color: #f8f9fa;">
-                                <input type="file" name="bukti" id="buktiKembalikan" 
-                                    class="d-none" accept="image/*,.pdf">
-                                <label for="buktiKembalikan" class="d-block" style="cursor: pointer;">
-                                    <i class="bi bi-cloud-upload" style="font-size: 2rem; color: #6c757d;"></i>
-                                    <div class="mt-2" style="color: #6c757d; font-size: 0.875rem;">
-                                        Klik untuk Upload atau tarik dan seret
-                                    </div>
+                            {{-- Input Jumlah --}}
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    Jumlah Dikembalikan <span class="text-danger">*</span>
                                 </label>
-                                <div id="fileNameKembalikan" class="mt-2 text-primary small"></div>
+                                <input type="number" name="jumlah" id="jumlahKembalikan" class="form-control"
+                                    placeholder="Masukkan Jumlah" required min="1">
+                                <small class="text-muted">
+                                    Maksimal: <span id="maxKembalikan">0</span>
+                                </small>
+                            </div>
+
+                            {{-- Keterangan --}}
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    Keterangan <small class="text-muted">(Opsional)</small>
+                                </label>
+                                <textarea name="keterangan" class="form-control" rows="2" placeholder="Alasan pengembalian..."></textarea>
+                            </div>
+
+                            {{-- Upload Bukti --}}
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">
+                                    Bukti Pengembalian <small class="text-muted">(Opsional)</small>
+                                </label>
+                                <div class="border rounded p-4 text-center" style="background-color: #f8f9fa;">
+                                    <input type="file" name="bukti" id="buktiKembalikan" class="d-none"
+                                        accept="image/*,.pdf">
+                                    <label for="buktiKembalikan" class="d-block" style="cursor: pointer;">
+                                        <i class="bi bi-cloud-upload" style="font-size: 2rem; color: #6c757d;"></i>
+                                        <div class="mt-2" style="color: #6c757d; font-size: 0.875rem;">
+                                            Klik untuk Upload atau tarik dan seret
+                                        </div>
+                                    </label>
+                                    <div id="fileNameKembalikan" class="mt-2 text-primary small"></div>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    {{-- Action Buttons --}}
-                    <div class="d-flex justify-content-end gap-2 mt-4">
-                        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">
-                            Batal
-                        </button>
-                        <button type="submit" class="btn btn-warning px-4" id="btnSimpanKembalikan">
-                            <span id="btnTextKembalikan">
-                                <i class="bi bi-arrow-counterclockwise me-1"></i> Kembalikan
-                            </span>
-                            <span id="btnLoaderKembalikan" class="d-none">
-                                <span class="spinner-border spinner-border-sm me-1" role="status" 
-                                    aria-hidden="true"></span>
-                                Memproses...
-                            </span>
-                        </button>
-                    </div>
-                </form>
+                        {{-- Action Buttons --}}
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">
+                                Batal
+                            </button>
+                            <button type="submit" class="btn btn-warning px-4" id="btnSimpanKembalikan">
+                                <span id="btnTextKembalikan">
+                                    <i class="bi bi-arrow-counterclockwise me-1"></i> Kembalikan
+                                </span>
+                                <span id="btnLoaderKembalikan" class="d-none">
+                                    <span class="spinner-border spinner-border-sm me-1" role="status"
+                                        aria-hidden="true"></span>
+                                    Memproses...
+                                </span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
     {{-- Modal Konfirmasi Barang Masuk --}}
     <div class="modal fade" id="modalKonfirmasi" tabindex="-1">
@@ -776,36 +792,39 @@
 
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label">Nama Barang</label>
+                                <label class="form-label fw-semibold">Nama Barang</label>
                                 <input type="text" id="barangKeluarNama" class="form-control" readonly>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Kode Barang</label>
+                                <label class="form-label fw-semibold">Kode Barang</label>
                                 <input type="text" id="barangKeluarKode" class="form-control" readonly>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Nama Penerima <span class="text-danger">*</span></label>
+                                <label class="form-label fw-semibold">Nama Penerima <span
+                                        class="text-danger">*</span></label>
                                 <input type="text" name="nama_penerima" class="form-control"
                                     placeholder="Masukkan Nama Penerima" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Jumlah <span class="text-danger">*</span></label>
+                                <label class="form-label fw-semibold">Jumlah <span
+                                        class="text-danger">*</span></label>
                                 <input type="number" name="jumlah" id="jumlahKeluar" class="form-control"
                                     placeholder="Masukkan Jumlah" required min="1">
                                 <small class="text-muted">Stok tersedia: <span id="stokTersedia">0</span></small>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Tanggal <small class="text-muted">(Opsional)</small></label>
+                                <label class="form-label fw-semibold">Tanggal <small
+                                        class="text-muted">(Opsional)</small></label>
                                 <input type="date" name="tanggal" id="tanggalKeluar" class="form-control">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Keterangan <small
+                                <label class="form-label fw-semibold">Keterangan <small
                                         class="text-muted">(Opsional)</small></label>
-                                <textarea name="keterangan" class="form-control" rows="1"
-                                    placeholder="Masukkan keterangan"></textarea>
+                                <textarea name="keterangan" class="form-control" rows="1" placeholder="Masukkan keterangan"></textarea>
                             </div>
                             <div class="col-12">
-                                <label class="form-label">Bukti <small class="text-muted">(Opsional)</small> </label>
+                                <label class="form-label fw-semibold">Bukti <small
+                                        class="text-muted">(Opsional)</small> </label>
                                 <div class="border rounded p-4 text-center" style="background-color: #f8f9fa;">
                                     <input type="file" name="bukti" id="buktiBrgKeluar" class="d-none"
                                         accept="image/*,.pdf">
@@ -821,7 +840,8 @@
                         </div>
 
                         <div class="d-flex justify-content-end gap-2 mt-4">
-                            <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Batal</button>
+                            <button type="button" class="btn btn-secondary px-4"
+                                data-bs-dismiss="modal">Batal</button>
                             <button type="submit" class="btn btn-danger px-4" id="btnSimpanBarangKeluar"
                                 style="font-size: 16px;">
                                 <span id="btnTextKeluar">Simpan</span>
@@ -865,7 +885,8 @@
                             <select name="kategori_id" class="form-select">
                                 <option value="">-- Semua Kategori --</option>
                                 @foreach ($kategori as $k)
-                                    <option value="{{ $k->id }}" @if (request('kategori_id') == $k->id) selected @endif>
+                                    <option value="{{ $k->id }}"
+                                        @if (request('kategori_id') == $k->id) selected @endif>
                                         {{ $k->nama }}
                                     </option>
                                 @endforeach
@@ -875,10 +896,10 @@
                         <div class="col-md-6">
                             <label class="form-label">Stok</label>
                             <div class="d-flex gap-2">
-                                <input type="number" name="stok_min" class="form-control" placeholder="Stok Minimum"
-                                    value="{{ request('stok_min') }}" min="0">
-                                <input type="number" name="stok_max" class="form-control" placeholder="Stok Maksimal"
-                                    value="{{ request('stok_max') }}" min="0">
+                                <input type="number" name="stok_min" class="form-control"
+                                    placeholder="Stok Minimum" value="{{ request('stok_min') }}" min="0">
+                                <input type="number" name="stok_max" class="form-control"
+                                    placeholder="Stok Maksimal" value="{{ request('stok_max') }}" min="0">
                             </div>
                         </div>
                     </div>
@@ -928,7 +949,7 @@
             }
 
             // Initialize Bootstrap Modals setelah DOM ready
-            document.addEventListener('DOMContentLoaded', function () {
+            document.addEventListener('DOMContentLoaded', function() {
                 // Initialize Modal Konfirmasi
                 const modalKonfirmasiEl = document.getElementById('modalKonfirmasi');
                 if (modalKonfirmasiEl) {
@@ -943,7 +964,7 @@
 
                 // ✅ Handle Konfirmasi Button Click
                 document.querySelectorAll('.btn-konfirmasi').forEach(btn => {
-                    btn.addEventListener('click', function () {
+                    btn.addEventListener('click', function() {
                         const id = this.dataset.id;
                         const nama = this.dataset.nama;
                         const kode = this.dataset.kode;
@@ -968,7 +989,8 @@
                         document.getElementById('konfirmasiHarga').textContent = formatRupiah(harga);
 
                         // ✅ Reset button state
-                        setButtonLoading('btnKonfirmasiOk', 'btnTextKonfirmasi', 'btnLoaderKonfirmasi', false);
+                        setButtonLoading('btnKonfirmasiOk', 'btnTextKonfirmasi', 'btnLoaderKonfirmasi',
+                            false);
 
                         if (modalKonfirmasiBS) {
                             modalKonfirmasiBS.show();
@@ -978,7 +1000,7 @@
 
                 // ✅ Handle Kembalikan Button Click
                 document.querySelectorAll('.btn-kembalikan').forEach(btn => {
-                    btn.addEventListener('click', function () {
+                    btn.addEventListener('click', function() {
                         const id = this.dataset.id;
                         const nama = this.dataset.nama;
                         const jumlah = this.dataset.jumlah;
@@ -989,7 +1011,8 @@
                         document.getElementById('kembalikanJumlah').textContent = `${jumlah} ${satuan}`;
 
                         // ✅ Reset button state
-                        setButtonLoading('btnKembalikanOk', 'btnTextKembalikan', 'btnLoaderKembalikan', false);
+                        setButtonLoading('btnKembalikanOk', 'btnTextKembalikan', 'btnLoaderKembalikan',
+                            false);
 
                         if (modalKembalikanBS) {
                             modalKembalikanBS.show();
@@ -998,7 +1021,7 @@
                 });
 
                 // ✅ Handle Konfirmasi OK Button
-                document.getElementById('btnKonfirmasiOk')?.addEventListener('click', function () {
+                document.getElementById('btnKonfirmasiOk')?.addEventListener('click', function() {
                     if (currentKonfirmasiId) {
                         // Enable loading
                         setButtonLoading('btnKonfirmasiOk', 'btnTextKonfirmasi', 'btnLoaderKonfirmasi', true);
@@ -1019,7 +1042,7 @@
                 });
 
                 // ✅ Handle Kembalikan OK Button
-                document.getElementById('btnKembalikanOk')?.addEventListener('click', function () {
+                document.getElementById('btnKembalikanOk')?.addEventListener('click', function() {
                     if (currentKembalikanId) {
                         // Enable loading
                         setButtonLoading('btnKembalikanOk', 'btnTextKembalikan', 'btnLoaderKembalikan', true);
@@ -1048,15 +1071,24 @@
 
                 if (searchInput && suggestionsContainer) {
                     function fetchSuggestions(query) {
-                        if (query.length < 2) { hideSuggestions(); return; }
+                        if (query.length < 2) {
+                            hideSuggestions();
+                            return;
+                        }
                         showLoading();
                         clearTimeout(searchTimeout);
 
                         searchTimeout = setTimeout(() => {
                             fetch(`/pj/api/search-barang?q=${encodeURIComponent(query)}`)
                                 .then(response => response.json())
-                                .then(data => { currentSuggestions = data; displaySuggestions(data); })
-                                .catch(error => { console.error('Search error:', error); hideSuggestions(); });
+                                .then(data => {
+                                    currentSuggestions = data;
+                                    displaySuggestions(data);
+                                })
+                                .catch(error => {
+                                    console.error('Search error:', error);
+                                    hideSuggestions();
+                                });
                         }, 300);
                     }
 
@@ -1067,7 +1099,8 @@
 
                     function displaySuggestions(suggestions) {
                         if (suggestions.length === 0) {
-                            suggestionsContainer.innerHTML = '<div class="loading-suggestion">Tidak ada barang ditemukan</div>';
+                            suggestionsContainer.innerHTML =
+                                '<div class="loading-suggestion">Tidak ada barang ditemukan</div>';
                             return;
                         }
 
@@ -1093,7 +1126,7 @@
                         suggestionsContainer.style.display = 'block';
 
                         suggestionsContainer.querySelectorAll('.search-suggestion-item').forEach(item => {
-                            item.addEventListener('click', function () {
+                            item.addEventListener('click', function() {
                                 selectSuggestion(parseInt(this.dataset.index));
                             });
                         });
@@ -1112,17 +1145,17 @@
                         }
                     }
 
-                    searchInput.addEventListener('input', function () {
+                    searchInput.addEventListener('input', function() {
                         fetchSuggestions(this.value.trim());
                     });
 
-                    searchInput.addEventListener('focus', function () {
+                    searchInput.addEventListener('focus', function() {
                         if (this.value.trim().length >= 2) {
                             fetchSuggestions(this.value.trim());
                         }
                     });
 
-                    document.addEventListener('click', function (e) {
+                    document.addEventListener('click', function(e) {
                         if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
                             hideSuggestions();
                         }
@@ -1132,7 +1165,7 @@
                 // ✅ Handle Modal Barang Keluar
                 const modalBarangKeluar = document.getElementById("modalBarangKeluar");
                 if (modalBarangKeluar) {
-                    modalBarangKeluar.addEventListener("show.bs.modal", function (event) {
+                    modalBarangKeluar.addEventListener("show.bs.modal", function(event) {
                         const button = event.relatedTarget;
                         const barangId = button.getAttribute("data-id");
                         const barangNama = button.getAttribute("data-nama");
@@ -1163,16 +1196,17 @@
                 // ✅ File preview handler
                 const buktiBrgKeluar = document.getElementById('buktiBrgKeluar');
                 if (buktiBrgKeluar) {
-                    buktiBrgKeluar.addEventListener('change', function () {
+                    buktiBrgKeluar.addEventListener('change', function() {
                         const fileName = this.files[0]?.name || '';
-                        document.getElementById('fileNameKeluar').textContent = fileName ? `File: ${fileName}` : '';
+                        document.getElementById('fileNameKeluar').textContent = fileName ? `File: ${fileName}` :
+                            '';
                     });
                 }
 
                 // ✅ Form submit handler dengan loading
                 const formBarangKeluar = document.getElementById('formBarangKeluar');
                 if (formBarangKeluar) {
-                    formBarangKeluar.addEventListener('submit', function (e) {
+                    formBarangKeluar.addEventListener('submit', function(e) {
                         e.preventDefault();
 
                         const barangId = document.getElementById('barangKeluarId').value;
@@ -1194,88 +1228,92 @@
             });
 
             document.addEventListener('DOMContentLoaded', function() {
-    // ✅ Handle Modal Kembalikan Stok
-    const modalKembalikanStok = document.getElementById('modalKembalikanStok');
-    if (modalKembalikanStok) {
-        modalKembalikanStok.addEventListener('show.bs.modal', function(event) {
-            const button = event.relatedTarget;
-            const kodeBarang = button.getAttribute('data-kode');
-            const namaBarang = button.getAttribute('data-nama');
-            const stokTersedia = parseFloat(button.getAttribute('data-stok'));
-            const harga = parseFloat(button.getAttribute('data-harga') || 0);
-            const satuan = button.getAttribute('data-satuan') || '';
+                // ✅ Handle Modal Kembalikan Stok
+                const modalKembalikanStok = document.getElementById('modalKembalikanStok');
+                if (modalKembalikanStok) {
+                    modalKembalikanStok.addEventListener('show.bs.modal', function(event) {
+                        const button = event.relatedTarget;
+                        const kodeBarang = button.getAttribute('data-kode');
+                        const namaBarang = button.getAttribute('data-nama');
+                        const stokTersedia = parseFloat(button.getAttribute('data-stok'));
+                        const harga = parseFloat(button.getAttribute('data-harga') || 0);
+                        const satuan = button.getAttribute('data-satuan') || '';
 
-            // Set values
-            document.getElementById('kembalikanKodeBarang').value = kodeBarang;
-            document.getElementById('kembalikanNamaBarang').value = namaBarang;
-            document.getElementById('kembalikanKode').value = kodeBarang;
-            document.getElementById('kembalikanStokTersedia').value = `${stokTersedia} ${satuan}`;
-            document.getElementById('kembalikanHargaDisplay').value = `Rp ${formatRupiah(harga)}`;
-            document.getElementById('kembalikanHarga').value = harga;
-            document.getElementById('maxKembalikan').textContent = stokTersedia;
-            document.getElementById('jumlahKembalikan').max = stokTersedia;
+                        // Set values
+                        document.getElementById('kembalikanKodeBarang').value = kodeBarang;
+                        document.getElementById('kembalikanNamaBarang').value = namaBarang;
+                        document.getElementById('kembalikanKode').value = kodeBarang;
+                        document.getElementById('kembalikanStokTersedia').value = `${stokTersedia} ${satuan}`;
+                        document.getElementById('kembalikanHargaDisplay').value = `Rp ${formatRupiah(harga)}`;
+                        document.getElementById('kembalikanHarga').value = harga;
+                        document.getElementById('maxKembalikan').textContent = stokTersedia;
+                        document.getElementById('jumlahKembalikan').max = stokTersedia;
 
-            // Reset form
-            document.getElementById('formKembalikanStok').reset();
-            document.getElementById('kembalikanKodeBarang').value = kodeBarang;
-            document.getElementById('kembalikanHarga').value = harga;
-            document.getElementById('fileNameKembalikan').textContent = '';
-            
-            // Reset button state
-            setButtonLoading('btnSimpanKembalikan', 'btnTextKembalikan', 'btnLoaderKembalikan', false);
-        });
-    }
+                        // Reset form
+                        document.getElementById('formKembalikanStok').reset();
+                        document.getElementById('kembalikanKodeBarang').value = kodeBarang;
+                        document.getElementById('kembalikanHarga').value = harga;
+                        document.getElementById('fileNameKembalikan').textContent = '';
 
-    // ✅ File preview handler untuk Kembalikan
-    const buktiKembalikan = document.getElementById('buktiKembalikan');
-    if (buktiKembalikan) {
-        buktiKembalikan.addEventListener('change', function() {
-            const fileName = this.files[0]?.name || '';
-            document.getElementById('fileNameKembalikan').textContent = 
-                fileName ? `File: ${fileName}` : '';
-        });
-    }
+                        // Reset button state
+                        setButtonLoading('btnSimpanKembalikan', 'btnTextKembalikan', 'btnLoaderKembalikan',
+                            false);
+                    });
+                }
 
-    // ✅ Form submit handler untuk Kembalikan
-    const formKembalikanStok = document.getElementById('formKembalikanStok');
-    if (formKembalikanStok) {
-        formKembalikanStok.addEventListener('submit', function(e) {
-            e.preventDefault();
+                // ✅ File preview handler untuk Kembalikan
+                const buktiKembalikan = document.getElementById('buktiKembalikan');
+                if (buktiKembalikan) {
+                    buktiKembalikan.addEventListener('change', function() {
+                        const fileName = this.files[0]?.name || '';
+                        document.getElementById('fileNameKembalikan').textContent =
+                            fileName ? `File: ${fileName}` : '';
+                    });
+                }
 
-            const kodeBarang = document.getElementById('kembalikanKodeBarang').value;
-            const jumlah = parseInt(document.getElementById('jumlahKembalikan').value);
-            const stokMax = parseInt(document.getElementById('maxKembalikan').textContent);
+                // ✅ Form submit handler untuk Kembalikan
+                const formKembalikanStok = document.getElementById('formKembalikanStok');
+                if (formKembalikanStok) {
+                    formKembalikanStok.addEventListener('submit', function(e) {
+                        e.preventDefault();
 
-            // Validasi jumlah
-            if (jumlah > stokMax) {
-                alert(`Jumlah tidak boleh melebihi stok tersedia (${stokMax})`);
-                return;
-            }
+                        const kodeBarang = document.getElementById('kembalikanKodeBarang').value;
+                        const jumlah = parseInt(document.getElementById('jumlahKembalikan').value);
+                        const stokMax = parseInt(document.getElementById('maxKembalikan').textContent);
 
-            if (jumlah <= 0) {
-                alert('Jumlah harus lebih dari 0');
-                return;
-            }
+                        // Validasi jumlah
+                        if (jumlah > stokMax) {
+                            alert(`Jumlah tidak boleh melebihi stok tersedia (${stokMax})`);
+                            return;
+                        }
 
-            // Konfirmasi
-            if (!confirm(`Apakah Anda yakin ingin mengembalikan ${jumlah} unit barang ini ke PB Stok?`)) {
-                return;
-            }
+                        if (jumlah <= 0) {
+                            alert('Jumlah harus lebih dari 0');
+                            return;
+                        }
 
-            // Enable loading state
-            setButtonLoading('btnSimpanKembalikan', 'btnTextKembalikan', 'btnLoaderKembalikan', true);
+                        // Konfirmasi
+                        if (!confirm(
+                                `Apakah Anda yakin ingin mengembalikan ${jumlah} unit barang ini ke PB Stok?`
+                                )) {
+                            return;
+                        }
 
-            // Set action URL
-            this.action = `/pj/kembalikan-ke-pb/${kodeBarang}`;
-            this.submit();
-        });
-    }
+                        // Enable loading state
+                        setButtonLoading('btnSimpanKembalikan', 'btnTextKembalikan', 'btnLoaderKembalikan',
+                            true);
 
-    // ✅ Helper function format Rupiah
-    function formatRupiah(angka) {
-        return new Intl.NumberFormat('id-ID').format(angka);
-    }
-});
+                        // Set action URL
+                        this.action = `/pj/kembalikan-ke-pb/${kodeBarang}`;
+                        this.submit();
+                    });
+                }
+
+                // ✅ Helper function format Rupiah
+                function formatRupiah(angka) {
+                    return new Intl.NumberFormat('id-ID').format(angka);
+                }
+            });
         </script>
     @endpush
 </x-layouts.app>
