@@ -528,113 +528,116 @@
     {{-- ============================================= --}}
 
     <!-- Modal Kembalikan Stok ke PB -->
-    <div class="modal fade" id="modalKembalikanStok" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
-                <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title fw-semibold">
-                        <i class="bi bi-arrow-counterclockwise text-warning"></i>
-                        Kembalikan Barang ke PB Stok
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<div class="modal fade" id="modalKembalikanStok" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-semibold">
+                    <i class="bi bi-arrow-counterclockwise text-warning"></i>
+                    Kembalikan Barang ke PB Stok
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body pt-2">
+                {{-- Info Warning --}}
+                <div class="alert alert-warning d-flex align-items-start mb-3">
+                    <i class="bi bi-exclamation-triangle-fill me-2 flex-shrink-0" style="font-size: 20px;"></i>
+                    <div>
+                        <strong>Perhatian!</strong><br>
+                        Barang akan dikembalikan ke PB Stok dengan batch yang sama (kode barang, bagian, dan harga).
+                    </div>
                 </div>
 
-                <div class="modal-body pt-2">
-                    {{-- Info Warning --}}
-                    <div class="alert alert-warning d-flex align-items-start mb-3">
-                        <i class="bi bi-exclamation-triangle-fill me-2 flex-shrink-0" style="font-size: 20px;"></i>
-                        <div>
-                            <strong>Perhatian!</strong><br>
-                            Barang akan dikembalikan ke PB Stok dengan batch yang sama (kode barang, bagian, dan harga).
+                <form method="POST" id="formKembalikanStok" enctype="multipart/form-data">
+                    @csrf
+                    <input type="hidden" name="kode_barang" id="kembalikanKodeBarang">
+                    <input type="hidden" name="harga" id="kembalikanHarga">
+
+                    <div class="row g-3">
+                        {{-- Info Barang --}}
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Nama Barang</label>
+                            <input type="text" id="kembalikanNamaBarang" class="form-control" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Kode Barang</label>
+                            <input type="text" id="kembalikanKode" class="form-control" readonly>
+                        </div>
+
+                        {{-- Stok Info --}}
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Stok Tersedia</label>
+                            <div class="input-group">
+                                <input type="text" id="kembalikanStokTersedia" class="form-control" readonly>
+                                <span class="input-group-text" id="kembalikanSatuanDisplay"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Harga Satuan</label>
+                            <input type="text" id="kembalikanHargaDisplay" class="form-control" readonly>
+                        </div>
+
+                        {{-- Input Jumlah --}}
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">
+                                Jumlah Dikembalikan <span class="text-danger">*</span>
+                            </label>
+                            <input type="number" name="jumlah" id="jumlahKembalikan" class="form-control"
+                                placeholder="Masukkan Jumlah" required min="1">
+                            <small class="text-muted">
+                                Maksimal: <span id="maxKembalikan">0</span> <span id="maxKembalikanSatuan"></span>
+                            </small>
+                        </div>
+
+                        {{-- Keterangan --}}
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">
+                                Keterangan <small class="text-muted">(Opsional)</small>
+                            </label>
+                            <textarea name="keterangan" id="kembalikanKeterangan" class="form-control" rows="2" placeholder="Alasan pengembalian..."></textarea>
+                        </div>
+
+                        {{-- Upload Bukti --}}
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">
+                                Bukti Pengembalian <small class="text-muted">(Opsional)</small>
+                            </label>
+                            <div class="border rounded p-4 text-center" style="background-color: #f8f9fa;">
+                                <input type="file" name="bukti" id="buktiKembalikan" class="d-none"
+                                    accept="image/*,.pdf">
+                                <label for="buktiKembalikan" class="d-block" style="cursor: pointer;">
+                                    <i class="bi bi-cloud-upload" style="font-size: 2rem; color: #6c757d;"></i>
+                                    <div class="mt-2" style="color: #6c757d; font-size: 0.875rem;">
+                                        Klik untuk Upload atau tarik dan seret
+                                    </div>
+                                </label>
+                                <div id="fileNameKembalikan" class="mt-2 text-primary small"></div>
+                            </div>
                         </div>
                     </div>
 
-                    <form method="POST" id="formKembalikanStok" enctype="multipart/form-data">
-                        @csrf
-                        <input type="hidden" name="kode_barang" id="kembalikanKodeBarang">
-
-                        <div class="row g-3">
-                            {{-- Info Barang --}}
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Nama Barang</label>
-                                <input type="text" id="kembalikanNamaBarang" class="form-control" readonly>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Kode Barang</label>
-                                <input type="text" id="kembalikanKode" class="form-control" readonly>
-                            </div>
-
-                            {{-- Stok Info --}}
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Stok Tersedia</label>
-                                <input type="text" id="kembalikanStokTersedia" class="form-control" readonly>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Harga Satuan</label>
-                                <input type="text" id="kembalikanHargaDisplay" class="form-control" readonly>
-                                <input type="hidden" id="kembalikanHarga" name="harga">
-                            </div>
-
-                            {{-- Input Jumlah --}}
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">
-                                    Jumlah Dikembalikan <span class="text-danger">*</span>
-                                </label>
-                                <input type="number" name="jumlah" id="jumlahKembalikan" class="form-control"
-                                    placeholder="Masukkan Jumlah" required min="1">
-                                <small class="text-muted">
-                                    Maksimal: <span id="maxKembalikan">0</span>
-                                </small>
-                            </div>
-
-                            {{-- Keterangan --}}
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">
-                                    Keterangan <small class="text-muted">(Opsional)</small>
-                                </label>
-                                <textarea name="keterangan" class="form-control" rows="2" placeholder="Alasan pengembalian..."></textarea>
-                            </div>
-
-                            {{-- Upload Bukti --}}
-                            <div class="col-12">
-                                <label class="form-label fw-semibold">
-                                    Bukti Pengembalian <small class="text-muted">(Opsional)</small>
-                                </label>
-                                <div class="border rounded p-4 text-center" style="background-color: #f8f9fa;">
-                                    <input type="file" name="bukti" id="buktiKembalikan" class="d-none"
-                                        accept="image/*,.pdf">
-                                    <label for="buktiKembalikan" class="d-block" style="cursor: pointer;">
-                                        <i class="bi bi-cloud-upload" style="font-size: 2rem; color: #6c757d;"></i>
-                                        <div class="mt-2" style="color: #6c757d; font-size: 0.875rem;">
-                                            Klik untuk Upload atau tarik dan seret
-                                        </div>
-                                    </label>
-                                    <div id="fileNameKembalikan" class="mt-2 text-primary small"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- Action Buttons --}}
-                        <div class="d-flex justify-content-end gap-2 mt-4">
-                            <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">
-                                Batal
-                            </button>
-                            <button type="submit" class="btn btn-warning px-4" id="btnSimpanKembalikan">
-                                <span id="btnTextKembalikan">
-                                    <i class="bi bi-arrow-counterclockwise me-1"></i> Kembalikan
-                                </span>
-                                <span id="btnLoaderKembalikan" class="d-none">
-                                    <span class="spinner-border spinner-border-sm me-1" role="status"
-                                        aria-hidden="true"></span>
-                                    Memproses...
-                                </span>
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    {{-- Action Buttons --}}
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">
+                            Batal
+                        </button>
+                        <button type="submit" class="btn btn-warning px-4" id="btnSimpanKembalikan">
+                            <span id="btnTextKembalikan">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i> Kembalikan
+                            </span>
+                            <span id="btnLoaderKembalikan" class="d-none">
+                                <span class="spinner-border spinner-border-sm me-1" role="status"
+                                    aria-hidden="true"></span>
+                                Memproses...
+                            </span>
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
+</div>
 
     {{-- Modal Konfirmasi Barang Masuk --}}
     <div class="modal fade" id="modalKonfirmasi" tabindex="-1">
@@ -913,407 +916,422 @@
     </div>
 
     @push('scripts')
-        <script>
-            // Toggle detail function
-            function toggleDetail(id) {
-                let el = document.getElementById('detail-' + id);
-                if (el.style.display === 'none') {
-                    el.style.display = 'table-row';
-                } else {
-                    el.style.display = 'none';
-                }
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ Script loaded'); // Debug
+
+    // ========================================
+    // HELPER FUNCTIONS
+    // ========================================
+    
+    function formatRupiah(angka) {
+        return new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        }).format(angka);
+    }
+
+    function setButtonLoading(btnId, textId, loaderId, isLoading) {
+        const btn = document.getElementById(btnId);
+        const text = document.getElementById(textId);
+        const loader = document.getElementById(loaderId);
+
+        if (btn && text && loader) {
+            btn.disabled = isLoading;
+            if (isLoading) {
+                text.classList.add('d-none');
+                loader.classList.remove('d-none');
+            } else {
+                text.classList.remove('d-none');
+                loader.classList.add('d-none');
+            }
+        }
+    }
+
+    // ========================================
+    // MODAL KEMBALIKAN STOK
+    // ========================================
+    
+    const modalKembalikanStok = document.getElementById('modalKembalikanStok');
+    if (modalKembalikanStok) {
+        console.log('✅ Modal Kembalikan ditemukan'); // Debug
+        
+        modalKembalikanStok.addEventListener('show.bs.modal', function(event) {
+            console.log('🔵 Modal Kembalikan dibuka'); // Debug
+            
+            const button = event.relatedTarget;
+            console.log('Button:', button); // Debug
+
+            // Ambil data dari button
+            const kodeBarang = button.getAttribute('data-kode');
+            const namaBarang = button.getAttribute('data-nama');
+            const stokTersedia = parseFloat(button.getAttribute('data-stok'));
+            const harga = parseFloat(button.getAttribute('data-harga') || 0);
+            const satuan = button.getAttribute('data-satuan') || '';
+
+            console.log('📦 Data dari button:', {
+                kodeBarang,
+                namaBarang,
+                stokTersedia,
+                harga,
+                satuan
+            }); // Debug
+
+            // Set values ke form
+            document.getElementById('kembalikanKodeBarang').value = kodeBarang;
+            document.getElementById('kembalikanHarga').value = harga;
+            document.getElementById('kembalikanNamaBarang').value = namaBarang;
+            document.getElementById('kembalikanKode').value = kodeBarang;
+            document.getElementById('kembalikanStokTersedia').value = stokTersedia;
+            document.getElementById('kembalikanSatuanDisplay').textContent = satuan;
+            document.getElementById('kembalikanHargaDisplay').value = formatRupiah(harga);
+            document.getElementById('maxKembalikan').textContent = stokTersedia;
+            document.getElementById('maxKembalikanSatuan').textContent = satuan;
+            
+            // Set max pada input jumlah
+            const inputJumlah = document.getElementById('jumlahKembalikan');
+            inputJumlah.max = stokTersedia;
+            inputJumlah.value = '';
+
+            // Reset form
+            document.getElementById('kembalikanKeterangan').value = '';
+            document.getElementById('fileNameKembalikan').textContent = '';
+            const fileInput = document.getElementById('buktiKembalikan');
+            if (fileInput) fileInput.value = '';
+
+            // Reset button state
+            setButtonLoading('btnSimpanKembalikan', 'btnTextKembalikan', 'btnLoaderKembalikan', false);
+            
+            console.log('✅ Form berhasil diisi'); // Debug
+        });
+    } else {
+        console.error('❌ Modal Kembalikan tidak ditemukan!');
+    }
+
+    // File preview untuk Kembalikan
+    const buktiKembalikan = document.getElementById('buktiKembalikan');
+    if (buktiKembalikan) {
+        buktiKembalikan.addEventListener('change', function() {
+            const fileName = this.files[0]?.name || '';
+            document.getElementById('fileNameKembalikan').textContent = 
+                fileName ? `📄 ${fileName}` : '';
+        });
+    }
+
+    // Form submit untuk Kembalikan
+    const formKembalikanStok = document.getElementById('formKembalikanStok');
+    if (formKembalikanStok) {
+        formKembalikanStok.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const kodeBarang = document.getElementById('kembalikanKodeBarang').value;
+            const jumlah = parseInt(document.getElementById('jumlahKembalikan').value);
+            const stokMax = parseInt(document.getElementById('maxKembalikan').textContent);
+            const namaBarang = document.getElementById('kembalikanNamaBarang').value;
+
+            if (isNaN(jumlah) || jumlah <= 0) {
+                alert('Jumlah harus lebih dari 0');
+                return;
             }
 
-            // Variables untuk menyimpan ID
-            let currentKonfirmasiId = null;
-            let currentKembalikanId = null;
-            let modalKonfirmasiBS = null;
-            let modalKembalikanBS = null;
-
-            // ✅ HELPER: Disable/Enable Button
-            function setButtonLoading(btnId, textId, loaderId, isLoading) {
-                const btn = document.getElementById(btnId);
-                const text = document.getElementById(textId);
-                const loader = document.getElementById(loaderId);
-
-                if (btn && text && loader) {
-                    btn.disabled = isLoading;
-                    if (isLoading) {
-                        text.classList.add('d-none');
-                        loader.classList.remove('d-none');
-                    } else {
-                        text.classList.remove('d-none');
-                        loader.classList.add('d-none');
-                    }
-                }
+            if (jumlah > stokMax) {
+                alert(`Jumlah tidak boleh melebihi stok tersedia (${stokMax})`);
+                return;
             }
 
-            // Initialize Bootstrap Modals setelah DOM ready
-            document.addEventListener('DOMContentLoaded', function() {
-                // Initialize Modal Konfirmasi
-                const modalKonfirmasiEl = document.getElementById('modalKonfirmasi');
-                if (modalKonfirmasiEl) {
-                    modalKonfirmasiBS = new bootstrap.Modal(modalKonfirmasiEl);
-                }
+            if (!confirm(`Apakah Anda yakin ingin mengembalikan ${jumlah} unit "${namaBarang}" ke PB Stok?`)) {
+                return;
+            }
 
-                // Initialize Modal Kembalikan
-                const modalKembalikanEl = document.getElementById('modalKembalikan');
-                if (modalKembalikanEl) {
-                    modalKembalikanBS = new bootstrap.Modal(modalKembalikanEl);
-                }
+            setButtonLoading('btnSimpanKembalikan', 'btnTextKembalikan', 'btnLoaderKembalikan', true);
+            this.action = `/pj/kembalikan-ke-pb/${kodeBarang}`;
+            this.submit();
+        });
+    }
 
-                // ✅ Handle Konfirmasi Button Click
-                document.querySelectorAll('.btn-konfirmasi').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const id = this.dataset.id;
-                        const nama = this.dataset.nama;
-                        const kode = this.dataset.kode;
-                        const jumlah = parseFloat(this.dataset.jumlah);
-                        const satuan = this.dataset.satuan;
-                        const harga = parseFloat(this.dataset.harga || 0);
+    // Validasi input jumlah real-time
+    const jumlahKembalikan = document.getElementById('jumlahKembalikan');
+    if (jumlahKembalikan) {
+        jumlahKembalikan.addEventListener('input', function() {
+            const max = parseInt(this.max);
+            const value = parseInt(this.value);
+            
+            if (value > max) {
+                this.value = max;
+                alert(`Jumlah maksimal adalah ${max}`);
+            }
+            
+            if (value < 1 && this.value !== '') {
+                this.value = 1;
+            }
+        });
+    }
 
-                        currentKonfirmasiId = id;
+    // ========================================
+    // MODAL BARANG KELUAR
+    // ========================================
+    
+    const modalBarangKeluar = document.getElementById("modalBarangKeluar");
+    if (modalBarangKeluar) {
+        modalBarangKeluar.addEventListener("show.bs.modal", function(event) {
+            const button = event.relatedTarget;
+            const barangId = button.getAttribute("data-id");
+            const barangNama = button.getAttribute("data-nama");
+            const barangKode = button.getAttribute("data-kode");
+            const stokTersedia = button.getAttribute("data-stok");
+            const hargaDipilih = button.getAttribute("data-harga");
 
-                        const formatRupiah = (angka) => {
-                            return new Intl.NumberFormat('id-ID', {
-                                style: 'currency',
-                                currency: 'IDR',
-                                minimumFractionDigits: 0,
-                                maximumFractionDigits: 0
-                            }).format(angka);
-                        };
+            document.getElementById("barangKeluarId").value = barangId;
+            document.getElementById("barangKeluarNama").value = barangNama;
+            document.getElementById("barangKeluarKode").value = barangKode;
+            document.getElementById("stokTersedia").textContent = stokTersedia;
+            document.getElementById("hargaDipilih").value = hargaDipilih;
+            document.getElementById("jumlahKeluar").max = stokTersedia;
 
-                        document.getElementById('konfirmasiNama').textContent = nama;
-                        document.getElementById('konfirmasiKode').textContent = kode;
-                        document.getElementById('konfirmasiJumlah').textContent = `${jumlah} ${satuan}`;
-                        document.getElementById('konfirmasiHarga').textContent = formatRupiah(harga);
+            setButtonLoading('btnSimpanBarangKeluar', 'btnTextKeluar', 'btnLoaderKeluar', false);
 
-                        // ✅ Reset button state
-                        setButtonLoading('btnKonfirmasiOk', 'btnTextKonfirmasi', 'btnLoaderKonfirmasi',
-                            false);
+            document.getElementById('formBarangKeluar').reset();
+            document.getElementById("barangKeluarId").value = barangId;
+            document.getElementById("barangKeluarNama").value = barangNama;
+            document.getElementById("barangKeluarKode").value = barangKode;
+            document.getElementById("hargaDipilih").value = hargaDipilih;
+            document.getElementById('fileNameKeluar').textContent = '';
+        });
+    }
 
-                        if (modalKonfirmasiBS) {
-                            modalKonfirmasiBS.show();
-                        }
-                    });
-                });
+    const buktiBrgKeluar = document.getElementById('buktiBrgKeluar');
+    if (buktiBrgKeluar) {
+        buktiBrgKeluar.addEventListener('change', function() {
+            const fileName = this.files[0]?.name || '';
+            document.getElementById('fileNameKeluar').textContent = fileName ? `File: ${fileName}` : '';
+        });
+    }
 
-                // ✅ Handle Kembalikan Button Click
-                document.querySelectorAll('.btn-kembalikan').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const id = this.dataset.id;
-                        const nama = this.dataset.nama;
-                        const jumlah = this.dataset.jumlah;
-                        const satuan = this.dataset.satuan;
+    const formBarangKeluar = document.getElementById('formBarangKeluar');
+    if (formBarangKeluar) {
+        formBarangKeluar.addEventListener('submit', function(e) {
+            e.preventDefault();
 
-                        currentKembalikanId = id;
-                        document.getElementById('kembalikanNama').textContent = nama;
-                        document.getElementById('kembalikanJumlah').textContent = `${jumlah} ${satuan}`;
+            const barangId = document.getElementById('barangKeluarId').value;
+            const jumlah = parseInt(document.getElementById('jumlahKeluar').value);
+            const stokMax = parseInt(document.getElementById('stokTersedia').textContent);
 
-                        // ✅ Reset button state
-                        setButtonLoading('btnKembalikanOk', 'btnTextKembalikan', 'btnLoaderKembalikan',
-                            false);
+            if (jumlah > stokMax) {
+                alert(`Jumlah tidak boleh melebihi stok tersedia (${stokMax})`);
+                return;
+            }
 
-                        if (modalKembalikanBS) {
-                            modalKembalikanBS.show();
-                        }
-                    });
-                });
+            setButtonLoading('btnSimpanBarangKeluar', 'btnTextKeluar', 'btnLoaderKeluar', true);
+            this.action = `/pj/barang-keluar/${barangId}`;
+            this.submit();
+        });
+    }
 
-                // ✅ Handle Konfirmasi OK Button
-                document.getElementById('btnKonfirmasiOk')?.addEventListener('click', function() {
-                    if (currentKonfirmasiId) {
-                        // Enable loading
-                        setButtonLoading('btnKonfirmasiOk', 'btnTextKonfirmasi', 'btnLoaderKonfirmasi', true);
+    // ========================================
+    // MODAL KONFIRMASI & KEMBALIKAN BARANG MASUK
+    // ========================================
+    
+    let currentKonfirmasiId = null;
+    let currentKembalikanId = null;
+    let modalKonfirmasiBS = null;
+    let modalKembalikanBS = null;
 
-                        const form = document.createElement('form');
-                        form.method = 'POST';
-                        form.action = `/pj/konfirmasi-barang-masuk/${currentKonfirmasiId}`;
+    const modalKonfirmasiEl = document.getElementById('modalKonfirmasi');
+    if (modalKonfirmasiEl) {
+        modalKonfirmasiBS = new bootstrap.Modal(modalKonfirmasiEl);
+    }
 
-                        const csrf = document.createElement('input');
-                        csrf.type = 'hidden';
-                        csrf.name = '_token';
-                        csrf.value = '{{ csrf_token() }}';
-                        form.appendChild(csrf);
+    const modalKembalikanEl = document.getElementById('modalKembalikan');
+    if (modalKembalikanEl) {
+        modalKembalikanBS = new bootstrap.Modal(modalKembalikanEl);
+    }
 
-                        document.body.appendChild(form);
-                        form.submit();
-                    }
-                });
+    document.querySelectorAll('.btn-konfirmasi').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.dataset.id;
+            const nama = this.dataset.nama;
+            const kode = this.dataset.kode;
+            const jumlah = parseFloat(this.dataset.jumlah);
+            const satuan = this.dataset.satuan;
+            const harga = parseFloat(this.dataset.harga || 0);
 
-                // ✅ Handle Kembalikan OK Button
-                document.getElementById('btnKembalikanOk')?.addEventListener('click', function() {
-                    if (currentKembalikanId) {
-                        // Enable loading
-                        setButtonLoading('btnKembalikanOk', 'btnTextKembalikan', 'btnLoaderKembalikan', true);
+            currentKonfirmasiId = id;
 
-                        const form = document.createElement('form');
-                        form.method = 'POST';
-                        form.action = `/pj/kembalikan-barang/${currentKembalikanId}`;
+            document.getElementById('konfirmasiNama').textContent = nama;
+            document.getElementById('konfirmasiKode').textContent = kode;
+            document.getElementById('konfirmasiJumlah').textContent = `${jumlah} ${satuan}`;
+            document.getElementById('konfirmasiHarga').textContent = formatRupiah(harga);
 
-                        const csrf = document.createElement('input');
-                        csrf.type = 'hidden';
-                        csrf.name = '_token';
-                        csrf.value = '{{ csrf_token() }}';
-                        form.appendChild(csrf);
+            setButtonLoading('btnKonfirmasiOk', 'btnTextKonfirmasi', 'btnLoaderKonfirmasi', false);
 
-                        document.body.appendChild(form);
-                        form.submit();
-                    }
-                });
+            if (modalKonfirmasiBS) {
+                modalKonfirmasiBS.show();
+            }
+        });
+    });
 
-                // ✅ Autocomplete functionality
-                const searchInput = document.getElementById('searchInput');
-                const suggestionsContainer = document.getElementById('searchSuggestions');
-                let currentSuggestions = [];
-                let activeSuggestionIndex = -1;
-                let searchTimeout;
+    document.querySelectorAll('.btn-kembalikan').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.dataset.id;
+            const nama = this.dataset.nama;
+            const jumlah = this.dataset.jumlah;
+            const satuan = this.dataset.satuan;
 
-                if (searchInput && suggestionsContainer) {
-                    function fetchSuggestions(query) {
-                        if (query.length < 2) {
-                            hideSuggestions();
-                            return;
-                        }
-                        showLoading();
-                        clearTimeout(searchTimeout);
+            currentKembalikanId = id;
+            document.getElementById('kembalikanNama').textContent = nama;
+            document.getElementById('kembalikanJumlah').textContent = `${jumlah} ${satuan}`;
 
-                        searchTimeout = setTimeout(() => {
-                            fetch(`/pj/api/search-barang?q=${encodeURIComponent(query)}`)
-                                .then(response => response.json())
-                                .then(data => {
-                                    currentSuggestions = data;
-                                    displaySuggestions(data);
-                                })
-                                .catch(error => {
-                                    console.error('Search error:', error);
-                                    hideSuggestions();
-                                });
-                        }, 300);
-                    }
+            setButtonLoading('btnKembalikanOk', 'btnTextKembalikan', 'btnLoaderKembalikan', false);
 
-                    function showLoading() {
-                        suggestionsContainer.innerHTML = '<div class="loading-suggestion">Mencari...</div>';
-                        suggestionsContainer.style.display = 'block';
-                    }
+            if (modalKembalikanBS) {
+                modalKembalikanBS.show();
+            }
+        });
+    });
 
-                    function displaySuggestions(suggestions) {
-                        if (suggestions.length === 0) {
-                            suggestionsContainer.innerHTML =
-                                '<div class="loading-suggestion">Tidak ada barang ditemukan</div>';
-                            return;
-                        }
+    document.getElementById('btnKonfirmasiOk')?.addEventListener('click', function() {
+        if (currentKonfirmasiId) {
+            setButtonLoading('btnKonfirmasiOk', 'btnTextKonfirmasi', 'btnLoaderKonfirmasi', true);
 
-                        let html = '';
-                        suggestions.forEach((item, index) => {
-                            const stockStatusClass = `stock-${item.stock_status}`;
-                            const stockText = item.stock_status === 'empty' ? 'Habis' :
-                                item.stock_status === 'low' ? 'Sedikit' : 'Tersedia';
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/pj/konfirmasi-barang-masuk/${currentKonfirmasiId}`;
 
-                            html += `
-                            <div class="search-suggestion-item" data-index="${index}">
-                                <div class="suggestion-name">${item.nama}</div>
-                                <div class="suggestion-code">Kode: ${item.kode}</div>
-                                <div class="suggestion-meta">
-                                    <small>Kategori: ${item.kategori} | Stok: ${item.stok} |
-                                    <span class="stock-status ${stockStatusClass}">${stockText}</span></small>
-                                </div>
-                            </div>
-                        `;
-                        });
+            const csrf = document.createElement('input');
+            csrf.type = 'hidden';
+            csrf.name = '_token';
+            csrf.value = '{{ csrf_token() }}';
+            form.appendChild(csrf);
 
-                        suggestionsContainer.innerHTML = html;
-                        suggestionsContainer.style.display = 'block';
+            document.body.appendChild(form);
+            form.submit();
+        }
+    });
 
-                        suggestionsContainer.querySelectorAll('.search-suggestion-item').forEach(item => {
-                            item.addEventListener('click', function() {
-                                selectSuggestion(parseInt(this.dataset.index));
-                            });
-                        });
-                    }
+    document.getElementById('btnKembalikanOk')?.addEventListener('click', function() {
+        if (currentKembalikanId) {
+            setButtonLoading('btnKembalikanOk', 'btnTextKembalikan', 'btnLoaderKembalikan', true);
 
-                    function hideSuggestions() {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/pj/kembalikan-barang/${currentKembalikanId}`;
+
+            const csrf = document.createElement('input');
+            csrf.type = 'hidden';
+            csrf.name = '_token';
+            csrf.value = '{{ csrf_token() }}';
+            form.appendChild(csrf);
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    });
+
+    // ========================================
+    // AUTOCOMPLETE SEARCH
+    // ========================================
+    
+    const searchInput = document.getElementById('searchInput');
+    const suggestionsContainer = document.getElementById('searchSuggestions');
+    let currentSuggestions = [];
+    let searchTimeout;
+
+    if (searchInput && suggestionsContainer) {
+        function fetchSuggestions(query) {
+            if (query.length < 2) {
+                suggestionsContainer.style.display = 'none';
+                return;
+            }
+            
+            suggestionsContainer.innerHTML = '<div class="loading-suggestion">Mencari...</div>';
+            suggestionsContainer.style.display = 'block';
+            clearTimeout(searchTimeout);
+
+            searchTimeout = setTimeout(() => {
+                fetch(`/pj/api/search-barang?q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        currentSuggestions = data;
+                        displaySuggestions(data);
+                    })
+                    .catch(error => {
+                        console.error('Search error:', error);
                         suggestionsContainer.style.display = 'none';
-                        activeSuggestionIndex = -1;
-                    }
-
-                    function selectSuggestion(index) {
-                        if (currentSuggestions[index]) {
-                            searchInput.value = currentSuggestions[index].nama;
-                            hideSuggestions();
-                            document.getElementById('searchForm').submit();
-                        }
-                    }
-
-                    searchInput.addEventListener('input', function() {
-                        fetchSuggestions(this.value.trim());
                     });
+            }, 300);
+        }
 
-                    searchInput.addEventListener('focus', function() {
-                        if (this.value.trim().length >= 2) {
-                            fetchSuggestions(this.value.trim());
-                        }
-                    });
+        function displaySuggestions(suggestions) {
+            if (suggestions.length === 0) {
+                suggestionsContainer.innerHTML = '<div class="loading-suggestion">Tidak ada barang ditemukan</div>';
+                return;
+            }
 
-                    document.addEventListener('click', function(e) {
-                        if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
-                            hideSuggestions();
-                        }
-                    });
-                }
+            let html = '';
+            suggestions.forEach((item, index) => {
+                const stockStatusClass = `stock-${item.stock_status}`;
+                const stockText = item.stock_status === 'empty' ? 'Habis' :
+                    item.stock_status === 'low' ? 'Sedikit' : 'Tersedia';
 
-                // ✅ Handle Modal Barang Keluar
-                const modalBarangKeluar = document.getElementById("modalBarangKeluar");
-                if (modalBarangKeluar) {
-                    modalBarangKeluar.addEventListener("show.bs.modal", function(event) {
-                        const button = event.relatedTarget;
-                        const barangId = button.getAttribute("data-id");
-                        const barangNama = button.getAttribute("data-nama");
-                        const barangKode = button.getAttribute("data-kode");
-                        const stokTersedia = button.getAttribute("data-stok");
-                        const hargaDipilih = button.getAttribute("data-harga");
-
-                        document.getElementById("barangKeluarId").value = barangId;
-                        document.getElementById("barangKeluarNama").value = barangNama;
-                        document.getElementById("barangKeluarKode").value = barangKode;
-                        document.getElementById("stokTersedia").textContent = stokTersedia;
-                        document.getElementById("hargaDipilih").value = hargaDipilih;
-                        document.getElementById("jumlahKeluar").max = stokTersedia;
-
-                        // ✅ Reset button state
-                        setButtonLoading('btnSimpanBarangKeluar', 'btnTextKeluar', 'btnLoaderKeluar', false);
-
-                        // Reset form fields (kecuali yang baru di-set)
-                        document.getElementById('formBarangKeluar').reset();
-                        document.getElementById("barangKeluarId").value = barangId;
-                        document.getElementById("barangKeluarNama").value = barangNama;
-                        document.getElementById("barangKeluarKode").value = barangKode;
-                        document.getElementById("hargaDipilih").value = hargaDipilih;
-                        document.getElementById('fileNameKeluar').textContent = '';
-                    });
-                }
-
-                // ✅ File preview handler
-                const buktiBrgKeluar = document.getElementById('buktiBrgKeluar');
-                if (buktiBrgKeluar) {
-                    buktiBrgKeluar.addEventListener('change', function() {
-                        const fileName = this.files[0]?.name || '';
-                        document.getElementById('fileNameKeluar').textContent = fileName ? `File: ${fileName}` :
-                            '';
-                    });
-                }
-
-                // ✅ Form submit handler dengan loading
-                const formBarangKeluar = document.getElementById('formBarangKeluar');
-                if (formBarangKeluar) {
-                    formBarangKeluar.addEventListener('submit', function(e) {
-                        e.preventDefault();
-
-                        const barangId = document.getElementById('barangKeluarId').value;
-                        const jumlah = parseInt(document.getElementById('jumlahKeluar').value);
-                        const stokMax = parseInt(document.getElementById('stokTersedia').textContent);
-
-                        if (jumlah > stokMax) {
-                            alert(`Jumlah tidak boleh melebihi stok tersedia (${stokMax})`);
-                            return;
-                        }
-
-                        // ✅ Enable loading state
-                        setButtonLoading('btnSimpanBarangKeluar', 'btnTextKeluar', 'btnLoaderKeluar', true);
-
-                        this.action = `/pj/barang-keluar/${barangId}`;
-                        this.submit();
-                    });
-                }
+                html += `
+                    <div class="search-suggestion-item" data-index="${index}">
+                        <div class="suggestion-name">${item.nama}</div>
+                        <div class="suggestion-code">Kode: ${item.kode}</div>
+                        <div class="suggestion-meta">
+                            <small>Kategori: ${item.kategori} | Stok: ${item.stok} |
+                            <span class="stock-status ${stockStatusClass}">${stockText}</span></small>
+                        </div>
+                    </div>
+                `;
             });
 
-            document.addEventListener('DOMContentLoaded', function() {
-                // ✅ Handle Modal Kembalikan Stok
-                const modalKembalikanStok = document.getElementById('modalKembalikanStok');
-                if (modalKembalikanStok) {
-                    modalKembalikanStok.addEventListener('show.bs.modal', function(event) {
-                        const button = event.relatedTarget;
-                        const kodeBarang = button.getAttribute('data-kode');
-                        const namaBarang = button.getAttribute('data-nama');
-                        const stokTersedia = parseFloat(button.getAttribute('data-stok'));
-                        const harga = parseFloat(button.getAttribute('data-harga') || 0);
-                        const satuan = button.getAttribute('data-satuan') || '';
+            suggestionsContainer.innerHTML = html;
+            suggestionsContainer.style.display = 'block';
 
-                        // Set values
-                        document.getElementById('kembalikanKodeBarang').value = kodeBarang;
-                        document.getElementById('kembalikanNamaBarang').value = namaBarang;
-                        document.getElementById('kembalikanKode').value = kodeBarang;
-                        document.getElementById('kembalikanStokTersedia').value = `${stokTersedia} ${satuan}`;
-                        document.getElementById('kembalikanHargaDisplay').value = `Rp ${formatRupiah(harga)}`;
-                        document.getElementById('kembalikanHarga').value = harga;
-                        document.getElementById('maxKembalikan').textContent = stokTersedia;
-                        document.getElementById('jumlahKembalikan').max = stokTersedia;
-
-                        // Reset form
-                        document.getElementById('formKembalikanStok').reset();
-                        document.getElementById('kembalikanKodeBarang').value = kodeBarang;
-                        document.getElementById('kembalikanHarga').value = harga;
-                        document.getElementById('fileNameKembalikan').textContent = '';
-
-                        // Reset button state
-                        setButtonLoading('btnSimpanKembalikan', 'btnTextKembalikan', 'btnLoaderKembalikan',
-                            false);
-                    });
-                }
-
-                // ✅ File preview handler untuk Kembalikan
-                const buktiKembalikan = document.getElementById('buktiKembalikan');
-                if (buktiKembalikan) {
-                    buktiKembalikan.addEventListener('change', function() {
-                        const fileName = this.files[0]?.name || '';
-                        document.getElementById('fileNameKembalikan').textContent =
-                            fileName ? `File: ${fileName}` : '';
-                    });
-                }
-
-                // ✅ Form submit handler untuk Kembalikan
-                const formKembalikanStok = document.getElementById('formKembalikanStok');
-                if (formKembalikanStok) {
-                    formKembalikanStok.addEventListener('submit', function(e) {
-                        e.preventDefault();
-
-                        const kodeBarang = document.getElementById('kembalikanKodeBarang').value;
-                        const jumlah = parseInt(document.getElementById('jumlahKembalikan').value);
-                        const stokMax = parseInt(document.getElementById('maxKembalikan').textContent);
-
-                        // Validasi jumlah
-                        if (jumlah > stokMax) {
-                            alert(`Jumlah tidak boleh melebihi stok tersedia (${stokMax})`);
-                            return;
-                        }
-
-                        if (jumlah <= 0) {
-                            alert('Jumlah harus lebih dari 0');
-                            return;
-                        }
-
-                        // Konfirmasi
-                        if (!confirm(
-                                `Apakah Anda yakin ingin mengembalikan ${jumlah} unit barang ini ke PB Stok?`
-                                )) {
-                            return;
-                        }
-
-                        // Enable loading state
-                        setButtonLoading('btnSimpanKembalikan', 'btnTextKembalikan', 'btnLoaderKembalikan',
-                            true);
-
-                        // Set action URL
-                        this.action = `/pj/kembalikan-ke-pb/${kodeBarang}`;
-                        this.submit();
-                    });
-                }
-
-                // ✅ Helper function format Rupiah
-                function formatRupiah(angka) {
-                    return new Intl.NumberFormat('id-ID').format(angka);
-                }
+            suggestionsContainer.querySelectorAll('.search-suggestion-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const index = parseInt(this.dataset.index);
+                    if (currentSuggestions[index]) {
+                        searchInput.value = currentSuggestions[index].nama;
+                        suggestionsContainer.style.display = 'none';
+                        document.getElementById('searchForm').submit();
+                    }
+                });
             });
-        </script>
-    @endpush
+        }
+
+        searchInput.addEventListener('input', function() {
+            fetchSuggestions(this.value.trim());
+        });
+
+        searchInput.addEventListener('focus', function() {
+            if (this.value.trim().length >= 2) {
+                fetchSuggestions(this.value.trim());
+            }
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+                suggestionsContainer.style.display = 'none';
+            }
+        });
+    }
+
+    // ========================================
+    // TOGGLE DETAIL
+    // ========================================
+    
+    window.toggleDetail = function(id) {
+        let el = document.getElementById('detail-' + id);
+        if (el.style.display === 'none') {
+            el.style.display = 'table-row';
+        } else {
+            el.style.display = 'none';
+        }
+    };
+});
+</script>
+@endpush
 </x-layouts.app>

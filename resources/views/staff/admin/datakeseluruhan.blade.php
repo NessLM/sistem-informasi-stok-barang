@@ -220,7 +220,7 @@
                                         </thead>
                                         <tbody>
                                             @foreach ($hasilCari as $i => $row)
-                                                <tr @if ($row->stok < 10) class="row-low-stock" @endif>
+                                                <tr class="@if ($row->stok < 10) row-low-stock @endif @if ($row->stok == 0) row-habis-stock @endif">
                                                     <td>{{ $i + 1 }}</td>
                                                     <td>{{ $row->b->nama_barang }}</td>
                                                     <td>{{ $row->b->kode_barang }}</td>
@@ -309,8 +309,7 @@
                                                                                                     $stokDisplay =
                                                                                                         $pb->stok ?? 0;
                                                                                                 @endphp
-                                                                                                <tr
-                                                                                                    @if ($stokDisplay < 10) class="row-low-stock" @endif>
+                                                                                                <tr class="@if ($stokDisplay < 10) row-low-stock @endif @if ($stokDisplay == 0) row-habis-stock @endif">
                                                                                                     <td>{{ $loop->iteration }}
                                                                                                     </td>
                                                                                                     <td>{{ $b->nama_barang }}
@@ -445,8 +444,7 @@
                                                                                                             0);
                                                                                                 @endphp
 
-                                                                                                <tr
-                                                                                                    @if ($stokDisplay < 10) class="row-low-stock" @endif>
+                                                                                                <tr class="@if ($stokDisplay < 10) row-low-stock @endif @if ($stokDisplay == 0) row-habis-stock @endif">
                                                                                                     <td>{{ $rowNumber++ }}
                                                                                                     </td>
                                                                                                     <td>{{ $b->nama_barang }}
