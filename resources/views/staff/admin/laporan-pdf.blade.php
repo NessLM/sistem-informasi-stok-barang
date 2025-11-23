@@ -65,6 +65,24 @@
                 return terbilang(intval($angka / 1000)) . " Ribu " . terbilang($angka % 1000);
             }
         }
+        // Tentukan bulan terakhir dari triwulan berdasarkan $quarter
+        $endMonthMap = [
+            1 => 3,  // Q1: Maret
+            2 => 6,  // Q2: Juni
+            3 => 9,  // Q3: September
+            4 => 12  // Q4: Desember
+        ];
+
+        $endMonth = $endMonthMap[$quarter] ?? 6;
+        $endMonthName = [
+            3 => 'MARET',
+            6 => 'JUNI',
+            9 => 'SEPTEMBER',
+            12 => 'DESEMBER'
+        ][$endMonth];
+
+        // Tanggal terakhir bulan tersebut (30 atau 31)
+        $lastDayOfMonth = Carbon::create($year, $endMonth, 1)->endOfMonth()->day;
 
         $tanggal = Carbon::now()->locale('id');
 
@@ -122,7 +140,8 @@
                                 Sekretariat Daerah</p>
                             <p>- Penyampaian Laporan Berita Acara Pemeriksaan Persediaan Barang Pakai Habis Stock
                                 Opname
-                                per 30 Juni {{ $year ?? $tahunSekarang }} pada Sekretariat Daerah</p>
+                                per {{ $lastDayOfMonth }} {{ $endMonthName }} {{ $year ?? $tahunSekarang }} pada
+                                Sekretariat Daerah</p>
                         </div>
                     </td>
                     <td class="col-jumlah">1 ( satu )<br>Berkas</td>
@@ -184,7 +203,7 @@
 
     <div class="judul-dokumen">
         <h3>BERITA ACARA PEMERIKSAAN PERSEDIAAN BARANG PAKAI HABIS</h3>
-        <h3>STOCK OPNAME PER 30 JUNI {{ $year ?? $tahunSekarang }}</h3>
+        <h3>STOCK OPNAME PER {{ $lastDayOfMonth }} {{ $endMonthName }} {{ $year ?? $tahunSekarang }}</h3>
         <h3>PADA SEKRETARIAT DAERAH KABUPATEN BANGKA</h3>
     </div>
 
