@@ -1,3 +1,18 @@
+/* ========================================
+   FIX: CENTER BUTTON BARANG KELUAR & KEMBALIKAN
+   ======================================== */
+
+/* Hanya untuk kolom Aksi yang berisi button-button ini */
+.table tbody td:last-child {
+    text-align: center !important;
+}
+
+/* Wrapper button di kolom Aksi - paksa center */
+.table tbody td .d-flex {
+    justify-content: center !important;
+    align-items: center !important;
+}
+
 .row-low-stock {
     background-color: #ffcccc !important;
     border-left: 4px solid #fd7e14 !important;
