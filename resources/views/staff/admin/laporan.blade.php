@@ -1,7 +1,6 @@
 {{-- resources/views/staff/admin/laporan.blade.php --}}
 <x-layouts.app title="Laporan" :menu="$menu">
     <link rel="stylesheet" href="{{ asset('assets/css/staff/admin/laporan.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/staff/admin/laporan_pdf.css') }}">
 
     <div class="page-body">
         <div class="card">
@@ -23,8 +22,7 @@
                                     @if ($report['exists'])
                                         <span class="riwayat-bukti-icon" data-quarter="{{ $report['quarter'] }}"
                                             data-year="{{ $report['year'] }}" data-title="{{ $report['title'] }}"
-                                            title="Pratinjau Laporan"
-                                            style="cursor: pointer; color: #3498db; font-size: 18px;">
+                                            title="Pratinjau Laporan" style="cursor: pointer; color: #3498db; font-size: 18px;">
                                             <i class="bi bi-eye-fill"></i>
                                         </span>
                                     @else
@@ -98,6 +96,16 @@
 
     @push('scripts')
         <script>
+            // // Ensure laporan_pdf.css is loaded
+            // (function loadLaporanCSS() {
+            //     if (!document.querySelector('link[href="/assets/css/staff/admin/laporan_pdf.css"]')) {
+            //         let link = document.createElement("link");
+            //         link.rel = "stylesheet";
+            //         link.href = "/assets/css/staff/admin/laporan_pdf.css";
+            //         document.head.appendChild(link);
+            //     }
+            // })();
+
             // ===== Global Variables =====
             const lapModal = document.getElementById('lapModal');
             const laporanContent = document.getElementById('laporanContent');
@@ -191,6 +199,12 @@
 
             // ===== Modal Functions =====
             async function openLapModal(quarter, year, title) {
+                let link = document.createElement("link");
+                link.rel = "stylesheet";
+                link.href = "/assets/css/staff/admin/laporan_pdf.css";
+                link.id = "laporanPdfCss";  // PENTING!
+                document.head.appendChild(link);
+
                 console.log('Opening modal for:', quarter, year, title);
 
                 lapTtl.textContent = title || 'Pratinjau Laporan';
@@ -244,15 +258,15 @@
                     console.error('Error loading report:', error);
                     laporanLoading.style.display = 'none';
                     laporanContent.innerHTML = `
-            <div style="padding: 2rem; text-align: center;">
-              <div class="alert alert-danger" style="display: inline-block; text-align: left;">
-                <i class="bi bi-exclamation-triangle"></i>
-                <strong>Gagal memuat laporan</strong><br>
-                ${error.message}<br><br>
-                <small>Quarter: ${quarter}, Year: ${year}</small>
-              </div>
-            </div>
-          `;
+                                <div style="padding: 2rem; text-align: center;">
+                                  <div class="alert alert-danger" style="display: inline-block; text-align: left;">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                    <strong>Gagal memuat laporan</strong><br>
+                                    ${error.message}<br><br>
+                                    <small>Quarter: ${quarter}, Year: ${year}</small>
+                                  </div>
+                                </div>
+                              `;
                     laporanContent.style.display = 'block';
                 }
 
@@ -412,6 +426,7 @@
             }
 
             function closeLapModal() {
+
                 lapModal.classList.remove('is-open');
                 lapModal.setAttribute('aria-hidden', 'true');
                 laporanContent.innerHTML = '';
@@ -420,7 +435,11 @@
                 currentZoom = 1.0;
                 fullHTML = '';
                 document.body.classList.remove('modal-open-mobile');
+                // Hapus CSS laporan
+                const css = document.getElementById('laporanPdfCss');
+                if (css) css.remove();
             }
+
 
             // ===== Event Listeners =====
             document.addEventListener('click', (e) => {
@@ -459,7 +478,7 @@
             });
 
             // Responsive handling
-            window.addEventListener('resize', function() {
+            window.addEventListener('resize', function () {
                 if (lapModal.classList.contains('is-open')) {
                     if (window.innerWidth <= 768) {
                         document.body.classList.add('modal-open-mobile');
@@ -471,7 +490,7 @@
 
             // Prevent zoom on double-tap for mobile
             let lastTouchEnd = 0;
-            document.addEventListener('touchend', function(event) {
+            document.addEventListener('touchend', function (event) {
                 const now = (new Date()).getTime();
                 if (now - lastTouchEnd <= 300) {
                     event.preventDefault();

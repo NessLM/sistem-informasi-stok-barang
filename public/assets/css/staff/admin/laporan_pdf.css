@@ -2,8 +2,14 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    font-family: 'Times New Roman';
 }
-
+body {
+    font-size: 12px;
+    margin: 0;
+    padding: 20px;
+    line-height: 1.4;
+}
 /* Style untuk kop surat */
 .laporan-page .kop-surat {
     display: flex;
