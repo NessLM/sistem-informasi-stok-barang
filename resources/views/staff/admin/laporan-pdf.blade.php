@@ -30,6 +30,50 @@
         use Carbon\Carbon;
         $tanggalSekarang = Carbon::now();
         $tanggalFormatted = $tanggalSekarang->locale('id')->isoFormat('D MMMM YYYY');
+
+        function terbilang($angka)
+        {
+            $angka = (int) $angka;
+            $bilangan = [
+                "",
+                "Satu",
+                "Dua",
+                "Tiga",
+                "Empat",
+                "Lima",
+                "Enam",
+                "Tujuh",
+                "Delapan",
+                "Sembilan",
+                "Sepuluh",
+                "Sebelas"
+            ];
+
+            if ($angka < 12) {
+                return $bilangan[$angka];
+            } elseif ($angka < 20) {
+                return terbilang($angka - 10) . " Belas";
+            } elseif ($angka < 100) {
+                return terbilang(intval($angka / 10)) . " Puluh " . terbilang($angka % 10);
+            } elseif ($angka < 200) {
+                return "Seratus " . terbilang($angka - 100);
+            } elseif ($angka < 1000) {
+                return terbilang(intval($angka / 100)) . " Ratus " . terbilang($angka % 100);
+            } elseif ($angka < 2000) {
+                return "Seribu " . terbilang($angka - 1000);
+            } elseif ($angka < 1000000) {
+                return terbilang(intval($angka / 1000)) . " Ribu " . terbilang($angka % 1000);
+            }
+        }
+
+        $tanggal = Carbon::now()->locale('id');
+
+        $hari = $tanggal->isoFormat('dddd'); // Senin
+        $tglAngka = $tanggal->format('d-m-Y'); // 01-07-2025
+        $tglHuruf = terbilang($tanggal->day); // Satu
+        $bulanHuruf = $tanggal->isoFormat('MMMM'); // Juli
+        $tahunHuruf = trim(terbilang($tanggal->year)); // Dua Ribu Dua Puluh Lima
+
     @endphp
 
     <div class="tanggal-surat">
@@ -145,9 +189,13 @@
     </div>
 
     <div class="pembukaan-berita-acara">
-        <p>Pada hari ini Senin tanggal Satu Bulan Juli tahun Dua Ribu Dua Puluh Lima (01-07-2025), bertempat di
-            Sungailiat, yang bertanda tangan di bawah ini :</p>
+        <p>
+            Pada hari ini {{ $hari }} tanggal {{ $tglHuruf }} Bulan {{ $bulanHuruf }}
+            tahun {{ $tahunHuruf }} ({{ $tglAngka }}), bertempat di
+            Sungailiat, yang bertanda tangan di bawah ini :
+        </p>
     </div>
+
 
     <div class="identitas-petugas">
         <table>
@@ -180,7 +228,7 @@
     </div>
 
     <div class="lokasi-tanggal">
-        Sungailiat, 01 Juli 2025
+        Sungailiat, {{ $tanggalFormatted }}
     </div>
 
     <div class="ttd-berita-acara">

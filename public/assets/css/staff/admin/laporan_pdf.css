@@ -2,7 +2,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Times New Roman';
+    font-family: "Times New Roman";
 }
 body {
     font-size: 12px;
@@ -350,7 +350,7 @@ body {
 }
 
 .lokasi-tanggal {
-    margin-left: 470px;
+    margin-left: 450px;
     margin-top: 50px;
     font-weight: normal;
 }
