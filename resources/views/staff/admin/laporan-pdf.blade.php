@@ -250,33 +250,41 @@
         Sungailiat, {{ $tanggalFormatted }}
     </div>
 
-    <div class="ttd-berita-acara">
-        <div class="ttd-kiri">
-            <div class="ttd-jabatan">Pejabat Penatausahaan Pengguna Barang</div>
-            <div class="ttd-spacer"></div>
-            <div class="ttd-nama">Hiskawati, S.AP</div>
-            <div class="ttd-nip">NIP. 198109202006042007</div>
-        </div>
+    <!-- Bagian TTD Kiri dan Kanan -->
+    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+        <tr>
+            <!-- TTD KIRI -->
+            <td style="width: 50%; text-align: center; vertical-align: top;">
+                <div class="ttd-jabatan">Pejabat Penatausahaan Pengguna Barang</div>
+                <br><br><br><br><br> <!-- Spacer Tanda Tangan -->
+                <div class="ttd-nama">Hiskawati, S.AP</div>
+                <div class="ttd-nip">NIP. 198109202006042007</div>
+            </td>
 
-        <div class="ttd-kanan">
-            <div class="ttd-jabatan">Penanggung Jawab LBP <br>
-                Pengurus Barang Pengguna,</div>
-            <div class="ttd-spacer"></div>
-            <div class="ttd-nama">Redha Efrida, A.Md</div>
-            <div class="ttd-nip">NIP. 198206192008042002</div>
-        </div>
-    </div>
+            <!-- TTD KANAN -->
+            <td style="width: 50%; text-align: center; vertical-align: top;">
+                <div class="ttd-jabatan">Penanggung Jawab LBP <br> Pengurus Barang Pengguna,</div>
+                <br><br><br><br> <!-- Spacer Tanda Tangan -->
+                <div class="ttd-nama">Redha Efrida, A.Md</div>
+                <div class="ttd-nip">NIP. 198206192008042002</div>
+            </td>
+        </tr>
+    </table>
 
-    <div class="mengesahkan-berita-acara">
-        <div class="ttd-mengesahkan">
-            <div class="ttd-jabatan">Mengetahui</div>
-            <div class="ttd-jabatan">Pengguna Barang,</div>
-            <div class="ttd-spacer"></div>
-            <div class="ttd-nama">Thony Marza, AP
-            </div>
-            <div class="ttd-nip">NIP. 19750306199311101</div>
-        </div>
-    </div>
+    <!-- Bagian Mengesahkan -->
+    <table style="width: 100%; border-collapse: collapse; margin-top: 30px;">
+        <tr>
+            <td style="text-align: center;">
+
+                <div class="ttd-jabatan">Mengetahui</div>
+                <div class="ttd-jabatan">Pengguna Barang,</div>
+                <br><br><br><br> <!-- Spacer Tanda Tangan -->
+                <div class="ttd-nama">Thony Marza, AP</div>
+                <div class="ttd-nip">NIP. 19750306199311101</div>
+
+            </td>
+        </tr>
+    </table>
 
 
 
