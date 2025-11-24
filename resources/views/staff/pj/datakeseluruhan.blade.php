@@ -186,6 +186,7 @@
                                     <th>Nama</th>
                                     <th>Kode</th>
                                     <th>Stok</th>
+                                    <th>Harga</th>
                                     <th>Satuan</th>
                                     <th>Kategori</th>
                                     <th>Aksi</th>
@@ -202,6 +203,9 @@
                                             <td>{{ $b->nama }}</td>
                                             <td>{{ $b->kode }}</td>
                                             <td>{{ $stokTersedia }}</td>
+                                            <td>
+                                                Rp {{ number_format($b->harga ?? 0, 0, ',', '.') }} {{-- ✅ TAMPILIN HARGA --}}
+                                            </td>
                                             <td>{{ $b->satuan }}</td>
                                             <td>{{ $b->kategori->nama ?? '-' }}</td>
                                             <td>
@@ -209,10 +213,11 @@
                                                     {{-- Tombol Barang Keluar --}}
                                                     <button type="button" class="btn btn-danger btn-sm"
                                                         data-bs-toggle="modal" data-bs-target="#modalBarangKeluar"
-                                                        data-id="{{ $item->kode }}" data-nama="{{ $item->nama }}"
-                                                        data-kode="{{ $item->kode }}"
+                                                        data-id="{{ $b->kode }}"
+                                                        data-nama="{{ $b->nama }}"
+                                                        data-kode="{{ $b->kode }}"
                                                         data-stok="{{ $stokTersedia }}"
-                                                        data-harga="{{ $item->harga }}">
+                                                        data-harga="{{ $b->harga ?? 0 }}">
                                                         <i class="bi bi-box-arrow-right"></i> Barang Keluar
                                                     </button>
 
@@ -220,16 +225,14 @@
                                                     <button type="button"
                                                         class="btn btn-warning btn-sm btn-kembalikan-stok"
                                                         data-bs-toggle="modal" data-bs-target="#modalKembalikanStok"
-                                                        data-kode="{{ $item->kode }}"
-                                                        data-nama="{{ $item->nama }}"
+                                                        data-kode="{{ $b->kode }}"
+                                                        data-nama="{{ $b->nama }}"
                                                         data-stok="{{ $stokTersedia }}"
-                                                        data-harga="{{ $item->harga ?? 0 }}"
-                                                        data-satuan="{{ $item->satuan }}">
+                                                        data-harga="{{ $b->harga ?? 0 }}"
+                                                        data-satuan="{{ $b->satuan }}">
                                                         <i class="bi bi-arrow-counterclockwise"></i> Kembalikan
                                                     </button>
-
                                                 </div>
-
                                             </td>
                                         </tr>
                                     @endif
@@ -1055,7 +1058,8 @@
 
                         setButtonLoading('btnSimpanKembalikan', 'btnTextKembalikan', 'btnLoaderKembalikan',
                             true);
-                        this.action = `/pj/kembalikan-ke-pb/${kodeBarang}`;
+                        const baseKembalikanKePb = "{{ url('pj/kembalikan-ke-pb') }}";
+                        this.action = baseKembalikanKePb + '/' + kodeBarang;
                         this.submit();
                     });
                 }
@@ -1134,7 +1138,8 @@
                         }
 
                         setButtonLoading('btnSimpanBarangKeluar', 'btnTextKeluar', 'btnLoaderKeluar', true);
-                        this.action = `/pj/barang-keluar/${barangId}`;
+                        const baseBarangKeluar = "{{ url('pj/barang-keluar') }}";
+                        this.action = baseBarangKeluar + '/' + barangId;
                         this.submit();
                     });
                 }
@@ -1209,7 +1214,8 @@
 
                         const form = document.createElement('form');
                         form.method = 'POST';
-                        form.action = `/pj/konfirmasi-barang-masuk/${currentKonfirmasiId}`;
+                        const baseKonfirmasiMasuk = "{{ url('pj/konfirmasi-barang-masuk') }}";
+                        form.action = baseKonfirmasiMasuk + '/' + currentKonfirmasiId;
 
                         const csrf = document.createElement('input');
                         csrf.type = 'hidden';
@@ -1228,7 +1234,8 @@
 
                         const form = document.createElement('form');
                         form.method = 'POST';
-                        form.action = `/pj/kembalikan-barang/${currentKembalikanId}`;
+                        const baseKembalikanBarangMasuk = "{{ url('pj/kembalikan-barang') }}";
+                        form.action = baseKembalikanBarangMasuk + '/' + currentKembalikanId;
 
                         const csrf = document.createElement('input');
                         csrf.type = 'hidden';
@@ -1262,7 +1269,9 @@
                         clearTimeout(searchTimeout);
 
                         searchTimeout = setTimeout(() => {
-                            fetch(`/pj/api/search-barang?q=${encodeURIComponent(query)}`)
+                            const baseSearchBarangPj = "{{ url('pj/api/search-barang') }}";
+
+                            fetch(`${baseSearchBarangPj}?q=${encodeURIComponent(query)}`)
                                 .then(response => response.json())
                                 .then(data => {
                                     currentSuggestions = data;

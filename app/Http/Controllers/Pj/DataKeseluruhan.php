@@ -205,6 +205,7 @@ class DataKeseluruhan extends Controller
                     'barang.nama_barang as nama',
                     'barang.satuan',
                     'stok_bagian.stok as stok_tersedia',
+                    'stok_bagian.harga as harga',
                     'kategori.nama as kategori_nama',
                     'barang.id_kategori'
                 )->orderBy('barang.nama_barang')->get()
@@ -214,7 +215,8 @@ class DataKeseluruhan extends Controller
                         'nama' => $i->nama,
                         'satuan' => $i->satuan,
                         'stok_tersedia' => $i->stok_tersedia,
-                        'kategori' => (object) ['nama' => $i->kategori_nama]
+                        'harga' => $i->harga ?? 0,
+                        'kategori' => (object) ['nama' => $i->kategori_nama],
                     ]);
             }
 
@@ -387,7 +389,6 @@ class DataKeseluruhan extends Controller
 
                 DB::commit();
                 Log::info('✅ Auto-confirm sukses', ['id' => $transaksi->id]);
-
             } catch (\Throwable $e) {
                 DB::rollBack();
                 Log::error('❌ Auto-confirm gagal', [
@@ -908,7 +909,6 @@ class DataKeseluruhan extends Controller
                 'title' => 'Berhasil',
                 'message' => "Barang berhasil dikembalikan ke PB Stok {$namaBagian}. Jumlah: {$jumlahKembalikan}"
             ]);
-
         } catch (\Throwable $e) {
             DB::rollBack();
             Log::error('❌ Kembalikan ke PB Stok gagal', [
