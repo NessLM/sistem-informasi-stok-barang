@@ -1173,7 +1173,10 @@
                         disableSubmitButton(this);
 
                         const pbStokId = document.getElementById('editPbStokId').value;
-                        this.action = `/pb/edit-stok/${pbStokId}`;
+
+                        const baseEditStok = "{{ url('pb/edit-stok') }}";
+                        this.action = baseEditStok + '/' + pbStokId;
+
                         this.submit();
                     });
                 }
@@ -1234,7 +1237,8 @@
                         disableSubmitButton(this);
 
                         const kodeBarang = document.getElementById('barangMasukKode').value;
-                        this.action = `/pb/barang-masuk/${kodeBarang}`;
+                        const baseBarangMasuk = "{{ url('pb/barang-masuk') }}";
+                        this.action = baseBarangMasuk + '/' + kodeBarang;
                         this.submit();
                     });
                 }
@@ -1309,8 +1313,9 @@
 
                         disableSubmitButton(this);
 
+                        const baseDistribusi = "{{ url('pb/distribusi') }}";
                         const pbStokId = document.getElementById('distribusiPbStokId').value;
-                        this.action = `/pb/distribusi/${pbStokId}`;
+                        this.action = baseDistribusi + '/' + pbStokId;
                         this.submit();
                     });
                 }
@@ -1323,6 +1328,9 @@
                 const searchInput = document.getElementById(inputId);
                 const suggestionsContainer = document.getElementById(suggestionsId);
                 if (!searchInput || !suggestionsContainer) return;
+
+                // ⬇️ Tambahin ini (base URL pakai helper Laravel)
+                const baseSearchBarang = "{{ url('pb/api/search-barang') }}";
 
                 let currentSuggestions = [];
                 let activeSuggestionIndex = -1;
@@ -1338,7 +1346,8 @@
                     clearTimeout(searchTimeout);
 
                     searchTimeout = setTimeout(() => {
-                        fetch(`/pb/api/search-barang?q=${encodeURIComponent(query)}&tab=${tabName}`)
+                        // ⬇️ Bagian ini yang tadinya `fetch('/pb/api/search-barang?...')`
+                        fetch(`${baseSearchBarang}?q=${encodeURIComponent(query)}&tab=${tabName}`)
                             .then(response => response.json())
                             .then(data => {
                                 currentSuggestions = data;
