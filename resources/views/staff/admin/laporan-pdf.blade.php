@@ -299,13 +299,13 @@
     <div class="judul-dokumen">
         <h3>BERITA ACARA REKONSILIASI INTERNAL DATA BARANG MILIK DAERAH BERUPA ASET LANCAR/PERSEDIAAN</h3>
         <h3>PADA SEKRETARIAT DAERAH KABUPATEN BANGKA</h3>
-        <h3>NOMOR : BA / &nbsp;&nbsp; / SETDA/ 2025</h3>
+        <h3>NOMOR : BA / &nbsp;&nbsp; / SETDA /{{ $bulanSekarang }}/{{ $tahunSekarang }}</h3>
     </div>
 
     <div class="pembukaan-berita-acara-halaman3">
-        <p>Pada hari ini Senin tanggal satu Bulan Juli Tahun Dua Ribu Dua Puluh Lima (01 - 07 - 2025) Bertempat di
-            Sungailiat, yang bertanda tangan
-            dibawah ini :</p>
+        <p>Pada hari ini {{ $hari }} tanggal {{ $tglHuruf }} Bulan {{ $bulanHuruf }}
+            tahun {{ $tahunHuruf }} ({{ $tglAngka }}), bertempat di
+            Sungailiat, yang bertanda tangan di bawah ini :</p>
     </div>
 
     <div class="identitas-pihak-halaman3">
