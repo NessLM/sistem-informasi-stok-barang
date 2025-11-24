@@ -16,6 +16,7 @@ use App\Helpers\MenuHelper;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon; // ✅ TAMBAHKAN INI
 
 class DataKeseluruhan extends Controller
 {
@@ -24,6 +25,9 @@ class DataKeseluruhan extends Controller
      */
     public function index(Request $request)
     {
+        // ✅ PANGGIL AUTO-CONFIRM DI PALING AWAL
+        $this->autoConfirmOldTransactions();
+
         $menu = MenuHelper::pjMenu();
         $user = Auth::user();
 
@@ -76,7 +80,7 @@ class DataKeseluruhan extends Controller
                 ->where('pj_stok.id_gudang', $gudang->id)
                 ->select(
                     'pj_stok.stok',
-                    DB::raw('NULL as harga'), // kalau nanti pj_stok punya kolom harga, ganti jadi 'pj_stok.harga'
+                    DB::raw('NULL as harga'),
                     'barang.kode_barang',
                     'barang.nama_barang',
                     'barang.satuan',
@@ -95,18 +99,17 @@ class DataKeseluruhan extends Controller
                 'satuan' => $i->satuan,
                 'stok_tersedia' => 0,
                 'kategori' => (object) ['nama' => $i->kategori_nama],
-                'harga' => $i->harga, // di mode gudang bakal null, gapapa, nanti di Blade ditampilkan "-"
+                'harga' => $i->harga,
             ])->values();
 
-            // Ambil data barang masuk dari transaksi_distribusi dengan status dan harga dari pb_stok
-            // Ambil data barang masuk dari transaksi_distribusi dengan status dan harga
+            // ✅ FIX: Ubah query barangMasuk pake created_at
             $barangMasuk = DB::table('transaksi_distribusi')
                 ->join('barang', 'transaksi_distribusi.kode_barang', '=', 'barang.kode_barang')
                 ->where('transaksi_distribusi.bagian_id', $gudang->id)
-                ->orderBy('transaksi_distribusi.tanggal', 'desc')
+                ->orderBy('transaksi_distribusi.created_at', 'desc') // ✅ UBAH INI
                 ->select(
                     'transaksi_distribusi.id',
-                    'transaksi_distribusi.tanggal',
+                    'transaksi_distribusi.created_at as tanggal', // ✅ UBAH INI
                     'barang.kode_barang',
                     'barang.nama_barang',
                     'transaksi_distribusi.jumlah',
@@ -134,11 +137,9 @@ class DataKeseluruhan extends Controller
 
         /* =================== MODE BAGIAN =================== */
         if ($bagianUser) {
-            // Ambil SEMUA kategori yang ada di sistem (bukan hanya yang memiliki stok)
             $kategori = Kategori::orderBy('nama')
                 ->get()
                 ->map(function ($k) use ($bagianUser) {
-                    // Load barang yang ada di stok bagian untuk kategori ini
                     $items = DB::table('stok_bagian')
                         ->join('barang', 'stok_bagian.kode_barang', '=', 'barang.kode_barang')
                         ->where('stok_bagian.bagian_id', $bagianUser->id)
@@ -170,11 +171,9 @@ class DataKeseluruhan extends Controller
                     ];
                 });
 
-            // Spoof gudang untuk blade & kirim $bagian (koleksi) ke view
             $selectedGudang = (object) ['id' => null, 'nama' => 'Bagian ' . $bagianUser->nama];
             $bagian = collect([$bagianUser]);
 
-            // Handle pencarian/filter
             $barang = collect([]);
             if ($request->hasAny(['search', 'kode', 'stok_min', 'stok_max', 'kategori_id', 'satuan'])) {
                 $q = DB::table('stok_bagian')
@@ -219,8 +218,6 @@ class DataKeseluruhan extends Controller
                     ]);
             }
 
-            // Hitung ringkasan
-            // Hitung ringkasan
             $lowThreshold = 10;
             $allRows = DB::table('stok_bagian')
                 ->join('barang', 'stok_bagian.kode_barang', '=', 'barang.kode_barang')
@@ -247,10 +244,10 @@ class DataKeseluruhan extends Controller
                 'satuan' => $i->satuan,
                 'stok_tersedia' => 0,
                 'kategori' => (object) ['nama' => $i->kategori_nama],
-                'harga' => $i->harga, // ini yang bakal beda per-batch
+                'harga' => $i->harga,
             ])->values();
 
-            // Ambil data barang masuk dari transaksi_distribusi untuk bagian dengan status
+            // Query barangMasuk sudah benar (udah pake created_at)
             $barangMasuk = DB::table('transaksi_distribusi')
                 ->join('barang', 'transaksi_distribusi.kode_barang', '=', 'barang.kode_barang')
                 ->where('transaksi_distribusi.bagian_id', $bagianUser->id)
@@ -284,6 +281,121 @@ class DataKeseluruhan extends Controller
         }
 
         abort(403, 'Anda tidak memiliki akses ke bagian manapun.');
+    }
+
+    /**
+     * ✅ AUTO-CONFIRM TRANSAKSI LAMA
+     * Otomatis konfirmasi transaksi yang sudah lewat batas waktu
+     */
+    private function autoConfirmOldTransactions()
+    {
+        // ✅ UBAH DURASI DI SINI:
+        // $batasWaktu = Carbon::now()->subMinutes(5);  // 5 menit (testing)
+        $batasWaktu = Carbon::now()->subDays(3);     // 5 hari (production)
+
+        $transaksiPending = DB::table('transaksi_distribusi')
+            ->where('status_konfirmasi', 'pending')
+            ->where('created_at', '<=', $batasWaktu)
+            ->limit(20) // Batasi untuk performa
+            ->get();
+
+        if ($transaksiPending->isEmpty()) {
+            return;
+        }
+
+        Log::info('🤖 Auto-confirm dimulai', [
+            'jumlah' => $transaksiPending->count(),
+            'batas' => $batasWaktu->format('Y-m-d H:i:s')
+        ]);
+
+        foreach ($transaksiPending as $transaksi) {
+            DB::beginTransaction();
+            try {
+                $kodeBarang = $transaksi->kode_barang;
+                $jumlah = $transaksi->jumlah;
+                $hargaBarang = $transaksi->harga ?? 0;
+                $bagianId = $transaksi->bagian_id;
+
+                $barang = DB::table('barang')->where('kode_barang', $kodeBarang)->first();
+                if (!$barang)
+                    continue;
+
+                // Cek MODE BAGIAN
+                $userBagian = DB::table('users')->where('bagian_id', $bagianId)->first();
+
+                if ($userBagian) {
+                    // MODE BAGIAN - Tambahkan ke stok_bagian
+                    $stokBagian = DB::table('stok_bagian')
+                        ->where('kode_barang', $kodeBarang)
+                        ->where('bagian_id', $bagianId)
+                        ->where('harga', $hargaBarang)
+                        ->first();
+
+                    if ($stokBagian) {
+                        DB::table('stok_bagian')
+                            ->where('id', $stokBagian->id)
+                            ->increment('stok', $jumlah);
+                    } else {
+                        $batchNumber = 'AUTO-' . now()->format('YmdHis') . '-' . $transaksi->id;
+                        DB::table('stok_bagian')->insert([
+                            'kode_barang' => $kodeBarang,
+                            'bagian_id' => $bagianId,
+                            'batch_number' => $batchNumber,
+                            'stok' => $jumlah,
+                            'harga' => $hargaBarang,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                    }
+                }
+                // Cek MODE GUDANG
+                else {
+                    $userGudang = DB::table('users')->where('gudang_id', $bagianId)->first();
+
+                    if ($userGudang && Schema::hasTable('pj_stok')) {
+                        $pjStok = DB::table('pj_stok')
+                            ->where('kode_barang', $kodeBarang)
+                            ->where('id_gudang', $bagianId)
+                            ->first();
+
+                        if ($pjStok) {
+                            DB::table('pj_stok')
+                                ->where('id', $pjStok->id)
+                                ->increment('stok', $jumlah);
+                        } else {
+                            DB::table('pj_stok')->insert([
+                                'kode_barang' => $kodeBarang,
+                                'id_gudang' => $bagianId,
+                                'id_kategori' => $barang->id_kategori,
+                                'stok' => $jumlah,
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ]);
+                        }
+                    }
+                }
+
+                // Update status konfirmasi
+                DB::table('transaksi_distribusi')
+                    ->where('id', $transaksi->id)
+                    ->update([
+                        'status_konfirmasi' => 'confirmed',
+                        'confirmed_at' => now(),
+                        'confirmed_by' => null, // Auto by system
+                        'updated_at' => now(),
+                    ]);
+
+                DB::commit();
+                Log::info('✅ Auto-confirm sukses', ['id' => $transaksi->id]);
+
+            } catch (\Throwable $e) {
+                DB::rollBack();
+                Log::error('❌ Auto-confirm gagal', [
+                    'id' => $transaksi->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
     }
 
     /**
