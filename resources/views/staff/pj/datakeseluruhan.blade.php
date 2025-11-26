@@ -508,7 +508,8 @@
                                                         data-id="{{ $item->id }}"
                                                         data-nama="{{ $item->nama_barang }}"
                                                         data-jumlah="{{ $item->jumlah }}"
-                                                        data-satuan="{{ $item->satuan }}">
+                                                        data-satuan="{{ $item->satuan }}"
+                                                        data-harga="{{ $item->harga ?? 0 }}">   {{-- ✅ kirim harga ke JS --}}
                                                         <i class="bi bi-arrow-left-circle"></i> Kembalikan
                                                     </button>
                                                 @else
@@ -756,6 +757,10 @@
                         <div class="d-flex justify-content-between">
                             <span style="color: #495057; font-weight: 500;">Jumlah:</span>
                             <span style="color: #212529; font-weight: 600;" id="kembalikanJumlah">-</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span style="color: #495057; font-weight: 500;">Harga Satuan:</span>
+                            <span style="color: #212529; font-weight: 600;" id="kembalikanHargaBarangMasuk">-</span>
                         </div>
                     </div>
 
@@ -1190,17 +1195,20 @@
 
                 document.querySelectorAll('.btn-kembalikan').forEach(btn => {
                     btn.addEventListener('click', function() {
-                        const id = this.dataset.id;
-                        const nama = this.dataset.nama;
+                        const id     = this.dataset.id;
+                        const nama   = this.dataset.nama;
                         const jumlah = this.dataset.jumlah;
                         const satuan = this.dataset.satuan;
+                        const harga  = parseFloat(this.dataset.harga || 0);   // ✅ ambil harga
 
                         currentKembalikanId = id;
-                        document.getElementById('kembalikanNama').textContent = nama;
-                        document.getElementById('kembalikanJumlah').textContent = `${jumlah} ${satuan}`;
 
-                        setButtonLoading('btnKembalikanOk', 'btnTextKembalikan', 'btnLoaderKembalikan',
-                            false);
+                        document.getElementById('kembalikanNama').textContent   = nama;
+                        document.getElementById('kembalikanJumlah').textContent = `${jumlah} ${satuan}`;
+                        document.getElementById('kembalikanHargaBarangMasuk').textContent =
+                            harga > 0 ? formatRupiah(harga) : '-';             // ✅ tampilkan harga
+
+                        setButtonLoading('btnKembalikanOk', 'btnTextKembalikan', 'btnLoaderKembalikan', false);
 
                         if (modalKembalikanBS) {
                             modalKembalikanBS.show();

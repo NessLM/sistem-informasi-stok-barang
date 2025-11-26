@@ -64,30 +64,57 @@ class DataKeseluruhan extends Controller
 
         DB::beginTransaction();
         try {
-            $pbStok = PbStok::findOrFail($id);
-            
-            // Simpan data lama untuk log
-            $oldHarga = $pbStok->harga;
-            $oldBagianId = $pbStok->bagian_id;
+            $pbStok = PbStok::with(['barang', 'bagian'])->findOrFail($id);
 
-            // Update harga dan bagian
+            $newHarga   = (float) $request->harga;
+            $newBagian  = (int) $request->bagian_id;
+            $kodeBarang = $pbStok->kode_barang;
+
+            // 🔍 CEK: sudah ada belum kombinasi (kode_barang, bagian_id, harga) selain record ini?
+            $duplicate = PbStok::where('kode_barang', $kodeBarang)
+                ->where('bagian_id', $newBagian)
+                ->where('harga', $newHarga)
+                ->where('id', '!=', $pbStok->id)
+                ->exists();
+
+            if ($duplicate) {
+                DB::rollBack();
+
+                // Ambil nama barang & bagian buat pesan
+                $namaBarang = $pbStok->barang->nama_barang ?? $kodeBarang;
+                $namaBagianBaru = Bagian::find($newBagian)->nama ?? 'Bagian tersebut';
+
+                return redirect()
+                    ->back()
+                    ->with('toast', [
+                        'type' => 'error',
+                        'title' => 'Data Duplikat!',
+                        'message' => "Untuk {$namaBagianBaru} sudah ada {$namaBarang} dengan harga Rp " .
+                            number_format($newHarga, 0, ',', '.') . ". Silakan gunakan harga lain atau pilih bagian lain.",
+                    ])
+                    ->withInput();
+            }
+
+            // 🎯 Aman, tidak duplikat → lanjut update
             $pbStok->update([
-                'harga' => $request->harga,
-                'bagian_id' => $request->bagian_id,
+                'harga'    => $newHarga,
+                'bagian_id'=> $newBagian,
             ]);
 
             DB::commit();
 
             $barang = $pbStok->barang;
-            $bagian = $pbStok->bagian;
+            $bagian = $pbStok->bagian; // ini sudah nilai baru
 
             return redirect()
                 ->route('pb.datakeseluruhan.index', ['tab' => 'data-keseluruhan'])
                 ->with('toast', [
                     'type' => 'success',
                     'title' => 'Berhasil!',
-                    'message' => "Data barang {$barang->nama_barang} berhasil diupdate. Harga: Rp " . number_format($request->harga, 0, ',', '.') . ", Bagian: {$bagian->nama}",
+                    'message' => "Data barang {$barang->nama_barang} berhasil diupdate. Harga: Rp " .
+                        number_format($newHarga, 0, ',', '.') . ", Bagian: {$bagian->nama}",
                 ]);
+
         } catch (\Exception $e) {
             DB::rollBack();
 
