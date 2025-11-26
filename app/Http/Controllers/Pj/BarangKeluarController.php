@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Pj;
 
 use App\Http\Controllers\Controller;
-use App\Models\BarangKeluar;
+use App\Models\TransaksiBarangKeluar;
 use Illuminate\Http\Request;
 use App\Helpers\MenuHelper;
 use Illuminate\Support\Facades\Auth;
@@ -27,7 +27,7 @@ class BarangKeluarController extends Controller
         }
 
         // Ambil data barang keluar dari gudang user
-        $barangKeluar = BarangKeluar::with(['barang', 'gudang', 'user'])
+        $barangKeluar = TransaksiBarangKeluar::with(['barang', 'gudang', 'user'])
             ->where('gudang_id', $user->gudang_id)
             ->orderBy('created_at', 'desc')
             ->paginate(20);

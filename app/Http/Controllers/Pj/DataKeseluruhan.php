@@ -695,6 +695,13 @@ class DataKeseluruhan extends Controller
                 $dataToInsert['total_harga'] = $totalHarga;
                 $dataToInsert['detail_batch'] = json_encode($detailBatch);
 
+                // ⬇️ INI FIELD BARU UNTUK TABEL transaksi_barang_keluar
+                // kalau suatu saat form kirim harga_dipilih, pakai itu;
+                // kalau tidak, pakai harga rata-rata tertimbang batch yang kepotong
+                $dataToInsert['harga'] = $hargaDipilih !== null
+                ? $hargaDipilih
+                : $hargaRataRata;
+
                 // Total sisa stok (semua batch)
                 $sisaStok = StokBagian::where('kode_barang', $kode_barang)
                     ->where('bagian_id', $bagianId)

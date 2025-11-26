@@ -17,6 +17,7 @@ class TransaksiBarangKeluar extends Model
         'bagian_id',
         'nama_penerima',
         'jumlah',
+        'harga',
         'tanggal',
         'user_id',
         'keterangan',
