@@ -67,6 +67,7 @@
     from {
         opacity: 0;
     }
+
     to {
         opacity: 1;
     }
@@ -77,6 +78,7 @@
         transform: translateY(30px);
         opacity: 0;
     }
+
     to {
         transform: translateY(0);
         opacity: 1;
@@ -259,16 +261,19 @@
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(255, 193, 7, 0.4);
 }
+
 .search-suggestion-item {
     padding: 12px 16px;
     cursor: pointer;
     border-bottom: 1px solid #f0f0f0;
     transition: background-color 0.2s;
 }
+
 .search-suggestion-item:hover,
 .search-suggestion-item.active {
     background-color: #f8f9fa;
 }
+
 .search-suggestion-item:last-child {
     border-bottom: none;
 }
@@ -278,11 +283,13 @@
     color: #2c3e50;
     margin-bottom: 4px;
 }
+
 .suggestion-code {
     font-size: 0.875rem;
     color: #6c757d;
     margin-bottom: 4px;
 }
+
 .suggestion-meta {
     font-size: 0.8rem;
     color: #95a5a6;
@@ -294,14 +301,17 @@
     font-weight: 500;
     font-size: 0.75rem;
 }
+
 .stock-available {
     background-color: #d4edda;
     color: #155724;
 }
+
 .stock-low {
     background-color: #fff3cd;
     color: #856404;
 }
+
 .stock-empty {
     background-color: #f8d7da;
     color: #721c24;
@@ -326,6 +336,7 @@
     padding: 0.6rem 0.8rem;
     font-weight: 600;
 }
+
 .badge-dot {
     width: 10px;
     height: 10px;
@@ -333,25 +344,31 @@
     border-radius: 50%;
     margin-right: 0.35rem;
 }
+
 .badge-ok {
     background: #e9f7ef;
     color: #1e7e34;
 }
+
 .badge-low {
     background: #fff4e5;
     color: #b26b00;
 }
+
 .badge-empty {
     background: #fdecea;
     color: #a71d2a;
 }
+
 .row-empty {
     background-color: #ffe6e6 !important;
     border-left: 8px solid #dc3545 !important;
 }
+
 .empty-card {
     border-left: 6px solid #dc3545;
 }
+
 .search-suggestion-item {
     padding: 12px 16px;
     cursor: pointer;
@@ -521,8 +538,10 @@
     font-size: 13px;
     padding: 6px 12px;
 }
+
 .modal-body .form-label {
-    color: #212529 !important; /* Hitam/dark */
+    color: #212529 !important;
+    /* Hitam/dark */
 }
 
 .btn-danger {
@@ -544,7 +563,8 @@
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     border: 1px solid #e5e9f2;
-    flex-wrap: wrap; /* Untuk responsif */
+    flex-wrap: wrap;
+    /* Untuk responsif */
     gap: 15px;
 }
 
@@ -558,7 +578,8 @@
 .button-group {
     display: flex;
     gap: 10px;
-    flex-wrap: wrap; /* Untuk tombol yang banyak */
+    flex-wrap: wrap;
+    /* Untuk tombol yang banyak */
 }
 
 .btn-add-user {
@@ -572,7 +593,8 @@
     text-decoration: none;
     display: inline-block;
     font-size: 14px;
-    white-space: nowrap; /* Mencegah teks tombol terpotong */
+    white-space: nowrap;
+    /* Mencegah teks tombol terpotong */
 }
 
 .btn-add-user:hover {
@@ -610,7 +632,8 @@
     display: flex;
     gap: 8px;
     justify-content: center;
-    flex-wrap: nowrap; /* ← Ubah dari wrap ke nowrap untuk desktop/tablet */
+    flex-wrap: nowrap;
+    /* ← Ubah dari wrap ke nowrap untuk desktop/tablet */
 }
 
 .modal .modal-content {
@@ -701,7 +724,8 @@
     }
 
     .table {
-        min-width: 800px; /* Lebar minimum untuk tablet */
+        min-width: 800px;
+        /* Lebar minimum untuk tablet */
     }
 
     .table .action-buttons {
@@ -892,6 +916,7 @@
 
 /* Print styles */
 @media print {
+
     .button-group,
     .action-buttons,
     .modal {
@@ -905,5 +930,72 @@
 
     .table {
         border: 1px solid #000;
+    }
+}
+
+
+/* Pagination Styles - Sama seperti riwayat */
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pagination-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    border-radius: 0.375rem;
+    transition: all 0.2s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-info {
+    font-size: 0.875rem;
+    color: #6c757d;
+    white-space: nowrap;
+}
+
+/* ✅ Responsive - Mobile hanya tampilkan icon */
+@media (max-width: 576px) {
+    .pagination-text {
+        display: none;
+    }
+
+    .pagination-btn {
+        padding: 0.375rem 0.5rem;
+        min-width: 36px;
+        justify-content: center;
+    }
+
+    .pagination-info {
+        font-size: 0.75rem;
+    }
+
+    .pagination-controls {
+        gap: 0.25rem;
+    }
+}
+
+/* Tablet */
+@media (min-width: 577px) and (max-width: 768px) {
+    .pagination-btn {
+        padding: 0.375rem 0.625rem;
+        font-size: 0.8125rem;
+    }
+
+    .pagination-info {
+        font-size: 0.8125rem;
     }
 }

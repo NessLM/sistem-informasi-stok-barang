@@ -4,6 +4,18 @@
     // Controller sudah mengirim $selectedGudang
     $gudangName = $selectedGudang->nama ?? '-';
     $pageHeading = "Data {$gudangName}";
+
+    // ✅ TAMBAHKAN INI - Pagination untuk Barang Habis
+    $itemsPerPageHabis = 10;
+    $currentPageHabis = request('page_habis', 1);
+    $barangHabisPaginated = $barangHabis->slice(($currentPageHabis - 1) * $itemsPerPageHabis, $itemsPerPageHabis);
+    $totalPagesHabis = ceil($barangHabis->count() / $itemsPerPageHabis);
+
+    // ✅ TAMBAHKAN INI - Pagination untuk Barang Masuk
+    $itemsPerPageMasuk = 10;
+    $currentPageMasuk = request('page_masuk', 1);
+    $barangMasukPaginated = $barangMasuk->slice(($currentPageMasuk - 1) * $itemsPerPageMasuk, $itemsPerPageMasuk);
+    $totalPagesMasuk = ceil($barangMasuk->count() / $itemsPerPageMasuk);
 @endphp
 
 <x-layouts.app title="Data Gudang" :menu="$menu" :heading="$pageHeading">
@@ -204,7 +216,8 @@
                                             <td>{{ $b->kode }}</td>
                                             <td>{{ $stokTersedia }}</td>
                                             <td>
-                                                Rp {{ number_format($b->harga ?? 0, 0, ',', '.') }} {{-- ✅ TAMPILIN HARGA --}}
+                                                Rp {{ number_format($b->harga ?? 0, 0, ',', '.') }}
+                                                {{-- ✅ TAMPILIN HARGA --}}
                                             </td>
                                             <td>{{ $b->satuan }}</td>
                                             <td>{{ $b->kategori->nama ?? '-' }}</td>
@@ -213,8 +226,7 @@
                                                     {{-- Tombol Barang Keluar --}}
                                                     <button type="button" class="btn btn-danger btn-sm"
                                                         data-bs-toggle="modal" data-bs-target="#modalBarangKeluar"
-                                                        data-id="{{ $b->kode }}"
-                                                        data-nama="{{ $b->nama }}"
+                                                        data-id="{{ $b->kode }}" data-nama="{{ $b->nama }}"
                                                         data-kode="{{ $b->kode }}"
                                                         data-stok="{{ $stokTersedia }}"
                                                         data-harga="{{ $b->harga ?? 0 }}">
@@ -384,7 +396,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($barangHabis as $item)
+                                @foreach ($barangHabisPaginated as $item)
                                     @php
                                         // handle mode gudang yang mungkin nggak punya harga
                                         $harga = property_exists($item, 'harga') ? $item->harga : null;
@@ -406,6 +418,27 @@
                             </tbody>
                         </table>
                     </div>
+                    {{-- ✅ TAMBAHKAN Pagination untuk Barang Habis --}}
+                    @if ($totalPagesHabis > 1)
+                        <div class="card-footer d-flex justify-content-center align-items-center">
+                            <div class="pagination-controls">
+                                <button class="btn btn-sm btn-outline-primary pagination-btn pagination-prev"
+                                    onclick="changePage('habis', {{ max(1, $currentPageHabis - 1) }})"
+                                    {{ $currentPageHabis <= 1 ? 'disabled' : '' }}>
+                                    <i class="bi bi-chevron-left"></i>
+                                    <span class="pagination-text">Sebelumnya</span>
+                                </button>
+                                <span class="mx-2 pagination-info">Halaman {{ $currentPageHabis }} dari
+                                    {{ $totalPagesHabis }}</span>
+                                <button class="btn btn-sm btn-outline-primary pagination-btn pagination-next"
+                                    onclick="changePage('habis', {{ min($totalPagesHabis, $currentPageHabis + 1) }})"
+                                    {{ $currentPageHabis >= $totalPagesHabis ? 'disabled' : '' }}>
+                                    <span class="pagination-text">Selanjutnya</span>
+                                    <i class="bi bi-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </section>
         @endif
@@ -448,13 +481,16 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($barangMasuk as $index => $item)
+                                @foreach ($barangMasukPaginated as $index => $item)
+                                    @php
+                                        $actualIndex = ($currentPageMasuk - 1) * $itemsPerPageMasuk + $index;
+                                    @endphp
                                     @php
                                         $status = $item->status_konfirmasi ?? 'pending';
                                         $rowClass = $status === 'confirmed' ? 'table-success-light' : '';
                                     @endphp
                                     <tr class="{{ $rowClass }}">
-                                        <td class="text-center">{{ $index + 1 }}</td>
+                                        <td class="text-center">{{ $actualIndex + 1 }}</td>
                                         <td>
                                             @if ($status === 'confirmed')
                                                 <span class="badge bg-success badge-normal" style="font-size: 14px;">
@@ -509,7 +545,7 @@
                                                         data-nama="{{ $item->nama_barang }}"
                                                         data-jumlah="{{ $item->jumlah }}"
                                                         data-satuan="{{ $item->satuan }}"
-                                                        data-harga="{{ $item->harga ?? 0 }}">   {{-- ✅ kirim harga ke JS --}}
+                                                        data-harga="{{ $item->harga ?? 0 }}"> {{-- ✅ kirim harga ke JS --}}
                                                         <i class="bi bi-arrow-left-circle"></i> Kembalikan
                                                     </button>
                                                 @else
@@ -525,6 +561,27 @@
                             </tbody>
                         </table>
                     </div>
+                    {{-- ✅ TAMBAHKAN Pagination untuk Barang Masuk --}}
+                    @if ($totalPagesMasuk > 1)
+                        <div class="card-footer d-flex justify-content-center align-items-center">
+                            <div class="pagination-controls">
+                                <button class="btn btn-sm btn-outline-primary pagination-btn pagination-prev"
+                                    onclick="changePage('masuk', {{ max(1, $currentPageMasuk - 1) }})"
+                                    {{ $currentPageMasuk <= 1 ? 'disabled' : '' }}>
+                                    <i class="bi bi-chevron-left"></i>
+                                    <span class="pagination-text">Sebelumnya</span>
+                                </button>
+                                <span class="mx-2 pagination-info">Halaman {{ $currentPageMasuk }} dari
+                                    {{ $totalPagesMasuk }}</span>
+                                <button class="btn btn-sm btn-outline-primary pagination-btn pagination-next"
+                                    onclick="changePage('masuk', {{ min($totalPagesMasuk, $currentPageMasuk + 1) }})"
+                                    {{ $currentPageMasuk >= $totalPagesMasuk ? 'disabled' : '' }}>
+                                    <span class="pagination-text">Selanjutnya</span>
+                                    <i class="bi bi-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </section>
         @endif
@@ -1057,7 +1114,7 @@
 
                         if (!confirm(
                                 `Apakah Anda yakin ingin mengembalikan ${jumlah} unit "${namaBarang}" ke PB Stok?`
-                                )) {
+                            )) {
                             return;
                         }
 
@@ -1195,20 +1252,21 @@
 
                 document.querySelectorAll('.btn-kembalikan').forEach(btn => {
                     btn.addEventListener('click', function() {
-                        const id     = this.dataset.id;
-                        const nama   = this.dataset.nama;
+                        const id = this.dataset.id;
+                        const nama = this.dataset.nama;
                         const jumlah = this.dataset.jumlah;
                         const satuan = this.dataset.satuan;
-                        const harga  = parseFloat(this.dataset.harga || 0);   // ✅ ambil harga
+                        const harga = parseFloat(this.dataset.harga || 0); // ✅ ambil harga
 
                         currentKembalikanId = id;
 
-                        document.getElementById('kembalikanNama').textContent   = nama;
+                        document.getElementById('kembalikanNama').textContent = nama;
                         document.getElementById('kembalikanJumlah').textContent = `${jumlah} ${satuan}`;
                         document.getElementById('kembalikanHargaBarangMasuk').textContent =
-                            harga > 0 ? formatRupiah(harga) : '-';             // ✅ tampilkan harga
+                            harga > 0 ? formatRupiah(harga) : '-'; // ✅ tampilkan harga
 
-                        setButtonLoading('btnKembalikanOk', 'btnTextKembalikan', 'btnLoaderKembalikan', false);
+                        setButtonLoading('btnKembalikanOk', 'btnTextKembalikan', 'btnLoaderKembalikan',
+                            false);
 
                         if (modalKembalikanBS) {
                             modalKembalikanBS.show();
@@ -1362,6 +1420,132 @@
                     }
                 };
             });
+
+            // ========================================
+            // PAGINATION FUNCTION
+            // ========================================
+
+            window.changePage = function(type, page) {
+                const url = new URL(window.location.href);
+                url.searchParams.set(`page_${type}`, page);
+
+                // Smooth scroll ke section yang relevan
+                let sectionId = '';
+                if (type === 'habis') {
+                    sectionId = 'sec-empty';
+                } else if (type === 'masuk') {
+                    sectionId = 'sec-incoming';
+                }
+
+                const sectionElement = document.getElementById(sectionId);
+                if (sectionElement) {
+                    sectionElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+
+                // Fetch dengan AJAX
+                fetch(url, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'text/html'
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.text();
+                    })
+                    .then(html => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+
+                        let newSection;
+                        if (type === 'habis') {
+                            newSection = doc.querySelector('#sec-empty');
+                        } else if (type === 'masuk') {
+                            newSection = doc.querySelector('#sec-incoming');
+                        }
+
+                        if (newSection) {
+                            const oldSection = document.getElementById(sectionId);
+                            if (oldSection) {
+                                oldSection.replaceWith(newSection);
+                            }
+
+                            window.history.pushState({}, '', url);
+
+                            // Re-init event listeners untuk section baru
+                            initEventListenersForSection(type);
+                        } else {
+                            window.location.href = url;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        window.location.href = url;
+                    });
+            };
+
+            function initEventListenersForSection(type) {
+                if (type === 'masuk') {
+                    // Re-init event listeners untuk tombol konfirmasi dan kembalikan
+                    document.querySelectorAll('.btn-konfirmasi').forEach(btn => {
+                        btn.removeEventListener('click', handleKonfirmasiClick);
+                        btn.addEventListener('click', handleKonfirmasiClick);
+                    });
+
+                    document.querySelectorAll('.btn-kembalikan').forEach(btn => {
+                        btn.removeEventListener('click', handleKembalikanClick);
+                        btn.addEventListener('click', handleKembalikanClick);
+                    });
+                }
+            }
+
+            function handleKonfirmasiClick() {
+                const id = this.dataset.id;
+                const nama = this.dataset.nama;
+                const kode = this.dataset.kode;
+                const jumlah = parseFloat(this.dataset.jumlah);
+                const satuan = this.dataset.satuan;
+                const harga = parseFloat(this.dataset.harga || 0);
+
+                currentKonfirmasiId = id;
+
+                document.getElementById('konfirmasiNama').textContent = nama;
+                document.getElementById('konfirmasiKode').textContent = kode;
+                document.getElementById('konfirmasiJumlah').textContent = `${jumlah} ${satuan}`;
+                document.getElementById('konfirmasiHarga').textContent = formatRupiah(harga);
+
+                setButtonLoading('btnKonfirmasiOk', 'btnTextKonfirmasi', 'btnLoaderKonfirmasi', false);
+
+                if (modalKonfirmasiBS) {
+                    modalKonfirmasiBS.show();
+                }
+            }
+
+            function handleKembalikanClick() {
+                const id = this.dataset.id;
+                const nama = this.dataset.nama;
+                const jumlah = this.dataset.jumlah;
+                const satuan = this.dataset.satuan;
+                const harga = parseFloat(this.dataset.harga || 0);
+
+                currentKembalikanId = id;
+
+                document.getElementById('kembalikanNama').textContent = nama;
+                document.getElementById('kembalikanJumlah').textContent = `${jumlah} ${satuan}`;
+                document.getElementById('kembalikanHargaBarangMasuk').textContent =
+                    harga > 0 ? formatRupiah(harga) : '-';
+
+                setButtonLoading('btnKembalikanOk', 'btnTextKembalikan', 'btnLoaderKembalikan', false);
+
+                if (modalKembalikanBS) {
+                    modalKembalikanBS.show();
+                }
+            }
         </script>
     @endpush
 </x-layouts.app>
