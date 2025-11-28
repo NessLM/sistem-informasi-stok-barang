@@ -392,209 +392,121 @@
         dengan hasil sebagai berikut :
     </p>
 
+    @php
+        // Bulan awal tiap triwulan
+        $startMonthMap = [
+            1 => 1,   // Q1: Jan
+            2 => 4,   // Q2: Apr
+            3 => 7,   // Q3: Jul
+            4 => 10,  // Q4: Okt
+        ];
+
+        $startMonth = $startMonthMap[$quarter] ?? 1;
+
+        // Nama 3 bulan dalam triwulan (format singkat: Jan, Feb, Mar, dst.)
+        $bulanQuarter = [];
+        for ($i = 0; $i < 3; $i++) {
+            $bulanQuarter[] = \Carbon\Carbon::create($year ?? $tahunSekarang, $startMonth + $i, 1)
+                ->locale('id')
+                ->isoFormat('MMM'); // Jan, Feb, Mar
+        }
+    @endphp
+
     <div class="tabel-aset-halaman3">
         <table class="tabel-utama">
             <thead>
                 <tr>
                     <th class="col-no" rowspan="3">No</th>
-                    <th class="col-uraian" rowspan="3">Uraian</th>
-                    <th colspan="4">Nilai Aset Lancar/Persediaan Periode Per 30 Juni 2025</th>
+                    <th class="col-uraian" rowspan="3">Kategori</th>
+
+                    {{-- Pemasukan triwulan --}}
+                    <th colspan="3">
+                        Pemasukan Tri Wulan {{ $quarter }}
+                        Per {{ $lastDayOfMonth }} {{ $endMonthName }} {{ $year ?? $tahunSekarang }}
+                    </th>
+
+                    {{-- Pengeluaran triwulan --}}
+                    <th colspan="3">
+                        Pengeluaran Tri Wulan {{ $quarter }}
+                        Per {{ $lastDayOfMonth }} {{ $endMonthName }} {{ $year ?? $tahunSekarang }}
+                    </th>
+
+                    {{-- Stock Opname Terupdate --}}
+                    <th class="col-angka" rowspan="3">
+                        Stock Opname Terupdate<br>
+                        Per {{ $lastDayOfMonth }} {{ $endMonthName }} {{ $year ?? $tahunSekarang }}
+                    </th>
                 </tr>
                 <tr>
-                    <th class="col-angka" rowspan="2">Stock Opname <br>30 Juni 2024</th>
-                    <th class="col-angka" colspan="2">Perubahan</th>
-                    <th class="col-angka" rowspan="2">Stock Opname <br>Monday, 30 June 2025</th>
+                    {{-- Nama bulan: Jan / Feb / Mar (atau Apr / Mei / Jun, dst) --}}
+                    <th class="col-angka">{{ $bulanQuarter[0] ?? '' }}</th>
+                    <th class="col-angka">{{ $bulanQuarter[1] ?? '' }}</th>
+                    <th class="col-angka">{{ $bulanQuarter[2] ?? '' }}</th>
+
+                    <th class="col-angka">{{ $bulanQuarter[0] ?? '' }}</th>
+                    <th class="col-angka">{{ $bulanQuarter[1] ?? '' }}</th>
+                    <th class="col-angka">{{ $bulanQuarter[2] ?? '' }}</th>
                 </tr>
                 <tr>
-                    <th class="col-angka">Bertambah</th>
-                    <th class="col-angka">Berkurang</th>
-                </tr>
-                <tr>
-                    <th>1</th>
-                    <th>2</th>
-                    <th>3</th>
-                    <th>4</th>
-                    <th>5</th>
-                    <th>6</th>
+                    {{-- Nomor kolom (opsional, biar sama seperti format excel/word) --}}
+                    <th>3</th> {{-- Pemasukan bulan 1 --}}
+                    <th>4</th> {{-- Pemasukan bulan 2 --}}
+                    <th>5</th> {{-- Pemasukan bulan 3 --}}
+                    <th>6</th> {{-- Pengeluaran bulan 1 --}}
+                    <th>7</th> {{-- Pengeluaran bulan 2 --}}
+                    <th>8</th> {{-- Pengeluaran bulan 3 --}}
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td class="text-center"><strong>A.</strong></td>
-                    <td class="text-left"><strong>Barang Pakai Habis</strong></td>
-                    <td class="text-right"><strong>11.657.697,62</strong></td>
-                    <td class="text-right"><strong>390.946.310,00</strong></td>
-                    <td class="text-right"><strong>382.421.310,00</strong></td>
-                    <td class="text-right"><strong>20.182.697,62</strong></td>
-                </tr>
-                <tr>
-                    <td class="text-center"><strong>A.1</strong></td>
-                    <td class="text-left"><strong>Bahan</strong></td>
-                    <td class="text-right"><strong>9.323.997,62</strong></td>
-                    <td class="text-right">-</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right"><strong>9.323.997,62</strong></td>
-                </tr>
-                <tr class="sub-item">
-                    <td></td>
-                    <td class="text-left sub-item-text">Bahan Bangunan Dan Konstruksi</td>
-                    <td class="text-right">9.323.997,62</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right">9.323.997,62</td>
-                </tr>
-                <tr class="sub-item">
-                    <td></td>
-                    <td class="text-left sub-item-text">Bahan Kimia</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right">-</td>
-                </tr>
-                <tr>
-                    <td class="text-center"><strong>A.2</strong></td>
-                    <td class="text-left"><strong>Alat/Bahan Untuk Kegiatan Kantor</strong></td>
-                    <td class="text-right"><strong>2.383.700,00</strong></td>
-                    <td class="text-right"><strong>207.096.310,00</strong></td>
-                    <td class="text-right"><strong>198.571.310,00</strong></td>
-                    <td class="text-right"><strong>10.858.700,00</strong></td>
-                </tr>
-                <tr class="sub-item">
-                    <td></td>
-                    <td class="text-left sub-item-text">Alat Tulis Kantor</td>
-                    <td class="text-right">581.700,00</td>
-                    <td class="text-right">53.313.850,00</td>
-                    <td class="text-right">49.240.580,00</td>
-                    <td class="text-right">4.651.970,00</td>
-                </tr>
-                <tr class="sub-item">
-                    <td></td>
-                    <td class="text-left sub-item-text">Bendera Pramuka</td>
-                    <td class="text-right">1.752.000,00</td>
-                    <td class="text-right">0.010.000,00</td>
-                    <td class="text-right">18.401.100,00</td>
-                    <td class="text-right">3.369.900,00</td>
-                </tr>
-                <tr class="sub-item">
-                    <td></td>
-                    <td class="text-left sub-item-text">Persediaan Dokumen / Administrasi Tender</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right">400.000,00</td>
-                    <td class="text-right">400.000,00</td>
-                    <td class="text-right">-</td>
-                </tr>
-                <tr class="sub-item">
-                    <td></td>
-                    <td class="text-left sub-item-text">Bahan Komputer</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right">+297.000,00</td>
-                    <td class="text-right">4.663.830,00</td>
-                    <td class="text-right">2.833.830,00</td>
-                </tr>
-                <tr class="sub-item">
-                    <td></td>
-                    <td class="text-left sub-item-text">Bendel Kantor</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right">53.802.800,00</td>
-                    <td class="text-right">53.802.800,00</td>
-                    <td class="text-right">-</td>
-                </tr>
-                <tr class="sub-item">
-                    <td></td>
-                    <td class="text-left sub-item-text">Alat Laundry</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right">59.513.000,00</td>
-                    <td class="text-right">59.513.000,00</td>
-                    <td class="text-right">-</td>
-                </tr>
-                <tr class="sub-item">
-                    <td></td>
-                    <td class="text-left sub-item-text">Karpet dan Perlengkapan Ruang</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right">-</td>
-                </tr>
-                <tr class="sub-item">
-                    <td></td>
-                    <td class="text-left sub-item-text">Piala</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right">-</td>
-                </tr>
-                <tr class="sub-item">
-                    <td></td>
-                    <td class="text-left sub-item-text">Souvenir/Cenderamata</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right">-</td>
-                </tr>
-                <tr class="sub-item">
-                    <td></td>
-                    <td class="text-left sub-item-text">Pakaian Dinas</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right">8.950.000,00</td>
-                    <td class="text-right">8.950.000,00</td>
-                    <td class="text-right">-</td>
-                </tr>
-                <tr class="sub-item">
-                    <td></td>
-                    <td class="text-left sub-item-text">Alat/Bahan Untuk Kegiatan Kantor Lainnya</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right">-</td>
-                </tr>
-                <tr>
-                    <td class="text-center"><strong>A.3</strong></td>
-                    <td class="text-left"><strong>Obat-Obatan</strong></td>
-                    <td class="text-right"><strong>-</strong></td>
-                    <td class="text-right"><strong>-</strong></td>
-                    <td class="text-right"><strong>-</strong></td>
-                    <td class="text-right"><strong>-</strong></td>
-                </tr>
-                <tr>
-                    <td class="text-center"><strong>A.4</strong></td>
-                    <td class="text-left"><strong>Persediaan Untuk Dijual/Diserahkan</strong></td>
-                    <td class="text-right"><strong>-</strong></td>
-                    <td class="text-right"><strong>183.850.000,00</strong></td>
-                    <td class="text-right"><strong>183.850.000,00</strong></td>
-                    <td class="text-right"><strong>-</strong></td>
-                </tr>
-                <tr class="sub-item">
-                    <td></td>
-                    <td class="text-left sub-item-text">Persediaan untuk Dijual/Diserahkan kepada Masyarakat</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right">183.850.000,00</td>
-                    <td class="text-right">183.850.000,00</td>
-                    <td class="text-right">-</td>
-                </tr>
-                <tr class="sub-item">
-                    <td></td>
-                    <td class="text-left sub-item-text">Persediaan Untuk Dijual/Diserahkan Lainnya</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right">-</td>
-                </tr>
-                <tr class="sub-item">
-                    <td></td>
-                    <td class="text-left sub-item-text">Persediaan untuk Dijual/Diserahkan Lainnya</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right">-</td>
-                </tr>
+                @php
+                    // Helper format rupiah dengan koma + titik
+                    $fmt = function ($value) {
+                        $value = $value ?? 0;
+                        return $value === 0
+                            ? '-'
+                            : number_format($value, 2, ',', '.');
+                    };
+                @endphp
 
-                <tr class="total-row">
-                    <td class="text-center" colspan="2"><strong>TOTAL (A+B+C)</strong></td>
-                    <td class="text-right"><strong>11.657.697,62</strong></td>
-                    <td class="text-right"><strong>390.946.310,00</strong></td>
-                    <td class="text-right"><strong>382.421.310,00</strong></td>
-                    <td class="text-right"><strong>20.182.697,62</strong></td>
-                </tr>
+                @forelse ($rekapKategori ?? [] as $idx => $row)
+                    <tr>
+                        <td class="text-center">{{ $idx + 1 }}</td>
+                        <td class="text-left">{{ $row['kategori'] ?? $row->kategori ?? '-' }}</td>
+
+                        {{-- Pemasukan triwulan (m1, m2, m3) --}}
+                        <td class="text-right">
+                            {{ $fmt(is_array($row) ? $row['pemasukan']['m1'] : $row->pemasukan['m1']) }}
+                        </td>
+                        <td class="text-right">
+                            {{ $fmt(is_array($row) ? $row['pemasukan']['m2'] : $row->pemasukan['m2']) }}
+                        </td>
+                        <td class="text-right">
+                            {{ $fmt(is_array($row) ? $row['pemasukan']['m3'] : $row->pemasukan['m3']) }}
+                        </td>
+
+                        {{-- Pengeluaran triwulan (m1, m2, m3) --}}
+                        <td class="text-right">
+                            {{ $fmt(is_array($row) ? $row['pengeluaran']['m1'] : $row->pengeluaran['m1']) }}
+                        </td>
+                        <td class="text-right">
+                            {{ $fmt(is_array($row) ? $row['pengeluaran']['m2'] : $row->pengeluaran['m2']) }}
+                        </td>
+                        <td class="text-right">
+                            {{ $fmt(is_array($row) ? $row['pengeluaran']['m3'] : $row->pengeluaran['m3']) }}
+                        </td>
+
+                        {{-- Stock opname terupdate --}}
+                        <td class="text-right">
+                            {{ $fmt(is_array($row) ? $row['stock_opname'] : $row->stock_opname) }}
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="9" class="text-center">
+                            Belum ada data transaksi untuk triwulan ini.
+                        </td>
+                    </tr>
+                @endforelse
             </tbody>
         </table>
     </div>

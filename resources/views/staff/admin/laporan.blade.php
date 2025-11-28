@@ -96,6 +96,10 @@
 
     @push('scripts')
         <script>
+            // URL dinamis dari Laravel (ikut subfolder/public otomatis)
+            const laporanPdfCssUrl = @json(asset('assets/css/staff/admin/laporan_pdf.css'));
+            const laporanPreviewBaseUrl = @json(url('admin/laporan/preview'));
+
             // // Ensure laporan_pdf.css is loaded
             // (function loadLaporanCSS() {
             //     if (!document.querySelector('link[href="/assets/css/staff/admin/laporan_pdf.css"]')) {
@@ -201,7 +205,7 @@
             async function openLapModal(quarter, year, title) {
                 let link = document.createElement("link");
                 link.rel = "stylesheet";
-                link.href = "/assets/css/staff/admin/laporan_pdf.css";
+                link.href = laporanPdfCssUrl;   // <- pakai URL dari Blade
                 link.id = "laporanPdfCss";  // PENTING!
                 document.head.appendChild(link);
 
@@ -223,7 +227,7 @@
 
                 try {
                     // Load content
-                    const url = `/admin/laporan/preview/${quarter}/${year}`;
+                    const url = `${laporanPreviewBaseUrl}/${quarter}/${year}`;
                     console.log('Fetching:', url);
 
                     const response = await fetch(url);

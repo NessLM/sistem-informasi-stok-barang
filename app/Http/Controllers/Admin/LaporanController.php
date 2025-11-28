@@ -90,6 +90,8 @@ class LaporanController extends Controller
     /**
      * Preview laporan untuk quarter & year tertentu
      */
+    // App\Http\Controllers\Admin\LaporanController.php
+
     public function previewLaporan($quarter, $year)
     {
         // Validasi input
@@ -100,7 +102,15 @@ class LaporanController extends Controller
         // Gunakan LaporanPDFController untuk mengambil data
         $pdfController = new LaporanPDFController();
         $riwayat = $pdfController->getRiwayatData($quarter, $year);
-        
-        return view('staff.admin.laporan-pdf', compact('quarter', 'year', 'riwayat'));
+
+        // ⬇️ TAMBAHAN: rekap kategori untuk tabel halaman 3
+        $rekapKategori = $pdfController->getRekapKategoriTriwulan($quarter, $year);
+
+        return view('staff.admin.laporan-pdf', [
+            'quarter'       => $quarter,
+            'year'          => $year,
+            'riwayat'       => $riwayat,
+            'rekapKategori' => $rekapKategori,
+        ]);
     }
 }
