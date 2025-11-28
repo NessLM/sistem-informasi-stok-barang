@@ -73,16 +73,24 @@
             4 => 12  // Q4: Desember
         ];
 
-        $endMonth = $endMonthMap[$quarter] ?? 6;
+        // Paksa quarter jadi int & pastikan di range 1–4
+        $q = isset($quarter) ? (int) $quarter : 2;   // default ke Q2 (Juni) kalau kosong
+        $q = ($q >= 1 && $q <= 4) ? $q : 2;
+
+        $endMonth = $endMonthMap[$q] ?? 6;
+
         $endMonthName = [
             3 => 'MARET',
             6 => 'JUNI',
             9 => 'SEPTEMBER',
-            12 => 'DESEMBER'
+            12 => 'DESEMBER',
         ][$endMonth];
 
         // Tanggal terakhir bulan tersebut (30 atau 31)
-        $lastDayOfMonth = Carbon::create($year, $endMonth, 1)->endOfMonth()->day;
+        $yearForQuarter = isset($year) ? (int) $year : (int) $tanggalSekarang->year;
+        $lastDayOfMonth = Carbon::create($yearForQuarter, $endMonth, 1)
+            ->endOfMonth()
+            ->day;
 
         $tanggal = Carbon::now()->locale('id');
 
@@ -401,12 +409,21 @@
             4 => 10,  // Q4: Okt
         ];
 
-        $startMonth = $startMonthMap[$quarter] ?? 1;
+        // Pastikan quarter int & dalam range 1–4
+        $q = isset($quarter) ? (int) $quarter : 1;
+        $q = ($q >= 1 && $q <= 4) ? $q : 1;
 
-        // Nama 3 bulan dalam triwulan (format singkat: Jan, Feb, Mar, dst.)
+        $startMonth = $startMonthMap[$q];
+
+        // Tahun yang dipakai untuk triwulan
+        $yearForQuarter = isset($year)
+            ? (int) $year
+            : (isset($tahunSekarang) ? (int) $tahunSekarang : (int) date('Y'));
+
+        // Nama 3 bulan dalam triwulan (Jan, Feb, Mar / Apr, Mei, Jun, dst.)
         $bulanQuarter = [];
         for ($i = 0; $i < 3; $i++) {
-            $bulanQuarter[] = \Carbon\Carbon::create($year ?? $tahunSekarang, $startMonth + $i, 1)
+            $bulanQuarter[] = Carbon::create($yearForQuarter, $startMonth + $i, 1)
                 ->locale('id')
                 ->isoFormat('MMM'); // Jan, Feb, Mar
         }
@@ -471,34 +488,20 @@
                 @forelse ($rekapKategori ?? [] as $idx => $row)
                     <tr>
                         <td class="text-center">{{ $idx + 1 }}</td>
-                        <td class="text-left">{{ $row['kategori'] ?? $row->kategori ?? '-' }}</td>
+                        <td class="text-left">{{ $row['kategori'] ?? '-' }}</td>
 
                         {{-- Pemasukan triwulan (m1, m2, m3) --}}
-                        <td class="text-right">
-                            {{ $fmt(is_array($row) ? $row['pemasukan']['m1'] : $row->pemasukan['m1']) }}
-                        </td>
-                        <td class="text-right">
-                            {{ $fmt(is_array($row) ? $row['pemasukan']['m2'] : $row->pemasukan['m2']) }}
-                        </td>
-                        <td class="text-right">
-                            {{ $fmt(is_array($row) ? $row['pemasukan']['m3'] : $row->pemasukan['m3']) }}
-                        </td>
+                        <td class="text-right">{{ $fmt($row['pemasukan']['m1'] ?? 0) }}</td>
+                        <td class="text-right">{{ $fmt($row['pemasukan']['m2'] ?? 0) }}</td>
+                        <td class="text-right">{{ $fmt($row['pemasukan']['m3'] ?? 0) }}</td>
 
                         {{-- Pengeluaran triwulan (m1, m2, m3) --}}
-                        <td class="text-right">
-                            {{ $fmt(is_array($row) ? $row['pengeluaran']['m1'] : $row->pengeluaran['m1']) }}
-                        </td>
-                        <td class="text-right">
-                            {{ $fmt(is_array($row) ? $row['pengeluaran']['m2'] : $row->pengeluaran['m2']) }}
-                        </td>
-                        <td class="text-right">
-                            {{ $fmt(is_array($row) ? $row['pengeluaran']['m3'] : $row->pengeluaran['m3']) }}
-                        </td>
+                        <td class="text-right">{{ $fmt($row['pengeluaran']['m1'] ?? 0) }}</td>
+                        <td class="text-right">{{ $fmt($row['pengeluaran']['m2'] ?? 0) }}</td>
+                        <td class="text-right">{{ $fmt($row['pengeluaran']['m3'] ?? 0) }}</td>
 
                         {{-- Stock opname terupdate --}}
-                        <td class="text-right">
-                            {{ $fmt(is_array($row) ? $row['stock_opname'] : $row->stock_opname) }}
-                        </td>
+                        <td class="text-right">{{ $fmt($row['stock_opname'] ?? 0) }}</td>
                     </tr>
                 @empty
                     <tr>
