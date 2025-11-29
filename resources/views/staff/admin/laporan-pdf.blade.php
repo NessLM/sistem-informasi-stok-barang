@@ -80,10 +80,10 @@
         $endMonth = $endMonthMap[$q] ?? 6;
 
         $endMonthName = [
-            3 => 'MARET',
-            6 => 'JUNI',
-            9 => 'SEPTEMBER',
-            12 => 'DESEMBER',
+            3 => 'Maret',
+            6 => 'Juni',
+            9 => 'September',
+            12 => 'Desember',
         ][$endMonth];
 
         // Tanggal terakhir bulan tersebut (30 atau 31)
@@ -435,23 +435,20 @@
                 <tr>
                     <th class="col-no" rowspan="3">No</th>
                     <th class="col-uraian" rowspan="3">Kategori</th>
-
-                    {{-- Pemasukan triwulan --}}
-                    <th colspan="3">
-                        Pemasukan Tri Wulan {{ $quarter }}
-                        Per {{ $lastDayOfMonth }} {{ $endMonthName }} {{ $year ?? $tahunSekarang }}
+                    <th colspan="6">
+                        Nilai Harga Persediaan Per {{ $lastDayOfMonth }} {{ $endMonthName }}
                     </th>
-
-                    {{-- Pengeluaran triwulan --}}
-                    <th colspan="3">
-                        Pengeluaran Tri Wulan {{ $quarter }}
-                        Per {{ $lastDayOfMonth }} {{ $endMonthName }} {{ $year ?? $tahunSekarang }}
+                    <th class="col-opname" rowspan="3">
+                        Stock<br>Opname Ter<br>Update Per<br>{{ $lastDayOfMonth }} {{ $endMonthName }}
                     </th>
-
-                    {{-- Stock Opname Terupdate --}}
-                    <th class="col-angka" rowspan="3">
-                        Stock Opname Terupdate<br>
-                        Per {{ $lastDayOfMonth }} {{ $endMonthName }} {{ $year ?? $tahunSekarang }}
+                </tr>
+                <tr>
+                    {{-- Row 2: Pemasukan & Pengeluaran --}}
+                    <th colspan="3">
+                        Pemasukan Tri Wulan {{ $quarter }} Per {{ $lastDayOfMonth }} {{ $endMonthName }}
+                    </th>
+                    <th colspan="3">
+                        Pengeluaran Tri Wulan {{ $quarter }} Per {{ $lastDayOfMonth }} {{ $endMonthName }}
                     </th>
                 </tr>
                 <tr>
@@ -464,15 +461,7 @@
                     <th class="col-angka">{{ $bulanQuarter[1] ?? '' }}</th>
                     <th class="col-angka">{{ $bulanQuarter[2] ?? '' }}</th>
                 </tr>
-                <tr>
-                    {{-- Nomor kolom (opsional, biar sama seperti format excel/word) --}}
-                    <th>3</th> {{-- Pemasukan bulan 1 --}}
-                    <th>4</th> {{-- Pemasukan bulan 2 --}}
-                    <th>5</th> {{-- Pemasukan bulan 3 --}}
-                    <th>6</th> {{-- Pengeluaran bulan 1 --}}
-                    <th>7</th> {{-- Pengeluaran bulan 2 --}}
-                    <th>8</th> {{-- Pengeluaran bulan 3 --}}
-                </tr>
+
             </thead>
             <tbody>
                 @php
@@ -491,17 +480,17 @@
                         <td class="text-left">{{ $row['kategori'] ?? '-' }}</td>
 
                         {{-- Pemasukan triwulan (m1, m2, m3) --}}
-                        <td class="text-right">{{ $fmt($row['pemasukan']['m1'] ?? 0) }}</td>
-                        <td class="text-right">{{ $fmt($row['pemasukan']['m2'] ?? 0) }}</td>
-                        <td class="text-right">{{ $fmt($row['pemasukan']['m3'] ?? 0) }}</td>
+                        <td class="text-center">Rp. {{ $fmt($row['pemasukan']['m1'] ?? 0) }}</td>
+                        <td class="text-center">Rp. {{ $fmt($row['pemasukan']['m2'] ?? 0) }}</td>
+                        <td class="text-center">Rp. {{ $fmt($row['pemasukan']['m3'] ?? 0) }}</td>
 
                         {{-- Pengeluaran triwulan (m1, m2, m3) --}}
-                        <td class="text-right">{{ $fmt($row['pengeluaran']['m1'] ?? 0) }}</td>
-                        <td class="text-right">{{ $fmt($row['pengeluaran']['m2'] ?? 0) }}</td>
-                        <td class="text-right">{{ $fmt($row['pengeluaran']['m3'] ?? 0) }}</td>
+                        <td class="text-center">Rp. {{ $fmt($row['pengeluaran']['m1'] ?? 0) }}</td>
+                        <td class="text-center">Rp. {{ $fmt($row['pengeluaran']['m2'] ?? 0) }}</td>
+                        <td class="text-center">Rp. {{ $fmt($row['pengeluaran']['m3'] ?? 0) }}</td>
 
                         {{-- Stock opname terupdate --}}
-                        <td class="text-right">{{ $fmt($row['stock_opname'] ?? 0) }}</td>
+                        <td class="text-right">Rp. {{ $fmt($row['stock_opname'] ?? 0) }}</td>
                     </tr>
                 @empty
                     <tr>

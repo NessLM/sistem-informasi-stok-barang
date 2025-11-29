@@ -486,7 +486,7 @@ body {
 
 /* TABEL ASET HALAMAN 3 */
 .tabel-aset-halaman3 {
-    margin: 15px 0;
+    width: 700px;
 }
 
 .tabel-aset-halaman3 h4 {
@@ -516,17 +516,26 @@ body {
     padding: 1px;
     vertical-align: top;
 }
+.tabel-utama tbody td.col-angka {
+    text-align: center;
+    vertical-align: middle;
+}
 
 .col-no {
     width: 3%;
 }
 
 .col-uraian {
-    width: 45%;
+    width: 19%;
 }
 
 .col-angka {
-    width: 13%;
+    width: 11%;
+    text-align: center;
+}
+.col-opname {
+    text-align: center;
+    width: 20%;
 }
 
 .text-left {
