@@ -35,47 +35,47 @@
         {
             $angka = (int) $angka;
             $bilangan = [
-                "",
-                "Satu",
-                "Dua",
-                "Tiga",
-                "Empat",
-                "Lima",
-                "Enam",
-                "Tujuh",
-                "Delapan",
-                "Sembilan",
-                "Sepuluh",
-                "Sebelas"
+                '',
+                'Satu',
+                'Dua',
+                'Tiga',
+                'Empat',
+                'Lima',
+                'Enam',
+                'Tujuh',
+                'Delapan',
+                'Sembilan',
+                'Sepuluh',
+                'Sebelas',
             ];
 
             if ($angka < 12) {
                 return $bilangan[$angka];
             } elseif ($angka < 20) {
-                return terbilang($angka - 10) . " Belas";
+                return terbilang($angka - 10) . ' Belas';
             } elseif ($angka < 100) {
-                return terbilang(intval($angka / 10)) . " Puluh " . terbilang($angka % 10);
+                return terbilang(intval($angka / 10)) . ' Puluh ' . terbilang($angka % 10);
             } elseif ($angka < 200) {
-                return "Seratus " . terbilang($angka - 100);
+                return 'Seratus ' . terbilang($angka - 100);
             } elseif ($angka < 1000) {
-                return terbilang(intval($angka / 100)) . " Ratus " . terbilang($angka % 100);
+                return terbilang(intval($angka / 100)) . ' Ratus ' . terbilang($angka % 100);
             } elseif ($angka < 2000) {
-                return "Seribu " . terbilang($angka - 1000);
+                return 'Seribu ' . terbilang($angka - 1000);
             } elseif ($angka < 1000000) {
-                return terbilang(intval($angka / 1000)) . " Ribu " . terbilang($angka % 1000);
+                return terbilang(intval($angka / 1000)) . ' Ribu ' . terbilang($angka % 1000);
             }
         }
         // Tentukan bulan terakhir dari triwulan berdasarkan $quarter
         $endMonthMap = [
-            1 => 3,  // Q1: Maret
-            2 => 6,  // Q2: Juni
-            3 => 9,  // Q3: September
-            4 => 12  // Q4: Desember
+            1 => 3, // Q1: Maret
+            2 => 6, // Q2: Juni
+            3 => 9, // Q3: September
+            4 => 12, // Q4: Desember
         ];
 
         // Paksa quarter jadi int & pastikan di range 1–4
-        $q = isset($quarter) ? (int) $quarter : 2;   // default ke Q2 (Juni) kalau kosong
-        $q = ($q >= 1 && $q <= 4) ? $q : 2;
+        $q = isset($quarter) ? (int) $quarter : 2; // default ke Q2 (Juni) kalau kosong
+        $q = $q >= 1 && $q <= 4 ? $q : 2;
 
         $endMonth = $endMonthMap[$q] ?? 6;
 
@@ -88,9 +88,7 @@
 
         // Tanggal terakhir bulan tersebut (30 atau 31)
         $yearForQuarter = isset($year) ? (int) $year : (int) $tanggalSekarang->year;
-        $lastDayOfMonth = Carbon::create($yearForQuarter, $endMonth, 1)
-            ->endOfMonth()
-            ->day;
+        $lastDayOfMonth = Carbon::create($yearForQuarter, $endMonth, 1)->endOfMonth()->day;
 
         $tanggal = Carbon::now()->locale('id');
 
@@ -403,22 +401,20 @@
     @php
         // Bulan awal tiap triwulan
         $startMonthMap = [
-            1 => 1,   // Q1: Jan
-            2 => 4,   // Q2: Apr
-            3 => 7,   // Q3: Jul
-            4 => 10,  // Q4: Okt
+            1 => 1, // Q1: Jan
+            2 => 4, // Q2: Apr
+            3 => 7, // Q3: Jul
+            4 => 10, // Q4: Okt
         ];
 
         // Pastikan quarter int & dalam range 1–4
         $q = isset($quarter) ? (int) $quarter : 1;
-        $q = ($q >= 1 && $q <= 4) ? $q : 1;
+        $q = $q >= 1 && $q <= 4 ? $q : 1;
 
         $startMonth = $startMonthMap[$q];
 
         // Tahun yang dipakai untuk triwulan
-        $yearForQuarter = isset($year)
-            ? (int) $year
-            : (isset($tahunSekarang) ? (int) $tahunSekarang : (int) date('Y'));
+        $yearForQuarter = isset($year) ? (int) $year : (isset($tahunSekarang) ? (int) $tahunSekarang : (int) date('Y'));
 
         // Nama 3 bulan dalam triwulan (Jan, Feb, Mar / Apr, Mei, Jun, dst.)
         $bulanQuarter = [];
@@ -468,9 +464,7 @@
                     // Helper format rupiah dengan koma + titik
                     $fmt = function ($value) {
                         $value = $value ?? 0;
-                        return $value === 0
-                            ? '-'
-                            : number_format($value, 2, ',', '.');
+                        return $value === 0 ? '-' : number_format($value, 2, ',', '.');
                     };
                 @endphp
 
@@ -556,6 +550,200 @@
             <div class="ttd-nama-halaman3">Hiskawati, S. AP</div>
             <div class="ttd-nip-halaman3">NIP. 19810922006042007</div>
         </div>
+    </div>
+
+
+
+
+
+
+    {{-- HALAMAN 4 --}}
+    <div class="page-break"></div>
+
+    <div class="header-halaman4">
+        <div class="header-top-halaman4">
+            <div class="judul-laporan-halaman4">
+                <p>LAPORAN PENGECEKAN FISIK (STOCK OPNAME)</p>
+                <p>PERSEDIAAN BARANG HABIS PAKAI</p>
+                <p>PER {{ $lastDayOfMonth }} {{ $endMonthName }} {{ $year ?? $tahunSekarang }}</p>
+                <p>NOMOR : BA/ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /SETDA/{{ $tahunSekarang }}</p>
+            </div>
+
+            <div class="lampiran-halaman4">
+                <p>Lampiran : Berita Acara Stock Opname</p>
+            </div>
+        </div>
+
+        <div class="kop-info-halaman4">
+            <table>
+                <tr>
+                    <td class="label-halaman4">OPD/ UNIT KERJA</td>
+                    <td class="titik-dua-halaman4">:</td>
+                    <td>SEKRETARIAT DAERAH</td>
+                </tr>
+                <tr>
+                    <td class="label-halaman4">KABUPATEN</td>
+                    <td class="titik-dua-halaman4">:</td>
+                    <td>BANGKA</td>
+                </tr>
+                <tr>
+                    <td class="label-halaman4">PROVINSI</td>
+                    <td class="titik-dua-halaman4">:</td>
+                    <td>KEPULAUAN BANGKA BELITUNG</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    @php
+        // Ambil data stock opname
+        $stockOpnameData = app(App\Http\Controllers\Admin\LaporanPDFController::class)->getStockOpnameData(
+            $quarter ?? 2,
+            $year ?? $tahunSekarang,
+        );
+
+        // Helper format rupiah
+        $formatRupiah = function ($value) {
+            return $value > 0 ? number_format($value, 2, ',', '.') : '-';
+        };
+
+        // PERBAIKAN: Sesuaikan dengan tinggi halaman dan tinggi baris
+        // Halaman pertama: ada header dokumen + tabel header (lebih sedikit baris)
+        // Halaman lanjutan: full table tanpa header dokumen (lebih banyak baris)
+        $rowsPerFirstPage = 31; // Halaman pertama dengan header dokumen
+        $rowsPerPage = 40; // Halaman lanjutan tanpa header (lebih banyak)
+        $currentRow = 0;
+        $totalRows = $stockOpnameData->count();
+    @endphp
+
+    <div class="tabel-riwayat-halaman4">
+        <table class="tabel-utama-halaman4">
+            <thead>
+                <tr>
+                    <th class="col-kode-h4">KODE</th>
+                    <th class="col-uraian-h4">URAIAN</th>
+                    <th class="col-volume-h4">VOLUME</th>
+                    <th class="col-satuan-h4">SATUAN</th>
+                    <th class="col-harga-h4">HARGA</th>
+                    <th class="col-jumlah-h4">JUMLAH HARGA</th>
+                    <th class="col-keterangan-h4">KET</th>
+                </tr>
+                <tr>
+                    <th class="sub-header-h4">1</th>
+                    <th class="sub-header-h4">2</th>
+                    <th class="sub-header-h4">3</th>
+                    <th class="sub-header-h4">4</th>
+                    <th class="sub-header-h4">5</th>
+                    <th class="sub-header-h4">6</th>
+                    <th class="sub-header-h4">7</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse ($stockOpnameData as $index => $item)
+                    @php
+                        $currentRow++;
+                        // Hitung kapan perlu page break
+                        if ($currentRow <= $rowsPerFirstPage) {
+                            $needPageBreak = $currentRow == $rowsPerFirstPage && $currentRow < $totalRows;
+                        } else {
+                            $adjustedRow = $currentRow - $rowsPerFirstPage;
+                            $needPageBreak = $adjustedRow % $rowsPerPage == 0 && $currentRow < $totalRows;
+                        }
+                    @endphp
+
+                    <tr @if ($item->is_header) style="font-weight: bold;" @endif>
+                        {{-- Kode Barang --}}
+                        <td class="text-left isi-kode">{{ $item->kode_barang }}</td>
+
+                        {{-- Uraian --}}
+                        <td class="text-left isi-uraian">{{ $item->uraian }}</td>
+
+                        @if (!$item->is_header)
+                            {{-- Volume --}}
+                            <td class="text-center isi-volume">{{ $item->volume }}</td>
+
+                            {{-- Satuan --}}
+                            <td class="text-center isi-satuan">{{ $item->satuan }}</td>
+
+                            {{-- Harga --}}
+                            <td class="text-right isi-harga">
+                                {{ $item->harga ? 'Rp. ' . $formatRupiah($item->harga) : '' }}
+                            </td>
+
+                            {{-- Jumlah Harga --}}
+                            <td class="text-right isi-jumlah">
+                                Rp. {{ $formatRupiah($item->jumlah_harga) }}
+                            </td>
+
+                            {{-- Keterangan --}}
+                            <td class="text-center isi-keterangan"></td>
+                        @else
+                            {{-- Untuk header kategori --}}
+                            <td class="text-center"></td>
+                            <td class="text-center"></td>
+                            <td class="text-right"></td>
+                            <td class="text-right">
+                                <strong>Rp. {{ $formatRupiah($item->jumlah_harga) }}</strong>
+                            </td>
+                            <td class="text-center"></td>
+                        @endif
+                    </tr>
+
+                    {{-- Page break jika sudah mencapai batas baris --}}
+                    @if ($needPageBreak)
+            </tbody>
+        </table>
+    </div>
+
+    {{-- Halaman baru --}}
+    <div class="page-break"></div>
+
+    {{-- Tabel lanjutan tanpa header --}}
+    <div class="tabel-riwayat-halaman4 tabel-lanjutan">
+        <table class="tabel-utama-halaman4">
+            <tbody>
+                @endif
+
+            @empty
+                <tr>
+                    <td colspan="7" class="text-center">
+                        Tidak ada data stock opname
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    {{-- Footer halaman terakhir --}}
+    <div class="footer-lampiran-halaman4">
+        <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+            <tr>
+                <td style="width: 50%; text-align: center; vertical-align: top;">
+                    <div class="ttd-jabatan">Pejabat Penatausahaan Pengguna Barang,</div>
+                    <br><br><br><br><br>
+                    <div class="ttd-nama">Hiskawati, S.AP</div>
+                    <div class="ttd-nip">NIP. 19810920 200604 2 007</div>
+                </td>
+                <td style="width: 50%; text-align: center; vertical-align: top;">
+                    <div class="ttd-jabatan">Pengurus Barang Pengguna,</div>
+                    <br><br><br><br>
+                    <div class="ttd-nama">Redha Efrida, A.Md</div>
+                    <div class="ttd-nip">NIP. 19820816 201101 2 002</div>
+                </td>
+            </tr>
+        </table>
+        <table style="width: 100%; border-collapse: collapse; margin-top: 30px;">
+            <tr>
+                <td style="text-align: center;">
+                    <div class="ttd-jabatan">Mengetahui :</div>
+                    <div class="ttd-jabatan">Pengguna Barang,</div>
+                    <br><br><br><br>
+                    <div class="ttd-nama">Thony Marza, AP</div>
+                    <div class="ttd-nip">NIP. 19750306199311101</div>
+                </td>
+            </tr>
+        </table>
     </div>
 
 </body>

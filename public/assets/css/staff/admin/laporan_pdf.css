@@ -4,12 +4,14 @@
     box-sizing: border-box;
     font-family: "Times New Roman";
 }
+
 body {
     font-size: 12px;
     margin: 0;
     padding: 20px;
     line-height: 1.4;
 }
+
 /* Style untuk kop surat */
 .laporan-page .kop-surat {
     display: flex;
@@ -516,6 +518,7 @@ body {
     padding: 1px;
     vertical-align: top;
 }
+
 .tabel-utama tbody td.col-angka {
     text-align: center;
     vertical-align: middle;
@@ -533,6 +536,7 @@ body {
     width: 11%;
     text-align: center;
 }
+
 .col-opname {
     text-align: center;
     width: 20%;
@@ -668,4 +672,328 @@ body {
     .identitas-table {
         font-size: 10px;
     }
+}
+
+
+
+/* HALAMAN 4 */
+.header-halaman4 {
+    margin-bottom: 20px;
+}
+
+.header-top-halaman4 {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.judul-laporan-halaman4 {
+    text-align: left;
+    line-height: 1.3;
+    flex: 1;
+}
+
+.judul-laporan-halaman4 p {
+    margin: 2px 0;
+    font-size: 11px;
+}
+
+.lampiran-halaman4 {
+    text-align: right;
+    font-size: 11px;
+    padding-top: 0;
+}
+
+.lampiran-halaman4 p {
+    margin: 0;
+}
+
+.kop-info-halaman4 {
+    margin: 15px 0;
+}
+
+.kop-info-halaman4 table {
+    border-collapse: collapse;
+    font-size: 11px;
+}
+
+.kop-info-halaman4 td {
+    padding: 2px 0;
+    vertical-align: top;
+}
+
+.label-halaman4 {
+    width: 150px;
+    font-weight: normal;
+}
+
+.titik-dua-halaman4 {
+    width: 10px;
+    text-align: center;
+}
+
+/* TABEL RIWAYAT HALAMAN 4 */
+
+
+.tabel-utama-halaman4 {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9px;
+}
+
+.tabel-utama-halaman4 th {
+    border: 1px solid #000;
+    padding: 4px 2px;
+    font-weight: bold;
+    background-color: #f0f0f0;
+}
+
+.tabel-utama-halaman4 td {
+    border: 1px solid #000;
+    padding: 3px 2px;
+    vertical-align: top;
+}
+
+.col-kode-h4,
+.isi-kode {
+    text-align: center;
+    width: 15%;
+}
+
+.col-uraian-h4,
+.isi-uraian {
+    text-align: center;
+    width: 22%;
+}
+
+.col-volume-h4,
+.isi-volume {
+    text-align: center;
+    width: 8%;
+}
+
+.col-satuan-h4,
+.isi-satuan {
+    text-align: center;
+    width: 8%;
+}
+
+.col-harga-h4,
+.isi-harga {
+    text-align: center;
+    width: 12%;
+}
+
+.col-jumlah-h4,
+.isi-jumlah {
+    text-align: center;
+    width: 13%;
+}
+
+.col-keterangan-h4,
+.isi-keterangan {
+    text-align: center;
+    width: 12%;
+}
+
+.sub-header-h4 {
+    font-size: 10px;
+}
+
+.tabel-utama-halaman4 .text-center {
+    text-align: center;
+}
+
+.tabel-utama-halaman4 .text-left {
+    text-align: left;
+    padding-left: 4px;
+}
+
+.tabel-utama-halaman4 .text-right {
+    text-align: right;
+    padding-right: 4px;
+}
+
+
+/* Styling untuk header kategori */
+.tabel-utama-halaman4 tbody tr[style*="font-weight: bold"] {
+    font-weight: bold;
+}
+
+/* Padding untuk baris detail barang */
+.tabel-utama-halaman4 tbody tr:not([style*="font-weight: bold"]) td:first-child {
+    padding-left: 5px;
+}
+
+/* Ensure page break works properly */
+.page-break {
+    page-break-after: always;
+    break-after: page;
+}
+
+
+/* ===== PERBAIKAN TABEL HALAMAN 4 ===== */
+
+/* Container tabel - maksimalkan tinggi */
+.tabel-riwayat-halaman4 {
+    width: 100%;
+    margin-top: 10px;
+    margin-bottom: 0;
+}
+
+/* Tabel lanjutan tanpa header - FULL HEIGHT */
+.tabel-lanjutan {
+    margin: 0;
+    padding: 0;
+}
+
+
+
+/* Tabel utama dengan fixed layout */
+.tabel-utama-halaman4 {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    /* KUNCI: Agar lebar kolom konsisten di semua halaman */
+}
+
+/* Style header */
+.tabel-utama-halaman4 thead th {
+    border: 1px solid #000;
+    padding: 6px 4px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 11px;
+    background-color: #f5f5f5;
+    vertical-align: middle;
+}
+
+.tabel-utama-halaman4 thead .sub-header-h4 {
+    padding: 4px;
+    font-size: 10px;
+}
+
+/* Style body */
+.tabel-utama-halaman4 tbody td {
+    border: 1px solid #000;
+    padding: 5px 4px;
+    font-size: 10px;
+    vertical-align: top;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+/* Alignment sesuai class */
+.tabel-utama-halaman4 .text-left {
+    text-align: left;
+}
+
+.tabel-utama-halaman4 .text-center {
+    text-align: center;
+}
+
+.tabel-utama-halaman4 .text-right {
+    text-align: right;
+}
+
+/* Baris header kategori (bold) */
+.tabel-utama-halaman4 tbody tr[style*="font-weight: bold"] td {
+    font-weight: bold;
+    background-color: #f9f9f9;
+}
+
+/* ===== KONTROL PAGE BREAK ===== */
+.page-break {
+    page-break-after: always;
+    page-break-inside: avoid;
+    height: 0;
+    margin: 0;
+    padding: 0;
+}
+
+/* Cegah row terputus di tengah */
+.tabel-utama-halaman4 tbody tr {
+    page-break-inside: avoid;
+}
+
+/* ===== FOOTER HALAMAN 4 ===== */
+.footer-lampiran-halaman4 {
+    margin-top: 30px;
+    page-break-inside: avoid;
+}
+
+.footer-lampiran-halaman4 table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.footer-lampiran-halaman4 .ttd-jabatan {
+    font-size: 11px;
+    font-weight: normal;
+}
+
+.footer-lampiran-halaman4 .ttd-nama {
+    font-size: 11px;
+    font-weight: bold;
+    text-decoration: underline;
+    margin-top: 60px;
+}
+
+.footer-lampiran-halaman4 .ttd-nip {
+    font-size: 10px;
+    margin-top: 2px;
+}
+
+
+/* Print optimization untuk halaman 4 */
+@media print {
+    body {
+        margin: 0;
+        padding: 15px;
+    }
+
+    .tabel-utama-halaman4 {
+        page-break-inside: auto;
+    }
+
+    .tabel-utama-halaman4 tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+    }
+
+    /* Tampilkan thead hanya di halaman pertama */
+    .tabel-utama-halaman4 thead {
+        display: table-header-group;
+    }
+
+    /* Sembunyikan thead di tabel lanjutan */
+    .tabel-lanjutan .tabel-utama-halaman4 thead {
+        display: none !important;
+    }
+
+    /* GANTI dengan ini: */
+    .tabel-lanjutan {
+        margin: 0;
+        padding: 0;
+    }
+
+    .tabel-lanjutan .tabel-utama-halaman4 {
+        /* Biarkan tinggi mengikuti konten secara natural */
+        height: auto;
+        min-height: auto;
+    }
+}
+
+
+/* Hilangkan spacing pada halaman lanjutan */
+.page-break+.tabel-lanjutan {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+/* Pastikan tidak ada gap antara rows */
+.tabel-utama-halaman4 tbody tr {
+    margin: 0;
+    padding: 0;
 }
