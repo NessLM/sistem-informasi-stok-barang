@@ -294,7 +294,7 @@
                                             @if ($item->bukti)
                                                 <span class="riwayat-bukti-icon" data-bs-toggle="modal"
                                                     data-bs-target="#buktiModal"
-                                                    data-image="{{ asset('storage/bukti/' . $item->bukti) }}">
+                                                    data-image="{{ asset('storage/' . $item->bukti) }}">
                                                     <i class="bi bi-eye-fill"></i>
                                                 </span>
                                             @else
