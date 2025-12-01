@@ -192,10 +192,12 @@ Route::prefix('pb')->name('pb.')->middleware(['auth', 'role:Pengurus Barang Peng
     // Riwayat
     Route::get('/riwayat', [PbRiwayatController::class, 'index'])->name('riwayat.index');
 
-    // Laporan (invokable)
+    // Laporan
     Route::get('/laporan', [PbLaporanController::class, 'index'])->name('laporan');
     Route::get('/laporan/preview/{quarter}/{year}', [PbLaporanController::class, 'previewLaporan'])
         ->name('laporan.preview');
+    Route::get('/laporan/download/{quarter}/{year}', [PbLaporanController::class, 'downloadPDF'])
+        ->name('laporan.download');
 });
 
 

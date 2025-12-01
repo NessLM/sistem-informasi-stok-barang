@@ -22,7 +22,8 @@
                                     @if ($report['exists'])
                                         <span class="riwayat-bukti-icon" data-quarter="{{ $report['quarter'] }}"
                                             data-year="{{ $report['year'] }}" data-title="{{ $report['title'] }}"
-                                            title="Pratinjau Laporan" style="cursor: pointer; color: #3498db; font-size: 18px;">
+                                            title="Pratinjau Laporan"
+                                            style="cursor: pointer; color: #3498db; font-size: 18px;">
                                             <i class="bi bi-eye-fill"></i>
                                         </span>
                                     @else
@@ -66,7 +67,7 @@
                     </button>
                 </div>
 
-                {{-- Pagination Controls --}}
+                {{-- Pagination Controls + Download --}}
                 <div class="control-group">
                     <button class="control-btn" id="prevPage" title="Halaman Sebelumnya">
                         <i class="bi bi-chevron-left"></i> Prev
@@ -74,6 +75,10 @@
                     <span class="page-info" id="pageInfo">1 / 1</span>
                     <button class="control-btn" id="nextPage" title="Halaman Selanjutnya">
                         Next <i class="bi bi-chevron-right"></i>
+                    </button>
+                    {{-- Tombol Download --}}
+                    <button class="control-btn btn-download-pdf" id="btnDownloadPdf" title="Unduh PDF">
+                        <i class="bi bi-download"></i> Unduh
                     </button>
                 </div>
             </div>
@@ -117,6 +122,9 @@
             const lapTtl = document.getElementById('lapModalTitle');
             const pageInfo = document.getElementById('pageInfo');
             const zoomLevel = document.getElementById('zoomLevel');
+
+            let currentQuarter = null;
+            let currentYear = null;
 
             let currentPage = 1;
             let totalPages = 1;
@@ -205,13 +213,16 @@
             async function openLapModal(quarter, year, title) {
                 let link = document.createElement("link");
                 link.rel = "stylesheet";
-                link.href = laporanPdfCssUrl;   // <- pakai URL dari Blade
-                link.id = "laporanPdfCss";  // PENTING!
+                link.href = laporanPdfCssUrl; // <- pakai URL dari Blade
+                link.id = "laporanPdfCss"; // PENTING!
                 document.head.appendChild(link);
 
                 console.log('Opening modal for:', quarter, year, title);
 
                 lapTtl.textContent = title || 'Pratinjau Laporan';
+
+                currentQuarter = quarter;
+                currentYear = year;
 
                 // Reset state
                 currentPage = 1;
@@ -482,7 +493,7 @@
             });
 
             // Responsive handling
-            window.addEventListener('resize', function () {
+            window.addEventListener('resize', function() {
                 if (lapModal.classList.contains('is-open')) {
                     if (window.innerWidth <= 768) {
                         document.body.classList.add('modal-open-mobile');
@@ -494,13 +505,26 @@
 
             // Prevent zoom on double-tap for mobile
             let lastTouchEnd = 0;
-            document.addEventListener('touchend', function (event) {
+            document.addEventListener('touchend', function(event) {
                 const now = (new Date()).getTime();
                 if (now - lastTouchEnd <= 300) {
                     event.preventDefault();
                 }
                 lastTouchEnd = now;
             }, false);
+
+
+            // ===== Download PDF Handler =====
+            document.getElementById('btnDownloadPdf').addEventListener('click', function() {
+                if (!currentQuarter || !currentYear) {
+                    alert('Data laporan tidak tersedia');
+                    return;
+                }
+
+                // Redirect ke route download
+                const downloadUrl = `{{ url('pb/laporan/download') }}/${currentQuarter}/${currentYear}`;
+                window.location.href = downloadUrl;
+            });
         </script>
     @endpush
 </x-layouts.app>

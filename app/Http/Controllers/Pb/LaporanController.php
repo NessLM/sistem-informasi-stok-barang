@@ -1,9 +1,11 @@
 <?php
-
+// App\Http\Controllers\Pb\LaporanController.php
 namespace App\Http\Controllers\Pb;
 
 use App\Http\Controllers\Controller;
 use App\Helpers\MenuHelper;
+use App\Http\Controllers\Pb\LaporanPDFController;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class LaporanController extends Controller
@@ -14,6 +16,62 @@ class LaporanController extends Controller
         $reports = $this->getAllExistingReports();
 
         return view('staff.pb.laporan', compact('menu', 'reports'));
+    }
+
+    public function previewLaporan($quarter, $year)
+    {
+        // Validasi input
+        if (!in_array($quarter, [1, 2, 3, 4]) || $year < 2025 || $year > date('Y')) {
+            abort(404, 'Laporan tidak ditemukan');
+        }
+
+        // Gunakan LaporanPDFController untuk mengambil data
+        $pdfController = new LaporanPDFController();
+        $riwayat = $pdfController->getRiwayatData($quarter, $year);
+        $rekapKategori = $pdfController->getRekapKategoriTriwulan($quarter, $year);
+        $stockOpnameData = $pdfController->getStockOpnameData($quarter, $year);
+
+        return view('staff.pb.laporan-pdf', [
+            'quarter' => $quarter,
+            'year' => $year,
+            'riwayat' => $riwayat,
+            'rekapKategori' => $rekapKategori,
+            'stockOpnameData' => $stockOpnameData,
+        ]);
+    }
+
+    public function downloadPDF($quarter, $year)
+    {
+        // Validasi input
+        if (!in_array($quarter, [1, 2, 3, 4]) || $year < 2025 || $year > date('Y')) {
+            abort(404, 'Laporan tidak ditemukan');
+        }
+
+        // Gunakan LaporanPDFController untuk mengambil data
+        $pdfController = new LaporanPDFController();
+        $riwayat = $pdfController->getRiwayatData($quarter, $year);
+        $rekapKategori = $pdfController->getRekapKategoriTriwulan($quarter, $year);
+        $stockOpnameData = $pdfController->getStockOpnameData($quarter, $year);
+
+        // Data untuk view
+        $data = [
+            'quarter' => $quarter,
+            'year' => $year,
+            'riwayat' => $riwayat,
+            'rekapKategori' => $rekapKategori,
+            'stockOpnameData' => $stockOpnameData,
+        ];
+
+        // Generate PDF
+        $pdf = Pdf::loadView('staff.pb.laporan-pdf', $data);
+        
+        // Set paper orientation to landscape for better table display
+        $pdf->setPaper('A4', 'portrait');
+        
+        // Nama file untuk download
+        $filename = "Laporan_Stock_Opname_Q{$quarter}_{$year}.pdf";
+        
+        return $pdf->download($filename);
     }
 
     private function getAllExistingReports()
@@ -46,26 +104,18 @@ class LaporanController extends Controller
         return $reports;
     }
 
-    /**
-     * Buat report data untuk kuartal tertentu
-     */
     private function createQuarterlyReport($quarter, $year)
     {
         $quarterData = $this->getQuarterData($quarter, $year);
-        $fileName = $this->generateFileName($quarter, $year);
 
         return [
             'title' => "LAPORAN STOCK OPNAME BULAN {$quarterData['month_range']} {$year}",
             'quarter' => $quarter,
             'year' => $year,
-            'file_name' => $fileName,
             'exists' => true // Selalu true karena generate on-demand
         ];
     }
 
-    /**
-     * Dapatkan data kuartal berdasarkan nomor kuartal
-     */
     private function getQuarterData($quarter, $year)
     {
         $quarters = [
@@ -76,41 +126,5 @@ class LaporanController extends Controller
         ];
 
         return $quarters[$quarter] ?? $quarters[1];
-    }
-
-    /**
-     * Generate nama file berdasarkan kuartal dan tahun
-     */
-    private function generateFileName($quarter, $year)
-    {
-        $quarterNames = [1 => 'Q1', 2 => 'Q2', 3 => 'Q3', 4 => 'Q4'];
-        return "stock_opname_{$year}_{$quarterNames[$quarter]}.pdf";
-    }
-
-    /**
-     * Preview laporan untuk quarter & year tertentu
-     */
-    // App\Http\Controllers\Pb\LaporanController.php
-
-    public function previewLaporan($quarter, $year)
-    {
-        // Validasi input
-        if (!in_array($quarter, [1, 2, 3, 4]) || $year < 2025 || $year > date('Y')) {
-            abort(404, 'Laporan tidak ditemukan');
-        }
-
-        // Gunakan LaporanPDFController untuk mengambil data
-        $pdfController = new LaporanPDFController();
-        $riwayat = $pdfController->getRiwayatData($quarter, $year);
-
-        // ⬇️ TAMBAHAN: rekap kategori untuk tabel halaman 3
-        $rekapKategori = $pdfController->getRekapKategoriTriwulan($quarter, $year);
-
-        return view('staff.pb.laporan-pdf', [
-            'quarter'       => $quarter,
-            'year'          => $year,
-            'riwayat'       => $riwayat,
-            'rekapKategori' => $rekapKategori,
-        ]);
     }
 }
