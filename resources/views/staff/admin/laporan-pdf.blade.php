@@ -140,10 +140,10 @@
 
     {{-- JUDUL SURAT --}}
     @php
-    $bulanRomawi = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
-    $bulanSekarang = $bulanRomawi[$tanggalSurat->month];
-    $tahunSekarang = $tanggalSurat->year;
-@endphp
+        $bulanRomawi = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+        $bulanSekarang = $bulanRomawi[$tanggalSurat->month];
+        $tahunSekarang = $tanggalSurat->year;
+    @endphp
     <div class="judul-surat">
         <h3>SURAT PENGANTAR</h3>
         <p class="nomor-surat">Nomor : 045.2/ <span> &nbsp; &nbsp;</span>
@@ -233,7 +233,8 @@
 
     <div class="judul-dokumen">
         <h3>BERITA ACARA PEMERIKSAAN PERSEDIAAN BARANG PAKAI HABIS</h3>
-        <h3>STOCK OPNAME PER {{ $lastDayOfMonth }} {{ $endMonthName }} {{ $year ?? $tahunSekarang }}</h3>
+        <h3>STOCK OPNAME PER {{ $tanggalSurat->format('d') }} {{ $tanggalSurat->locale('id')->isoFormat('MMMM') }}
+            {{ $tanggalSurat->year }}</h3>
         <h3>PADA SEKRETARIAT DAERAH KABUPATEN BANGKA</h3>
     </div>
 
@@ -412,13 +413,31 @@
         </div>
     </div>
 
+    @php
+        // Tentukan bulan awal triwulan
+        $startMonthMap = [
+            1 => 1, // Q1: Januari
+            2 => 4, // Q2: April
+            3 => 7, // Q3: Juli
+            4 => 10, // Q4: Oktober
+        ];
+
+        $bulanMulai = $startMonthMap[$q] ?? 1;
+
+        // Nama bulan awal dan akhir triwulan
+        $bulanAwalTriwulan = Carbon::create($yearForQuarter, $bulanMulai, 1)->locale('id')->isoFormat('MMMM');
+        $bulanAkhirTriwulan = $tanggalSurat->locale('id')->isoFormat('MMMM');
+        $tahunTriwulan = $tanggalSurat->year;
+    @endphp
+
     <p class="keterangan-m">Menyatakan bahwa telah melakukan rekon data Barang Milik Daerah (BMD) berupa persediaan
         pada lingkup internal
         Sekretariat Daerah
         dengan cara membandingkan data BMD berupa persediaan pada Laporan Barang Pengguna (LBP) yang disusun oleh
         Pengurus Barang
-        dengan Laporan Keuangan (LK) yang disusun oleh Pejabat Penatausahaan Keuangan SKPD untuk periode bulan April
-        s.d. Juni 2025
+        dengan Laporan Keuangan (LK) yang disusun oleh Pejabat Penatausahaan Keuangan SKPD untuk periode bulan
+        {{ $bulanAwalTriwulan }}
+        s.d. {{ $bulanAkhirTriwulan }} {{ $tahunTriwulan }}
         dengan hasil sebagai berikut :
     </p>
 
@@ -456,19 +475,23 @@
                     <th class="col-no" rowspan="3">No</th>
                     <th class="col-uraian" rowspan="3">Kategori</th>
                     <th colspan="6">
-                        Nilai Harga Persediaan Per {{ $lastDayOfMonth }} {{ $endMonthName }}
+                        Nilai Harga Persediaan Per {{ $tanggalSurat->format('d') }}
+                        {{ $tanggalSurat->locale('id')->isoFormat('MMMM') }}
                     </th>
                     <th class="col-opname" rowspan="3">
-                        Stock<br>Opname Ter<br>Update Per<br>{{ $lastDayOfMonth }} {{ $endMonthName }}
+                        Stock<br>Opname Ter<br>Update Per<br>{{ $tanggalSurat->format('d') }}
+                        {{ $tanggalSurat->locale('id')->isoFormat('MMMM') }}
                     </th>
                 </tr>
                 <tr>
                     {{-- Row 2: Pemasukan & Pengeluaran --}}
                     <th colspan="3">
-                        Pemasukan Tri Wulan {{ $quarter }} Per {{ $lastDayOfMonth }} {{ $endMonthName }}
+                        Pemasukan Tri Wulan {{ $quarter }} Per {{ $tanggalSurat->format('d') }}
+                        {{ $tanggalSurat->locale('id')->isoFormat('MMMM') }}
                     </th>
                     <th colspan="3">
-                        Pengeluaran Tri Wulan {{ $quarter }} Per {{ $lastDayOfMonth }} {{ $endMonthName }}
+                        Pengeluaran Tri Wulan {{ $quarter }} Per {{ $tanggalSurat->format('d') }}
+                        {{ $tanggalSurat->locale('id')->isoFormat('MMMM') }}
                     </th>
                 </tr>
                 <tr>
@@ -532,8 +555,17 @@
     </div>
 
     <div class="penutup-berita-acara-halaman3">
+        @php
+            $tglAwalPeriode = Carbon::create($yearForQuarter, $startMonth, 1)->format('d');
+            $bulanAwalPeriode = Carbon::create($yearForQuarter, $startMonth, 1)->locale('id')->isoFormat('MMMM');
+            $tglAkhirPeriode = $tanggalSurat->format('d');
+            $bulanAkhirPeriode = $tanggalSurat->locale('id')->isoFormat('MMMM');
+            $tahunPeriode = $tanggalSurat->year;
+        @endphp
+
         <p>Demikian Berita Acara ini dibuat untuk bahan penyusunan laporan barang untuk daerah dan
-            laporan keuangan periode 01 April s.d. 30 Juni 2025 dan apabila dikemudian hari terdapat kekeliruan akan
+            laporan keuangan periode {{ $tglAwalPeriode }} {{ $bulanAwalPeriode }} s.d. {{ $tglAkhirPeriode }}
+            {{ $bulanAkhirPeriode }} {{ $tahunPeriode }} dan apabila dikemudian hari terdapat kekeliruan akan
             dilakukan perbaikan sebagaimana mestinya.</p>
     </div>
 
@@ -589,7 +621,8 @@
             <div class="judul-laporan-halaman4">
                 <p>LAPORAN PENGECEKAN FISIK (STOCK OPNAME)</p>
                 <p>PERSEDIAAN BARANG HABIS PAKAI</p>
-                <p>PER {{ $lastDayOfMonth }} {{ $endMonthName }} {{ $year ?? $tahunSekarang }}</p>
+                <p>PER {{ $tanggalSurat->format('d') }} {{ $tanggalSurat->locale('id')->isoFormat('MMMM') }}
+                    {{ $tanggalSurat->year }}</p>
                 <p>NOMOR : BA/ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /SETDA/{{ $tahunSekarang }}</p>
             </div>
 
