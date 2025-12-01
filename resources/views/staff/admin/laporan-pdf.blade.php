@@ -610,8 +610,8 @@
         // PERBAIKAN: Sesuaikan dengan tinggi halaman dan tinggi baris
         // Halaman pertama: ada header dokumen + tabel header (lebih sedikit baris)
         // Halaman lanjutan: full table tanpa header dokumen (lebih banyak baris)
-        $rowsPerFirstPage = 31; // Halaman pertama dengan header dokumen
-        $rowsPerPage = 40; // Halaman lanjutan tanpa header (lebih banyak)
+        $rowsPerFirstPage = 28; // Halaman pertama dengan header dokumen
+        $rowsPerPage = 37; // Halaman lanjutan tanpa header (lebih banyak)
         $currentRow = 0;
         $totalRows = $stockOpnameData->count();
     @endphp
@@ -711,6 +711,30 @@
                     </td>
                 </tr>
                 @endforelse
+
+                {{-- Hitung total --}}
+                @php
+                    $totalVolume = 0;
+                    $totalJumlahHarga = 0;
+
+                    foreach ($stockOpnameData as $item) {
+                        if (!$item->is_header) {
+                            $totalVolume += $item->volume;
+                            $totalJumlahHarga += $item->jumlah_harga;
+                        }
+                    }
+                @endphp
+
+                {{-- Baris Total --}}
+                <tr class="uraian-total">
+                    <td class="text-left isi-kode"></td>
+                    <td class="text-left isi-uraian">JUMLAH</td>
+                    <td class="text-center isi-volume">{{ $totalVolume }}</td>
+                    <td class="text-center isi-satuan"></td>
+                    <td class="text-right isi-harga"></td>
+                    <td class="text-right isi-jumlah">Rp. {{ $formatRupiah($totalJumlahHarga) }}</td>
+                    <td class="text-center isi-keterangan"></td>
+                </tr>
             </tbody>
         </table>
     </div>
@@ -721,13 +745,13 @@
             <tr>
                 <td style="width: 50%; text-align: center; vertical-align: top;">
                     <div class="ttd-jabatan">Pejabat Penatausahaan Pengguna Barang,</div>
-                    <br><br><br><br><br>
+                    <br><br>
                     <div class="ttd-nama">Hiskawati, S.AP</div>
                     <div class="ttd-nip">NIP. 19810920 200604 2 007</div>
                 </td>
                 <td style="width: 50%; text-align: center; vertical-align: top;">
                     <div class="ttd-jabatan">Pengurus Barang Pengguna,</div>
-                    <br><br><br><br>
+                    <br><br>
                     <div class="ttd-nama">Redha Efrida, A.Md</div>
                     <div class="ttd-nip">NIP. 19820816 201101 2 002</div>
                 </td>
@@ -738,7 +762,7 @@
                 <td style="text-align: center;">
                     <div class="ttd-jabatan">Mengetahui :</div>
                     <div class="ttd-jabatan">Pengguna Barang,</div>
-                    <br><br><br><br>
+                    <br><br>
                     <div class="ttd-nama">Thony Marza, AP</div>
                     <div class="ttd-nip">NIP. 19750306199311101</div>
                 </td>
