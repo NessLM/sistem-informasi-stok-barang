@@ -28,8 +28,33 @@
     {{-- TANGGAL SURAT --}}
     @php
         use Carbon\Carbon;
+
+        // TAMBAHKAN LOGIKA INI (ganti yang lama)
         $tanggalSekarang = Carbon::now();
-        $tanggalFormatted = $tanggalSekarang->locale('id')->isoFormat('D MMMM YYYY');
+
+        // Tentukan bulan terakhir dari triwulan berdasarkan $quarter
+        $endMonthMap = [
+            1 => 3, // Q1: Maret
+            2 => 6, // Q2: Juni
+            3 => 9, // Q3: September
+            4 => 12, // Q4: Desember
+        ];
+
+        $q = isset($quarter) ? (int) $quarter : 2;
+        $q = $q >= 1 && $q <= 4 ? $q : 2;
+        $endMonth = $endMonthMap[$q] ?? 6;
+
+        $yearForQuarter = isset($year) ? (int) $year : (int) $tanggalSekarang->year;
+
+        // Jika bulan sekarang <= bulan akhir triwulan, gunakan tanggal hari ini
+        // Jika tidak, gunakan akhir bulan triwulan
+        if ($tanggalSekarang->year == $yearForQuarter && $tanggalSekarang->month <= $endMonth) {
+            $tanggalSurat = $tanggalSekarang;
+        } else {
+            $tanggalSurat = Carbon::create($yearForQuarter, $endMonth, 1)->endOfMonth();
+        }
+
+        $tanggalFormatted = $tanggalSurat->locale('id')->isoFormat('D MMMM YYYY');
 
         function terbilang($angka)
         {
@@ -90,7 +115,7 @@
         $yearForQuarter = isset($year) ? (int) $year : (int) $tanggalSekarang->year;
         $lastDayOfMonth = Carbon::create($yearForQuarter, $endMonth, 1)->endOfMonth()->day;
 
-        $tanggal = Carbon::now()->locale('id');
+        $tanggal = $tanggalSurat->locale('id');
 
         $hari = $tanggal->isoFormat('dddd'); // Senin
         $tglAngka = $tanggal->format('d-m-Y'); // 01-07-2025
@@ -115,11 +140,10 @@
 
     {{-- JUDUL SURAT --}}
     @php
-        $bulanRomawi = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
-        $bulanSekarang = $bulanRomawi[$tanggalSekarang->month];
-        $tahunSekarang = $tanggalSekarang->year;
-    @endphp
-
+    $bulanRomawi = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+    $bulanSekarang = $bulanRomawi[$tanggalSurat->month];
+    $tahunSekarang = $tanggalSurat->year;
+@endphp
     <div class="judul-surat">
         <h3>SURAT PENGANTAR</h3>
         <p class="nomor-surat">Nomor : 045.2/ <span> &nbsp; &nbsp;</span>
@@ -216,7 +240,7 @@
     <div class="pembukaan-berita-acara">
         <p>
             Pada hari ini {{ $hari }} tanggal {{ $tglHuruf }} Bulan {{ $bulanHuruf }}
-            tahun {{ $tahunHuruf }} ({{ $tglAngka }}), bertempat di
+            Tahun {{ $tahunHuruf }} ({{ $tglAngka }}), bertempat di
             Sungailiat, yang bertanda tangan di bawah ini :
         </p>
     </div>
@@ -253,7 +277,7 @@
     </div>
 
     <div class="lokasi-tanggal">
-        Sungailiat, {{ $tanggalFormatted }}
+        Sungailiat, {{ $tanggalSurat->locale('id')->isoFormat('D MMMM YYYY') }}
     </div>
 
     <!-- Bagian TTD Kiri dan Kanan -->
@@ -318,7 +342,7 @@
 
     <div class="pembukaan-berita-acara-halaman3">
         <p>Pada hari ini {{ $hari }} tanggal {{ $tglHuruf }} Bulan {{ $bulanHuruf }}
-            tahun {{ $tahunHuruf }} ({{ $tglAngka }}), bertempat di
+            Tahun {{ $tahunHuruf }} ({{ $tglAngka }}), bertempat di
             Sungailiat, yang bertanda tangan di bawah ini :</p>
     </div>
 
