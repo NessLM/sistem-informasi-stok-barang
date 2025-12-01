@@ -242,74 +242,89 @@ class LaporanPDFController extends Controller
 
 
 
-    /**
-     * Ambil data stock opname dari stok_bagian untuk halaman 4
-     * Dirangkum per kategori dengan detail barang
-     */
-    public function getStockOpnameData($quarter, $year): Collection
-    {
-        try {
-            // Ambil semua data stok_bagian dengan join ke barang dan kategori
-            $data = DB::table('stok_bagian as sb')
-                ->join('barang as b', 'sb.kode_barang', '=', 'b.kode_barang')
-                ->join('kategori as k', 'b.id_kategori', '=', 'k.id')
-                ->select(
-                    'k.id as kategori_id',
-                    'k.nama as kategori_nama',
-                    'b.kode_barang',
-                    'b.nama_barang',
-                    'b.satuan',
-                    'sb.harga',
-                    DB::raw('SUM(sb.stok) as total_stok'),
-                    DB::raw('SUM(sb.stok * COALESCE(sb.harga, 0)) as total_harga')
-                )
-                ->where('sb.stok', '>', 0) // Hanya ambil yang ada stoknya
-                ->groupBy('k.id', 'k.nama', 'b.kode_barang', 'b.nama_barang', 'b.satuan', 'sb.harga')
-                ->orderBy('k.nama')
-                ->orderBy('b.nama_barang')
-                ->orderBy('sb.harga')
-                ->get();
+/**
+ * Ambil data stock opname dari stok_bagian untuk halaman 4
+ * Dirangkum per kategori dengan detail barang
+ * SESUAI TRIWULAN DAN TAHUN (berdasarkan updated_at)
+ */
+public function getStockOpnameData($quarter, $year): Collection
+{
+    try {
+        // Dapatkan data quarter untuk menentukan periode
+        $quarterData = $this->getQuarterData($quarter, $year);
+        $startMonth  = $quarterData['start_month'];
+        $endMonth    = $quarterData['end_month'];
 
-            // Kelompokkan berdasarkan kategori
-            $grouped = $data->groupBy('kategori_id');
+        // Range tanggal triwulan
+        $startDate = Carbon::create($year, $startMonth, 1)->startOfDay()->toDateString();
+        $endDate   = Carbon::create($year, $endMonth, 1)->endOfMonth()->endOfDay()->toDateString();
 
-            $result = collect();
+        // Ambil data stok_bagian dengan filter berdasarkan updated_at dalam periode triwulan
+        $data = DB::table('stok_bagian as sb')
+            ->join('barang as b', 'sb.kode_barang', '=', 'b.kode_barang')
+            ->join('kategori as k', 'b.id_kategori', '=', 'k.id')
+            ->select(
+                'k.id as kategori_id',
+                'k.nama as kategori_nama',
+                'b.kode_barang',
+                'b.nama_barang',
+                'b.satuan',
+                'sb.harga',
+                DB::raw('SUM(sb.stok) as total_stok'),
+                DB::raw('SUM(sb.stok * COALESCE(sb.harga, 0)) as total_harga')
+            )
+            ->where('sb.stok', '>', 0) // Hanya ambil yang ada stoknya
+            ->whereBetween('sb.updated_at', [$startDate, $endDate]) // Filter berdasarkan periode triwulan
+            ->groupBy('k.id', 'k.nama', 'b.kode_barang', 'b.nama_barang', 'b.satuan', 'sb.harga')
+            ->orderBy('k.nama')
+            ->orderBy('b.nama_barang')
+            ->orderBy('sb.harga')
+            ->get();
 
-            foreach ($grouped as $kategoriId => $items) {
-                $firstItem = $items->first();
-
-                // Hitung total per kategori
-                $totalVolume = $items->sum('total_stok');
-                $totalHarga = $items->sum('total_harga');
-
-                // Tambahkan header kategori
-                $result->push((object)[
-                    'is_header' => true,
-                    'kode_barang' => '',
-                    'uraian' => strtoupper($firstItem->kategori_nama),
-                    'volume' => $totalVolume,
-                    'satuan' => '',
-                    'harga' => '',
-                    'jumlah_harga' => $totalHarga
-                ]);
-
-                // Tambahkan detail barang per kategori
-                foreach ($items as $item) {
-                    $result->push((object)[
-                        'is_header' => false,
-                        'kode_barang' => $item->kode_barang,
-                        'uraian' => $item->nama_barang,
-                        'volume' => $item->total_stok,
-                        'satuan' => $item->satuan,
-                        'harga' => $item->harga,
-                        'jumlah_harga' => $item->total_harga
-                    ]);
-                }
-            }
-
-            return $result;
-        } catch (\Exception $e) {
+        // Jika tidak ada data di triwulan ini, return empty
+        if ($data->isEmpty()) {
             return collect();
         }
+
+        // Kelompokkan berdasarkan kategori
+        $grouped = $data->groupBy('kategori_id');
+        $result = collect();
+
+        foreach ($grouped as $kategoriId => $items) {
+            $firstItem = $items->first();
+
+            // Hitung total per kategori
+            $totalVolume = $items->sum('total_stok');
+            $totalHarga = $items->sum('total_harga');
+
+            // Tambahkan header kategori
+            $result->push((object)[
+                'is_header' => true,
+                'kode_barang' => '',
+                'uraian' => strtoupper($firstItem->kategori_nama),
+                'volume' => $totalVolume,
+                'satuan' => '',
+                'harga' => '',
+                'jumlah_harga' => $totalHarga
+            ]);
+
+            // Tambahkan detail barang per kategori
+            foreach ($items as $item) {
+                $result->push((object)[
+                    'is_header' => false,
+                    'kode_barang' => $item->kode_barang,
+                    'uraian' => $item->nama_barang,
+                    'volume' => $item->total_stok,
+                    'satuan' => $item->satuan,
+                    'harga' => $item->harga,
+                    'jumlah_harga' => $item->total_harga
+                ]);
+            }
+        }
+
+        return $result;
+    } catch (\Exception $e) {
+        return collect();
     }
+}
 }
