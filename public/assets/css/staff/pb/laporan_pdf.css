@@ -223,18 +223,7 @@ body {
     text-align: center;
 }
 
-@media print {
-    body {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-        margin: 0;
-        padding: 15px;
-    }
 
-    .kop-surat {
-        page-break-inside: avoid;
-    }
-}
 
 @page {
     size: A4 portrait;
@@ -335,6 +324,10 @@ body {
 }
 
 .ttd-spacer {
+    height: 60px;
+}
+
+.ttd-spacer-halaman1 {
     height: 60px;
 }
 
@@ -647,7 +640,7 @@ body {
 }
 
 .ttd-nip-halaman3 {
-    font-size: 8px;
+    font-size: 9px;
     margin-top: 1px;
     line-height: 1.1;
 }
@@ -661,24 +654,6 @@ body {
 .ttd-pejabat-halaman3 {
     display: inline-block;
     text-align: center;
-}
-
-/* Untuk tampilan web dalam modal */
-@media screen {
-    .page-break {
-        display: block;
-        margin-top: 2rem;
-        padding-top: 2rem;
-        border-top: 2px dashed #ccc;
-    }
-
-    .tabel-utama {
-        font-size: 8px;
-    }
-
-    .identitas-table {
-        font-size: 10px;
-    }
 }
 
 
@@ -871,21 +846,16 @@ body {
     padding: 6px 4px;
     text-align: center;
     font-weight: bold;
-    font-size: 11px;
+    font-size: 10px;
     background-color: #f5f5f5;
     vertical-align: middle;
-}
-
-.tabel-utama-halaman4 thead .sub-header-h4 {
-    padding: 4px;
-    font-size: 10px;
 }
 
 /* Style body */
 .tabel-utama-halaman4 tbody td {
     border: 1px solid #000;
     padding: 5px 4px;
-    font-size: 10px;
+    font-size: 8px;
     vertical-align: top;
     word-wrap: break-word;
     overflow-wrap: break-word;
@@ -959,54 +929,277 @@ body {
 }
 
 
-/* Print optimization untuk halaman 4 */
-@media print {
+
+
+
+
+
+
+
+/* ===== MOBILE RESPONSIVE (SIMPLE SCALING) ===== */
+@media only screen and (max-width: 768px) {
     body {
-        margin: 0;
-        padding: 15px;
+        padding: 10px !important;
+        zoom: 0.7;
+        -webkit-text-size-adjust: 100%;
+        max-width: 100vw;
+        overflow-x: hidden;
+    }
+
+    /* HALAMAN 1 - Perbaikan kop surat */
+    .kop-surat {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        position: relative !important;
+        padding: 10px 0 !important;
+        margin-bottom: 20px !important;
+    }
+
+    .kop-logo {
+        position: absolute !important;
+        left: 0 !important;
+        top: 10px !important;
+    }
+
+    .kop-logo img {
+        width: 56px !important;
+        height: 70px !important;
+    }
+
+    .kop-text {
+        text-align: center !important;
+        width: 100% !important;
+    }
+
+    .kop-text h1 {
+        font-size: 14px !important;
+        line-height: 1.2;
+    }
+
+    .kop-text h2 {
+        font-size: 14px !important;
+        line-height: 1.2;
+    }
+
+    .kop-text p {
+        font-size: 10px !important;
+        line-height: 1.2;
+    }
+
+    /* Perbaikan spacing */
+    .tanggal-surat {
+        margin: 20px 0 !important;
+        font-size: 11px !important;
+    }
+
+    .tujuan-surat {
+        margin: 20px 0 !important;
+        font-size: 11px !important;
+    }
+
+    .judul-surat {
+        margin: 20px 0 !important;
+    }
+
+    .judul-surat h3 {
+        font-size: 12px !important;
+    }
+
+    .judul-surat .nomor-surat {
+        font-size: 11px !important;
+    }
+
+    /* Perbaikan tabel uraian */
+    .table-uraian {
+        margin: 15px 0 !important;
+    }
+
+    .table-uraian table {
+        font-size: 9px !important;
+    }
+
+    .table-uraian th,
+    .table-uraian td {
+        padding: 4px 3px !important;
+    }
+
+    /* PERBAIKAN TTD - lebih ke kanan seperti desktop */
+    .section-ttd {
+        margin-left: 73% !important;
+        margin-top: 40px !important;
+        width: 45% !important;
+    }
+
+    .ttd-jabatan {
+        font-size: 10px !important;
+        margin-bottom: 42px !important;
+    }
+
+    .ttd-spacer-halaman1 {
+        height: 20px !important;
+    }
+
+    .ttd-nama {
+        font-size: 10px !important;
+    }
+
+    .ttd-nip {
+        font-size: 10px !important;
+    }
+
+    /* HALAMAN 2 - Perbaikan logo dan TTD */
+    .kop-logo-copy {
+        position: absolute !important;
+        left: 0 !important;
+    }
+
+    .kop-logo-copy img {
+        width: 56px !important;
+        height: 63px !important;
+    }
+
+    .judul-dokumen {
+        margin: 20px 0 !important;
+    }
+
+    .judul-dokumen h3 {
+        font-size: 11px !important;
+        margin: 5px 0 !important;
+    }
+
+    .pembukaan-berita-acara {
+        font-size: 11px !important;
+        margin: 15px 0 !important;
+    }
+
+    .identitas-petugas {
+        font-size: 11px !important;
+        margin: 15px 0 !important;
+    }
+
+    .isi-berita-acara {
+        font-size: 11px !important;
+        margin: 15px 0 !important;
+    }
+
+    .lokasi-tanggal {
+        margin-left: 60% !important;
+        text-align: left !important;
+        margin-top: 35px !important;
+        font-size: 11px !important;
+    }
+
+    /* Perbaikan jarak TTD halaman 2 */
+    .ttd-spacer {
+        height: 42px !important;
+    }
+
+    /* HALAMAN 3 - Perbaikan logo */
+    .tabel-aset-halaman3 {
+        overflow-x: auto;
+        display: block;
+        width: 100% !important;
+    }
+
+    .tabel-utama {
+        min-width: 700px;
+        font-size: 7px !important;
+    }
+
+    .ttd-spacer-halaman3 {
+        height: 35px !important;
+    }
+
+    /* HALAMAN 4 - Perbaikan header agar tetap flex (kiri-kanan) */
+    .header-top-halaman4 {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: flex-start !important;
+    }
+
+    .judul-laporan-halaman4 {
+        text-align: left !important;
+        flex: 1 !important;
+    }
+
+    .judul-laporan-halaman4 p {
+        font-size: 10px !important;
+    }
+
+    .lampiran-halaman4 {
+        text-align: right !important;
+        font-size: 10px !important;
+    }
+
+    .kop-info-halaman4 table {
+        font-size: 10px !important;
+    }
+
+    .tabel-riwayat-halaman4 {
+        overflow-x: auto;
+        display: block;
     }
 
     .tabel-utama-halaman4 {
-        page-break-inside: auto;
+        min-width: 800px;
+        font-size: 8px !important;
     }
 
-    .tabel-utama-halaman4 tr {
-        page-break-inside: avoid;
-        page-break-after: auto;
+    /* Page break fix untuk mobile */
+    .page-break {
+        margin-top: 20px !important;
+        padding-top: 20px !important;
+        border-top: 1px dashed #ccc !important;
     }
 
-    /* Tampilkan thead hanya di halaman pertama */
-    .tabel-utama-halaman4 thead {
-        display: table-header-group;
-    }
-
-    /* Sembunyikan thead di tabel lanjutan */
-    .tabel-lanjutan .tabel-utama-halaman4 thead {
-        display: none !important;
-    }
-
-    /* GANTI dengan ini: */
-    .tabel-lanjutan {
-        margin: 0;
-        padding: 0;
-    }
-
-    .tabel-lanjutan .tabel-utama-halaman4 {
-        /* Biarkan tinggi mengikuti konten secara natural */
-        height: auto;
-        min-height: auto;
+    /* Pastikan konten tidak terpotong */
+    * {
+        max-width: 100% !important;
     }
 }
 
+/* Untuk device yang sangat kecil */
+@media only screen and (max-width: 480px) {
+    body {
+        zoom: 0.6;
+        padding: 5px !important;
+    }
 
-/* Hilangkan spacing pada halaman lanjutan */
-.page-break+.tabel-lanjutan {
-    margin-top: 0 !important;
-    padding-top: 0 !important;
+    .kop-text h1 {
+        font-size: 14px !important;
+    }
+
+    .kop-text h2 {
+        font-size: 12px !important;
+    }
+
+    .section-ttd {
+        margin-left: 65% !important;
+        width: 60% !important;
+    }
+
+    .tabel-utama,
+    .tabel-utama-halaman4 {
+        min-width: 600px;
+    }
 }
 
-/* Pastikan tidak ada gap antara rows */
-.tabel-utama-halaman4 tbody tr {
-    margin: 0;
-    padding: 0;
+/* Untuk landscape mode */
+@media only screen and (max-width: 768px) and (orientation: landscape) {
+    body {
+        zoom: 0.5;
+    }
+}
+
+/* Untuk print dari mobile */
+@media print and (max-width: 768px) {
+    body {
+        zoom: 0.7 !important;
+        transform: scale(0.7) !important;
+        transform-origin: top left !important;
+        width: 100vw !important;
+        padding: 5mm !important;
+        margin: 0 !important;
+    }
 }
