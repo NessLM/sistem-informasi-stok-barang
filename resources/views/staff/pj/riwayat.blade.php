@@ -190,7 +190,7 @@
                                             @if ($item->bukti)
                                                 <span class="riwayat-bukti-icon" data-bs-toggle="modal"
                                                     data-bs-target="#buktiModal"
-                                                    data-image="{{ asset('storage/bukti/' . $item->bukti) }}">
+                                                    data-image="{{ asset('storage/' . $item->bukti) }}">
                                                     <i class="bi bi-eye-fill"></i>
                                                 </span>
                                             @else
@@ -294,7 +294,7 @@
                                             @if ($item->bukti)
                                                 <span class="riwayat-bukti-icon" data-bs-toggle="modal"
                                                     data-bs-target="#buktiModal"
-                                                    data-image="{{ asset('storage/bukti/' . $item->bukti) }}">
+                                                    data-image="{{ asset('storage/' . $item->bukti) }}">
                                                     <i class="bi bi-eye-fill"></i>
                                                 </span>
                                             @else
@@ -372,20 +372,33 @@
         </div>
     </div>
 
-    <!-- Modal untuk menampilkan bukti -->
-    <div class="modal fade" id="buktiModal" tabindex="-1" aria-labelledby="buktiModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="buktiModalLabel">Bukti Foto</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    
+<!-- Modal untuk menampilkan bukti -->
+<div class="modal fade" id="buktiModal" tabindex="-1" aria-labelledby="buktiModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="buktiModalLabel">Bukti Foto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div id="imageLoader" class="d-none">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
                 </div>
-                <div class="modal-body text-center">
-                    <img id="buktiImage" src="" alt="Bukti" class="img-fluid" style="max-height: 70vh;">
+                <img id="buktiImage" src="" alt="Bukti" class="img-fluid" 
+                     style="max-height: 70vh; display: none;"
+                     onload="this.style.display='block'; document.getElementById('imageLoader').classList.add('d-none');"
+                     onerror="this.style.display='none'; document.getElementById('imageError').classList.remove('d-none'); document.getElementById('imageLoader').classList.add('d-none');">
+                <div id="imageError" class="d-none alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Gagal memuat gambar
                 </div>
             </div>
         </div>
     </div>
+</div>
 
     @push('scripts')
         <script>
@@ -525,12 +538,42 @@
                 }
 
                 function handleBuktiClick() {
-                    const imageUrl = this.getAttribute('data-image');
-                    const modalImage = document.querySelector('#buktiImage');
-                    if (modalImage) {
-                        modalImage.src = imageUrl;
-                    }
-                }
+        const imageUrl = this.getAttribute('data-image');
+        const modalImage = document.getElementById('buktiImage');
+        const imageLoader = document.getElementById('imageLoader');
+        const imageError = document.getElementById('imageError');
+        
+        if (modalImage && imageUrl) {
+            // Reset state
+            modalImage.style.display = 'none';
+            imageLoader.classList.remove('d-none');
+            imageError.classList.add('d-none');
+            
+            // Set image source
+            modalImage.src = imageUrl;
+            
+            console.log('Loading image:', imageUrl); // Debug
+        }
+    }
+    
+    // Attach event listeners
+    document.querySelectorAll('.riwayat-bukti-icon').forEach(icon => {
+        icon.addEventListener('click', handleBuktiClick);
+    });
+    
+    // Reset modal saat ditutup
+    const buktiModal = document.getElementById('buktiModal');
+    if (buktiModal) {
+        buktiModal.addEventListener('hidden.bs.modal', function() {
+            const modalImage = document.getElementById('buktiImage');
+            const imageLoader = document.getElementById('imageLoader');
+            const imageError = document.getElementById('imageError');
+            
+            if (modalImage) modalImage.src = '';
+            if (imageLoader) imageLoader.classList.add('d-none');
+            if (imageError) imageError.classList.add('d-none');
+        });
+    }
 
                 function handlePaginationClick() {
                     const onclickAttr = this.getAttribute('onclick');
