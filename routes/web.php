@@ -192,13 +192,15 @@ Route::prefix('pb')->name('pb.')->middleware(['auth', 'role:Pengurus Barang Peng
     // Riwayat
     Route::get('/riwayat', [PbRiwayatController::class, 'index'])->name('riwayat.index');
 
-    // Laporan (Controller)
-    Route::get('/laporan', PbLaporanController::class)->name('laporan');
+    // Laporan (invokable)
+    Route::get('/laporan', [PbLaporanController::class, 'index'])->name('laporan');
+    Route::get('/laporan/preview/{quarter}/{year}', [PbLaporanController::class, 'previewLaporan'])
+        ->name('laporan.preview');
 });
 
 
 /* =========================================================================
- | PJ AREA (Penanggung Jawab) - CLEANED & FIXED WITH KEMBALIKAN BARANG
+| PJ AREA (Penanggung Jawab) - CLEANED & FIXED WITH KEMBALIKAN BARANG
  * ========================================================================= */
 Route::prefix('pj')->name('pj.')
     ->middleware(['auth', 'role:Pengurus Barang Pembantu'])

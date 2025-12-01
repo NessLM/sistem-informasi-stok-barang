@@ -1,0 +1,1012 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Times New Roman";
+}
+
+body {
+    margin: 0;
+    padding: 20px;
+}
+
+/* Style untuk kop surat */
+.laporan-page .kop-surat {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 3px double #000;
+    padding: 10px 0;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.kop-logo {
+    position: absolute;
+    left: 0;
+    top: 10px;
+}
+
+.kop-logo img {
+    width: 80px;
+    height: 100px;
+    object-fit: contain;
+}
+
+.kop-text {
+    width: 100%;
+    text-align: center;
+}
+
+.kop-text h1 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: bold;
+    font-family: "Times New Roman", Times, serif;
+}
+
+.kop-text h2 {
+    margin: 2px 0;
+    font-size: 20px;
+    font-weight: bold;
+    font-family: "Times New Roman", Times, serif;
+}
+
+.kop-text p {
+    margin: 2px 0;
+    font-size: 14px;
+    font-family: "Times New Roman", Times, serif;
+}
+
+/* SECTION TANGGAL DAN TUJUAN */
+.tanggal-surat {
+    text-align: right;
+    margin: 30px 0 30px 0;
+    font-size: 12px;
+}
+
+.tujuan-surat {
+    margin: 30px 0;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.tujuan-surat p {
+    margin: 2px 0;
+}
+
+/* JUDUL SURAT PENGANTAR */
+.judul-surat {
+    text-align: center;
+    margin: 30px 0 20px 0;
+}
+
+.judul-surat h3 {
+    margin: 0 0 5px 0;
+    font-size: 13px;
+    font-weight: bold;
+    text-decoration: underline;
+    letter-spacing: 1px;
+}
+
+.judul-surat .nomor-surat {
+    font-size: 12px;
+    margin: 8px 0 0 0;
+}
+
+/* TABEL URAIAN */
+.table-uraian {
+    margin: 20px 0;
+    width: 100%;
+    overflow: hidden;
+}
+
+.table-uraian table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    table-layout: fixed;
+}
+
+.table-uraian th,
+.table-uraian td {
+    border: 1px solid #000;
+    padding: 8px 6px;
+    vertical-align: top;
+}
+
+.table-uraian th {
+    text-align: center;
+    font-weight: bold;
+    background-color: transparent;
+    font-size: 11px;
+}
+
+.table-uraian .col-no {
+    width: 6%;
+    text-align: center;
+}
+
+.table-uraian .col-uraian {
+    width: 54%;
+    text-align: center;
+}
+
+.table-uraian .col-jumlah {
+    width: 15%;
+    text-align: center;
+}
+
+.table-uraian .col-keterangan {
+    width: 25%;
+    text-align: center;
+}
+
+.table-uraian td {
+    line-height: 1.6;
+}
+
+.table-uraian .uraian-text {
+    text-align: left;
+    line-height: 1.7;
+}
+
+.table-uraian .uraian-text p {
+    margin: 0 0 8px 0;
+    text-indent: -10px;
+    padding-left: 10px;
+}
+
+.table-uraian .uraian-text p:last-child {
+    margin-bottom: 0;
+}
+
+/* PERBAIKI section TTD: */
+.section-ttd {
+    margin-left: 70%;
+    margin-top: 60px;
+    width: 45%;
+}
+
+.ttd-jabatan {
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 60px;
+    line-height: 1.5;
+}
+
+.ttd-nama {
+    font-size: 12px;
+    margin: 5px 0;
+}
+
+.ttd-nip {
+    font-size: 11px;
+    margin: 3px 0;
+}
+
+/* SECTION PENERIMA */
+.section-penerima {
+    margin-top: 60px;
+    padding-top: 0;
+}
+
+.penerima-info {
+    font-size: 11px;
+    line-height: 2;
+}
+
+.penerima-info table {
+    border: none;
+    border-collapse: collapse;
+}
+
+.penerima-info td {
+    border: none;
+    padding: 2px 0;
+}
+
+.penerima-info .label {
+    width: 110px;
+    vertical-align: top;
+}
+
+.penerima-info .titik-dua {
+    width: 15px;
+    text-align: center;
+}
+
+.penerima-info .garis-bawah {
+    border-bottom: 1px solid #000;
+    display: inline-block;
+    min-width: 200px;
+    text-align: center;
+}
+
+@media print {
+    body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        margin: 0;
+        padding: 15px;
+    }
+
+    .kop-surat {
+        page-break-inside: avoid;
+    }
+}
+
+@page {
+    size: A4 portrait;
+    margin: 20mm;
+}
+
+/* HALAMAN 2 STYLING */
+.pembukaan-berita-acara {
+    font-size: 12px;
+}
+
+.page-break {
+    page-break-before: always;
+}
+
+.kop-logo-copy {
+    position: absolute;
+    left: 0;
+}
+
+.kop-logo-copy img {
+    width: 80px;
+    height: 90px;
+    object-fit: contain;
+}
+
+.judul-dokumen {
+    text-align: center;
+    margin: 30px 0;
+    line-height: 1.4;
+}
+
+.judul-dokumen h3 {
+    margin: 8px 0;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.pembukaan-berita-acara {
+    margin: 25px 0 20px 0;
+    text-align: justify;
+    line-height: 1.5;
+}
+
+.identitas-petugas {
+    font-size: 12px;
+    margin: 20px 0 25px 0;
+}
+
+.identitas-petugas table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.identitas-petugas td {
+    padding: 3px 0;
+    vertical-align: top;
+}
+
+.identitas-petugas .label {
+    width: 80px;
+    padding-left: 20px;
+    font-weight: normal;
+}
+
+.identitas-petugas .titik-dua {
+    width: 10px;
+    text-align: center;
+}
+
+.isi-berita-acara {
+    text-align: justify;
+    line-height: 1.5;
+    margin: 25px 0;
+    font-size: 12px;
+}
+
+.isi-berita-acara p {
+    margin-bottom: 15px;
+}
+
+.ttd-berita-acara {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0 30px 0;
+}
+
+.ttd-kiri,
+.ttd-kanan {
+    text-align: center;
+    width: 45%;
+}
+
+.ttd-jabatan {
+    font-weight: normal;
+    margin-bottom: 5px;
+}
+
+.ttd-spacer {
+    height: 60px;
+}
+
+.ttd-nama {
+    margin: 5px 0;
+}
+
+.ttd-nip {
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.mengesahkan-berita-acara {
+    text-align: center;
+    margin: 30px 0 20px 0;
+}
+
+.ttd-mengesahkan {
+    display: inline-block;
+    text-align: center;
+}
+
+.lokasi-tanggal {
+    font-size: 12px;
+    margin-left: 435px;
+    margin-top: 50px;
+    font-weight: normal;
+}
+
+/* HALAMAN 3 STYLING */
+
+.page-break {
+    page-break-before: always;
+}
+
+/* KOP SURAT HALAMAN 3 */
+.kop-surat-halaman3 {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+}
+
+.kop-logo-halaman3 {
+    flex: 0 0 auto;
+    margin-right: 15px;
+}
+
+.kop-logo-halaman3 img {
+    width: 65px;
+    height: auto;
+}
+
+.kop-text-halaman3 {
+    flex: 1;
+    text-align: center;
+}
+
+.kop-text-halaman3 h1 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+    line-height: 1.2;
+}
+
+.kop-text-halaman3 h2 {
+    margin: 1px 0;
+    font-size: 12px;
+    font-weight: bold;
+    line-height: 1.2;
+}
+
+.kop-text-halaman3 p {
+    margin: 1px 0;
+    font-size: 10px;
+    line-height: 1.2;
+}
+
+.garis-pemisah {
+    border: none;
+    border-top: 2px solid #000;
+    margin: 5px 0 10px 0;
+}
+
+/* JUDUL DOKUMEN HALAMAN 3 */
+.judul-dokumen-halaman3 {
+    text-align: center;
+    margin: 15px 0;
+    line-height: 1.2;
+}
+
+.judul-dokumen-halaman3 h3 {
+    margin: 3px 0;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    line-height: 1.2;
+}
+
+.nomor-surat-halaman3 {
+    font-size: 10px;
+    font-weight: bold;
+    margin: 5px 0 0 0;
+}
+
+/* PEMBUKAAN BERITA ACARA HALAMAN 3 */
+.pembukaan-berita-acara-halaman3 {
+    margin: 15px 0 10px 0;
+    text-align: justify;
+    line-height: 1.3;
+    font-size: 10px;
+}
+
+/* IDENTITAS PIHAK HALAMAN 3 */
+.identitas-pihak-halaman3 {
+    margin: 15px 0;
+}
+
+.pihak-section {
+    margin-bottom: 12px;
+}
+
+.pihak-title {
+    font-size: 10px;
+    margin: 0 0 3px 0;
+}
+
+.identitas-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9px;
+}
+
+.identitas-table td {
+    padding: 1px 0;
+    vertical-align: top;
+}
+
+.identitas-table .label {
+    width: 25px;
+    font-weight: normal;
+}
+
+.identitas-table .label-wide {
+    padding-left: 10px;
+}
+
+.identitas-table .titik-dua {
+    width: 5px;
+    text-align: center;
+}
+
+.keterangan-pihak {
+    padding-top: 2px;
+    line-height: 1.2;
+}
+
+/* TABEL ASET HALAMAN 3 */
+.tabel-aset-halaman3 {
+    width: 700px;
+}
+
+.tabel-aset-halaman3 h4 {
+    font-size: 10px;
+    font-weight: bold;
+    text-align: center;
+    margin: 0 0 8px 0;
+}
+
+.tabel-utama {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 7px;
+    line-height: 1.1;
+}
+
+.tabel-utama th {
+    border: 1px solid #000;
+    padding: 2px 1px;
+    text-align: center;
+    font-weight: bold;
+    background-color: #f0f0f0;
+}
+
+.tabel-utama td {
+    border: 1px solid #000;
+    padding: 1px;
+    vertical-align: top;
+}
+
+.tabel-utama tbody td.col-angka {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.col-no {
+    width: 3%;
+}
+
+.col-uraian {
+    width: 19%;
+}
+
+.col-angka {
+    width: 11%;
+    text-align: center;
+}
+
+.col-opname {
+    text-align: center;
+    width: 20%;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+    padding-right: 2px;
+}
+
+.kategori-header {
+    background-color: #e8e8e8;
+    font-weight: bold;
+}
+
+.kategori-header td {
+    border: 1px solid #000;
+    padding: 2px 1px;
+}
+
+.sub-item {
+    background-color: #f8f8f8;
+}
+
+.sub-item-text {
+    padding-left: 15px !important;
+    font-style: italic;
+}
+
+.total-row {
+    background-color: #d0d0d0;
+    font-weight: bold;
+}
+
+.total-row td {
+    border: 1px solid #000;
+    padding: 2px 1px;
+}
+
+/* KETERANGAN LAMPIRAN HALAMAN 3 */
+.keterangan-lampiran-halaman3 {
+    margin: 12px 0;
+    text-align: justify;
+    font-size: 9px;
+    line-height: 1.3;
+}
+
+.keterangan-lampiran-halaman3 p {
+    margin: 2px 0;
+}
+
+.keterangan-m {
+    font-size: 10px;
+}
+
+/* PENUTUP BERITA ACARA HALAMAN 3 */
+.penutup-berita-acara-halaman3 {
+    margin: 12px 0;
+    text-align: justify;
+    font-size: 9px;
+    line-height: 1.3;
+}
+
+/* TANDA TANGAN HALAMAN 3 */
+.ttd-berita-acara-halaman3 {
+    display: flex;
+    justify-content: space-between;
+    margin: 20px 0 10px 0;
+}
+
+.ttd-kiri-halaman3,
+.ttd-tengah-halaman3,
+.ttd-kanan-halaman3 {
+    text-align: center;
+    width: 30%;
+}
+
+.ttd-jabatan-halaman3 {
+    font-weight: normal;
+    margin-bottom: 2px;
+    font-size: 9px;
+    line-height: 1.1;
+}
+
+.ttd-spacer-halaman3 {
+    height: 50px;
+}
+
+.ttd-nama-halaman3 {
+    margin: 2px 0;
+    font-size: 9px;
+    line-height: 1.1;
+}
+
+.ttd-nip-halaman3 {
+    font-size: 8px;
+    margin-top: 1px;
+    line-height: 1.1;
+}
+
+/* PEJABAT PENATAUSAHAAN HALAMAN 3 */
+.pejabat-penatausahaan-halaman3 {
+    text-align: center;
+    margin: 5px 0;
+}
+
+.ttd-pejabat-halaman3 {
+    display: inline-block;
+    text-align: center;
+}
+
+/* Untuk tampilan web dalam modal */
+@media screen {
+    .page-break {
+        display: block;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 2px dashed #ccc;
+    }
+
+    .tabel-utama {
+        font-size: 8px;
+    }
+
+    .identitas-table {
+        font-size: 10px;
+    }
+}
+
+
+
+/* HALAMAN 4 */
+.header-halaman4 {
+    margin-bottom: 20px;
+}
+
+.header-top-halaman4 {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.judul-laporan-halaman4 {
+    text-align: left;
+    line-height: 1.3;
+    flex: 1;
+}
+
+.judul-laporan-halaman4 p {
+    margin: 2px 0;
+    font-size: 11px;
+}
+
+.lampiran-halaman4 {
+    text-align: right;
+    font-size: 11px;
+    padding-top: 0;
+}
+
+.lampiran-halaman4 p {
+    margin: 0;
+}
+
+.kop-info-halaman4 {
+    margin: 15px 0;
+}
+
+.kop-info-halaman4 table {
+    border-collapse: collapse;
+    font-size: 11px;
+}
+
+.kop-info-halaman4 td {
+    padding: 2px 0;
+    vertical-align: top;
+}
+
+.label-halaman4 {
+    width: 150px;
+    font-weight: normal;
+}
+
+.titik-dua-halaman4 {
+    width: 10px;
+    text-align: center;
+}
+
+/* TABEL RIWAYAT HALAMAN 4 */
+
+
+.tabel-utama-halaman4 {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9px;
+}
+
+.tabel-utama-halaman4 th {
+    border: 1px solid #000;
+    padding: 4px 2px;
+    font-weight: bold;
+    background-color: #f0f0f0;
+}
+
+.tabel-utama-halaman4 td {
+    border: 1px solid #000;
+    padding: 3px 2px;
+    vertical-align: top;
+}
+
+.col-kode-h4,
+.isi-kode {
+    text-align: center;
+    width: 15%;
+}
+
+.col-uraian-h4,
+.isi-uraian {
+    text-align: center;
+    width: 22%;
+}
+
+.col-volume-h4,
+.isi-volume {
+    text-align: center;
+    width: 8%;
+}
+
+.col-satuan-h4,
+.isi-satuan {
+    text-align: center;
+    width: 8%;
+}
+
+.col-harga-h4,
+.isi-harga {
+    text-align: center;
+    width: 12%;
+}
+
+.col-jumlah-h4,
+.isi-jumlah {
+    text-align: center;
+    width: 13%;
+}
+
+.col-keterangan-h4,
+.isi-keterangan {
+    text-align: center;
+    width: 12%;
+}
+
+.sub-header-h4 {
+    font-size: 10px;
+}
+
+.tabel-utama-halaman4 .text-center {
+    text-align: center;
+}
+
+.tabel-utama-halaman4 .text-left {
+    text-align: left;
+    padding-left: 4px;
+}
+
+.tabel-utama-halaman4 .text-right {
+    text-align: right;
+    padding-right: 4px;
+}
+
+
+/* Styling untuk header kategori */
+.tabel-utama-halaman4 tbody tr[style*="font-weight: bold"] {
+    font-weight: bold;
+}
+
+/* Padding untuk baris detail barang */
+.tabel-utama-halaman4 tbody tr:not([style*="font-weight: bold"]) td:first-child {
+    padding-left: 5px;
+}
+
+/* Ensure page break works properly */
+.page-break {
+    page-break-after: always;
+    break-after: page;
+}
+
+
+/* ===== PERBAIKAN TABEL HALAMAN 4 ===== */
+
+/* Container tabel - maksimalkan tinggi */
+.tabel-riwayat-halaman4 {
+    width: 100%;
+    margin-top: 10px;
+    margin-bottom: 0;
+}
+
+/* Tabel lanjutan tanpa header - FULL HEIGHT */
+.tabel-lanjutan {
+    margin: 0;
+    padding: 0;
+}
+
+
+
+/* Tabel utama dengan fixed layout */
+.tabel-utama-halaman4 {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    /* KUNCI: Agar lebar kolom konsisten di semua halaman */
+}
+
+/* Style header */
+.tabel-utama-halaman4 thead th {
+    border: 1px solid #000;
+    padding: 6px 4px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 11px;
+    background-color: #f5f5f5;
+    vertical-align: middle;
+}
+
+.tabel-utama-halaman4 thead .sub-header-h4 {
+    padding: 4px;
+    font-size: 10px;
+}
+
+/* Style body */
+.tabel-utama-halaman4 tbody td {
+    border: 1px solid #000;
+    padding: 5px 4px;
+    font-size: 10px;
+    vertical-align: top;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+/* Alignment sesuai class */
+.tabel-utama-halaman4 .text-left {
+    text-align: left;
+}
+
+.tabel-utama-halaman4 .text-center {
+    text-align: center;
+}
+
+.tabel-utama-halaman4 .text-right {
+    text-align: right;
+}
+
+/* Baris header kategori (bold) */
+.tabel-utama-halaman4 tbody tr[style*="font-weight: bold"] td {
+    font-weight: bold;
+    background-color: #f9f9f9;
+}
+
+.uraian-total{
+    font-weight: bold;
+    border-top: 1px solid #000;
+    background-color: #d9ea21;
+}
+
+/* ===== KONTROL PAGE BREAK ===== */
+.page-break {
+    page-break-after: always;
+    page-break-inside: avoid;
+    height: 0;
+    margin: 0;
+    padding: 0;
+}
+
+/* Cegah row terputus di tengah */
+.tabel-utama-halaman4 tbody tr {
+    page-break-inside: avoid;
+}
+
+/* ===== FOOTER HALAMAN 4 ===== */
+.footer-lampiran-halaman4 {
+    margin-top: 30px;
+    page-break-inside: avoid;
+}
+
+.footer-lampiran-halaman4 table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.footer-lampiran-halaman4 .ttd-jabatan {
+    font-size: 11px;
+    font-weight: normal;
+}
+
+.footer-lampiran-halaman4 .ttd-nama {
+    font-size: 11px;
+    font-weight: bold;
+    text-decoration: underline;
+    margin-top: 50px;
+}
+
+.footer-lampiran-halaman4 .ttd-nip {
+    font-size: 10px;
+    margin-top: 2px;
+}
+
+
+/* Print optimization untuk halaman 4 */
+@media print {
+    body {
+        margin: 0;
+        padding: 15px;
+    }
+
+    .tabel-utama-halaman4 {
+        page-break-inside: auto;
+    }
+
+    .tabel-utama-halaman4 tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+    }
+
+    /* Tampilkan thead hanya di halaman pertama */
+    .tabel-utama-halaman4 thead {
+        display: table-header-group;
+    }
+
+    /* Sembunyikan thead di tabel lanjutan */
+    .tabel-lanjutan .tabel-utama-halaman4 thead {
+        display: none !important;
+    }
+
+    /* GANTI dengan ini: */
+    .tabel-lanjutan {
+        margin: 0;
+        padding: 0;
+    }
+
+    .tabel-lanjutan .tabel-utama-halaman4 {
+        /* Biarkan tinggi mengikuti konten secara natural */
+        height: auto;
+        min-height: auto;
+    }
+}
+
+
+/* Hilangkan spacing pada halaman lanjutan */
+.page-break+.tabel-lanjutan {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+/* Pastikan tidak ada gap antara rows */
+.tabel-utama-halaman4 tbody tr {
+    margin: 0;
+    padding: 0;
+}

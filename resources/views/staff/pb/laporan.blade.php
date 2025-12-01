@@ -1,140 +1,506 @@
 {{-- resources/views/staff/pb/laporan.blade.php --}}
 <x-layouts.app title="Laporan" :menu="$menu">
-  {{-- CSS khusus halaman ini --}}
-  <link rel="stylesheet" href="{{ asset('assets/css/staff/pb/laporan.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/staff/pb/laporan.css') }}">
 
-  @php
-    // sementara: dummy data kalau controller belum isi $reports
-    $reports = $reports ?? [
-      ['title' => 'LAPORAN STOCK OPNAME BULAN JULI – SEPTEMBER', 'preview_url' => asset('assets/images/laporan/contoh-opname.jpg')],
-      ['title' => 'LAPORAN STOCK OPNAME BULAN APRIL – JUNI', 'preview_url' => asset('assets/images/laporan/contoh-opname.jpg')],
-      ['title' => 'LAPORAN STOCK OPNAME BULAN FEBRUARI – MARET', 'preview_url' => asset('assets/images/laporan/contoh-opname.jpg')],
-      ['title' => 'LAPORAN STOCK OPNAME BARANG GUDANG 2025', 'preview_url' => asset('assets/images/laporan/contoh-opname.jpg')],
-    ];
-  @endphp
+    <div class="page-body">
+        <div class="card">
+            <h3>Laporan Stock Opname</h3>
 
-  <div class="page-body">
-    <div class="card">
-      <h3>Laporan</h3>
-
-      <div class="table-responsive">
-        <table class="table table-bordered table-laporan">
-          <thead>
-            <tr>
-              <th class="text-start">LAPORAN</th>
-              <th class="col-aksi">AKSI</th>
-            </tr>
-          </thead>
-          <tbody>
-            @foreach ($reports as $r)
-              @php
-                $title = is_array($r) ? ($r['title'] ?? '') : ($r->title ?? '');
-                $url = is_array($r) ? ($r['preview_url'] ?? '') : ($r->preview_url ?? ($r->file_url ?? ''));
-              @endphp
-              <tr>
-                <td class="text-start">{{ $title }}</td>
-                <td class="text-center">
-                  @if ($url)
-                    {{-- 👁️ ikon & hover persis halaman Riwayat, tapi trigger modal custom lap-modal --}}
-                    <span class="riwayat-bukti-icon" data-url="{{ $url }}" data-title="{{ $title }}" title="Pratinjau">
-                      <i class="bi bi-eye-fill"></i>
-                    </span>
-                  @else
-                    <span class="text-muted">-</span>
-                  @endif
-                </td>
-              </tr>
-            @endforeach
-          </tbody>
-        </table>
-      </div>
+            <div class="table-responsive">
+                <table class="table table-bordered table-laporan">
+                    <thead>
+                        <tr>
+                            <th class="text-start">LAPORAN</th>
+                            <th class="col-aksi">AKSI</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($reports as $report)
+                            <tr>
+                                <td class="text-start">{{ $report['title'] }}</td>
+                                <td class="text-center">
+                                    @if ($report['exists'])
+                                        <span class="riwayat-bukti-icon" data-quarter="{{ $report['quarter'] }}"
+                                            data-year="{{ $report['year'] }}" data-title="{{ $report['title'] }}"
+                                            title="Pratinjau Laporan" style="cursor: pointer; color: #3498db; font-size: 18px;">
+                                            <i class="bi bi-eye-fill"></i>
+                                        </span>
+                                    @else
+                                        <span class="text-muted" title="Laporan belum tersedia">-</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
-  </div>
 
-  {{-- ===== Modal custom ala konten-kanan (bukan Bootstrap modal) ===== --}}
-  <div id="lapModal" class="lap-modal" aria-hidden="true" role="dialog" aria-labelledby="lapModalTitle">
-    <div class="lap-modal__backdrop" data-close></div>
+    {{-- ===== Modal untuk preview laporan HTML ===== --}}
+    <div id="lapModal" class="lap-modal" aria-hidden="true" role="dialog" aria-labelledby="lapModalTitle">
+        <div class="lap-modal__backdrop" data-close></div>
 
-    <div class="lap-modal__dialog">
-      <div class="lap-modal__toolbar">
-        <h3 id="lapModalTitle" class="lap-modal__title">Pratinjau Laporan</h3>
-        <button class="lap-modal__close" type="button" data-close aria-label="Tutup">
-          <i class="bi bi-x-lg"></i>
-        </button>
-      </div>
+        <div class="lap-modal__dialog">
+            {{-- Toolbar --}}
+            <div class="lap-modal__toolbar">
+                <h3 id="lapModalTitle" class="lap-modal__title">Pratinjau Laporan</h3>
+                <button class="lap-modal__close" type="button" data-close aria-label="Tutup">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
 
-      <div class="lap-modal__body">
-        {{-- default: gambar --}}
-        <img id="lapModalImg" class="lap-modal__img" alt="Pratinjau Laporan" loading="lazy">
-        {{-- jika file PDF, akan switch ke iframe --}}
-        <iframe id="lapModalPdf" class="lap-modal__pdf" title="Pratinjau PDF" hidden></iframe>
-      </div>
+            {{-- Controls: Zoom & Pagination --}}
+            <div class="lap-modal__controls">
+                {{-- Zoom Controls --}}
+                <div class="control-group">
+                    <button class="control-btn" id="zoomOut" title="Zoom Out">
+                        <i class="bi bi-zoom-out"></i>
+                    </button>
+                    <span class="zoom-info" id="zoomLevel">100%</span>
+                    <button class="control-btn" id="zoomIn" title="Zoom In">
+                        <i class="bi bi-zoom-in"></i>
+                    </button>
+                    <button class="control-btn" id="zoomReset" title="Reset Zoom">
+                        <i class="bi bi-arrow-clockwise"></i> Reset
+                    </button>
+                </div>
+
+                {{-- Pagination Controls --}}
+                <div class="control-group">
+                    <button class="control-btn" id="prevPage" title="Halaman Sebelumnya">
+                        <i class="bi bi-chevron-left"></i> Prev
+                    </button>
+                    <span class="page-info" id="pageInfo">1 / 1</span>
+                    <button class="control-btn" id="nextPage" title="Halaman Selanjutnya">
+                        Next <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            {{-- Modal Body --}}
+            <div class="lap-modal__body">
+                {{-- Container untuk konten HTML laporan --}}
+                <div id="laporanContent" class="laporan-content">
+                    {{-- Pages will be inserted here --}}
+                </div>
+
+                {{-- Loading indicator --}}
+                <div id="laporanLoading" class="laporan-loading" style="display: none;">
+                    <div class="loading-spinner"></div>
+                    <p>Memuat laporan...</p>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 
-  @push('scripts')
-    <script>
-      // ===== LapModal: open/close + auto detect PDF vs Image =====
-      const lapModal = document.getElementById('lapModal');
-      const lapImg = document.getElementById('lapModalImg');
-      const lapPdf = document.getElementById('lapModalPdf');
-      const lapTtl = document.getElementById('lapModalTitle');
+    @push('scripts')
+        <script>
+            // URL dinamis dari Laravel (ikut subfolder/public otomatis)
+            const laporanPdfCssUrl = @json(asset('assets/css/staff/pb/laporan_pdf.css'));
+            const laporanPreviewBaseUrl = @json(url('pb/laporan/preview'));
 
-      function openLapModal(url, title) {
-        lapTtl.textContent = title || 'Pratinjau';
-        const isPdf = /\.pdf(\?|$)/i.test(url);
-        if (isPdf) {
-          lapImg.hidden = true; lapImg.src = '';
-          lapPdf.hidden = false; lapPdf.src = url;
-        } else {
-          lapPdf.hidden = true; lapPdf.src = '';
-          lapImg.hidden = false; lapImg.src = url;
-        }
-        lapModal.classList.add('is-open');
-        lapModal.setAttribute('aria-hidden', 'false');
+            // // Ensure laporan_pdf.css is loaded
+            // (function loadLaporanCSS() {
+            //     if (!document.querySelector('link[href="/assets/css/staff/pb/laporan_pdf.css"]')) {
+            //         let link = document.createElement("link");
+            //         link.rel = "stylesheet";
+            //         link.href = "/assets/css/staff/pb/laporan_pdf.css";
+            //         document.head.appendChild(link);
+            //     }
+            // })();
 
-        // Tambahkan kelas untuk mobile
-        if (window.innerWidth <= 768) {
-          document.body.classList.add('modal-open-mobile');
-        }
-      }
+            // ===== Global Variables =====
+            const lapModal = document.getElementById('lapModal');
+            const laporanContent = document.getElementById('laporanContent');
+            const laporanLoading = document.getElementById('laporanLoading');
+            const lapTtl = document.getElementById('lapModalTitle');
+            const pageInfo = document.getElementById('pageInfo');
+            const zoomLevel = document.getElementById('zoomLevel');
 
-      function closeLapModal() {
-        lapModal.classList.remove('is-open');
-        lapModal.setAttribute('aria-hidden', 'true');
-        lapImg.src = ''; lapPdf.src = '';
+            let currentPage = 1;
+            let totalPages = 1;
+            let currentZoom = 1.0;
+            let pages = [];
+            let fullHTML = '';
 
-        // Hapus kelas untuk mobile
-        document.body.classList.remove('modal-open-mobile');
-      }
+            // ===== Zoom Controls =====
+            const zoomStep = 0.1;
+            const minZoom = 0.5;
+            const maxZoom = 2.0;
 
-      // Trigger dari ikon 👁️ (class sama seperti Riwayat)
-      document.addEventListener('click', (e) => {
-        const eye = e.target.closest('.riwayat-bukti-icon');
-        if (eye) {
-          const url = eye.getAttribute('data-url');
-          const title = eye.getAttribute('data-title')
-            || eye.closest('tr')?.querySelector('td')?.textContent?.trim();
-          openLapModal(url, title);
-        }
-        if (e.target.closest('[data-close]')) closeLapModal();
-      });
+            document.getElementById('zoomIn').addEventListener('click', () => {
+                if (currentZoom < maxZoom) {
+                    currentZoom = Math.min(currentZoom + zoomStep, maxZoom);
+                    applyZoom();
+                }
+            });
 
-      // ESC to close
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && lapModal.classList.contains('is-open')) closeLapModal();
-      });
+            document.getElementById('zoomOut').addEventListener('click', () => {
+                if (currentZoom > minZoom) {
+                    currentZoom = Math.max(currentZoom - zoomStep, minZoom);
+                    applyZoom();
+                }
+            });
 
-      // Responsif saat resize window
-      window.addEventListener('resize', function () {
-        if (lapModal.classList.contains('is-open')) {
-          if (window.innerWidth <= 768) {
-            document.body.classList.add('modal-open-mobile');
-          } else {
-            document.body.classList.remove('modal-open-mobile');
-          }
-        }
-      });
-    </script>
-  @endpush
+            document.getElementById('zoomReset').addEventListener('click', () => {
+                currentZoom = 1.0;
+                applyZoom();
+            });
+
+            function applyZoom() {
+                const activePage = laporanContent.querySelector('.laporan-page.active');
+                if (activePage) {
+                    activePage.style.transform = `scale(${currentZoom})`;
+                }
+                zoomLevel.textContent = `${Math.round(currentZoom * 100)}%`;
+
+                // Update button states
+                document.getElementById('zoomIn').disabled = currentZoom >= maxZoom;
+                document.getElementById('zoomOut').disabled = currentZoom <= minZoom;
+            }
+
+            // ===== Pagination Controls =====
+            document.getElementById('prevPage').addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    showPage(currentPage);
+                }
+            });
+
+            document.getElementById('nextPage').addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    showPage(currentPage);
+                }
+            });
+
+            function showPage(pageNum) {
+                console.log('Showing page:', pageNum, 'of', totalPages);
+
+                // Hide all pages
+                const allPages = laporanContent.querySelectorAll('.laporan-page');
+                allPages.forEach(page => {
+                    page.classList.remove('active');
+                    page.style.display = 'none';
+                });
+
+                // Show current page
+                const currentPageEl = laporanContent.querySelector(`[data-page="${pageNum}"]`);
+                if (currentPageEl) {
+                    currentPageEl.classList.add('active');
+                    currentPageEl.style.display = 'block';
+                    applyZoom();
+                }
+
+                // Update page info
+                pageInfo.textContent = `${pageNum} / ${totalPages}`;
+
+                // Update button states
+                document.getElementById('prevPage').disabled = pageNum === 1;
+                document.getElementById('nextPage').disabled = pageNum === totalPages;
+            }
+
+            // ===== Modal Functions =====
+            async function openLapModal(quarter, year, title) {
+                let link = document.createElement("link");
+                link.rel = "stylesheet";
+                link.href = laporanPdfCssUrl;   // <- pakai URL dari Blade
+                link.id = "laporanPdfCss";  // PENTING!
+                document.head.appendChild(link);
+
+                console.log('Opening modal for:', quarter, year, title);
+
+                lapTtl.textContent = title || 'Pratinjau Laporan';
+
+                // Reset state
+                currentPage = 1;
+                currentZoom = 1.0;
+                pages = [];
+
+                // Show modal and loading
+                lapModal.classList.add('is-open');
+                lapModal.setAttribute('aria-hidden', 'false');
+                laporanLoading.style.display = 'flex';
+                laporanContent.innerHTML = '';
+                laporanContent.style.display = 'none';
+
+                try {
+                    // Load content
+                    const url = `${laporanPreviewBaseUrl}/${quarter}/${year}`;
+                    console.log('Fetching:', url);
+
+                    const response = await fetch(url);
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+
+                    fullHTML = await response.text();
+                    console.log('HTML loaded, length:', fullHTML.length);
+
+                    if (!fullHTML || fullHTML.length < 100) {
+                        throw new Error('HTML content is too short or empty');
+                    }
+
+                    // Parse and split into pages
+                    splitIntoPages(fullHTML);
+
+                    // Show first page
+                    if (pages.length > 0) {
+                        totalPages = pages.length;
+                        console.log('Total pages created:', totalPages);
+
+                        laporanLoading.style.display = 'none';
+                        laporanContent.style.display = 'block';
+                        showPage(1);
+                    } else {
+                        throw new Error('No pages were created');
+                    }
+
+                } catch (error) {
+                    console.error('Error loading report:', error);
+                    laporanLoading.style.display = 'none';
+                    laporanContent.innerHTML = `
+                                <div style="padding: 2rem; text-align: center;">
+                                  <div class="alert alert-danger" style="display: inline-block; text-align: left;">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                    <strong>Gagal memuat laporan</strong><br>
+                                    ${error.message}<br><br>
+                                    <small>Quarter: ${quarter}, Year: ${year}</small>
+                                  </div>
+                                </div>
+                              `;
+                    laporanContent.style.display = 'block';
+                }
+
+                if (window.innerWidth <= 768) {
+                    document.body.classList.add('modal-open-mobile');
+                }
+            }
+
+            function splitIntoPages(html) {
+                console.log('Starting splitIntoPages...');
+
+                // Create parser
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const body = doc.body;
+
+                if (!body) {
+                    console.error('No body found in parsed HTML');
+                    return;
+                }
+
+                console.log('Body parsed successfully, children:', body.children.length);
+
+                // Reset pages
+                pages = [];
+                laporanContent.innerHTML = '';
+
+                // Find all page breaks and split content
+                const allElements = Array.from(body.children);
+                let currentPage = 1;
+                let currentPageEl = createPage(currentPage);
+
+                pages.push(currentPageEl);
+                laporanContent.appendChild(currentPageEl);
+
+                allElements.forEach((el, index) => {
+                    // Check if this element has page-break class
+                    if (el.classList.contains('page-break')) {
+                        // Start new page
+                        currentPage++;
+                        currentPageEl = createPage(currentPage);
+                        pages.push(currentPageEl);
+                        laporanContent.appendChild(currentPageEl);
+                        console.log(`Page break detected, creating page ${currentPage}`);
+                    } else {
+                        // Add element to current page
+                        currentPageEl.appendChild(el.cloneNode(true));
+                    }
+                });
+
+                totalPages = pages.length;
+                console.log(`Total pages created: ${totalPages}`);
+
+                // Show first page
+                if (pages.length > 0) {
+                    laporanLoading.style.display = 'none';
+                    laporanContent.style.display = 'block';
+                    showPage(1);
+                } else {
+                    throw new Error('No pages were created');
+                }
+            }
+
+            // Atau alternatif yang lebih robust:
+            function splitIntoPagesRobust(html) {
+                console.log('Starting robust splitIntoPages...');
+
+                // Create temporary container
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = html;
+
+                // Debug: Check what we actually received
+                console.log('Raw HTML structure:', tempDiv.innerHTML.substring(0, 500));
+
+                // Find all sections by looking for specific patterns
+                const kopSurat = tempDiv.querySelector('.kop-surat');
+                const judulLaporan = tempDiv.querySelector('.judul-laporan');
+                const infoSurat = tempDiv.querySelector('.info-surat');
+                const tables = tempDiv.querySelectorAll('table');
+                const headings = tempDiv.querySelectorAll('h2, h3, h4');
+
+                console.log('Found elements:', {
+                    kopSurat: kopSurat ? 'YES' : 'NO',
+                    judulLaporan: judulLaporan ? 'YES' : 'NO',
+                    infoSurat: infoSurat ? 'YES' : 'NO',
+                    tables: tables.length,
+                    headings: headings.length
+                });
+
+                // Reset pages
+                pages = [];
+                laporanContent.innerHTML = '';
+
+                // Simple approach: Create one page with everything
+                const page = createPage(1);
+
+                if (kopSurat) {
+                    console.log('Adding kop surat');
+                    page.appendChild(kopSurat.cloneNode(true));
+                }
+
+                if (judulLaporan) {
+                    console.log('Adding judul laporan');
+                    page.appendChild(judulLaporan.cloneNode(true));
+                }
+
+                if (infoSurat) {
+                    console.log('Adding info surat');
+                    page.appendChild(infoSurat.cloneNode(true));
+                }
+
+                // Add all tables and headings
+                headings.forEach((heading, index) => {
+                    console.log(`Adding heading ${index}:`, heading.textContent);
+                    page.appendChild(heading.cloneNode(true));
+
+                    // Try to find associated table
+                    let nextEl = heading.nextElementSibling;
+                    while (nextEl && nextEl.tagName !== 'TABLE') {
+                        nextEl = nextEl.nextElementSibling;
+                    }
+
+                    if (nextEl && nextEl.tagName === 'TABLE') {
+                        console.log(`Adding table for heading ${index}`);
+                        page.appendChild(nextEl.cloneNode(true));
+                    }
+                });
+
+                // Add any remaining tables that might have been missed
+                tables.forEach((table, index) => {
+                    if (!page.contains(table)) {
+                        console.log(`Adding remaining table ${index}`);
+                        page.appendChild(table.cloneNode(true));
+                    }
+                });
+
+                // Add TTD if exists
+                const ttd = tempDiv.querySelector('.ttd');
+                if (ttd) {
+                    console.log('Adding TTD');
+                    page.appendChild(ttd.cloneNode(true));
+                }
+
+                laporanContent.appendChild(page);
+                pages.push(page);
+                totalPages = 1;
+
+                console.log('Page created with all content');
+            }
+
+            function createPage(pageNum) {
+                const page = document.createElement('div');
+                page.className = 'laporan-page';
+                page.setAttribute('data-page', pageNum);
+                page.style.display = 'none';
+                return page;
+            }
+
+            function closeLapModal() {
+
+                lapModal.classList.remove('is-open');
+                lapModal.setAttribute('aria-hidden', 'true');
+                laporanContent.innerHTML = '';
+                pages = [];
+                currentPage = 1;
+                currentZoom = 1.0;
+                fullHTML = '';
+                document.body.classList.remove('modal-open-mobile');
+                // Hapus CSS laporan
+                const css = document.getElementById('laporanPdfCss');
+                if (css) css.remove();
+            }
+
+
+            // ===== Event Listeners =====
+            document.addEventListener('click', (e) => {
+                const eye = e.target.closest('.riwayat-bukti-icon');
+                if (eye) {
+                    e.preventDefault();
+                    const quarter = eye.getAttribute('data-quarter');
+                    const year = eye.getAttribute('data-year');
+                    const title = eye.getAttribute('data-title');
+                    openLapModal(quarter, year, title);
+                }
+
+                if (e.target.closest('[data-close]')) {
+                    e.preventDefault();
+                    closeLapModal();
+                }
+            });
+
+            // Keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                if (!lapModal.classList.contains('is-open')) return;
+
+                if (e.key === 'Escape') {
+                    closeLapModal();
+                } else if (e.key === 'ArrowLeft' && currentPage > 1) {
+                    document.getElementById('prevPage').click();
+                } else if (e.key === 'ArrowRight' && currentPage < totalPages) {
+                    document.getElementById('nextPage').click();
+                } else if (e.key === '+' || e.key === '=') {
+                    document.getElementById('zoomIn').click();
+                } else if (e.key === '-') {
+                    document.getElementById('zoomOut').click();
+                } else if (e.key === '0') {
+                    document.getElementById('zoomReset').click();
+                }
+            });
+
+            // Responsive handling
+            window.addEventListener('resize', function () {
+                if (lapModal.classList.contains('is-open')) {
+                    if (window.innerWidth <= 768) {
+                        document.body.classList.add('modal-open-mobile');
+                    } else {
+                        document.body.classList.remove('modal-open-mobile');
+                    }
+                }
+            });
+
+            // Prevent zoom on double-tap for mobile
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function (event) {
+                const now = (new Date()).getTime();
+                if (now - lastTouchEnd <= 300) {
+                    event.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, false);
+        </script>
+    @endpush
 </x-layouts.app>
