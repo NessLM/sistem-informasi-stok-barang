@@ -314,7 +314,7 @@
             <!-- TTD KIRI -->
             <td style="width: 50%; text-align: center; vertical-align: top;">
                 <div class="ttd-jabatan">Pejabat Penatausahaan Pengguna Barang</div>
-                <br><br><br> <!-- Spacer Tanda Tangan -->
+                <br><br> <!-- Spacer Tanda Tangan -->
                 <div class="ttd-nama">Hiskawati, S.AP</div>
                 <div class="ttd-nip">NIP. 198109202006042007</div>
             </td>
@@ -322,7 +322,7 @@
             <!-- TTD KANAN -->
             <td style="width: 50%; text-align: center; vertical-align: top;">
                 <div class="ttd-jabatan">Penanggung Jawab LBP <br> Pengurus Barang Pengguna,</div>
-                <br><br> <!-- Spacer Tanda Tangan -->
+                <br> <!-- Spacer Tanda Tangan -->
                 <div class="ttd-nama">Redha Efrida, A.Md</div>
                 <div class="ttd-nip">NIP. 198206192008042002</div>
             </td>
@@ -334,9 +334,9 @@
         <tr>
             <td style="text-align: center;">
 
-                <div class="ttd-jabatan">Mengetahui</div>
+                <div class="ttd-jabatan mengetahui">Mengetahui</div>
                 <div class="ttd-jabatan">Pengguna Barang,</div>
-                <br><br> <!-- Spacer Tanda Tangan -->
+                <br><!-- Spacer Tanda Tangan -->
                 <div class="ttd-nama">Thony Marza, AP</div>
                 <div class="ttd-nip">NIP. 19750306199311101</div>
 
@@ -363,7 +363,7 @@
     </div>
 
 
-    <div class="judul-dokumen">
+    <div class="judul-dokumen-halaman3">
         <h3>BERITA ACARA REKONSILIASI INTERNAL DATA BARANG MILIK DAERAH BERUPA ASET LANCAR/PERSEDIAAN</h3>
         <h3>PADA SEKRETARIAT DAERAH KABUPATEN BANGKA</h3>
         <h3>NOMOR : BA / &nbsp;&nbsp; / SETDA /{{ $bulanSekarang }}/{{ $tahunSekarang }}</h3>

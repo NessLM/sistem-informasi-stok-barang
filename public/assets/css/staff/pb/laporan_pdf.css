@@ -177,7 +177,7 @@ body {
 
 .ttd-nama {
     font-size: 12px;
-    margin: 5px 0;
+    margin: 40px 0 5px 0;
 }
 
 .ttd-nip {
@@ -329,10 +329,6 @@ body {
 
 .ttd-spacer-halaman1 {
     height: 60px;
-}
-
-.ttd-nama {
-    margin: 5px 0;
 }
 
 .ttd-nip {

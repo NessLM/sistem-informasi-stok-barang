@@ -2,8 +2,6 @@
 
 /* Reset dan Base Styles */
 * {
-    margin: 0;
-    padding: 0;
     box-sizing: border-box;
 }
 
@@ -30,14 +28,16 @@ body {
     margin-bottom: 15px;
 }
 
-.kop-logo, .kop-logo-copy {
+.kop-logo,
+.kop-logo-copy {
     display: table-cell;
     width: 80px;
     vertical-align: middle;
-    padding-right: 10px;
+    padding-right: 20px;
 }
 
-.kop-logo img, .kop-logo-copy img {
+.kop-logo img,
+.kop-logo-copy img {
     width: 70px;
     height: auto;
 }
@@ -51,20 +51,20 @@ body {
 .kop-text h1 {
     font-size: 16pt;
     font-weight: bold;
-    margin: 0;
+    margin: 0 0 0 -90px;
     line-height: 1.2;
 }
 
 .kop-text h2 {
     font-size: 14pt;
     font-weight: bold;
-    margin: 2px 0;
+    margin: 0 0 2px -90px;
     line-height: 1.2;
 }
 
 .kop-text p {
     font-size: 10pt;
-    margin: 3px 0 0 0;
+    margin: 3px 0 0 -90px;
 }
 
 /* Tanggal Surat */
@@ -76,7 +76,7 @@ body {
 
 /* Tujuan Surat */
 .tujuan-surat {
-    margin: 15px 0 15px 40px;
+    margin: 15px 0 15px 0;
     font-size: 11pt;
     line-height: 1.5;
 }
@@ -127,15 +127,30 @@ body {
     text-align: center;
 }
 
-.col-no { width: 5%; text-align: center; }
-.col-uraian { width: 50%; text-align: left; }
-.col-jumlah { width: 15%; text-align: center; }
-.col-keterangan { width: 30%; text-align: left; }
+.col-no {
+    width: 5%;
+    text-align: center;
+}
+
+.col-uraian {
+    width: 50%;
+    text-align: left;
+}
+
+.col-jumlah {
+    width: 15%;
+    text-align: center;
+}
+
+.col-keterangan {
+    width: 30%;
+    text-align: left;
+}
 
 /* TTD Section */
 .section-ttd {
     margin-top: 30px;
-    text-align: center;
+    margin-left: 60%;
 }
 
 .ttd-jabatan {
@@ -149,6 +164,11 @@ body {
     text-decoration: underline;
 }
 
+.mengetahui {
+    margin: 5px;
+    text-align: center;
+}
+
 .ttd-nip {
     font-size: 10pt;
     margin-top: 3px;
@@ -157,8 +177,7 @@ body {
 /* Section Penerima */
 .section-penerima {
     margin-top: 30px;
-    border: 1px solid #000;
-    padding: 15px;
+    padding: 15px 15px 15px 0;
 }
 
 .penerima-info table {
@@ -196,16 +215,27 @@ body {
 .judul-dokumen h3 {
     font-size: 12pt;
     font-weight: bold;
+}
+
+.judul-dokumen-halaman3 h3 {
+    font-size: 9pt;
+    font-weight: bold;
+    text-align: center;
     margin: 5px 0;
-    text-decoration: underline;
 }
 
 /* Pembukaan Berita Acara */
-.pembukaan-berita-acara,
+.pembukaan-berita-acara {
+    text-align: justify;
+    margin: 0 0 15px 0;
+    font-size: 11pt;
+    line-height: 1.6;
+}
+
 .pembukaan-berita-acara-halaman3 {
     text-align: justify;
-    margin: 15px 0;
-    font-size: 11pt;
+    margin: 0 0 15px 0;
+    font-size: 8pt;
     line-height: 1.6;
 }
 
@@ -247,47 +277,53 @@ body {
 /* Lokasi Tanggal */
 .lokasi-tanggal {
     text-align: right;
-    margin: 20px 0 10px 0;
+    margin: 20px 30px 20px 0;
     font-size: 11pt;
 }
 
-/* Identitas Pihak Halaman 3 */
+
+/* IDENTITAS PIHAK HALAMAN 3 */
 .identitas-pihak-halaman3 {
-    margin: 20px 0;
+    margin: 15px 0;
 }
 
 .pihak-section {
-    margin-bottom: 15px;
+    margin-bottom: 12px;
+}
+
+.pihak-title {
+    font-size: 10px;
+    margin: 0 0 3px 0;
 }
 
 .identitas-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 10pt;
+    font-size: 9px;
 }
 
 .identitas-table td {
-    padding: 3px 0;
+    padding: 1px 0;
     vertical-align: top;
 }
 
-.pihak-title {
-    font-weight: bold;
-    width: 30px;
+.identitas-table .label {
+    width: 25px;
+    font-weight: normal;
 }
 
-.identitas-table .label {
-    width: 15%;
+.identitas-table .label-wide {
+    padding-left: 10px;
 }
 
 .identitas-table .titik-dua {
-    width: 2%;
+    width: 5px;
+    text-align: center;
 }
 
 .keterangan-pihak {
-    padding-top: 8px !important;
-    text-align: justify;
-    line-height: 1.5;
+    padding-top: 2px;
+    line-height: 1.2;
 }
 
 /* Keterangan M */
@@ -323,14 +359,34 @@ body {
     font-size: 8pt;
 }
 
-.col-no { width: 5%; }
-.col-uraian { width: 20%; text-align: left; }
-.col-angka { width: 10%; }
-.col-opname { width: 15%; }
+.col-no {
+    width: 5%;
+}
 
-.text-left { text-align: left !important; }
-.text-center { text-align: center !important; }
-.text-right { text-align: right !important; }
+.col-uraian {
+    width: 20%;
+    text-align: left;
+}
+
+.col-angka {
+    width: 10%;
+}
+
+.col-opname {
+    width: 15%;
+}
+
+.text-left {
+    text-align: left !important;
+}
+
+.text-center {
+    text-align: center !important;
+}
+
+.text-right {
+    text-align: right !important;
+}
 
 /* Keterangan Lampiran */
 .keterangan-lampiran-halaman3 {
@@ -401,19 +457,16 @@ body {
 }
 
 .judul-laporan-halaman4 {
-    display: table-cell;
-    text-align: center;
-    font-size: 11pt;
-    font-weight: bold;
-    line-height: 1.3;
+    font-size: 8pt;
+    margin: 0;
 }
 
 .lampiran-halaman4 {
     display: table-cell;
     text-align: right;
     vertical-align: top;
-    width: 30%;
-    font-size: 10pt;
+    width: 40%;
+    font-size: 8pt;
 }
 
 .kop-info-halaman4 {
@@ -423,7 +476,7 @@ body {
 .kop-info-halaman4 table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 10pt;
+    font-size: 8pt;
 }
 
 .kop-info-halaman4 td {
@@ -463,21 +516,68 @@ body {
     font-size: 8pt;
 }
 
-.col-kode-h4 { width: 10%; }
-.col-uraian-h4 { width: 35%; }
-.col-volume-h4 { width: 8%; }
-.col-satuan-h4 { width: 10%; }
-.col-harga-h4 { width: 12%; }
-.col-jumlah-h4 { width: 15%; }
-.col-keterangan-h4 { width: 10%; }
+.col-kode-h4 {
+    width: 10%;
+}
 
-.isi-kode { text-align: left; font-size: 8pt; }
-.isi-uraian { text-align: left; font-size: 9pt; }
-.isi-volume { text-align: center; font-size: 9pt; }
-.isi-satuan { text-align: center; font-size: 9pt; }
-.isi-harga { text-align: right; font-size: 8pt; }
-.isi-jumlah { text-align: right; font-size: 9pt; }
-.isi-keterangan { text-align: center; font-size: 8pt; }
+.col-uraian-h4 {
+    width: 35%;
+}
+
+.col-volume-h4 {
+    width: 8%;
+}
+
+.col-satuan-h4 {
+    width: 10%;
+}
+
+.col-harga-h4 {
+    width: 12%;
+}
+
+.col-jumlah-h4 {
+    width: 15%;
+}
+
+.col-keterangan-h4 {
+    width: 10%;
+}
+
+.isi-kode {
+    text-align: left;
+    font-size: 8pt;
+}
+
+.isi-uraian {
+    text-align: left;
+    font-size: 9pt;
+}
+
+.isi-volume {
+    text-align: center;
+    font-size: 9pt;
+}
+
+.isi-satuan {
+    text-align: center;
+    font-size: 9pt;
+}
+
+.isi-harga {
+    text-align: right;
+    font-size: 8pt;
+}
+
+.isi-jumlah {
+    text-align: right;
+    font-size: 9pt;
+}
+
+.isi-keterangan {
+    text-align: center;
+    font-size: 8pt;
+}
 
 .uraian-total {
     font-weight: bold;
