@@ -4,9 +4,12 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Laporan Riwayat Barang</title>
-    <link rel="stylesheet" href="{{ asset('assets/css/staff/pb/laporan_pdf.css') }}">
+    <style>
+        {!! file_get_contents(public_path('assets/css/staff/pb/laporan_pdf.css')) !!}
+    </style>
 </head>
 
 <body>
@@ -234,7 +237,8 @@
     <div class="judul-dokumen">
         <h3>BERITA ACARA PEMERIKSAAN PERSEDIAAN BARANG PAKAI HABIS</h3>
         <h3>STOCK OPNAME PER {{ $tanggalSurat->format('d') }} {{ $tanggalSurat->locale('id')->isoFormat('MMMM') }}
-            {{ $tanggalSurat->year }}</h3>
+            {{ $tanggalSurat->year }}
+        </h3>
         <h3>PADA SEKRETARIAT DAERAH KABUPATEN BANGKA</h3>
     </div>
 
@@ -566,7 +570,8 @@
         <p>Demikian Berita Acara ini dibuat untuk bahan penyusunan laporan barang untuk daerah dan
             laporan keuangan periode {{ $tglAwalPeriode }} {{ $bulanAwalPeriode }} s.d. {{ $tglAkhirPeriode }}
             {{ $bulanAkhirPeriode }} {{ $tahunPeriode }} dan apabila dikemudian hari terdapat kekeliruan akan
-            dilakukan perbaikan sebagaimana mestinya.</p>
+            dilakukan perbaikan sebagaimana mestinya.
+        </p>
     </div>
 
     <div class="ttd-berita-acara-halaman3">
@@ -622,7 +627,8 @@
                 <p>LAPORAN PENGECEKAN FISIK (STOCK OPNAME)</p>
                 <p>PERSEDIAAN BARANG HABIS PAKAI</p>
                 <p>PER {{ $tanggalSurat->format('d') }} {{ $tanggalSurat->locale('id')->isoFormat('MMMM') }}
-                    {{ $tanggalSurat->year }}</p>
+                    {{ $tanggalSurat->year }}
+                </p>
                 <p>NOMOR : BA/ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /SETDA/{{ $tahunSekarang }}</p>
             </div>
 
@@ -739,25 +745,25 @@
 
                     {{-- Page break jika sudah mencapai batas baris --}}
                     @if ($needPageBreak)
-            </tbody>
-        </table>
-    </div>
+                                </tbody>
+                            </table>
+                        </div>
 
-    {{-- Halaman baru --}}
-    <div class="page-break"></div>
+                        {{-- Halaman baru --}}
+                        <div class="page-break"></div>
 
-    {{-- Tabel lanjutan tanpa header --}}
-    <div class="tabel-riwayat-halaman4 tabel-lanjutan">
-        <table class="tabel-utama-halaman4">
-            <tbody>
-                @endif
+                        {{-- Tabel lanjutan tanpa header --}}
+                        <div class="tabel-riwayat-halaman4 tabel-lanjutan">
+                            <table class="tabel-utama-halaman4">
+                                <tbody>
+                    @endif
 
-            @empty
-                <tr>
-                    <td colspan="7" class="text-center">
-                        Tidak ada data stock opname
-                    </td>
-                </tr>
+                @empty
+                    <tr>
+                        <td colspan="7" class="text-center">
+                            Tidak ada data stock opname
+                        </td>
+                    </tr>
                 @endforelse
 
                 {{-- Hitung total --}}
