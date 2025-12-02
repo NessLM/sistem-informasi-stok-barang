@@ -7,9 +7,17 @@
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Laporan Riwayat Barang</title>
-    <style>
-        {!! file_get_contents(public_path('assets/css/staff/pb/laporan_pdf.css')) !!}
-    </style>
+    @if(isset($isDownload) && $isDownload)
+        {{-- CSS untuk PDF Download --}}
+        <style>
+            {!! file_get_contents(public_path('assets/css/staff/pb/laporan_pdf_download.css')) !!}
+        </style>
+    @else
+        {{-- CSS untuk Preview (akan di-load dari JS) --}}
+        <style>
+            {!! file_get_contents(public_path('assets/css/staff/pb/laporan_pdf.css')) !!}
+        </style>
+    @endif
 </head>
 
 <body>
