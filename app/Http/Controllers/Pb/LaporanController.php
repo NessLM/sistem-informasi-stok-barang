@@ -42,39 +42,49 @@ class LaporanController extends Controller
     }
 
     public function downloadPDF($quarter, $year)
-{
-    // Validasi input
-    if (!in_array($quarter, [1, 2, 3, 4]) || $year < 2025 || $year > date('Y')) {
-        abort(404, 'Laporan tidak ditemukan');
+    {
+        // Validasi input
+        if (!in_array($quarter, [1, 2, 3, 4]) || $year < 2025 || $year > date('Y')) {
+            abort(404, 'Laporan tidak ditemukan');
+        }
+
+        // Gunakan LaporanPDFController untuk mengambil data
+        $pdfController = new LaporanPDFController();
+        $riwayat = $pdfController->getRiwayatData($quarter, $year);
+        $rekapKategori = $pdfController->getRekapKategoriTriwulan($quarter, $year);
+        $stockOpnameData = $pdfController->getStockOpnameData($quarter, $year);
+
+        // ⬅️ TAMBAHKAN HELPER UNTUK NAMA BULAN
+        $quarterMonths = [
+            1 => 'JANUARI – MARET',
+            2 => 'APRIL – JUNI',
+            3 => 'JULI – SEPTEMBER',
+            4 => 'OKTOBER – DESEMBER'
+        ];
+
+        $monthRange = $quarterMonths[$quarter] ?? 'JANUARI – MARET';
+
+        // Data untuk view
+        $data = [
+            'quarter' => $quarter,
+            'year' => $year,
+            'riwayat' => $riwayat,
+            'rekapKategori' => $rekapKategori,
+            'stockOpnameData' => $stockOpnameData,
+            'isDownload' => true,
+        ];
+
+        // Generate PDF
+        $pdf = Pdf::loadView('staff.pb.laporan-pdf', $data);
+
+        // Set paper orientation to portrait
+        $pdf->setPaper('A4', 'portrait');
+
+        // ⬅️ UBAH NAMA FILE DOWNLOAD
+        $filename = "LAPORAN STOCK OPNAME BULAN {$monthRange} {$year}.pdf";
+
+        return $pdf->download($filename);
     }
-
-    // Gunakan LaporanPDFController untuk mengambil data
-    $pdfController = new LaporanPDFController();
-    $riwayat = $pdfController->getRiwayatData($quarter, $year);
-    $rekapKategori = $pdfController->getRekapKategoriTriwulan($quarter, $year);
-    $stockOpnameData = $pdfController->getStockOpnameData($quarter, $year);
-
-    // Data untuk view
-    $data = [
-        'quarter' => $quarter,
-        'year' => $year,
-        'riwayat' => $riwayat,
-        'rekapKategori' => $rekapKategori,
-        'stockOpnameData' => $stockOpnameData,
-        'isDownload' => true, // ⬅️ TAMBAHKAN FLAG INI
-    ];
-
-    // Generate PDF
-    $pdf = Pdf::loadView('staff.pb.laporan-pdf', $data);
-    
-    // Set paper orientation to landscape for better table display
-    $pdf->setPaper('A4', 'portrait');
-    
-    // Nama file untuk download
-    $filename = "Laporan_Stock_Opname_Q{$quarter}_{$year}.pdf";
-    
-    return $pdf->download($filename);
-}
 
     private function getAllExistingReports()
     {

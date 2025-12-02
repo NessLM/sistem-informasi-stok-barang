@@ -6,7 +6,20 @@
     <meta charset="utf-8">
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Laporan Riwayat Barang</title>
+    
+    {{-- ⬅️ UBAH TITLE INI --}}
+    @php
+        $quarterMonths = [
+            1 => 'JANUARI – MARET',
+            2 => 'APRIL – JUNI',
+            3 => 'JULI – SEPTEMBER',
+            4 => 'OKTOBER – DESEMBER'
+        ];
+        $monthRange = $quarterMonths[$quarter ?? 1] ?? 'JANUARI – MARET';
+        $displayYear = $year ?? date('Y');
+    @endphp
+    <title>LAPORAN STOCK OPNAME BULAN {{ $monthRange }} {{ $displayYear }}</title>
+    
     @if(isset($isDownload) && $isDownload)
         {{-- CSS untuk PDF Download --}}
         <style>
