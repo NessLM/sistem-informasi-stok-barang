@@ -18,7 +18,8 @@
     {{-- KOP SURAT --}}
     <div class="kop-surat">
         <div class="kop-logo">
-            <img src="{{ asset('assets/banner/logo_bupati.png') }}" alt="Logo Bupati">
+            <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('assets/banner/logo_bupati.png'))) }}"
+                alt="Logo Bupati">
         </div>
         <div class="kop-text">
             <h1>PEMERINTAH KABUPATEN BANGKA</h1>
@@ -225,7 +226,8 @@
 
     <div class="kop-surat">
         <div class="kop-logo-copy">
-            <img src="{{ asset('assets/banner/logo_bupati_copy.png') }}" alt="Logo Bupati">
+            <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('assets/banner/logo_bupati_copy.png'))) }}"
+                alt="Logo Bupati">
         </div>
         <div class="kop-text">
             <h1>PEMERINTAH KABUPATEN BANGKA</h1>
@@ -329,7 +331,8 @@
 
     <div class="kop-surat">
         <div class="kop-logo-copy">
-            <img src="{{ asset('assets/banner/logo_bupati_copy.png') }}" alt="Logo Bupati">
+            <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('assets/banner/logo_bupati_copy.png'))) }}"
+                alt="Logo Bupati">
         </div>
         <div class="kop-text">
             <h1>PEMERINTAH KABUPATEN BANGKA</h1>
