@@ -380,7 +380,7 @@
         <div class="pihak-section">
             <table class="identitas-table">
                 <tr>
-                    <td>
+                    <td class="romawi">
                         <p class="pihak-title">I. &nbsp;</p>
                     </td>
                     <td class="label">Nama</td>
@@ -400,8 +400,9 @@
                     <td>Pengurus Barang Pengguna pada Sekretariat Daerah</td>
                 </tr>
                 <tr>
+                    <td></td>
                     <td colspan="4" class="keterangan-pihak">
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dalam hal ini
+                        dalam hal ini
                         bertindak untuk dan atas nama penanggung jawab penyusunan laporan barang pengguna
                         selanjutnya
                         disebut sebagai Pihak Pertama.</td>
@@ -412,7 +413,7 @@
         <div class="pihak-section">
             <table class="identitas-table">
                 <tr>
-                    <td>
+                    <td class="romawi">
                         <p class="pihak-title">II.</p>
                     </td>
                     <td class="label">Nama</td>
@@ -432,8 +433,9 @@
                     <td>Bendahara Pengeluaran pada Sekretariat Daerah</td>
                 </tr>
                 <tr>
+                    <td></td>
                     <td colspan="4" class="keterangan-pihak">
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dalam hal ini
+                        dalam hal ini
                         bertindak
                         untuk dan atas nama penanggung
                         jawab penyusunan laporan keuangan selanjutnya disebut sebagai Pihak Kedua.</td>
@@ -576,7 +578,7 @@
     <div class="keterangan-lampiran-halaman3">
         <p style="font-style: italic;">Rincian Terlampir</p>
         <br>
-        <p>II &nbsp; Hal hal penting lainnya mengenai data BMD berupa Aset Lancar/Persediaan terkait penyusunan
+        <p style="font-size: 10px">II &nbsp; Hal hal penting lainnya mengenai data BMD berupa Aset Lancar/Persediaan terkait penyusunan
             LBP/KP
             dan LK disajikan dalam Lampiran Berita Acara ini, yang merupakan bagian yang tidak terpisahkan dari
             Berita
@@ -592,7 +594,7 @@
             $tahunPeriode = $tanggalSurat->year;
         @endphp
 
-        <p>Demikian Berita Acara ini dibuat untuk bahan penyusunan laporan barang untuk daerah dan
+        <p style="font-size: 10px">Demikian Berita Acara ini dibuat untuk bahan penyusunan laporan barang untuk daerah dan
             laporan keuangan periode {{ $tglAwalPeriode }} {{ $bulanAwalPeriode }} s.d. {{ $tglAkhirPeriode }}
             {{ $bulanAkhirPeriode }} {{ $tahunPeriode }} dan apabila dikemudian hari terdapat kekeliruan akan
             dilakukan perbaikan sebagaimana mestinya.
