@@ -604,16 +604,18 @@
 
     <div class="ttd-berita-acara-halaman3">
         <div class="ttd-kiri-halaman3">
-            <div class="ttd-jabatan-halaman3">Penanggung Jawab LK</div>
-            <div class="ttd-jabatan-halaman3">Bendahara Pengeluaran,</div>
+            <div class="ttd-jabatan-halaman3">Penanggung Jawab LK 
+                <br>
+                 Bendahara Pengeluaran,</div>
             <div class="ttd-spacer-halaman3"></div>
             <div class="ttd-nama-halaman3">Tri Mediawaty, A. Md</div>
             <div class="ttd-nip-halaman3">NIP. 198105222011012004</div>
         </div>
 
         <div class="ttd-kanan-halaman3">
-            <div class="ttd-jabatan-halaman3">Penanggung Jawab LBP</div>
-            <div class="ttd-jabatan-halaman3">Pengurus Barang Pengguna,</div>
+            <div class="ttd-jabatan-halaman3">Penanggung Jawab LBP 
+                <br>
+                 Pengurus Barang Pengguna,</div>
             <div class="ttd-spacer-halaman3"></div>
             <div class="ttd-nama-halaman3">Redha Efrida, A.Md</div>
             <div class="ttd-nip-halaman3">NIP. 198208162011012002</div>
