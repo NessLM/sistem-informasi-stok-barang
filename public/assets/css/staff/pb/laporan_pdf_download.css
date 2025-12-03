@@ -245,6 +245,13 @@ body {
     line-height: 1.6;
 }
 
+.pembukaan-berita-acara-halaman3 p {
+    text-align: justify;
+    margin-top: -3px;
+    font-size: 11px;
+    line-height: 1.6;
+}
+
 /* Identitas Petugas */
 .identitas-petugas {
     margin: 15px 0 15px 30px;
@@ -305,6 +312,7 @@ body {
     width: 100%;
     border-collapse: collapse;
     font-size: 9px;
+    margin-top: -10px;
 }
 
 .identitas-table td {
@@ -346,7 +354,6 @@ body {
 
 /* Tabel Aset Halaman 3 */
 .tabel-aset-halaman3 {
-    margin: 15px 0;
     font-size: 9pt;
 }
 
@@ -400,10 +407,13 @@ body {
 
 /* Keterangan Lampiran */
 .keterangan-lampiran-halaman3 {
-    margin: 5px 0;
     font-size: 11px;
     line-height: 1.6;
     text-align: justify;
+}
+
+.keterangan-lampiran-halaman3 p {
+    margin-top: -3px;
 }
 
 /* Penutup Berita Acara */
