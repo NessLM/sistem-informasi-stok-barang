@@ -54,199 +54,133 @@ class LaporanPDFController extends Controller
                 ->orderBy('r.waktu', 'asc')
                 ->get();
 
-            // Jika tidak ada data, kembalikan collection kosong
-            if ($riwayat->isEmpty()) {
-                return $this->getDummyData($quarter, $year, $quarterData, true);
-            }
 
             return $riwayat;
-        } catch (\Exception $e) {
 
-            return $this->getDummyData($quarter, $year, $this->getQuarterData($quarter, $year), false);
+        } catch (\Exception $e) {
+            // ✅ GANTI: Kembalikan collection kosong saat error
+            return collect([]);
         }
     }
 
     /**
- * Rekap per kategori untuk tabel "Nilai Harga Persediaan" (halaman 3)
- *
- * - Pemasukan: dari transaksi_barang_masuk (jumlah * harga)
- * - Pengeluaran: dari transaksi_barang_keluar (jumlah * harga)
- * - Stock Opname Terupdate: dari stok_bagian (stok * harga) AKUMULATIF sampai akhir triwulan
- */
-public function getRekapKategoriTriwulan(int $quarter, int $year): Collection
-{
-    $quarterData = $this->getQuarterData($quarter, $year);
-    $startMonth  = $quarterData['start_month'];
-    $endMonth    = $quarterData['end_month'];
+     * Rekap per kategori untuk tabel "Nilai Harga Persediaan" (halaman 3)
+     *
+     * - Pemasukan: dari transaksi_barang_masuk (jumlah * harga)
+     * - Pengeluaran: dari transaksi_barang_keluar (jumlah * harga)
+     * - Stock Opname Terupdate: dari stok_bagian (stok * harga) AKUMULATIF sampai akhir triwulan
+     */
+    public function getRekapKategoriTriwulan(int $quarter, int $year): Collection
+    {
+        $quarterData = $this->getQuarterData($quarter, $year);
+        $startMonth = $quarterData['start_month'];
+        $endMonth = $quarterData['end_month'];
 
-    // Range tanggal triwulan
-    $startDate = Carbon::create($year, $startMonth, 1)->startOfDay()->toDateString();
-    $endDate   = Carbon::create($year, $endMonth, 1)->endOfMonth()->toDateString();
-    
-    // Tentukan akhir triwulan untuk filter stok akumulatif
-    $endDateTime = Carbon::create($year, $endMonth, 1)->endOfMonth()->endOfDay();
+        // Range tanggal triwulan
+        $startDate = Carbon::create($year, $startMonth, 1)->startOfDay()->toDateString();
+        $endDate = Carbon::create($year, $endMonth, 1)->endOfMonth()->toDateString();
 
-    // === 1) PEMASUKAN (transaksi_barang_masuk) ===
-    $pemasukanRaw = DB::table('transaksi_barang_masuk as tm')
-        ->join('barang as b', 'tm.kode_barang', '=', 'b.kode_barang')
-        ->join('kategori as k', 'b.id_kategori', '=', 'k.id')
-        ->selectRaw('
+        // Tentukan akhir triwulan untuk filter stok akumulatif
+        $endDateTime = Carbon::create($year, $endMonth, 1)->endOfMonth()->endOfDay();
+
+        // === 1) PEMASUKAN (transaksi_barang_masuk) ===
+        $pemasukanRaw = DB::table('transaksi_barang_masuk as tm')
+            ->join('barang as b', 'tm.kode_barang', '=', 'b.kode_barang')
+            ->join('kategori as k', 'b.id_kategori', '=', 'k.id')
+            ->selectRaw('
         k.id   as kategori_id,
         k.nama as kategori,
         MONTH(tm.tanggal) as bulan,
         SUM(tm.jumlah * COALESCE(tm.harga, 0)) as total
     ')
-        ->whereBetween('tm.tanggal', [$startDate, $endDate])
-        ->groupBy('kategori_id', 'kategori', 'bulan')
-        ->get();
+            ->whereBetween('tm.tanggal', [$startDate, $endDate])
+            ->groupBy('kategori_id', 'kategori', 'bulan')
+            ->get();
 
-    // === 2) PENGELUARAN (transaksi_barang_keluar) ===
-    $pengeluaranRaw = DB::table('transaksi_barang_keluar as tk')
-        ->join('barang as b', 'tk.kode_barang', '=', 'b.kode_barang')
-        ->join('kategori as k', 'b.id_kategori', '=', 'k.id')
-        ->selectRaw('
+        // === 2) PENGELUARAN (transaksi_barang_keluar) ===
+        $pengeluaranRaw = DB::table('transaksi_barang_keluar as tk')
+            ->join('barang as b', 'tk.kode_barang', '=', 'b.kode_barang')
+            ->join('kategori as k', 'b.id_kategori', '=', 'k.id')
+            ->selectRaw('
         k.id   as kategori_id,
         k.nama as kategori,
         MONTH(tk.tanggal) as bulan,
         SUM(tk.jumlah * COALESCE(tk.harga, 0)) as total
     ')
-        ->whereBetween('tk.tanggal', [$startDate, $endDate])
-        ->groupBy('kategori_id', 'kategori', 'bulan')
-        ->get();
+            ->whereBetween('tk.tanggal', [$startDate, $endDate])
+            ->groupBy('kategori_id', 'kategori', 'bulan')
+            ->get();
 
-    // === 3) STOCK OPNAME TERUPDATE (stok_bagian) - AKUMULATIF sampai akhir triwulan ===
-    $stokRaw = DB::table('stok_bagian as sb')
-        ->join('barang as b', 'sb.kode_barang', '=', 'b.kode_barang')
-        ->join('kategori as k', 'b.id_kategori', '=', 'k.id')
-        ->selectRaw('
+        // === 3) STOCK OPNAME TERUPDATE (stok_bagian) - AKUMULATIF sampai akhir triwulan ===
+        $stokRaw = DB::table('stok_bagian as sb')
+            ->join('barang as b', 'sb.kode_barang', '=', 'b.kode_barang')
+            ->join('kategori as k', 'b.id_kategori', '=', 'k.id')
+            ->selectRaw('
         k.id   as kategori_id,
         k.nama as kategori,
         SUM(sb.stok * COALESCE(sb.harga, 0)) as total
     ')
-        ->where('sb.stok', '>', 0) // Hanya stok positif
-        // Filter: stok yang created_at/updated_at <= akhir triwulan
-        ->where(function($query) use ($endDateTime) {
-            $query->where('sb.created_at', '<=', $endDateTime)
-                  ->orWhere('sb.updated_at', '<=', $endDateTime);
-        })
-        ->groupBy('kategori_id', 'kategori')
-        ->get();
+            ->where('sb.stok', '>', 0) // Hanya stok positif
+            // Filter: stok yang created_at/updated_at <= akhir triwulan
+            ->where(function ($query) use ($endDateTime) {
+                $query->where('sb.created_at', '<=', $endDateTime)
+                    ->orWhere('sb.updated_at', '<=', $endDateTime);
+            })
+            ->groupBy('kategori_id', 'kategori')
+            ->get();
 
-    // === 4) Gabung ke struktur final ===
-    $data = [];
+        // === 4) Gabung ke struktur final ===
+        $data = [];
 
-    // Helper inisialisasi slot kategori
-    $initKategori = function (int $id, string $nama) use (&$data) {
-        if (!isset($data[$id])) {
-            $data[$id] = [
-                'kategori_id'  => $id,
-                'kategori'     => $nama,
-                'pemasukan'    => ['m1' => 0, 'm2' => 0, 'm3' => 0],
-                'pengeluaran'  => ['m1' => 0, 'm2' => 0, 'm3' => 0],
-                'stock_opname' => 0,
-            ];
-        }
-    };
+        // Helper inisialisasi slot kategori
+        $initKategori = function (int $id, string $nama) use (&$data) {
+            if (!isset($data[$id])) {
+                $data[$id] = [
+                    'kategori_id' => $id,
+                    'kategori' => $nama,
+                    'pemasukan' => ['m1' => 0, 'm2' => 0, 'm3' => 0],
+                    'pengeluaran' => ['m1' => 0, 'm2' => 0, 'm3' => 0],
+                    'stock_opname' => 0,
+                ];
+            }
+        };
 
-    // Map pemasukan per bulan (m1,m2,m3 = bulan ke-1,2,3 di triwulan)
-    foreach ($pemasukanRaw as $row) {
-        $pos = (int) $row->bulan - $startMonth; // 0,1,2 dalam triwulan
-        if ($pos < 0 || $pos > 2) {
-            continue;
-        }
-        $key = 'm' . ($pos + 1);
+        // Map pemasukan per bulan (m1,m2,m3 = bulan ke-1,2,3 di triwulan)
+        foreach ($pemasukanRaw as $row) {
+            $pos = (int) $row->bulan - $startMonth; // 0,1,2 dalam triwulan
+            if ($pos < 0 || $pos > 2) {
+                continue;
+            }
+            $key = 'm' . ($pos + 1);
 
-        $initKategori($row->kategori_id, $row->kategori);
-        $data[$row->kategori_id]['pemasukan'][$key] = (float) $row->total;
-    }
-
-    // Map pengeluaran per bulan
-    foreach ($pengeluaranRaw as $row) {
-        $pos = (int) $row->bulan - $startMonth;
-        if ($pos < 0 || $pos > 2) {
-            continue;
-        }
-        $key = 'm' . ($pos + 1);
-
-        $initKategori($row->kategori_id, $row->kategori);
-        $data[$row->kategori_id]['pengeluaran'][$key] = (float) $row->total;
-    }
-
-    // Stock opname terupdate (akumulatif sampai akhir triwulan)
-    foreach ($stokRaw as $row) {
-        $initKategori($row->kategori_id, $row->kategori);
-        $data[$row->kategori_id]['stock_opname'] = (float) $row->total;
-    }
-
-    // Kembalikan sebagai collection, diurutkan nama kategori
-    return collect($data)
-        ->sortBy('kategori')
-        ->values();
-}
-
-    /**
-     * Generate data dummy untuk testing/fallback
-     */
-    private function getDummyData($quarter, $year, $quarterData, $isEmpty = false): Collection
-    {
-        if ($isEmpty) {
-            return collect([
-                (object)[
-                    'alur_barang' => 'Masuk PB',
-                    'tanggal' => "{$year}-" . str_pad($quarterData['start_month'], 2, '0', STR_PAD_LEFT) . "-15",
-                    'waktu' => '10:30:00',
-                    'gudang' => 'Belum ada data',
-                    'bagian_nama' => '-',
-                    'nama_barang' => 'Belum ada transaksi',
-                    'jumlah' => 0,
-                    'satuan' => '-',
-                    'keterangan' => "Data untuk kuartal {$quarter} tahun {$year} belum tersedia"
-                ]
-            ]);
+            $initKategori($row->kategori_id, $row->kategori);
+            $data[$row->kategori_id]['pemasukan'][$key] = (float) $row->total;
         }
 
-        return collect([
-            (object)[
-                'alur_barang' => 'Masuk PB',
-                'tanggal' => $year . '-01-15',
-                'waktu' => '10:30:00',
-                'gudang' => 'Gudang Utama',
-                'bagian_nama' => 'Bagian Perlengkapan',
-                'nama_barang' => 'Kertas A4',
-                'jumlah' => 100,
-                'satuan' => 'Rim',
-                'keterangan' => 'Data contoh - Persediaan awal Kuartal ' . $quarter,
-                'bagian' => 'Bagian Umum',
-                'penerima' => 'Budi Santoso'
-            ],
-            (object)[
-                'alur_barang' => 'Distribusi PJ',
-                'tanggal' => $year . '-02-20',
-                'waktu' => '14:00:00',
-                'gudang' => 'Gudang Cabang',
-                'bagian_nama' => '-',
-                'nama_barang' => 'Kertas A4',
-                'jumlah' => 50,
-                'satuan' => 'Rim',
-                'keterangan' => 'Data contoh - Distribusi ke cabang',
-                'bagian' => 'Bagian Umum',
-                'penerima' => null
-            ],
-            (object)[
-                'alur_barang' => 'Keluar PJ',
-                'tanggal' => $year . '-03-25',
-                'waktu' => '09:15:00',
-                'gudang' => 'Gudang Utama',
-                'bagian' => 'Bagian Umum',
-                'bagian_nama' => 'Bagian Umum',
-                'nama_barang' => 'Kertas A4',
-                'jumlah' => 10,
-                'satuan' => 'Rim',
-                'penerima' => 'Budi Santoso',
-                'keterangan' => 'Data contoh - Pemakaian rutin'
-            ]
-        ]);
+        // Map pengeluaran per bulan
+        foreach ($pengeluaranRaw as $row) {
+            $pos = (int) $row->bulan - $startMonth;
+            if ($pos < 0 || $pos > 2) {
+                continue;
+            }
+            $key = 'm' . ($pos + 1);
+
+            $initKategori($row->kategori_id, $row->kategori);
+            $data[$row->kategori_id]['pengeluaran'][$key] = (float) $row->total;
+        }
+
+        // Stock opname terupdate (akumulatif sampai akhir triwulan)
+        foreach ($stokRaw as $row) {
+            $initKategori($row->kategori_id, $row->kategori);
+            $data[$row->kategori_id]['stock_opname'] = (float) $row->total;
+        }
+
+        // Kembalikan sebagai collection, diurutkan nama kategori
+        return collect($data)
+            ->sortBy('kategori')
+            ->values();
     }
+
 
 
 
@@ -302,7 +236,7 @@ public function getRekapKategoriTriwulan(int $quarter, int $year): Collection
                 $totalVolume = $items->sum('total_stok');
                 $totalHarga = $items->sum('total_harga');
 
-                $result->push((object)[
+                $result->push((object) [
                     'is_header' => true,
                     'kode_barang' => '',
                     'uraian' => strtoupper($firstItem->kategori_nama),
@@ -313,7 +247,7 @@ public function getRekapKategoriTriwulan(int $quarter, int $year): Collection
                 ]);
 
                 foreach ($items as $item) {
-                    $result->push((object)[
+                    $result->push((object) [
                         'is_header' => false,
                         'kode_barang' => $item->kode_barang,
                         'uraian' => $item->nama_barang,
