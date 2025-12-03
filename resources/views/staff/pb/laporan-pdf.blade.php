@@ -257,12 +257,13 @@
         </div>
     </div>
 
-    <div class="judul-dokumen">
-        <h3>BERITA ACARA PEMERIKSAAN PERSEDIAAN BARANG PAKAI HABIS</h3>
-        <h3>STOCK OPNAME PER {{ $tanggalSurat->format('d') }} {{ $tanggalSurat->locale('id')->isoFormat('MMMM') }}
+    <div class="judul-dokumen-halaman2">
+        <h3>BERITA ACARA PEMERIKSAAN PERSEDIAAN BARANG PAKAI HABIS
+            <br>
+            1STOCK OPNAME PER {{ $tanggalSurat->format('d') }} {{ $tanggalSurat->locale('id')->isoFormat('MMMM') }}
             {{ $tanggalSurat->year }}
+            <br> SEKRETARIAT DAERAH KABUPATEN BANGKA
         </h3>
-        <h3>PADA SEKRETARIAT DAERAH KABUPATEN BANGKA</h3>
     </div>
 
     <div class="pembukaan-berita-acara">

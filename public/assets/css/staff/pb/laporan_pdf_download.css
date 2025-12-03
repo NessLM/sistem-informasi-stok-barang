@@ -15,7 +15,7 @@ body {
 
 /* Page Settings untuk PDF */
 @page {
-    size: A4 portrait;
+    size: F4 portrait;
     margin: 10mm 15mm 15mm 15mm;
 }
 
@@ -36,10 +36,13 @@ body {
     padding-right: 20px;
 }
 
-.kop-logo img,
-.kop-logo-copy img {
+.kop-logo img {
     width: 70px;
     height: auto;
+}
+.kop-logo-copy img {
+    width: 60px;
+    height: 60px;
 }
 
 .kop-text {
@@ -82,7 +85,7 @@ body {
 
 .tujuan-surat p {
     margin: 2px 0;
-    font-size: 12px;
+    font-size: 11pt;
 }
 
 /* Judul Surat */
@@ -207,13 +210,13 @@ body {
 }
 
 /* Judul Dokumen */
-.judul-dokumen {
+.judul-dokumen-halaman2 {
     text-align: center;
-    margin: 20px 0;
 }
 
-.judul-dokumen h3 {
-    font-size: 12pt;
+.judul-dokumen-halaman2 h3 {
+    font-size: 11pt;
+    margin-top: 5px;
     font-weight: bold;
 }
 
@@ -277,7 +280,7 @@ body {
 /* Lokasi Tanggal */
 .lokasi-tanggal {
     text-align: right;
-    margin: 20px 30px 20px 0;
+    margin: 20px 100px 20px 0;
     font-size: 11pt;
 }
 
