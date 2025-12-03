@@ -6,7 +6,7 @@
     <meta charset="utf-8">
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    
+
     {{-- ⬅️ UBAH TITLE INI --}}
     @php
         $quarterMonths = [
@@ -19,7 +19,7 @@
         $displayYear = $year ?? date('Y');
     @endphp
     <title>LAPORAN STOCK OPNAME BULAN {{ $monthRange }} {{ $displayYear }}</title>
-    
+
     @if(isset($isDownload) && $isDownload)
         {{-- CSS untuk PDF Download --}}
         <style>
