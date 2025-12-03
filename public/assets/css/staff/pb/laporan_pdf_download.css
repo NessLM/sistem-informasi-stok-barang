@@ -296,7 +296,7 @@ body {
 
 /* IDENTITAS PIHAK HALAMAN 3 */
 .identitas-pihak-halaman3 {
-    margin: 15px 0;
+    margin-bottom: 5px;
 }
 
 .pihak-section {
@@ -347,7 +347,7 @@ body {
 /* Keterangan M */
 .keterangan-m {
     text-align: justify;
-    margin: 15px 0;
+    margin-top: -18px;
     font-size: 10px;
     line-height: 1.6;
 }
@@ -357,6 +357,15 @@ body {
     font-size: 9pt;
 }
 
+.identitas-table .baris-nip td {
+    padding-top: 0;
+    margin-top: -10px;
+}
+
+/* Atau gunakan transform untuk hasil lebih presisi */
+.identitas-table .baris-nip {
+    transform: translateY(-2px);
+}
 .tabel-utama {
     width: 100%;
     border-collapse: collapse;

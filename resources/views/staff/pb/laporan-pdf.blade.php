@@ -387,7 +387,7 @@
                     <td class="titik-dua">:</td>
                     <td class="label-wide">Redha Efrida, A.Md</td>
                 </tr>
-                <tr>
+                <tr class="baris-nip">
                     <td></td>
                     <td class="label">NIP</td>
                     <td class="titik-dua">:</td>
@@ -420,7 +420,7 @@
                     <td class="titik-dua">:</td>
                     <td class="label-wide">Tri Medlowaty, A. Md</td>
                 </tr>
-                <tr>
+                <tr class="baris-nip">
                     <td></td>
                     <td class="label">NIP</td>
                     <td class="titik-dua">:</td>
