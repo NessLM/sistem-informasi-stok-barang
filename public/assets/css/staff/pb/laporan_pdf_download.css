@@ -15,7 +15,7 @@ body {
 
 /* Page Settings untuk PDF */
 @page {
-    size: F4 portrait;
+    size: 210mm 330mm portrait;
     margin: 10mm 15mm 15mm 15mm;
 }
 
@@ -157,14 +157,18 @@ body {
 }
 
 .ttd-jabatan {
-    font-size: 10px;
+    font-size: 11pt;
     margin-bottom: 60px;
 }
 
 .ttd-nama {
-    font-size: 10px;
+    font-size: 11pt;
     font-weight: bold;
     text-decoration: underline;
+}
+.tabel-utama thead th,
+.tabel-utama tbody td {
+    padding: 0 !important;
 }
 
 .mengetahui {
@@ -173,7 +177,7 @@ body {
 }
 
 .ttd-nip {
-    font-size: 9px;
+    font-size: 11pt;
     margin-top: 3px;
 }
 
@@ -238,7 +242,7 @@ body {
 .pembukaan-berita-acara-halaman3 {
     text-align: justify;
     margin: 0 0 15px 0;
-    font-size: 8pt;
+    font-size: 11px;
     line-height: 1.6;
 }
 
@@ -294,7 +298,7 @@ body {
 }
 
 .pihak-title {
-    font-size: 10px;
+    font-size: 11px;
     margin: 0 0 3px 0;
 }
 
@@ -395,19 +399,19 @@ body {
     text-align: right !important;
 }
 
-
 /* Keterangan Lampiran */
 .keterangan-lampiran-halaman3 {
     margin: 5px 0;
-    font-size: 10px;
+    font-size: 11px;
     line-height: 1.6;
+    text-align: justify;
 }
 
 /* Penutup Berita Acara */
 .penutup-berita-acara-halaman3 {
     text-align: justify;
-    margin: 15px 0;
-    font-size: 11pt;
+    margin-top: -20px;
+    font-size: 11px;
     line-height: 1.6;
 }
 

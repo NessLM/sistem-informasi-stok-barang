@@ -44,6 +44,15 @@ body {
     font-weight: bold;
     font-family: "Times New Roman", Times, serif;
 }
+.judul-dokumen-halaman2 {
+    text-align: center;
+}
+
+.judul-dokumen-halaman2 h3 {
+    font-size: 11pt;
+    margin-top: 5px;
+    font-weight: bold;
+}
 
 .kop-text h2 {
     margin: 2px 0;
@@ -222,8 +231,6 @@ body {
     min-width: 200px;
     text-align: center;
 }
-
-
 
 @page {
     size: A4 portrait;
@@ -652,8 +659,6 @@ body {
     text-align: center;
 }
 
-
-
 /* HALAMAN 4 */
 .header-halaman4 {
     margin-bottom: 20px;
@@ -712,7 +717,6 @@ body {
 }
 
 /* TABEL RIWAYAT HALAMAN 4 */
-
 
 .tabel-utama-halaman4 {
     width: 100%;
@@ -793,14 +797,16 @@ body {
     padding-right: 4px;
 }
 
-
 /* Styling untuk header kategori */
 .tabel-utama-halaman4 tbody tr[style*="font-weight: bold"] {
     font-weight: bold;
 }
 
 /* Padding untuk baris detail barang */
-.tabel-utama-halaman4 tbody tr:not([style*="font-weight: bold"]) td:first-child {
+.tabel-utama-halaman4
+    tbody
+    tr:not([style*="font-weight: bold"])
+    td:first-child {
     padding-left: 5px;
 }
 
@@ -809,7 +815,6 @@ body {
     page-break-after: always;
     break-after: page;
 }
-
 
 /* ===== PERBAIKAN TABEL HALAMAN 4 ===== */
 
@@ -825,8 +830,6 @@ body {
     margin: 0;
     padding: 0;
 }
-
-
 
 /* Tabel utama dengan fixed layout */
 .tabel-utama-halaman4 {
@@ -876,7 +879,7 @@ body {
     background-color: #f9f9f9;
 }
 
-.uraian-total{
+.uraian-total {
     font-weight: bold;
     border-top: 1px solid #000;
     background-color: #d9ea21;
@@ -923,14 +926,6 @@ body {
     font-size: 10px;
     margin-top: 2px;
 }
-
-
-
-
-
-
-
-
 
 /* ===== MOBILE RESPONSIVE (SIMPLE SCALING) ===== */
 @media only screen and (max-width: 768px) {

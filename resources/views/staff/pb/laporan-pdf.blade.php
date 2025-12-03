@@ -260,7 +260,7 @@
     <div class="judul-dokumen-halaman2">
         <h3>BERITA ACARA PEMERIKSAAN PERSEDIAAN BARANG PAKAI HABIS
             <br>
-            1STOCK OPNAME PER {{ $tanggalSurat->format('d') }} {{ $tanggalSurat->locale('id')->isoFormat('MMMM') }}
+            STOCK OPNAME PER {{ $tanggalSurat->format('d') }} {{ $tanggalSurat->locale('id')->isoFormat('MMMM') }}
             {{ $tanggalSurat->year }}
             <br> SEKRETARIAT DAERAH KABUPATEN BANGKA
         </h3>
@@ -500,7 +500,7 @@
     @endphp
 
     <div class="tabel-aset-halaman3">
-        <table class="tabel-utama">
+        <table class="tabel-utama no-padding">
             <thead>
                 <tr>
                     <th class="col-no" rowspan="3">No</th>
@@ -576,9 +576,9 @@
     </div>
 
     <div class="keterangan-lampiran-halaman3">
-        <p style="font-style: italic;">Rincian Terlampir</p>
-        <br>
-        <p style="font-size: 10px">II &nbsp; Hal hal penting lainnya mengenai data BMD berupa Aset Lancar/Persediaan terkait penyusunan
+        <p style="font-style: italic">Rincian Terlampir II<br>
+            Hal hal penting lainnya mengenai data BMD berupa Aset Lancar/Persediaan
+            terkait penyusunan
             LBP/KP
             dan LK disajikan dalam Lampiran Berita Acara ini, yang merupakan bagian yang tidak terpisahkan dari
             Berita
@@ -594,7 +594,8 @@
             $tahunPeriode = $tanggalSurat->year;
         @endphp
 
-        <p style="font-size: 10px">Demikian Berita Acara ini dibuat untuk bahan penyusunan laporan barang untuk daerah dan
+        <p>Demikian Berita Acara ini dibuat untuk bahan penyusunan laporan barang untuk daerah
+            dan
             laporan keuangan periode {{ $tglAwalPeriode }} {{ $bulanAwalPeriode }} s.d. {{ $tglAkhirPeriode }}
             {{ $bulanAkhirPeriode }} {{ $tahunPeriode }} dan apabila dikemudian hari terdapat kekeliruan akan
             dilakukan perbaikan sebagaimana mestinya.
