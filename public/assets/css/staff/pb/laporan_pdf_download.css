@@ -354,7 +354,7 @@ body {
 
 /* Tabel Aset Halaman 3 */
 .tabel-aset-halaman3 {
-    font-size: 9pt;
+    font-size: 9px;
 }
 
 .identitas-table .baris-nip td {
@@ -382,7 +382,7 @@ body {
 .tabel-utama th {
     background-color: #f0f0f0;
     font-weight: bold;
-    font-size: 8pt;
+    font-size: 9px;
 }
 
 .col-no {
