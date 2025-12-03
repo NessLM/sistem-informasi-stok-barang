@@ -228,7 +228,7 @@ body {
     font-size: 9pt;
     font-weight: bold;
     text-align: center;
-    margin: 5px 0;
+    margin: 1px 0;
 }
 
 .pembukaan-berita-acara {
@@ -449,7 +449,7 @@ body {
 }
 
 .ttd-jabatan-halaman3 {
-    font-size: 10pt;
+    font-size: 10px;
     margin-bottom: 2px;
 }
 
@@ -458,21 +458,25 @@ body {
 }
 
 .ttd-nama-halaman3 {
-    font-size: 10pt;
+    font-size: 10px;
     font-weight: bold;
     text-decoration: underline;
     margin-top: 5px;
 }
 
 .ttd-nip-halaman3 {
-    font-size: 9pt;
+    font-size: 10px;
     margin-top: 3px;
 }
 
 .pejabat-penatausahaan-halaman3 {
     text-align: center;
-    margin-top: 30px;
-    margin-bottom: 10px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+.pejabat-penatausahaan-halaman3 .ttd-jabatan-halaman3 {
+    font-size: 10px; /* ⬅️ UBAH DI SINI untuk text "Mengetahui" */
+    font-weight: bold;
 }
 
 /* Header Halaman 4 */
