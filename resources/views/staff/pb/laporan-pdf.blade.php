@@ -552,17 +552,17 @@
                         <td class="text-left">{{ $row['kategori'] ?? '-' }}</td>
 
                         {{-- Pemasukan triwulan (m1, m2, m3) --}}
-                        <td class="text-center">Rp. {{ $fmt($row['pemasukan']['m1'] ?? 0) }}</td>
-                        <td class="text-center">Rp. {{ $fmt($row['pemasukan']['m2'] ?? 0) }}</td>
-                        <td class="text-center">Rp. {{ $fmt($row['pemasukan']['m3'] ?? 0) }}</td>
+                        <td class="text-center">{{ $fmt($row['pemasukan']['m1'] ?? 0) }}</td>
+                        <td class="text-center">{{ $fmt($row['pemasukan']['m2'] ?? 0) }}</td>
+                        <td class="text-center">{{ $fmt($row['pemasukan']['m3'] ?? 0) }}</td>
 
                         {{-- Pengeluaran triwulan (m1, m2, m3) --}}
-                        <td class="text-center">Rp. {{ $fmt($row['pengeluaran']['m1'] ?? 0) }}</td>
-                        <td class="text-center">Rp. {{ $fmt($row['pengeluaran']['m2'] ?? 0) }}</td>
-                        <td class="text-center">Rp. {{ $fmt($row['pengeluaran']['m3'] ?? 0) }}</td>
+                        <td class="text-center">{{ $fmt($row['pengeluaran']['m1'] ?? 0) }}</td>
+                        <td class="text-center">{{ $fmt($row['pengeluaran']['m2'] ?? 0) }}</td>
+                        <td class="text-center">{{ $fmt($row['pengeluaran']['m3'] ?? 0) }}</td>
 
                         {{-- Stock opname terupdate --}}
-                        <td class="text-right">Rp. {{ $fmt($row['stock_opname'] ?? 0) }}</td>
+                        <td class="text-right">{{ $fmt($row['stock_opname'] ?? 0) }}</td>
                     </tr>
                 @empty
                     <tr>
@@ -604,18 +604,20 @@
 
     <div class="ttd-berita-acara-halaman3">
         <div class="ttd-kiri-halaman3">
-            <div class="ttd-jabatan-halaman3">Penanggung Jawab LK 
+            <div class="ttd-jabatan-halaman3">Penanggung Jawab LK
                 <br>
-                 Bendahara Pengeluaran,</div>
+                Bendahara Pengeluaran,
+            </div>
             <div class="ttd-spacer-halaman3"></div>
             <div class="ttd-nama-halaman3">Tri Mediawaty, A. Md</div>
             <div class="ttd-nip-halaman3">NIP. 198105222011012004</div>
         </div>
 
         <div class="ttd-kanan-halaman3">
-            <div class="ttd-jabatan-halaman3">Penanggung Jawab LBP 
+            <div class="ttd-jabatan-halaman3">Penanggung Jawab LBP
                 <br>
-                 Pengurus Barang Pengguna,</div>
+                Pengurus Barang Pengguna,
+            </div>
             <div class="ttd-spacer-halaman3"></div>
             <div class="ttd-nama-halaman3">Redha Efrida, A.Md</div>
             <div class="ttd-nip-halaman3">NIP. 198208162011012002</div>
