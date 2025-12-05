@@ -200,7 +200,7 @@
                                             <th>Kategori</th>
                                             <th>Satuan</th>
                                             <th>Bagian</th>
-                                            <th>Stok (PB)</th>
+                                            <th>Stok</th>
                                             <th>Harga</th>
                                             <th>Aksi</th>
                                         </tr>
