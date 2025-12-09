@@ -82,6 +82,14 @@
 
                             <button class="btn" type="submit">LOGIN</button>
 
+                            {{-- TAMBAHKAN INI ↓ --}}
+                            <div style="text-align:center;margin-top:15px">
+                                <a href="{{ route('password.request') }}"
+                                    style="color:#3498db;text-decoration:none;font-size:14px">
+                                    Lupa Password?
+                                </a>
+                            </div>
+
                             @error('username')
                                 <p style="color:#c0392b;margin-top:10px">{{ $message }}</p>
                             @enderror

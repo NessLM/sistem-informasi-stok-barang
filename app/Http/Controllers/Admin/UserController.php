@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Role;
-use App\Models\Bagian; // TAMBAH INI
+use App\Models\Bagian;
 use Illuminate\Http\Request;
 use App\Helpers\MenuHelper;
 use Illuminate\Support\Facades\Hash;
@@ -37,7 +37,7 @@ class UserController extends Controller
             ->get();
 
         $roles = Role::all();
-        $bagians = Bagian::orderBy('nama')->get(); // TAMBAH INI
+        $bagians = Bagian::orderBy('nama')->get();
         $menu = MenuHelper::adminMenu();
 
         $users->each(function ($u) {
@@ -64,28 +64,35 @@ class UserController extends Controller
             $u->setRawAttributes($attr, true);
         });
 
-        return view('staff.admin.data_pengguna', compact('users', 'roles', 'bagians', 'menu')); // UBAH INI
+        return view('staff.admin.data_pengguna', compact('users', 'roles', 'bagians', 'menu'));
     }
 
     public function store(Request $request)
     {
         try {
-            $validator = Validator::make($request->all(), [
+            $rules = [
                 'nama' => 'required|string|max:255',
                 'username' => 'required|string|max:100|unique:users,username',
+                'password' => ['required', 'string', 'min:8', 'regex:/^(?=.*[a-zA-Z])(?=.*\d).+$/'],
                 'role_id' => 'required|exists:roles,id',
-                'bagian_id' => 'required|exists:bagian,id', // UBAH dari 'bagian' ke 'bagian_id'
-                'password' => [
-                    'required',
-                    'string',
-                    'min:8',
-                    'regex:/^(?=.*[a-zA-Z])(?=.*\d).+$/'
-                ],
-            ], [
+                'bagian_id' => 'nullable|exists:bagian,id',
+            ];
+
+            // TAMBAHKAN validasi email jika role adalah Admin
+            $role = Role::find($request->role_id);
+            if ($role && $role->nama === 'Admin') {
+                $rules['email'] = 'required|email|unique:users,email';
+            } else {
+                $rules['email'] = 'nullable';
+            }
+
+            $validator = Validator::make($request->all(), $rules, [
                 'username.unique' => 'Username sudah digunakan, silakan menggunakan yang lain.',
                 'password.regex' => 'Password harus mengandung huruf dan angka.',
-                'bagian_id.required' => 'Bagian harus dipilih.',
                 'bagian_id.exists' => 'Bagian tidak valid.',
+                'email.required' => 'Email wajib diisi untuk role Admin.',
+                'email.email' => 'Format email tidak valid.',
+                'email.unique' => 'Email sudah digunakan.',
             ]);
 
             if ($validator->fails()) {
@@ -98,18 +105,22 @@ class UserController extends Controller
 
             $validated = $validator->validated();
 
-            $user = new User();
-            $user->nama = $validated['nama'];
-            $user->username = $validated['username'];
-            $user->role_id = $validated['role_id'];
-            $user->bagian_id = $validated['bagian_id']; // UBAH INI
-            $user->password = $validated['password'];
-            $user->save();
+            $userData = [
+                'nama' => $validated['nama'],
+                'username' => $validated['username'],
+                'password' => Hash::make($validated['password']),
+                'role_id' => $validated['role_id'],
+                'bagian_id' => $validated['bagian_id'],
+                'email' => $role && $role->nama === 'Admin' ? $validated['email'] : null,
+            ];
 
+            $user = User::create($userData);
+
+            // Simpan password plain ke cache untuk keperluan debugging/demo
             $cacheKey = "user:plainpwd:{$user->id}";
             Cache::forever($cacheKey, Crypt::encryptString($validated['password']));
 
-            return back()->with('toast', [
+            return redirect()->route('admin.users.index')->with('toast', [
                 'type' => 'success',
                 'title' => 'Berhasil',
                 'message' => 'Pengguna berhasil dibuat.'
@@ -128,22 +139,29 @@ class UserController extends Controller
         $user = User::findOrFail($id);
 
         try {
-            $validator = Validator::make($request->all(), [
+            $rules = [
                 'nama' => 'required|string|max:255',
                 'username' => 'required|string|max:100|unique:users,username,' . $user->id,
+                'password' => ['nullable', 'string', 'min:8', 'regex:/^(?=.*[a-zA-Z])(?=.*\d).+$/'],
                 'role_id' => 'required|exists:roles,id',
-                'bagian_id' => 'required|exists:bagian,id', // UBAH dari 'bagian' ke 'bagian_id'
-                'password' => [
-                    'nullable',
-                    'string',
-                    'min:8',
-                    'regex:/^(?=.*[a-zA-Z])(?=.*\d).+$/'
-                ],
-            ], [
+                'bagian_id' => 'nullable|exists:bagian,id',
+            ];
+
+            // TAMBAHKAN validasi email jika role adalah Admin
+            $role = Role::find($request->role_id);
+            if ($role && $role->nama === 'Admin') {
+                $rules['email'] = 'required|email|unique:users,email,' . $user->id;
+            } else {
+                $rules['email'] = 'nullable';
+            }
+
+            $validator = Validator::make($request->all(), $rules, [
                 'username.unique' => 'Username sudah digunakan, silakan menggunakan yang lain.',
                 'password.regex' => 'Password harus mengandung huruf dan angka',
-                'bagian_id.required' => 'Bagian harus dipilih.',
                 'bagian_id.exists' => 'Bagian tidak valid.',
+                'email.required' => 'Email wajib diisi untuk role Admin.',
+                'email.email' => 'Format email tidak valid.',
+                'email.unique' => 'Email sudah digunakan.',
             ]);
 
             if ($validator->fails()) {
@@ -156,20 +174,23 @@ class UserController extends Controller
 
             $validated = $validator->validated();
 
-            $user->nama = $validated['nama'];
-            $user->username = $validated['username'];
-            $user->role_id = $validated['role_id'];
-            $user->bagian_id = $validated['bagian_id']; // UBAH INI
+            $userData = [
+                'nama' => $validated['nama'],
+                'username' => $validated['username'],
+                'role_id' => $validated['role_id'],
+                'bagian_id' => $validated['bagian_id'],
+                'email' => $role && $role->nama === 'Admin' ? $validated['email'] : null,
+            ];
 
             if (!empty($validated['password'])) {
-                $user->password = $validated['password'];
+                $userData['password'] = Hash::make($validated['password']);
                 $cacheKey = "user:plainpwd:{$user->id}";
                 Cache::forever($cacheKey, Crypt::encryptString($validated['password']));
             }
 
-            $user->save();
+            $user->update($userData);
 
-            return back()->with('toast', [
+            return redirect()->route('admin.users.index')->with('toast', [
                 'type' => 'success',
                 'title' => 'Berhasil',
                 'message' => 'Pengguna berhasil diperbarui.'

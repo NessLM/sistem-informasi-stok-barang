@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 
 /* =========================================================================
  | Controller Aliases (semua di-alias biar aman nama duplikat)
@@ -41,6 +43,26 @@ Route::post('/login', [AuthController::class, 'store'])->name('login.attempt');
 Route::post('/logout', [AuthController::class, 'destroy'])->name('logout');
 
 Route::redirect('/', '/login');
+
+
+
+// Forgot Password Routes
+Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])
+    ->name('password.request')
+    ->middleware('guest');
+
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])
+    ->name('password.email')
+    ->middleware('guest');
+
+// Reset Password Routes
+Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])
+    ->name('password.reset')
+    ->middleware('guest');
+
+Route::post('/reset-password', [ResetPasswordController::class, 'reset'])
+    ->name('password.update')
+    ->middleware('guest');
 
 
 /* =========================================================================

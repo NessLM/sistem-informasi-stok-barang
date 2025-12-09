@@ -4,10 +4,16 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Notifications\ResetPasswordNotification;
 
 class User extends Authenticatable
 {
     use Notifiable;
+
+    public function sendPasswordResetNotification($token)
+{
+    $this->notify(new ResetPasswordNotification($token));
+}
 
     protected $fillable = [
         'nama',
@@ -16,6 +22,7 @@ class User extends Authenticatable
         'role_id',
         'bagian_id', // UBAH dari 'bagian' ke 'bagian_id'
         'gudang_id',
+        'email',
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -73,5 +80,10 @@ class User extends Authenticatable
     public function distribusiDiterima()
     {
         return $this->hasMany(Distribusi::class, 'penerima_id');
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role?->nama === 'Admin';
     }
 }
