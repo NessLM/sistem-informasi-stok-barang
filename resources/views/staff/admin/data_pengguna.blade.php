@@ -111,18 +111,14 @@
                                 <td>
                                     <div class="action-buttons">
                                         <button type="button" class="btn btn-warning btn-sm btn-action editUser"
-    data-id="{{ $u->id }}" 
-    data-nama="{{ $u->nama }}"
-    data-username="{{ $u->username }}" 
-    data-role-id="{{ $u->role_id }}"
-    data-role-name="{{ $u->role?->nama }}" 
-    data-bagian-id="{{ $u->bagian_id }}"
-    data-email="{{ $u->email }}"  {{-- TAMBAHKAN INI --}}
-    data-password="{{ $u->password }}" 
-    data-bs-toggle="modal"
-    data-bs-target="#modalEditUser">
-    <i class="bi bi-pencil"></i> Edit
-</button>
+                                            data-id="{{ $u->id }}" data-nama="{{ $u->nama }}"
+                                            data-username="{{ $u->username }}" data-role-id="{{ $u->role_id }}"
+                                            data-role-name="{{ $u->role?->nama }}"
+                                            data-bagian-id="{{ $u->bagian_id }}" data-email="{{ $u->email }}"
+                                            {{-- TAMBAHKAN INI --}} data-password="{{ $u->password }}"
+                                            data-bs-toggle="modal" data-bs-target="#modalEditUser">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </button>
 
                                         @if (!($u->id === auth()->id() && $u->role?->nama === 'Admin'))
                                             <button type="button" class="btn btn-danger btn-sm btn-action btnDelete"
@@ -149,18 +145,14 @@
                                 <td>
                                     <div class="action-buttons">
                                         <button type="button" class="btn btn-warning btn-sm btn-action editUser"
-    data-id="{{ $u->id }}" 
-    data-nama="{{ $u->nama }}"
-    data-username="{{ $u->username }}" 
-    data-role-id="{{ $u->role_id }}"
-    data-role-name="{{ $u->role?->nama }}" 
-    data-bagian-id="{{ $u->bagian_id }}"
-    data-email="{{ $u->email }}"  {{-- TAMBAHKAN INI --}}
-    data-password="{{ $u->password }}" 
-    data-bs-toggle="modal"
-    data-bs-target="#modalEditUser">
-    <i class="bi bi-pencil"></i> Edit
-</button>
+                                            data-id="{{ $u->id }}" data-nama="{{ $u->nama }}"
+                                            data-username="{{ $u->username }}" data-role-id="{{ $u->role_id }}"
+                                            data-role-name="{{ $u->role?->nama }}"
+                                            data-bagian-id="{{ $u->bagian_id }}" data-email="{{ $u->email }}"
+                                            {{-- TAMBAHKAN INI --}} data-password="{{ $u->password }}"
+                                            data-bs-toggle="modal" data-bs-target="#modalEditUser">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </button>
 
                                         <button type="button" class="btn btn-danger btn-sm btn-action btnDelete"
                                             data-id="{{ $u->id }}">
@@ -186,18 +178,14 @@
                                 <td>
                                     <div class="action-buttons">
                                         <button type="button" class="btn btn-warning btn-sm btn-action editUser"
-    data-id="{{ $u->id }}" 
-    data-nama="{{ $u->nama }}"
-    data-username="{{ $u->username }}" 
-    data-role-id="{{ $u->role_id }}"
-    data-role-name="{{ $u->role?->nama }}" 
-    data-bagian-id="{{ $u->bagian_id }}"
-    data-email="{{ $u->email }}"  {{-- TAMBAHKAN INI --}}
-    data-password="{{ $u->password }}" 
-    data-bs-toggle="modal"
-    data-bs-target="#modalEditUser">
-    <i class="bi bi-pencil"></i> Edit
-</button>
+                                            data-id="{{ $u->id }}" data-nama="{{ $u->nama }}"
+                                            data-username="{{ $u->username }}" data-role-id="{{ $u->role_id }}"
+                                            data-role-name="{{ $u->role?->nama }}"
+                                            data-bagian-id="{{ $u->bagian_id }}" data-email="{{ $u->email }}"
+                                            {{-- TAMBAHKAN INI --}} data-password="{{ $u->password }}"
+                                            data-bs-toggle="modal" data-bs-target="#modalEditUser">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </button>
 
                                         <button type="button" class="btn btn-danger btn-sm btn-action btnDelete"
                                             data-id="{{ $u->id }}">
@@ -226,18 +214,14 @@
                                 <td>
                                     <div class="action-buttons">
                                         <button type="button" class="btn btn-warning btn-sm btn-action editUser"
-    data-id="{{ $u->id }}" 
-    data-nama="{{ $u->nama }}"
-    data-username="{{ $u->username }}" 
-    data-role-id="{{ $u->role_id }}"
-    data-role-name="{{ $u->role?->nama }}" 
-    data-bagian-id="{{ $u->bagian_id }}"
-    data-email="{{ $u->email }}"  {{-- TAMBAHKAN INI --}}
-    data-password="{{ $u->password }}" 
-    data-bs-toggle="modal"
-    data-bs-target="#modalEditUser">
-    <i class="bi bi-pencil"></i> Edit
-</button>
+                                            data-id="{{ $u->id }}" data-nama="{{ $u->nama }}"
+                                            data-username="{{ $u->username }}" data-role-id="{{ $u->role_id }}"
+                                            data-role-name="{{ $u->role?->nama }}"
+                                            data-bagian-id="{{ $u->bagian_id }}" data-email="{{ $u->email }}"
+                                            {{-- TAMBAHKAN INI --}} data-password="{{ $u->password }}"
+                                            data-bs-toggle="modal" data-bs-target="#modalEditUser">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </button>
 
                                         <button type="button" class="btn btn-danger btn-sm btn-action btnDelete"
                                             data-id="{{ $u->id }}">
@@ -316,8 +300,6 @@
                         <label class="form-label fw-semibold">Email</label><span class="text-danger">*</span>
                         <input type="email" class="form-control" name="email"
                             placeholder="Masukkan email admin">
-                        <small class="form-text text-muted">Email wajib diisi untuk admin (fitur reset
-                            password)</small>
                     </div>
 
                     <div class="mb-3">
@@ -407,11 +389,9 @@
 
                     {{-- TAMBAHKAN INI ↓ --}}
                     <div class="mb-3" id="email-field-edit" style="display:none">
-                        <label class="form-label fw-semibold">Email</label><span class="text-danger">*</span>
+                        <label class="form-label fw-semibold">Email</label>
                         <input type="email" class="form-control" name="email" id="user_email"
                             placeholder="Masukkan email admin">
-                        <small class="form-text text-muted">Email wajib diisi untuk admin (fitur reset
-                            password)</small>
                     </div>
 
                     <div class="mb-3">
@@ -502,105 +482,113 @@
         <script>
             document.addEventListener("DOMContentLoaded", () => {
 
-                const roleSelectCreate = document.querySelector('#modalCreateUser select[name="role_id"]');
-                const emailFieldCreate = document.getElementById('email-field-create');
-                const emailInputCreate = emailFieldCreate?.querySelector('input[name="email"]');
-                if (roleSelectCreate && emailFieldCreate) {
-                    roleSelectCreate.addEventListener('change', function() {
-                        const selectedText = this.options[this.selectedIndex].text;
-                        if (selectedText === 'Admin') {
-                            emailFieldCreate.style.display = 'block';
-                            if (emailInputCreate) emailInputCreate.required = true;
-                        } else {
-                            emailFieldCreate.style.display = 'none';
-                            if (emailInputCreate) {
-                                emailInputCreate.required = false;
-                                emailInputCreate.value = '';
-                            }
-                        }
-                    });
+                // === FUNGSI UTILITY ===
+    function updateEmailFieldEdit(roleName) {
+        const emailFieldEdit = document.getElementById('email-field-edit');
+        const emailInputEdit = emailFieldEdit?.querySelector('input[name="email"]');
+        
+        if (roleName === 'Admin') {
+            emailFieldEdit.style.display = 'block';
+            if (emailInputEdit) {
+                emailInputEdit.required = true;
+                emailInputEdit.setAttribute('required', 'required');
+            }
+        } else {
+            emailFieldEdit.style.display = 'none';
+            if (emailInputEdit) {
+                emailInputEdit.required = false;
+                emailInputEdit.removeAttribute('required');
+                emailInputEdit.value = '';
+            }
+        }
+    }
 
-                    // Trigger saat modal dibuka pertama kali
-                    const modalCreate = document.getElementById('modalCreateUser');
-                    modalCreate?.addEventListener('shown.bs.modal', function() {
-                        roleSelectCreate.dispatchEvent(new Event('change'));
-                    });
+    // Untuk Modal CREATE
+    const roleSelectCreate = document.querySelector('#modalCreateUser select[name="role_id"]');
+    const emailFieldCreate = document.getElementById('email-field-create');
+    const emailInputCreate = emailFieldCreate?.querySelector('input[name="email"]');
+    
+    if (roleSelectCreate && emailFieldCreate) {
+        roleSelectCreate.addEventListener('change', function() {
+            const selectedText = this.options[this.selectedIndex].text;
+            if (selectedText === 'Admin') {
+                emailFieldCreate.style.display = 'block';
+                if (emailInputCreate) emailInputCreate.required = true;
+            } else {
+                emailFieldCreate.style.display = 'none';
+                if (emailInputCreate) {
+                    emailInputCreate.required = false;
+                    emailInputCreate.value = '';
                 }
+            }
+        });
 
-                // Untuk Modal EDIT
-                const roleSelectEdit = document.querySelector('#modalEditUser select[name="role_id"]');
-                const emailFieldEdit = document.getElementById('email-field-edit');
-                const emailInputEdit = emailFieldEdit?.querySelector('input[name="email"]');
+        // Trigger saat modal create dibuka pertama kali
+        const modalCreate = document.getElementById('modalCreateUser');
+        modalCreate?.addEventListener('shown.bs.modal', function() {
+            roleSelectCreate.dispatchEvent(new Event('change'));
+        });
+    }
 
-                if (roleSelectEdit && emailFieldEdit) {
-                    roleSelectEdit.addEventListener('change', function() {
-                        const selectedText = this.options[this.selectedIndex].text;
-                        if (selectedText === 'Admin') {
-                            emailFieldEdit.style.display = 'block';
-                            if (emailInputEdit) emailInputEdit.required = true;
-                        } else {
-                            emailFieldEdit.style.display = 'none';
-                            if (emailInputEdit) {
-                                emailInputEdit.required = false;
-                                emailInputEdit.value = '';
-                            }
-                        }
-                    });
-                }
+    // Untuk Modal EDIT
+    const roleSelectEdit = document.querySelector('#modalEditUser select[name="role_id_select"]');
+    
+    if (roleSelectEdit) {
+        roleSelectEdit.addEventListener('change', function() {
+            const selectedText = this.options[this.selectedIndex].text;
+            updateEmailFieldEdit(selectedText);
+        });
+    }
 
+    // Trigger saat modal edit dibuka
+    const modalEdit = document.getElementById('modalEditUser');
+    modalEdit?.addEventListener('shown.bs.modal', function() {
+        const roleSelect = this.querySelector('select[name="role_id_select"]');
+        if (roleSelect) {
+            const selectedText = roleSelect.options[roleSelect.selectedIndex].text;
+            updateEmailFieldEdit(selectedText);
+        }
+    });
 
+    // === EDIT USER ===
+    document.querySelectorAll('.editUser').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.dataset.id;
+            const roleName = this.dataset.roleName;
+            const roleId = this.dataset.roleId;
+            const bagianId = this.dataset.bagianId;
+            const email = this.dataset.email || '';
+            const isCurrentAdmin = (parseInt(id) === {{ auth()->id() }});
 
-                // === EDIT USER ===
-                document.querySelectorAll('.editUser').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const id = this.dataset.id;
-                        const roleName = this.dataset.roleName;
-                        const roleId = this.dataset.roleId;
-                        const bagianId = this.dataset.bagianId;
-                        const email = this.dataset.email || ''; // TAMBAHKAN INI
-                        const isCurrentAdmin = (parseInt(id) === {{ auth()->id() }});
+            document.getElementById('user_id').value = id;
+            document.getElementById('user_nama').value = this.dataset.nama || '';
+            document.getElementById('user_username').value = this.dataset.username || '';
+            document.getElementById('user_role').value = roleId || '';
+            document.getElementById('user_bagian').value = bagianId || '';
+            document.getElementById('user_old_password').value = this.dataset.password || '';
+            document.getElementById('user_email').value = email;
 
-                        document.getElementById('user_id').value = id;
-                        document.getElementById('user_nama').value = this.dataset.nama || '';
-                        document.getElementById('user_username').value = this.dataset.username || '';
-                        document.getElementById('user_role').value = roleId || '';
-                        document.getElementById('user_bagian').value = bagianId || '';
-                        document.getElementById('user_old_password').value = this.dataset.password ||
-                            '';
-                        document.getElementById('user_email').value = email; // TAMBAHKAN INI
+            // Set nilai hidden field
+            document.getElementById('user_role_hidden').value = roleId;
 
-                        // Set nilai hidden field
-                        document.getElementById('user_role_hidden').value = roleId;
+            // Update field email berdasarkan role yang ada
+            updateEmailFieldEdit(roleName);
 
-                        // Show/hide email field berdasarkan role
-                        if (roleName === "Admin") {
-                            emailFieldEdit.style.display = 'block';
-                            if (emailInputEdit) emailInputEdit.required = true;
-                        } else {
-                            emailFieldEdit.style.display = 'none';
-                            if (emailInputEdit) {
-                                emailInputEdit.required = false;
-                                emailInputEdit.value = '';
-                            }
-                        }
+            // 🔒 Hanya disable ROLE untuk Admin yang sedang login
+            if (isCurrentAdmin && roleName === "Admin") {
+                document.getElementById('user_role').disabled = true;
+                document.getElementById('user_role').name = 'role_id_select';
+                document.getElementById('user_role_hidden').name = 'role_id';
+            } else {
+                document.getElementById('user_role').disabled = false;
+                document.getElementById('user_role').name = 'role_id';
+                document.getElementById('user_role_hidden').name = '';
+            }
 
-                        // 🔒 Hanya disable ROLE untuk Admin yang sedang login
-                        if (isCurrentAdmin && roleName === "Admin") {
-                            document.getElementById('user_role').disabled = true;
-                            // Gunakan hidden field untuk role_id
-                            document.getElementById('user_role').name = 'role_id_select';
-                            document.getElementById('user_role_hidden').name = 'role_id';
-                        } else {
-                            document.getElementById('user_role').disabled = false;
-                            // Gunakan select field untuk role_id
-                            document.getElementById('user_role').name = 'role_id';
-                            document.getElementById('user_role_hidden').name = '';
-                        }
-
-                        document.getElementById('formEditUser').action =
-                            "{{ route('admin.users.update', ':id') }}".replace(':id', id);
-                    });
-                });
+            document.getElementById('formEditUser').action =
+                "{{ route('admin.users.update', ':id') }}".replace(':id', id);
+        });
+    });
 
                 // === DELETE USER ===
                 document.querySelectorAll('.btnDelete').forEach(btn => {
