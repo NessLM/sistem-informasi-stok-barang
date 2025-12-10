@@ -60,22 +60,22 @@
             }
 
             /* .category-section {
-                        background: #f8f9fa;
-                        border-radius: 8px;
-                        padding: 1rem;
-                        margin-bottom: 1rem;
-                    }
+                                background: #f8f9fa;
+                                border-radius: 8px;
+                                padding: 1rem;
+                                margin-bottom: 1rem;
+                            }
 
-                    .category-header {
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                        padding: 0.75rem;
-                        background: white;
-                        border-radius: 6px;
-                        margin-bottom: 0.5rem;
-                        border-left: 4px solid #0d6efd;
-                    } */
+                            .category-header {
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: center;
+                                padding: 0.75rem;
+                                background: white;
+                                border-radius: 6px;
+                                margin-bottom: 0.5rem;
+                                border-left: 4px solid #0d6efd;
+                            } */
 
             .tab-content>.tab-pane {
                 display: none;
@@ -114,12 +114,12 @@
         <!-- Toast notification -->
         @if (session('toast'))
             <div id="toast-notif" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-                           z-index: 2000; display: flex; justify-content: center; pointer-events: none;">
+                                   z-index: 2000; display: flex; justify-content: center; pointer-events: none;">
                 <div class="toast-message" style="background: #fff; border-radius: 12px; padding: 14px 22px;
-                               box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;
-                               min-width: 280px; max-width: 360px; transition: opacity .5s ease;">
+                                       box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;
+                                       min-width: 280px; max-width: 360px; transition: opacity .5s ease;">
                     <div style="font-weight: 600; font-size: 16px; margin-bottom: 4px;
-                                    color: {{ session('toast.type') === 'success' ? '#28a745' : '#dc3545' }};">
+                                            color: {{ session('toast.type') === 'success' ? '#28a745' : '#dc3545' }};">
                         {{ session('toast.title') }}
                     </div>
                     <div style="color:#333; font-size: 14px; line-height: 1.4;">
@@ -679,12 +679,72 @@
                         <div class="col-md-6">
                             <label class="fw-semibold">Satuan</label><span class="text-danger">*</span>
                             <select name="satuan" class="form-select" required>
-                                <option value="">-- Pilih Satuan --</option>
-                                <option value="Pcs">Pcs</option>
-                                <option value="Box">Box</option>
-                                <option value="Pack">Pack</option>
-                                <option value="Rim">Rim</option>
-                                <option value="Unit">Unit</option>
+                                <select name="satuan" class="form-select">
+                                    <option value="">-- Semua Satuan --</option>
+
+                                    <!-- Satuan Barang -->
+                                    <option value="Pcs" @if (request('satuan') == 'Pcs') selected @endif>Pcs</option>
+                                    <option value="Unit" @if (request('satuan') == 'Unit') selected @endif>Unit</option>
+                                    <option value="Buah" @if (request('satuan') == 'Buah') selected @endif>Buah</option>
+                                    <option value="Box" @if (request('satuan') == 'Box') selected @endif>Box</option>
+                                    <option value="Pack" @if (request('satuan') == 'Pack') selected @endif>Pack</option>
+                                    <option value="Set" @if (request('satuan') == 'Set') selected @endif>Set</option>
+                                    <option value="Rim" @if (request('satuan') == 'Rim') selected @endif>Rim</option>
+                                    <option value="Lembar" @if (request('satuan') == 'Lembar') selected @endif>Lembar
+                                    </option>
+                                    <option value="Ikat" @if (request('satuan') == 'Ikat') selected @endif>Ikat</option>
+                                    <option value="Roll" @if (request('satuan') == 'Roll') selected @endif>Roll</option>
+                                    <option value="Buku" @if (request('satuan') == 'Buku') selected @endif>Buku</option>
+                                    <option value="Botol" @if (request('satuan') == 'Botol') selected @endif>Botol
+                                    </option>
+                                    <option value="Tube" @if (request('satuan') == 'Tube') selected @endif>Tube</option>
+                                    <option value="Strip" @if (request('satuan') == 'Strip') selected @endif>Strip
+                                    </option>
+                                    <option value="Tablet" @if (request('satuan') == 'Tablet') selected @endif>Tablet
+                                    </option>
+                                    <option value="Vial" @if (request('satuan') == 'Vial') selected @endif>Vial</option>
+                                    <option value="Ampul" @if (request('satuan') == 'Ampul') selected @endif>Ampul
+                                    </option>
+                                    <option value="Kaleng" @if (request('satuan') == 'Kaleng') selected @endif>Kaleng
+                                    </option>
+                                    <option value="Karung" @if (request('satuan') == 'Karung') selected @endif>Karung
+                                    </option>
+                                    <option value="Sak" @if (request('satuan') == 'Sak') selected @endif>Sak</option>
+                                    <option value="Dus" @if (request('satuan') == 'Dus') selected @endif>Dus</option>
+                                    <option value="Paket" @if (request('satuan') == 'Paket') selected @endif>Paket
+                                    </option>
+
+                                    <!-- Satuan Berat -->
+                                    <option value="Gram" @if (request('satuan') == 'Gram') selected @endif>Gram</option>
+                                    <option value="Kilogram" @if (request('satuan') == 'Kilogram') selected @endif>
+                                        Kilogram</option>
+                                    <option value="Ton" @if (request('satuan') == 'Ton') selected @endif>Ton</option>
+
+                                    <!-- Satuan Volume Cair -->
+                                    <option value="Mililiter" @if (request('satuan') == 'Mililiter') selected @endif>
+                                        Mililiter</option>
+                                    <option value="Liter" @if (request('satuan') == 'Liter') selected @endif>Liter
+                                    </option>
+                                    <option value="Drum" @if (request('satuan') == 'Drum') selected @endif>Drum</option>
+                                    <option value="Galon" @if (request('satuan') == 'Galon') selected @endif>Galon
+                                    </option>
+
+                                    <!-- Satuan Panjang -->
+                                    <option value="Meter" @if (request('satuan') == 'Meter') selected @endif>Meter
+                                    </option>
+                                    <option value="Centimeter" @if (request('satuan') == 'Centimeter') selected @endif>
+                                        Centimeter</option>
+                                    <option value="Milimeter" @if (request('satuan') == 'Milimeter') selected @endif>
+                                        Milimeter</option>
+                                    <option value="Inci" @if (request('satuan') == 'Inci') selected @endif>Inci</option>
+                                    <option value="Feet" @if (request('satuan') == 'Feet') selected @endif>Feet</option>
+
+                                    <!-- Satuan Luas & Volume -->
+                                    <option value="Meter Persegi" @if (request('satuan') == 'Meter Persegi') selected
+                                    @endif>Meter Persegi</option>
+                                    <option value="Meter Kubik" @if (request('satuan') == 'Meter Kubik') selected @endif>
+                                        Meter Kubik</option>
+                                </select>
                             </select>
                         </div>
                     </div>
@@ -700,109 +760,126 @@
     {{-- Modal Edit Barang --}}
     @foreach ($kategori as $k)
         @foreach ($k->barang as $b)
-                <div class="modal fade" id="modalEditBarang-{{ $b->kode_barang }}" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered modal-lg">
-                        <form action="{{ route('admin.barang.update', $b->kode_barang) }}" method="POST" class="modal-content">
-                            @csrf
-                            @method('PUT')
-                            <div class="modal-header">
-                                <h5 class="modal-title fw-semibold">Edit Barang : {{ $b->nama_barang }}</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <label class="fw-semibold">Nama Barang</label>
-                                        <input type="text" name="nama_barang" class="form-control" value="{{ $b->nama_barang }}"
-                                            required>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="fw-semibold">
-                                            Kode Barang
-                                            <i class="bi bi-info-circle text-primary" data-bs-toggle="tooltip"
-                                                title="Hati-hati mengubah kode barang, akan mempengaruhi riwayat transaksi"></i>
-                                        </label>
-                                        <input type="text" name="kode_barang" id="kodeBarangEdit-{{ $b->kode_barang }}"
-                                            class="form-control" value="{{ $b->kode_barang }}"
-                                            data-original-kode="{{ $b->kode_barang }}" required>
-                                        <div id="kodeValidationEdit-{{ $b->kode_barang }}" class="form-text"></div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="fw-semibold">Kategori</label>
-                                        <select name="id_kategori" class="form-select" required>
-                                            <option value="">-- Pilih Kategori --</option>
-                                            @foreach ($kategori as $kat)
-                                                <option value="{{ $kat->id }}" @selected($b->id_kategori == $kat->id)>
-                                                    {{ $kat->nama }}
-                                                </option>
-                                            @endforeach
+            <div class="modal fade" id="modalEditBarang-{{ $b->kode_barang }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <form action="{{ route('admin.barang.update', $b->kode_barang) }}" method="POST" class="modal-content">
+                        @csrf
+                        @method('PUT')
+                        <div class="modal-header">
+                            <h5 class="modal-title fw-semibold">Edit Barang : {{ $b->nama_barang }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="fw-semibold">Nama Barang</label>
+                                    <input type="text" name="nama_barang" class="form-control" value="{{ $b->nama_barang }}"
+                                        required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="fw-semibold">
+                                        Kode Barang
+                                        <i class="bi bi-info-circle text-primary" data-bs-toggle="tooltip"
+                                            title="Hati-hati mengubah kode barang, akan mempengaruhi riwayat transaksi"></i>
+                                    </label>
+                                    <input type="text" name="kode_barang" id="kodeBarangEdit-{{ $b->kode_barang }}"
+                                        class="form-control" value="{{ $b->kode_barang }}"
+                                        data-original-kode="{{ $b->kode_barang }}" required>
+                                    <div id="kodeValidationEdit-{{ $b->kode_barang }}" class="form-text"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="fw-semibold">Kategori</label>
+                                    <select name="id_kategori" class="form-select" required>
+                                        <option value="">-- Pilih Kategori --</option>
+                                        @foreach ($kategori as $kat)
+                                            <option value="{{ $kat->id }}" @selected($b->id_kategori == $kat->id)>
+                                                {{ $kat->nama }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="fw-semibold">Satuan</label>
+                                    <select name="satuan" class="form-select" required>
+                                        <select name="satuan" class="form-select">
+                                            <option value="">-- Semua Satuan --</option>
+
+                                            <!-- Satuan Barang -->
+                                            <option value="Pcs" @if (request('satuan') == 'Pcs') selected @endif>Pcs</option>
+                                            <option value="Unit" @if (request('satuan') == 'Unit') selected @endif>Unit</option>
+                                            <option value="Buah" @if (request('satuan') == 'Buah') selected @endif>Buah</option>
+                                            <option value="Box" @if (request('satuan') == 'Box') selected @endif>Box</option>
+                                            <option value="Pack" @if (request('satuan') == 'Pack') selected @endif>Pack</option>
+                                            <option value="Set" @if (request('satuan') == 'Set') selected @endif>Set</option>
+                                            <option value="Rim" @if (request('satuan') == 'Rim') selected @endif>Rim</option>
+                                            <option value="Lembar" @if (request('satuan') == 'Lembar') selected @endif>Lembar
+                                            </option>
+                                            <option value="Ikat" @if (request('satuan') == 'Ikat') selected @endif>Ikat</option>
+                                            <option value="Roll" @if (request('satuan') == 'Roll') selected @endif>Roll</option>
+                                            <option value="Buku" @if (request('satuan') == 'Buku') selected @endif>Buku</option>
+                                            <option value="Botol" @if (request('satuan') == 'Botol') selected @endif>Botol
+                                            </option>
+                                            <option value="Tube" @if (request('satuan') == 'Tube') selected @endif>Tube</option>
+                                            <option value="Strip" @if (request('satuan') == 'Strip') selected @endif>Strip
+                                            </option>
+                                            <option value="Tablet" @if (request('satuan') == 'Tablet') selected @endif>Tablet
+                                            </option>
+                                            <option value="Vial" @if (request('satuan') == 'Vial') selected @endif>Vial</option>
+                                            <option value="Ampul" @if (request('satuan') == 'Ampul') selected @endif>Ampul
+                                            </option>
+                                            <option value="Kaleng" @if (request('satuan') == 'Kaleng') selected @endif>Kaleng
+                                            </option>
+                                            <option value="Karung" @if (request('satuan') == 'Karung') selected @endif>Karung
+                                            </option>
+                                            <option value="Sak" @if (request('satuan') == 'Sak') selected @endif>Sak</option>
+                                            <option value="Dus" @if (request('satuan') == 'Dus') selected @endif>Dus</option>
+                                            <option value="Paket" @if (request('satuan') == 'Paket') selected @endif>Paket
+                                            </option>
+
+                                            <!-- Satuan Berat -->
+                                            <option value="Gram" @if (request('satuan') == 'Gram') selected @endif>Gram</option>
+                                            <option value="Kilogram" @if (request('satuan') == 'Kilogram') selected @endif>
+                                                Kilogram</option>
+                                            <option value="Ton" @if (request('satuan') == 'Ton') selected @endif>Ton</option>
+
+                                            <!-- Satuan Volume Cair -->
+                                            <option value="Mililiter" @if (request('satuan') == 'Mililiter') selected @endif>
+                                                Mililiter</option>
+                                            <option value="Liter" @if (request('satuan') == 'Liter') selected @endif>Liter
+                                            </option>
+                                            <option value="Drum" @if (request('satuan') == 'Drum') selected @endif>Drum</option>
+                                            <option value="Galon" @if (request('satuan') == 'Galon') selected @endif>Galon
+                                            </option>
+
+                                            <!-- Satuan Panjang -->
+                                            <option value="Meter" @if (request('satuan') == 'Meter') selected @endif>Meter
+                                            </option>
+                                            <option value="Centimeter" @if (request('satuan') == 'Centimeter') selected @endif>
+                                                Centimeter</option>
+                                            <option value="Milimeter" @if (request('satuan') == 'Milimeter') selected @endif>
+                                                Milimeter</option>
+                                            <option value="Inci" @if (request('satuan') == 'Inci') selected @endif>Inci</option>
+                                            <option value="Feet" @if (request('satuan') == 'Feet') selected @endif>Feet</option>
+
+                                            <!-- Satuan Luas & Volume -->
+                                            <option value="Meter Persegi" @if (request('satuan') == 'Meter Persegi') selected
+                                            @endif>Meter Persegi</option>
+                                            <option value="Meter Kubik" @if (request('satuan') == 'Meter Kubik') selected @endif>
+                                                Meter Kubik</option>
                                         </select>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="fw-semibold">Satuan</label>
-                                        <select name="satuan" class="form-select" required>
-                                            <select name="satuan" class="form-select">
-                <option value="">-- Semua Satuan --</option>
-
-                <!-- Satuan Barang -->
-                <option value="Pcs" @if (request('satuan') == 'Pcs') selected @endif>Pcs</option>
-                <option value="Unit" @if (request('satuan') == 'Unit') selected @endif>Unit</option>
-                <option value="Buah" @if (request('satuan') == 'Buah') selected @endif>Buah</option>
-                <option value="Box" @if (request('satuan') == 'Box') selected @endif>Box</option>
-                <option value="Pack" @if (request('satuan') == 'Pack') selected @endif>Pack</option>
-                <option value="Set" @if (request('satuan') == 'Set') selected @endif>Set</option>
-                <option value="Rim" @if (request('satuan') == 'Rim') selected @endif>Rim</option>
-                <option value="Lembar" @if (request('satuan') == 'Lembar') selected @endif>Lembar</option>
-                <option value="Ikat" @if (request('satuan') == 'Ikat') selected @endif>Ikat</option>
-                <option value="Roll" @if (request('satuan') == 'Roll') selected @endif>Roll</option>
-                <option value="Buku" @if (request('satuan') == 'Buku') selected @endif>Buku</option>
-                <option value="Botol" @if (request('satuan') == 'Botol') selected @endif>Botol</option>
-                <option value="Tube" @if (request('satuan') == 'Tube') selected @endif>Tube</option>
-                <option value="Strip" @if (request('satuan') == 'Strip') selected @endif>Strip</option>
-                <option value="Tablet" @if (request('satuan') == 'Tablet') selected @endif>Tablet</option>
-                <option value="Vial" @if (request('satuan') == 'Vial') selected @endif>Vial</option>
-                <option value="Ampul" @if (request('satuan') == 'Ampul') selected @endif>Ampul</option>
-                <option value="Kaleng" @if (request('satuan') == 'Kaleng') selected @endif>Kaleng</option>
-                <option value="Karung" @if (request('satuan') == 'Karung') selected @endif>Karung</option>
-                <option value="Sak" @if (request('satuan') == 'Sak') selected @endif>Sak</option>
-                <option value="Dus" @if (request('satuan') == 'Dus') selected @endif>Dus</option>
-                <option value="Paket" @if (request('satuan') == 'Paket') selected @endif>Paket</option>
-
-                <!-- Satuan Berat -->
-                <option value="Gram" @if (request('satuan') == 'Gram') selected @endif>Gram</option>
-                <option value="Kilogram" @if (request('satuan') == 'Kilogram') selected @endif>Kilogram</option>
-                <option value="Ton" @if (request('satuan') == 'Ton') selected @endif>Ton</option>
-
-                <!-- Satuan Volume Cair -->
-                <option value="Mililiter" @if (request('satuan') == 'Mililiter') selected @endif>Mililiter</option>
-                <option value="Liter" @if (request('satuan') == 'Liter') selected @endif>Liter</option>
-                <option value="Drum" @if (request('satuan') == 'Drum') selected @endif>Drum</option>
-                <option value="Galon" @if (request('satuan') == 'Galon') selected @endif>Galon</option>
-
-                <!-- Satuan Panjang -->
-                <option value="Meter" @if (request('satuan') == 'Meter') selected @endif>Meter</option>
-                <option value="Centimeter" @if (request('satuan') == 'Centimeter') selected @endif>Centimeter</option>
-                <option value="Milimeter" @if (request('satuan') == 'Milimeter') selected @endif>Milimeter</option>
-                <option value="Inci" @if (request('satuan') == 'Inci') selected @endif>Inci</option>
-                <option value="Feet" @if (request('satuan') == 'Feet') selected @endif>Feet</option>
-
-                <!-- Satuan Luas & Volume -->
-                <option value="Meter Persegi" @if (request('satuan') == 'Meter Persegi') selected @endif>Meter Persegi</option>
-                <option value="Meter Kubik" @if (request('satuan') == 'Meter Kubik') selected @endif>Meter Kubik</option>
-            </select>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                        <button class="btn btn-primary" type="submit" id="btnSimpanEdit-{{ $b->kode_barang }}">
-                                            Simpan Perubahan
-                                        </button>
-                                    </div>
-                                </form>
+                                    </select>
+                                </div>
                             </div>
                         </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button class="btn btn-primary" type="submit" id="btnSimpanEdit-{{ $b->kode_barang }}">
+                                Simpan Perubahan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         @endforeach
     @endforeach
 
@@ -821,54 +898,71 @@
                             <label class="form-label">Satuan</label>
                             <select name="satuan" class="form-select">
                                 <select name="satuan" class="form-select">
-    <option value="">-- Semua Satuan --</option>
+                                    <option value="">-- Semua Satuan --</option>
 
-    <!-- Satuan Barang -->
-    <option value="Pcs" @if (request('satuan') == 'Pcs') selected @endif>Pcs</option>
-    <option value="Unit" @if (request('satuan') == 'Unit') selected @endif>Unit</option>
-    <option value="Buah" @if (request('satuan') == 'Buah') selected @endif>Buah</option>
-    <option value="Box" @if (request('satuan') == 'Box') selected @endif>Box</option>
-    <option value="Pack" @if (request('satuan') == 'Pack') selected @endif>Pack</option>
-    <option value="Set" @if (request('satuan') == 'Set') selected @endif>Set</option>
-    <option value="Rim" @if (request('satuan') == 'Rim') selected @endif>Rim</option>
-    <option value="Lembar" @if (request('satuan') == 'Lembar') selected @endif>Lembar</option>
-    <option value="Ikat" @if (request('satuan') == 'Ikat') selected @endif>Ikat</option>
-    <option value="Roll" @if (request('satuan') == 'Roll') selected @endif>Roll</option>
-    <option value="Buku" @if (request('satuan') == 'Buku') selected @endif>Buku</option>
-    <option value="Botol" @if (request('satuan') == 'Botol') selected @endif>Botol</option>
-    <option value="Tube" @if (request('satuan') == 'Tube') selected @endif>Tube</option>
-    <option value="Strip" @if (request('satuan') == 'Strip') selected @endif>Strip</option>
-    <option value="Tablet" @if (request('satuan') == 'Tablet') selected @endif>Tablet</option>
-    <option value="Vial" @if (request('satuan') == 'Vial') selected @endif>Vial</option>
-    <option value="Ampul" @if (request('satuan') == 'Ampul') selected @endif>Ampul</option>
-    <option value="Kaleng" @if (request('satuan') == 'Kaleng') selected @endif>Kaleng</option>
-    <option value="Karung" @if (request('satuan') == 'Karung') selected @endif>Karung</option>
-    <option value="Sak" @if (request('satuan') == 'Sak') selected @endif>Sak</option>
-    <option value="Dus" @if (request('satuan') == 'Dus') selected @endif>Dus</option>
-    <option value="Paket" @if (request('satuan') == 'Paket') selected @endif>Paket</option>
+                                    <!-- Satuan Barang -->
+                                    <option value="Pcs" @if (request('satuan') == 'Pcs') selected @endif>Pcs</option>
+                                    <option value="Unit" @if (request('satuan') == 'Unit') selected @endif>Unit</option>
+                                    <option value="Buah" @if (request('satuan') == 'Buah') selected @endif>Buah</option>
+                                    <option value="Box" @if (request('satuan') == 'Box') selected @endif>Box</option>
+                                    <option value="Pack" @if (request('satuan') == 'Pack') selected @endif>Pack</option>
+                                    <option value="Set" @if (request('satuan') == 'Set') selected @endif>Set</option>
+                                    <option value="Rim" @if (request('satuan') == 'Rim') selected @endif>Rim</option>
+                                    <option value="Lembar" @if (request('satuan') == 'Lembar') selected @endif>Lembar
+                                    </option>
+                                    <option value="Ikat" @if (request('satuan') == 'Ikat') selected @endif>Ikat</option>
+                                    <option value="Roll" @if (request('satuan') == 'Roll') selected @endif>Roll</option>
+                                    <option value="Buku" @if (request('satuan') == 'Buku') selected @endif>Buku</option>
+                                    <option value="Botol" @if (request('satuan') == 'Botol') selected @endif>Botol
+                                    </option>
+                                    <option value="Tube" @if (request('satuan') == 'Tube') selected @endif>Tube</option>
+                                    <option value="Strip" @if (request('satuan') == 'Strip') selected @endif>Strip
+                                    </option>
+                                    <option value="Tablet" @if (request('satuan') == 'Tablet') selected @endif>Tablet
+                                    </option>
+                                    <option value="Vial" @if (request('satuan') == 'Vial') selected @endif>Vial</option>
+                                    <option value="Ampul" @if (request('satuan') == 'Ampul') selected @endif>Ampul
+                                    </option>
+                                    <option value="Kaleng" @if (request('satuan') == 'Kaleng') selected @endif>Kaleng
+                                    </option>
+                                    <option value="Karung" @if (request('satuan') == 'Karung') selected @endif>Karung
+                                    </option>
+                                    <option value="Sak" @if (request('satuan') == 'Sak') selected @endif>Sak</option>
+                                    <option value="Dus" @if (request('satuan') == 'Dus') selected @endif>Dus</option>
+                                    <option value="Paket" @if (request('satuan') == 'Paket') selected @endif>Paket
+                                    </option>
 
-    <!-- Satuan Berat -->
-    <option value="Gram" @if (request('satuan') == 'Gram') selected @endif>Gram</option>
-    <option value="Kilogram" @if (request('satuan') == 'Kilogram') selected @endif>Kilogram</option>
-    <option value="Ton" @if (request('satuan') == 'Ton') selected @endif>Ton</option>
+                                    <!-- Satuan Berat -->
+                                    <option value="Gram" @if (request('satuan') == 'Gram') selected @endif>Gram</option>
+                                    <option value="Kilogram" @if (request('satuan') == 'Kilogram') selected @endif>
+                                        Kilogram</option>
+                                    <option value="Ton" @if (request('satuan') == 'Ton') selected @endif>Ton</option>
 
-    <!-- Satuan Volume Cair -->
-    <option value="Mililiter" @if (request('satuan') == 'Mililiter') selected @endif>Mililiter</option>
-    <option value="Liter" @if (request('satuan') == 'Liter') selected @endif>Liter</option>
-    <option value="Drum" @if (request('satuan') == 'Drum') selected @endif>Drum</option>
-    <option value="Galon" @if (request('satuan') == 'Galon') selected @endif>Galon</option>
+                                    <!-- Satuan Volume Cair -->
+                                    <option value="Mililiter" @if (request('satuan') == 'Mililiter') selected @endif>
+                                        Mililiter</option>
+                                    <option value="Liter" @if (request('satuan') == 'Liter') selected @endif>Liter
+                                    </option>
+                                    <option value="Drum" @if (request('satuan') == 'Drum') selected @endif>Drum</option>
+                                    <option value="Galon" @if (request('satuan') == 'Galon') selected @endif>Galon
+                                    </option>
 
-    <!-- Satuan Panjang -->
-    <option value="Meter" @if (request('satuan') == 'Meter') selected @endif>Meter</option>
-    <option value="Centimeter" @if (request('satuan') == 'Centimeter') selected @endif>Centimeter</option>
-    <option value="Milimeter" @if (request('satuan') == 'Milimeter') selected @endif>Milimeter</option>
-    <option value="Inci" @if (request('satuan') == 'Inci') selected @endif>Inci</option>
-    <option value="Feet" @if (request('satuan') == 'Feet') selected @endif>Feet</option>
+                                    <!-- Satuan Panjang -->
+                                    <option value="Meter" @if (request('satuan') == 'Meter') selected @endif>Meter
+                                    </option>
+                                    <option value="Centimeter" @if (request('satuan') == 'Centimeter') selected @endif>
+                                        Centimeter</option>
+                                    <option value="Milimeter" @if (request('satuan') == 'Milimeter') selected @endif>
+                                        Milimeter</option>
+                                    <option value="Inci" @if (request('satuan') == 'Inci') selected @endif>Inci</option>
+                                    <option value="Feet" @if (request('satuan') == 'Feet') selected @endif>Feet</option>
 
-    <!-- Satuan Luas & Volume -->
-    <option value="Meter Persegi" @if (request('satuan') == 'Meter Persegi') selected @endif>Meter Persegi</option>
-    <option value="Meter Kubik" @if (request('satuan') == 'Meter Kubik') selected @endif>Meter Kubik</option>
-</select>
+                                    <!-- Satuan Luas & Volume -->
+                                    <option value="Meter Persegi" @if (request('satuan') == 'Meter Persegi') selected
+                                    @endif>Meter Persegi</option>
+                                    <option value="Meter Kubik" @if (request('satuan') == 'Meter Kubik') selected @endif>
+                                        Meter Kubik</option>
+                                </select>
 
                             </select>
                         </div>
@@ -886,10 +980,10 @@
                         <div class="col-md-6">
                             <label class="form-label">Stok</label>
                             <div class="d-flex gap-2">
-                                <input type="number" name="stok_min" class="form-control"
-                                    placeholder="Stok Minimum" value="{{ request('stok_min') }}" min="0">
-                                <input type="number" name="stok_max" class="form-control"
-                                    placeholder="Stok Maksimal" value="{{ request('stok_max') }}" min="0">
+                                <input type="number" name="stok_min" class="form-control" placeholder="Stok Minimum"
+                                    value="{{ request('stok_min') }}" min="0">
+                                <input type="number" name="stok_max" class="form-control" placeholder="Stok Maksimal"
+                                    value="{{ request('stok_max') }}" min="0">
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -1039,10 +1133,10 @@
             }
 
             // Initialize
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', function () {
                 // Tooltips
                 var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-                tooltipTriggerList.map(function(tooltipTriggerEl) {
+                tooltipTriggerList.map(function (tooltipTriggerEl) {
                     return new bootstrap.Tooltip(tooltipTriggerEl);
                 });
 
@@ -1054,7 +1148,7 @@
                 const btnSimpanTambah = document.getElementById('btnSimpanTambah');
 
                 if (kodeInputTambah) {
-                    kodeInputTambah.addEventListener('input', function() {
+                    kodeInputTambah.addEventListener('input', function () {
                         const kode = this.value.trim();
 
                         if (!kode) {
@@ -1071,8 +1165,8 @@
                         clearTimeout(kodeCheckTimeout);
                         kodeCheckTimeout = setTimeout(() => {
                             fetch(
-                                    `{{ route('admin.api.check.kode') }}?kode=${encodeURIComponent(kode)}`
-                                )
+                                `{{ route('admin.api.check.kode') }}?kode=${encodeURIComponent(kode)}`
+                            )
                                 .then(response => response.json())
                                 .then(data => {
                                     if (data.available) {
@@ -1108,7 +1202,7 @@
                     const btnSimpan = document.getElementById('btnSimpanEdit-' + kodeBarang);
                     const originalKode = input.dataset.originalKode;
 
-                    input.addEventListener('input', function() {
+                    input.addEventListener('input', function () {
                         const kode = this.value.trim();
 
                         if (!kode) {
@@ -1134,14 +1228,14 @@
                         clearTimeout(kodeCheckTimeout);
                         kodeCheckTimeout = setTimeout(() => {
                             fetch(
-                                    `{{ route('admin.api.check.kode') }}?kode=${encodeURIComponent(kode)}&current_kode=${encodeURIComponent(originalKode)}`
-                                )
+                                `{{ route('admin.api.check.kode') }}?kode=${encodeURIComponent(kode)}&current_kode=${encodeURIComponent(originalKode)}`
+                            )
                                 .then(response => response.json())
                                 .then(data => {
                                     if (data.available) {
                                         validationMsg.innerHTML =
                                             '<i class="bi bi-check-circle"></i> ' + data
-                                            .message;
+                                                .message;
                                         validationMsg.className = 'form-text text-success';
                                         btnSimpan.disabled = false;
                                         input.classList.remove('is-invalid');
@@ -1149,7 +1243,7 @@
                                     } else {
                                         validationMsg.innerHTML =
                                             '<i class="bi bi-x-circle"></i> ' + data
-                                            .message;
+                                                .message;
                                         validationMsg.className = 'form-text text-danger';
                                         btnSimpan.disabled = true;
                                         input.classList.remove('is-valid');
@@ -1174,7 +1268,7 @@
                     let currentSuggestions = [];
                     let searchTimeout;
 
-                    searchInput.addEventListener('input', function() {
+                    searchInput.addEventListener('input', function () {
                         const query = this.value.trim();
 
                         if (query.length < 2) {
@@ -1188,8 +1282,8 @@
                         clearTimeout(searchTimeout);
                         searchTimeout = setTimeout(() => {
                             fetch(
-                                    `{{ route('admin.api.search.barang') }}?q=${encodeURIComponent(query)}`
-                                )
+                                `{{ route('admin.api.search.barang') }}?q=${encodeURIComponent(query)}`
+                            )
                                 .then(response => response.json())
                                 .then(data => {
                                     currentSuggestions = data;
@@ -1205,20 +1299,20 @@
                                         const stockStatusClass = item.stock_status ===
                                             'empty' ? 'text-danger' :
                                             item.stock_status === 'low' ? 'text-warning' :
-                                            'text-success';
+                                                'text-success';
                                         const stockText = item.stock_status === 'empty' ?
                                             'Habis' :
                                             item.stock_status === 'low' ? 'Sedikit' :
-                                            'Tersedia';
+                                                'Tersedia';
 
                                         html += `
-                                            <div class="dropdown-item cursor-pointer" data-index="${index}" style="cursor: pointer;">
-                                                <div class="fw-bold">${item.nama}</div>
-                                                <small class="text-muted">Kode: ${item.kode} | Kategori: ${item.kategori}</small><br>
-                                                <small class="text-muted">Bagian: ${item.bagian} | Lokasi: ${item.lokasi}</small><br>
-                                                <small>Stok: <span class="${stockStatusClass}">${item.stok} - ${stockText}</span></small>
-                                            </div>
-                                        `;
+                                                    <div class="dropdown-item cursor-pointer" data-index="${index}" style="cursor: pointer;">
+                                                        <div class="fw-bold">${item.nama}</div>
+                                                        <small class="text-muted">Kode: ${item.kode} | Kategori: ${item.kategori}</small><br>
+                                                        <small class="text-muted">Bagian: ${item.bagian} | Lokasi: ${item.lokasi}</small><br>
+                                                        <small>Stok: <span class="${stockStatusClass}">${item.stok} - ${stockText}</span></small>
+                                                    </div>
+                                                `;
                                     });
 
                                     suggestionsContainer.innerHTML = html;
@@ -1226,7 +1320,7 @@
                                     suggestionsContainer.querySelectorAll('.dropdown-item').forEach(
                                         item => {
                                             if (item.dataset.index) {
-                                                item.addEventListener('click', function() {
+                                                item.addEventListener('click', function () {
                                                     const index = parseInt(this.dataset
                                                         .index);
                                                     searchInput.value =
@@ -1246,13 +1340,13 @@
                         }, 300);
                     });
 
-                    searchInput.addEventListener('keydown', function(e) {
+                    searchInput.addEventListener('keydown', function (e) {
                         if (e.key === 'Escape') {
                             suggestionsContainer.style.display = 'none';
                         }
                     });
 
-                    document.addEventListener('click', function(e) {
+                    document.addEventListener('click', function (e) {
                         if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
                             suggestionsContainer.style.display = 'none';
                         }
