@@ -60,22 +60,22 @@
             }
 
             /* .category-section {
-                    background: #f8f9fa;
-                    border-radius: 8px;
-                    padding: 1rem;
-                    margin-bottom: 1rem;
-                }
+                        background: #f8f9fa;
+                        border-radius: 8px;
+                        padding: 1rem;
+                        margin-bottom: 1rem;
+                    }
 
-                .category-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding: 0.75rem;
-                    background: white;
-                    border-radius: 6px;
-                    margin-bottom: 0.5rem;
-                    border-left: 4px solid #0d6efd;
-                } */
+                    .category-header {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        padding: 0.75rem;
+                        background: white;
+                        border-radius: 6px;
+                        margin-bottom: 0.5rem;
+                        border-left: 4px solid #0d6efd;
+                    } */
 
             .tab-content>.tab-pane {
                 display: none;
@@ -113,16 +113,13 @@
 
         <!-- Toast notification -->
         @if (session('toast'))
-            <div id="toast-notif"
-                style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-                       z-index: 2000; display: flex; justify-content: center; pointer-events: none;">
-                <div class="toast-message"
-                    style="background: #fff; border-radius: 12px; padding: 14px 22px;
-                           box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;
-                           min-width: 280px; max-width: 360px; transition: opacity .5s ease;">
-                    <div
-                        style="font-weight: 600; font-size: 16px; margin-bottom: 4px;
-                                color: {{ session('toast.type') === 'success' ? '#28a745' : '#dc3545' }};">
+            <div id="toast-notif" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+                           z-index: 2000; display: flex; justify-content: center; pointer-events: none;">
+                <div class="toast-message" style="background: #fff; border-radius: 12px; padding: 14px 22px;
+                               box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;
+                               min-width: 280px; max-width: 360px; transition: opacity .5s ease;">
+                    <div style="font-weight: 600; font-size: 16px; margin-bottom: 4px;
+                                    color: {{ session('toast.type') === 'success' ? '#28a745' : '#dc3545' }};">
                         {{ session('toast.title') }}
                     </div>
                     <div style="color:#333; font-size: 14px; line-height: 1.4;">
@@ -192,14 +189,16 @@
                         </div>
 
                         {{-- Jika ada filter/search --}}
-                        @if (request()->filled('search') ||
+                        @if (
+                                request()->filled('search') ||
                                 request()->filled('stok_min') ||
                                 request()->filled('stok_max') ||
                                 request()->filled('kategori_id') ||
                                 request()->filled('bagian_id') ||
                                 request()->filled('satuan') ||
                                 request()->filled('harga_min') ||
-                                request()->filled('harga_max'))
+                                request()->filled('harga_max')
+                            )
                             <h5 class="mt-3">Hasil Pencarian</h5>
 
                             @if ($hasilCari->count() > 0)
@@ -220,7 +219,8 @@
                                         </thead>
                                         <tbody>
                                             @foreach ($hasilCari as $i => $row)
-                                                <tr class="@if ($row->stok < 10) row-low-stock @endif @if ($row->stok == 0) row-habis-stock @endif">
+                                                <tr
+                                                    class="@if ($row->stok < 10) row-low-stock @endif @if ($row->stok == 0) row-habis-stock @endif">
                                                     <td>{{ $i + 1 }}</td>
                                                     <td>{{ $row->b->nama_barang }}</td>
                                                     <td>{{ $row->b->kode_barang }}</td>
@@ -274,15 +274,13 @@
                                                                 <td style="width:120px" class="text-center">
                                                                     <button class="btn btn-sm btn-success"
                                                                         onclick="toggleKategori({{ $k->id }})">
-                                                                        <i class="bi bi-eye"
-                                                                            id="icon-kategori-{{ $k->id }}">
-                                                                            </i> Lihat
+                                                                        <i class="bi bi-eye" id="icon-kategori-{{ $k->id }}">
+                                                                        </i> Lihat
                                                                     </button>
                                                                 </td>
                                                             </tr>
 
-                                                            <tr id="kategori-{{ $k->id }}"
-                                                                style="display:none;">
+                                                            <tr id="kategori-{{ $k->id }}" style="display:none;">
                                                                 <td colspan="2"
                                                                     style="padding-left: 60px; background-color: #f8f9fa;">
                                                                     @if ($k->barang->count())
@@ -309,7 +307,8 @@
                                                                                                     $stokDisplay =
                                                                                                         $pb->stok ?? 0;
                                                                                                 @endphp
-                                                                                                <tr class="@if ($stokDisplay < 10) row-low-stock @endif @if ($stokDisplay == 0) row-habis-stock @endif">
+                                                                                                <tr
+                                                                                                    class="@if ($stokDisplay < 10) row-low-stock @endif @if ($stokDisplay == 0) row-habis-stock @endif">
                                                                                                     <td>{{ $loop->iteration }}
                                                                                                     </td>
                                                                                                     <td>{{ $b->nama_barang }}
@@ -338,8 +337,7 @@
                                                                                         <tr>
                                                                                             <td colspan="7"
                                                                                                 class="text-center text-muted py-3">
-                                                                                                <i
-                                                                                                    class="bi bi-inbox"></i>
+                                                                                                <i class="bi bi-inbox"></i>
                                                                                                 Belum ada stok barang di
                                                                                                 Gudang Utama untuk
                                                                                                 kategori ini.
@@ -350,8 +348,7 @@
                                                                             </table>
                                                                         </div>
                                                                     @else
-                                                                        <div class="alert alert-info mb-0"
-                                                                            role="alert">
+                                                                        <div class="alert alert-info mb-0" role="alert">
                                                                             <i class="bi bi-info-circle"></i> Belum ada
                                                                             barang pada kategori ini.
                                                                         </div>
@@ -371,8 +368,7 @@
                                                 <td class="text-center">
                                                     <button class="btn btn-sm btn-primary"
                                                         onclick="toggleBagian({{ $bg->id }})">
-                                                        <i class="bi bi-chevron-down"
-                                                            id="icon-bagian-{{ $bg->id }}"></i>
+                                                        <i class="bi bi-chevron-down" id="icon-bagian-{{ $bg->id }}"></i>
                                                         Expand
                                                     </button>
                                                 </td>
@@ -385,9 +381,7 @@
                                                             @php $adaBarang = false; @endphp
                                                             @foreach ($kategori as $k)
                                                                 @php
-                                                                    $barangBagian = $k->barang->filter(function (
-                                                                        $b,
-                                                                    ) use ($bg) {
+                                                                    $barangBagian = $k->barang->filter(function ($b, ) use ($bg) {
                                                                         if (!$b->stokBagian) {
                                                                             return false;
                                                                         }
@@ -402,7 +396,8 @@
 
                                                                 <tr class="table-light">
                                                                     <td style="padding-left: 30px;">
-                                                                        {{ $k->nama }}</td>
+                                                                        {{ $k->nama }}
+                                                                    </td>
                                                                     <td style="width:120px" class="text-center">
                                                                         <button class="btn btn-sm btn-success"
                                                                             onclick="toggleKategoriBagian({{ $k->id }}, {{ $bg->id }})">
@@ -419,8 +414,7 @@
                                                                         style="padding-left: 60px; background-color: #f8f9fa;">
                                                                         @if ($barangBagian->count() > 0)
                                                                             <div class="table-responsive">
-                                                                                <table
-                                                                                    class="table table-striped table-sm">
+                                                                                <table class="table table-striped table-sm">
                                                                                     <thead>
                                                                                         <tr>
                                                                                             <th>No</th>
@@ -444,7 +438,8 @@
                                                                                                             0);
                                                                                                 @endphp
 
-                                                                                                <tr class="@if ($stokDisplay < 10) row-low-stock @endif @if ($stokDisplay == 0) row-habis-stock @endif">
+                                                                                                <tr
+                                                                                                    class="@if ($stokDisplay < 10) row-low-stock @endif @if ($stokDisplay == 0) row-habis-stock @endif">
                                                                                                     <td>{{ $rowNumber++ }}
                                                                                                     </td>
                                                                                                     <td>{{ $b->nama_barang }}
@@ -475,8 +470,7 @@
                                                                                 </table>
                                                                             </div>
                                                                         @else
-                                                                            <div class="alert alert-info mb-0"
-                                                                                role="alert">
+                                                                            <div class="alert alert-info mb-0" role="alert">
                                                                                 <i class="bi bi-info-circle"></i> Belum
                                                                                 ada barang pada kategori
                                                                                 {{ $k->nama }} di bagian
@@ -489,10 +483,8 @@
 
                                                             @if (!$adaBarang)
                                                                 <tr>
-                                                                    <td colspan="2"
-                                                                        class="text-center py-4 text-muted">
-                                                                        <i class="bi bi-inbox"
-                                                                            style="font-size: 2rem;"></i>
+                                                                    <td colspan="2" class="text-center py-4 text-muted">
+                                                                        <i class="bi bi-inbox" style="font-size: 2rem;"></i>
                                                                         <p class="mt-2 mb-0">Belum ada barang di bagian
                                                                             ini</p>
                                                                     </td>
@@ -522,8 +514,7 @@
                                     data-bs-target="#modalTambahKategori">
                                     <div class="btn-text">+ Tambah Kategori</div>
                                 </button>
-                                <button class="btn btn-add" data-bs-toggle="modal"
-                                    data-bs-target="#modalTambahBarang">
+                                <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#modalTambahBarang">
                                     <div class="btn-text">+ Tambah Barang</div>
                                 </button>
                             </div>
@@ -550,8 +541,7 @@
                                                     <div class="d-flex gap-2 justify-content-center">
                                                         <button class="btn btn-sm btn-success"
                                                             onclick="toggleKategoriBarang({{ $k->id }})">
-                                                            <i class="bi bi-eye"
-                                                                id="icon-kategori-barang-{{ $k->id }}"></i>
+                                                            <i class="bi bi-eye" id="icon-kategori-barang-{{ $k->id }}"></i>
                                                             Lihat
                                                         </button>
                                                         <button type="button" class="btn btn-sm btn-danger"
@@ -585,17 +575,14 @@
                                                                             <td>{{ $b->kode_barang }}</td>
                                                                             <td>{{ $b->satuan }}</td>
                                                                             <td class="text-center">
-                                                                                <div
-                                                                                    class="d-flex gap-2 justify-content-center">
-                                                                                    <button
-                                                                                        class="btn btn-sm btn-warning"
+                                                                                <div class="d-flex gap-2 justify-content-center">
+                                                                                    <button class="btn btn-sm btn-warning"
                                                                                         data-bs-toggle="modal"
                                                                                         data-bs-target="#modalEditBarang-{{ $b->kode_barang }}">
                                                                                         <i class="bi bi-pencil"></i>
                                                                                         Edit
                                                                                     </button>
-                                                                                    <button type="button"
-                                                                                        class="btn btn-sm btn-danger"
+                                                                                    <button type="button" class="btn btn-sm btn-danger"
                                                                                         onclick="confirmDelete('{{ route('admin.barang.destroy', $b->kode_barang) }}', 'Barang {{ $b->nama_barang }}')">
                                                                                         <i class="bi bi-trash"></i>
                                                                                         Hapus
@@ -643,8 +630,10 @@
                     @csrf
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="nama" class="form-label fw-semibold ">Nama Kategori</label> <span class="text-danger">*</span>
-                            <input type="text" class="form-control" name="nama" id="nama" required placeholder="Masukkan Nama Kategori">
+                            <label for="nama" class="form-label fw-semibold ">Nama Kategori</label> <span
+                                class="text-danger">*</span>
+                            <input type="text" class="form-control" name="nama" id="nama" required
+                                placeholder="Masukkan Nama Kategori">
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -669,12 +658,13 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="fw-semibold">Nama Barang</label><span class="text-danger">*</span>
-                            <input type="text" name="nama_barang" class="form-control" required placeholder="Masukkan Nama Barang">
+                            <input type="text" name="nama_barang" class="form-control" required
+                                placeholder="Masukkan Nama Barang">
                         </div>
                         <div class="col-md-6">
                             <label class="fw-semibold">Kode Barang</label><span class="text-danger">*</span>
-                            <input type="text" name="kode_barang" id="kodeBarangTambah" class="form-control"
-                                required placeholder="Masukkan Kode Barang">
+                            <input type="text" name="kode_barang" id="kodeBarangTambah" class="form-control" required
+                                placeholder="Masukkan Kode Barang">
                             <div id="kodeValidationTambah" class="form-text"></div>
                         </div>
                         <div class="col-md-6">
@@ -710,67 +700,109 @@
     {{-- Modal Edit Barang --}}
     @foreach ($kategori as $k)
         @foreach ($k->barang as $b)
-            <div class="modal fade" id="modalEditBarang-{{ $b->kode_barang }}" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered modal-lg">
-                    <form action="{{ route('admin.barang.update', $b->kode_barang) }}" method="POST"
-                        class="modal-content">
-                        @csrf
-                        @method('PUT')
-                        <div class="modal-header">
-                            <h5 class="modal-title fw-semibold">Edit Barang : {{ $b->nama_barang }}</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="fw-semibold">Nama Barang</label>
-                                    <input type="text" name="nama_barang" class="form-control"
-                                        value="{{ $b->nama_barang }}" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="fw-semibold">
-                                        Kode Barang
-                                        <i class="bi bi-info-circle text-primary" data-bs-toggle="tooltip"
-                                            title="Hati-hati mengubah kode barang, akan mempengaruhi riwayat transaksi"></i>
-                                    </label>
-                                    <input type="text" name="kode_barang"
-                                        id="kodeBarangEdit-{{ $b->kode_barang }}" class="form-control"
-                                        value="{{ $b->kode_barang }}" data-original-kode="{{ $b->kode_barang }}"
-                                        required>
-                                    <div id="kodeValidationEdit-{{ $b->kode_barang }}" class="form-text"></div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="fw-semibold">Kategori</label>
-                                    <select name="id_kategori" class="form-select" required>
-                                        <option value="">-- Pilih Kategori --</option>
-                                        @foreach ($kategori as $kat)
-                                            <option value="{{ $kat->id }}" @selected($b->id_kategori == $kat->id)>
-                                                {{ $kat->nama }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="fw-semibold">Satuan</label>
-                                    <select name="satuan" class="form-select" required>
-                                        <option value="Pcs" @selected($b->satuan == 'Pcs')>Pcs</option>
-                                        <option value="Box" @selected($b->satuan == 'Box')>Box</option>
-                                        <option value="Pack" @selected($b->satuan == 'Pack')>Pack</option>
-                                        <option value="Rim" @selected($b->satuan == 'Rim')>Rim</option>
-                                        <option value="Unit" @selected($b->satuan == 'Unit')>Unit</option>
-                                    </select>
-                                </div>
+                <div class="modal fade" id="modalEditBarang-{{ $b->kode_barang }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <form action="{{ route('admin.barang.update', $b->kode_barang) }}" method="POST" class="modal-content">
+                            @csrf
+                            @method('PUT')
+                            <div class="modal-header">
+                                <h5 class="modal-title fw-semibold">Edit Barang : {{ $b->nama_barang }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="fw-semibold">Nama Barang</label>
+                                        <input type="text" name="nama_barang" class="form-control" value="{{ $b->nama_barang }}"
+                                            required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="fw-semibold">
+                                            Kode Barang
+                                            <i class="bi bi-info-circle text-primary" data-bs-toggle="tooltip"
+                                                title="Hati-hati mengubah kode barang, akan mempengaruhi riwayat transaksi"></i>
+                                        </label>
+                                        <input type="text" name="kode_barang" id="kodeBarangEdit-{{ $b->kode_barang }}"
+                                            class="form-control" value="{{ $b->kode_barang }}"
+                                            data-original-kode="{{ $b->kode_barang }}" required>
+                                        <div id="kodeValidationEdit-{{ $b->kode_barang }}" class="form-text"></div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="fw-semibold">Kategori</label>
+                                        <select name="id_kategori" class="form-select" required>
+                                            <option value="">-- Pilih Kategori --</option>
+                                            @foreach ($kategori as $kat)
+                                                <option value="{{ $kat->id }}" @selected($b->id_kategori == $kat->id)>
+                                                    {{ $kat->nama }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="fw-semibold">Satuan</label>
+                                        <select name="satuan" class="form-select" required>
+                                            <select name="satuan" class="form-select">
+                <option value="">-- Semua Satuan --</option>
+
+                <!-- Satuan Barang -->
+                <option value="Pcs" @if (request('satuan') == 'Pcs') selected @endif>Pcs</option>
+                <option value="Unit" @if (request('satuan') == 'Unit') selected @endif>Unit</option>
+                <option value="Buah" @if (request('satuan') == 'Buah') selected @endif>Buah</option>
+                <option value="Box" @if (request('satuan') == 'Box') selected @endif>Box</option>
+                <option value="Pack" @if (request('satuan') == 'Pack') selected @endif>Pack</option>
+                <option value="Set" @if (request('satuan') == 'Set') selected @endif>Set</option>
+                <option value="Rim" @if (request('satuan') == 'Rim') selected @endif>Rim</option>
+                <option value="Lembar" @if (request('satuan') == 'Lembar') selected @endif>Lembar</option>
+                <option value="Ikat" @if (request('satuan') == 'Ikat') selected @endif>Ikat</option>
+                <option value="Roll" @if (request('satuan') == 'Roll') selected @endif>Roll</option>
+                <option value="Buku" @if (request('satuan') == 'Buku') selected @endif>Buku</option>
+                <option value="Botol" @if (request('satuan') == 'Botol') selected @endif>Botol</option>
+                <option value="Tube" @if (request('satuan') == 'Tube') selected @endif>Tube</option>
+                <option value="Strip" @if (request('satuan') == 'Strip') selected @endif>Strip</option>
+                <option value="Tablet" @if (request('satuan') == 'Tablet') selected @endif>Tablet</option>
+                <option value="Vial" @if (request('satuan') == 'Vial') selected @endif>Vial</option>
+                <option value="Ampul" @if (request('satuan') == 'Ampul') selected @endif>Ampul</option>
+                <option value="Kaleng" @if (request('satuan') == 'Kaleng') selected @endif>Kaleng</option>
+                <option value="Karung" @if (request('satuan') == 'Karung') selected @endif>Karung</option>
+                <option value="Sak" @if (request('satuan') == 'Sak') selected @endif>Sak</option>
+                <option value="Dus" @if (request('satuan') == 'Dus') selected @endif>Dus</option>
+                <option value="Paket" @if (request('satuan') == 'Paket') selected @endif>Paket</option>
+
+                <!-- Satuan Berat -->
+                <option value="Gram" @if (request('satuan') == 'Gram') selected @endif>Gram</option>
+                <option value="Kilogram" @if (request('satuan') == 'Kilogram') selected @endif>Kilogram</option>
+                <option value="Ton" @if (request('satuan') == 'Ton') selected @endif>Ton</option>
+
+                <!-- Satuan Volume Cair -->
+                <option value="Mililiter" @if (request('satuan') == 'Mililiter') selected @endif>Mililiter</option>
+                <option value="Liter" @if (request('satuan') == 'Liter') selected @endif>Liter</option>
+                <option value="Drum" @if (request('satuan') == 'Drum') selected @endif>Drum</option>
+                <option value="Galon" @if (request('satuan') == 'Galon') selected @endif>Galon</option>
+
+                <!-- Satuan Panjang -->
+                <option value="Meter" @if (request('satuan') == 'Meter') selected @endif>Meter</option>
+                <option value="Centimeter" @if (request('satuan') == 'Centimeter') selected @endif>Centimeter</option>
+                <option value="Milimeter" @if (request('satuan') == 'Milimeter') selected @endif>Milimeter</option>
+                <option value="Inci" @if (request('satuan') == 'Inci') selected @endif>Inci</option>
+                <option value="Feet" @if (request('satuan') == 'Feet') selected @endif>Feet</option>
+
+                <!-- Satuan Luas & Volume -->
+                <option value="Meter Persegi" @if (request('satuan') == 'Meter Persegi') selected @endif>Meter Persegi</option>
+                <option value="Meter Kubik" @if (request('satuan') == 'Meter Kubik') selected @endif>Meter Kubik</option>
+            </select>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                        <button class="btn btn-primary" type="submit" id="btnSimpanEdit-{{ $b->kode_barang }}">
+                                            Simpan Perubahan
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                            <button class="btn btn-primary" type="submit" id="btnSimpanEdit-{{ $b->kode_barang }}">
-                                Simpan Perubahan
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
         @endforeach
     @endforeach
 
