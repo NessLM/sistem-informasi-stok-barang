@@ -213,8 +213,8 @@
             Setda Kabupaten Bangka,
         </div>
         <div class="ttd-spacer-halaman1"></div>
-        <div class="ttd-nama">Tati Djumijati, SE, M. Si</div>
-        <div class="ttd-nip">NIP 19720512 198803 2 008</div>
+        <div class="ttd-nama">__________________</div>
+        <div class="ttd-nip">NIP. __________________</div>
     </div>
 
     {{-- SECTION PENERIMA --}}
@@ -280,12 +280,12 @@
             <tr>
                 <td class="label">Nama</td>
                 <td class="titik-dua">:</td>
-                <td>Redha Efrida, A.Md</td>
+                <td></td>
             </tr>
             <tr>
                 <td class="label">NIP</td>
                 <td class="titik-dua">:</td>
-                <td>19820816 201101 2 002</td>
+                <td></td>
             </tr>
             <tr>
                 <td class="label">Jabatan</td>
@@ -316,16 +316,16 @@
             <td style="width: 50%; text-align: center; vertical-align: top;">
                 <div class="ttd-jabatan">Pejabat Penatausahaan Pengguna Barang</div>
                 <br><br> <!-- Spacer Tanda Tangan -->
-                <div class="ttd-nama">Hiskawati, S.AP</div>
-                <div class="ttd-nip">NIP. 198109202006042007</div>
+                <div class="ttd-nama">__________________</div>
+                <div class="ttd-nip">NIP. __________________</div>
             </td>
 
             <!-- TTD KANAN -->
             <td style="width: 50%; text-align: center; vertical-align: top;">
                 <div class="ttd-jabatan">Penanggung Jawab LBP <br> Pengurus Barang Pengguna,</div>
                 <br> <!-- Spacer Tanda Tangan -->
-                <div class="ttd-nama">Redha Efrida, A.Md</div>
-                <div class="ttd-nip">NIP. 198206192008042002</div>
+                <div class="ttd-nama">__________________</div>
+                <div class="ttd-nip">NIP. __________________</div>
             </td>
         </tr>
     </table>
@@ -338,8 +338,8 @@
                 <div class="ttd-jabatan mengetahui">Mengetahui</div>
                 <div class="ttd-jabatan">Pengguna Barang,</div>
                 <br><!-- Spacer Tanda Tangan -->
-                <div class="ttd-nama">Thony Marza, AP</div>
-                <div class="ttd-nip">NIP. 19750306199311101</div>
+                <div class="ttd-nama">__________________</div>
+                <div class="ttd-nip">NIP. __________________</div>
 
             </td>
         </tr>
@@ -385,13 +385,13 @@
                     </td>
                     <td class="label">Nama</td>
                     <td class="titik-dua">:</td>
-                    <td class="label-wide">Redha Efrida, A.Md</td>
+                    <td class="label-wide"></td>
                 </tr>
                 <tr class="baris-nip">
                     <td></td>
                     <td class="label">NIP</td>
                     <td class="titik-dua">:</td>
-                    <td>19820816 201101 2 002</td>
+                    <td></td>
                 </tr>
                 <tr>
                     <td></td>
@@ -418,13 +418,13 @@
                     </td>
                     <td class="label">Nama</td>
                     <td class="titik-dua">:</td>
-                    <td class="label-wide">Tri Medlowaty, A. Md</td>
+                    <td class="label-wide"></td>
                 </tr>
                 <tr class="baris-nip">
                     <td></td>
                     <td class="label">NIP</td>
                     <td class="titik-dua">:</td>
-                    <td>19810522 201101 2 004</td>
+                    <td></td>
                 </tr>
                 <tr>
                     <td></td>
@@ -609,8 +609,8 @@
                 Bendahara Pengeluaran,
             </div>
             <div class="ttd-spacer-halaman3"></div>
-            <div class="ttd-nama-halaman3">Tri Mediawaty, A. Md</div>
-            <div class="ttd-nip-halaman3">NIP. 198105222011012004</div>
+            <div class="ttd-nama-halaman3">__________________</div>
+            <div class="ttd-nip-halaman3">NIP. __________________</div>
         </div>
 
         <div class="ttd-kanan-halaman3">
@@ -619,8 +619,8 @@
                 Pengurus Barang Pengguna,
             </div>
             <div class="ttd-spacer-halaman3"></div>
-            <div class="ttd-nama-halaman3">Redha Efrida, A.Md</div>
-            <div class="ttd-nip-halaman3">NIP. 198208162011012002</div>
+            <div class="ttd-nama-halaman3">__________________</div>
+            <div class="ttd-nip-halaman3">NIP. __________________</div>
         </div>
     </div>
 
@@ -632,16 +632,16 @@
         <div class="ttd-kiri-halaman3">
             <div class="ttd-jabatan-halaman3">Pengguna Barang,</div>
             <div class="ttd-spacer-halaman3"></div>
-            <div class="ttd-nama-halaman3">Thony Marza, AP</div>
-            <div class="ttd-nip-halaman3">NIP. 197503061993111001</div>
+            <div class="ttd-nama-halaman3">__________________</div>
+            <div class="ttd-nip-halaman3">NIP. __________________</div>
         </div>
 
 
         <div class="ttd-kanan-halaman3">
             <div class="ttd-jabatan-halaman3">Pejabat Penatausahaan Pengguna Barang.</div>
             <div class="ttd-spacer-halaman3"></div>
-            <div class="ttd-nama-halaman3">Hiskawati, S. AP</div>
-            <div class="ttd-nip-halaman3">NIP. 19810922006042007</div>
+            <div class="ttd-nama-halaman3">__________________</div>
+            <div class="ttd-nip-halaman3">NIP. __________________</div>
         </div>
     </div>
 
@@ -832,14 +832,14 @@
                 <td style="width: 50%; text-align: center; vertical-align: top;">
                     <div class="ttd-jabatan">Pejabat Penatausahaan Pengguna Barang,</div>
                     <br>
-                    <div class="ttd-nama">Hiskawati, S.AP</div>
-                    <div class="ttd-nip">NIP. 19810920 200604 2 007</div>
+                    <div class="ttd-nama">__________________</div>
+                    <div class="ttd-nip">NIP. __________________</div>
                 </td>
                 <td style="width: 50%; text-align: center; vertical-align: top;">
                     <div class="ttd-jabatan">Pengurus Barang Pengguna,</div>
                     <br>
-                    <div class="ttd-nama">Redha Efrida, A.Md</div>
-                    <div class="ttd-nip">NIP. 19820816 201101 2 002</div>
+                    <div class="ttd-nama">__________________</div>
+                    <div class="ttd-nip">NIP. __________________</div>
                 </td>
             </tr>
         </table>
@@ -849,8 +849,8 @@
                     <div class="ttd-jabatan">Mengetahui :</div>
                     <div class="ttd-jabatan">Pengguna Barang,</div>
                     <br>
-                    <div class="ttd-nama">Thony Marza, AP</div>
-                    <div class="ttd-nip">NIP. 19750306199311101</div>
+                    <div class="ttd-nama">__________________</div>
+                    <div class="ttd-nip">NIP. __________________</div>
                 </td>
             </tr>
         </table>
