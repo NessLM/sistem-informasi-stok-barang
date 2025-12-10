@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
 
@@ -41,6 +43,11 @@ class ResetPasswordController extends Controller
                 ])->setRememberToken(Str::random(60));
 
                 $user->save();
+
+                // 🔑 TAMBAHKAN INI: Simpan password plain ke cache
+                // Sama seperti di UserController saat create/update user
+                $cacheKey = "user:plainpwd:{$user->id}";
+                Cache::forever($cacheKey, Crypt::encryptString($password));
             }
         );
 
